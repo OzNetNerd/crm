@@ -51,22 +51,22 @@
         <!-- Reschedule buttons (top right) -->
         <div class="relative flex-shrink-0">
             <div class="flex items-center space-x-1">
-                <button @click="adjustDays(-7)" 
+                <button @click.stop="adjustDays(-7)" 
                         class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                         title="Reschedule -1 week">
                     -1w
                 </button>
-                <button @click="adjustDays(-1)" 
+                <button @click.stop="adjustDays(-1)" 
                         class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                         title="Reschedule -1 day">
                     -1d
                 </button>
-                <button @click="adjustDays(1)" 
+                <button @click.stop="adjustDays(1)" 
                         class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                         title="Reschedule +1 day">
                     +1d
                 </button>
-                <button @click="adjustDays(7)" 
+                <button @click.stop="adjustDays(7)" 
                         class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                         title="Reschedule +1 week">
                     +1w
@@ -83,12 +83,12 @@
                  x-transition:leave="transition ease-in duration-150"
                  x-transition:leave-start="opacity-100 transform scale-100"
                  x-transition:leave-end="opacity-0 transform scale-95">
-                <button @click="saveReschedule({{ task.id }}, pendingDays)" 
+                <button @click.stop="saveReschedule({{ task.id }}, pendingDays)" 
                         class="px-3 py-1 rounded bg-blue-600 text-white text-xs hover:bg-blue-700 transition-colors duration-200" 
                         title="Save changes">
                     Save
                 </button>
-                <button @click="cancelChanges()" 
+                <button @click.stop="cancelChanges()" 
                         class="px-3 py-1 rounded border text-gray-600 text-xs hover:bg-gray-50 transition-colors duration-200" 
                         title="Cancel changes">
                     Cancel
@@ -194,7 +194,7 @@
             <h4 class="text-sm font-medium text-gray-900">Comments & Notes</h4>
             
             <!-- Add Comment Form -->
-            <div>
+            <div @click.stop>
                 <textarea placeholder="Add a comment..." 
                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
                           rows="2"></textarea>
@@ -210,9 +210,9 @@
                     <div class="flex items-center justify-between mb-1">
                         <span class="text-xs text-gray-500">2 hours ago</span>
                         <div class="flex items-center space-x-1">
-                            <button class="text-xs text-gray-400 hover:text-gray-600">Edit</button>
+                            <button @click.stop class="text-xs text-gray-400 hover:text-gray-600">Edit</button>
                             <span class="text-xs text-gray-300">|</span>
-                            <button class="text-xs text-red-400 hover:text-red-600">Delete</button>
+                            <button @click.stop class="text-xs text-red-400 hover:text-red-600">Delete</button>
                         </div>
                     </div>
                     <p class="text-gray-700">Follow up with client about contract details</p>
