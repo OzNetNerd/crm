@@ -229,3 +229,24 @@ document.addEventListener('keydown', function(e) {
 // Export for global access
 window.TaskManager = TaskManager;
 window.ModalManager = ModalManager;
+
+// Global function wrappers for backward compatibility
+window.completeTask = function(taskId) {
+    return TaskManager.completeTask(taskId);
+};
+
+window.rescheduleTask = function(taskId, days) {
+    return TaskManager.rescheduleTask(taskId, days);
+};
+
+window.deleteTask = function(taskId) {
+    return TaskManager.deleteTask(taskId);
+};
+
+window.updateTask = function(taskId, updates) {
+    return TaskManager.updateTask(taskId, updates);
+};
+
+window.openTaskModal = function(taskId) {
+    return ModalManager.openTaskModal(taskId);
+};
