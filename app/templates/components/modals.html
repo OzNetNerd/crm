@@ -328,13 +328,10 @@ async function loadTaskDetails(taskId) {
     try {
         const response = await fetch(`/api/tasks/${taskId}`);
         if (response.ok) {
-            const data = await response.json();
+            const task = await response.json();
             // Update Alpine data via custom event
             window.dispatchEvent(new CustomEvent('task-details-loaded', { 
-                detail: { 
-                    task: data,
-                    notes: data.notes || []
-                } 
+                detail: { task: task } 
             }));
         }
     } catch (error) {
@@ -347,10 +344,6 @@ async function saveTaskDetails() {
     console.log('Save task details functionality');
 }
 
-async function addNote() {
-    // Implementation will be added via Alpine.js scope
-    console.log('Add note functionality');
-}
 
 // Contact detail modal functions
 async function loadContactDetails(contactId) {
@@ -440,14 +433,12 @@ function formatDate(isoString) {
 <!-- Include the confirmation modal instance -->
 {{ confirmation_modal("task-confirmation") }}
 
-<!-- Enhanced Task Detail Modal with Notes -->
+<!-- Enhanced Task Detail Modal -->
 <div x-data="{
         show: false,
         taskId: null,
         task: null,
         originalTask: null,
-        notes: [],
-        newNote: '',
         loading: false,
         saving: false,
         hasChanges: false,
@@ -481,81 +472,10 @@ function formatDate(isoString) {
             } finally {
                 this.saving = false;
             }
-        },
-        
-        async addNote() {
-            if (!this.newNote.trim()) return;
-            
-            try {
-                const response = await fetch('/api/notes/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        content: this.newNote,
-                        entity_type: 'task',
-                        entity_id: this.taskId,
-                        is_internal: true
-                    })
-                });
-                
-                if (response.ok) {
-                    const newNote = await response.json();
-                    this.notes.unshift(newNote);
-                    this.newNote = '';
-                } else {
-                    alert('Failed to add note');
-                }
-            } catch (error) {
-                console.error('Error adding note:', error);
-                alert('Failed to add note');
-            }
-        },
-
-        async editNote(note) {
-            const newContent = prompt('Edit note:', note.content);
-            if (newContent === null || newContent.trim() === '') return;
-            
-            try {
-                const response = await fetch(`/api/notes/${note.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        content: newContent
-                    })
-                });
-                
-                if (response.ok) {
-                    note.content = newContent;
-                } else {
-                    alert('Failed to update note');
-                }
-            } catch (error) {
-                console.error('Error updating note:', error);
-                alert('Failed to update note');
-            }
-        },
-
-        async deleteNote(noteId) {
-            if (!confirm('Are you sure you want to delete this note?')) return;
-            
-            try {
-                const response = await fetch(`/api/notes/${noteId}`, {
-                    method: 'DELETE'
-                });
-                
-                if (response.ok) {
-                    this.notes = this.notes.filter(note => note.id !== noteId);
-                } else {
-                    alert('Failed to delete note');
-                }
-            } catch (error) {
-                console.error('Error deleting note:', error);
-                alert('Failed to delete note');
-            }
         }
     }"
     @open-task-detail-modal.window="show = true; taskId = $event.detail.taskId; loading = true; loadTaskDetails(taskId)"
-    @task-details-loaded.window="task = $event.detail.task; originalTask = JSON.parse(JSON.stringify($event.detail.task)); notes = $event.detail.notes; loading = false; hasChanges = false"
+    @task-details-loaded.window="task = $event.detail.task; originalTask = JSON.parse(JSON.stringify($event.detail.task)); loading = false; hasChanges = false"
     x-effect="if (task && originalTask) { hasChanges = JSON.stringify(task) !== JSON.stringify(originalTask) }"
     @close-modal.window="show = false"
     x-show="show"
@@ -645,44 +565,6 @@ function formatDate(isoString) {
                                         <option value="demo">Demo</option>
                                     </select>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Notes Section (Full Width Below) -->
-                    <div class="space-y-4">
-                        <h4 class="text-section-title">Notes & Comments</h4>
-                        
-                        <!-- Add Note Form -->
-                        <div>
-                            <textarea x-model="newNote"
-                                      placeholder="Add a note or comment..."
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
-                                      rows="3"></textarea>
-                            <button @click="addNote()"
-                                    :disabled="!newNote.trim()"
-                                    class="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-gray-400">
-                                Add Note
-                            </button>
-                        </div>
-                        
-                        <!-- Notes List -->
-                        <div class="max-h-64 overflow-y-auto space-y-3">
-                            <template x-for="note in notes" :key="note.id">
-                                <div class="bg-white p-3 border border-gray-200 rounded">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <p class="text-xs text-gray-500" x-text="formatDate(note.created_at)"></p>
-                                        <div class="flex items-center space-x-1">
-                                            <button @click="editNote(note)" class="text-xs text-gray-400 hover:text-gray-600">Edit</button>
-                                            <span class="text-xs text-gray-300">|</span>
-                                            <button @click="deleteNote(note.id)" class="text-xs text-red-400 hover:text-red-600">Delete</button>
-                                        </div>
-                                    </div>
-                                    <p class="text-sm text-gray-900" x-text="note.content"></p>
-                                </div>
-                            </template>
-                            <div x-show="notes.length === 0" class="text-center text-gray-500 py-8">
-                                No notes yet. Add one above to get started.
                             </div>
                         </div>
                     </div>
