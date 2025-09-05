@@ -305,6 +305,7 @@
     width: 160px;
     text-overflow: ellipsis;
     overflow: hidden;
+    text-align: center;
 }
 
 .multiselect-button:focus {
@@ -398,6 +399,12 @@
     margin-right: 0.5rem;
     width: 1rem;
     height: 1rem;
+}
+
+/* Alpine.js Cloak */
+/* Hide elements with x-cloak until Alpine.js is initialized */
+[x-cloak] { 
+    display: none !important; 
 }
 
 /* Card Components */
