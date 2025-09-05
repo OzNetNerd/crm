@@ -21,10 +21,21 @@
     priorityFilter: '',
     entityFilter: '',
     expandedSections: {
-        status: true,
-        priority: true,
-        due_date: true,
-        entity: true
+        'todo': true,
+        'in-progress': true,
+        'complete': true,
+        'high': true,
+        'medium': true,
+        'low': true,
+        'overdue': true,
+        'today': true,
+        'this_week': true,
+        'later': true,
+        'no_date': true,
+        'company': true,
+        'contact': true,
+        'opportunity': true,
+        'unrelated': true
     }
 }" class="space-y-6">
 
@@ -76,15 +87,18 @@
     <div x-show="groupBy === 'status'" class="space-y-4">
         <!-- To Do Tasks -->
         <div class="bg-white rounded-lg shadow-sm border">
-            <div class="border-b border-gray-200 px-6 py-4">
+            <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
+                 @click="expandedSections['todo'] = !expandedSections['todo']">
                 <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['todo'] ? 'rotate-90' : ''">▶</span>
                     📋 To Do
                     <span class="ml-2 bg-blue-100 text-blue-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('status', 'equalto', 'todo')|list|length }}
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['todo']" x-transition>
                 {% for task in tasks %}
                     {% if task.status == 'todo' %}
                         {{ render_task(task) }}
@@ -97,15 +111,18 @@
 
         <!-- In Progress Tasks -->
         <div class="bg-white rounded-lg shadow-sm border">
-            <div class="border-b border-gray-200 px-6 py-4">
+            <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
+                 @click="expandedSections['in-progress'] = !expandedSections['in-progress']">
                 <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['in-progress'] ? 'rotate-90' : ''">▶</span>
                     ⚡ In Progress
                     <span class="ml-2 bg-yellow-100 text-yellow-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('status', 'equalto', 'in-progress')|list|length }}
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['in-progress']" x-transition>
                 {% for task in tasks %}
                     {% if task.status == 'in-progress' %}
                         {{ render_task(task) }}
@@ -118,15 +135,18 @@
 
         <!-- Completed Tasks (conditional) -->
         <div x-show="showCompleted" class="bg-white rounded-lg shadow-sm border">
-            <div class="border-b border-gray-200 px-6 py-4">
+            <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
+                 @click="expandedSections['complete'] = !expandedSections['complete']">
                 <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['complete'] ? 'rotate-90' : ''">▶</span>
                     ✅ Completed
                     <span class="ml-2 bg-green-100 text-green-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('status', 'equalto', 'complete')|list|length }}
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['complete']" x-transition>
                 {% for task in tasks %}
                     {% if task.status == 'complete' %}
                         <div class="opacity-60">
@@ -210,15 +230,18 @@
     <div x-show="groupBy === 'due_date'" class="space-y-4">
         <!-- Overdue -->
         <div class="bg-white rounded-lg shadow-sm border border-red-200">
-            <div class="border-b border-red-200 px-6 py-4 bg-red-50">
+            <div class="border-b border-red-200 px-6 py-4 bg-red-50 cursor-pointer hover:bg-red-100" 
+                 @click="expandedSections['overdue'] = !expandedSections['overdue']">
                 <h3 class="text-lg font-semibold text-red-800 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['overdue'] ? 'rotate-90' : ''">▶</span>
                     🚨 Overdue
                     <span class="ml-2 bg-red-200 text-red-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('is_overdue', 'equalto', True)|list|length }}
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['overdue']" x-transition>
                 {% for task in tasks %}
                     {% if task.is_overdue and (task.status != 'complete' or showCompleted) %}
                         {{ render_task(task) }}
@@ -231,8 +254,11 @@
 
         <!-- Today -->
         <div class="bg-white rounded-lg shadow-sm border border-orange-200">
-            <div class="border-b border-orange-200 px-6 py-4 bg-orange-50">
+            <div class="border-b border-orange-200 px-6 py-4 bg-orange-50 cursor-pointer hover:bg-orange-100" 
+                 @click="expandedSections['today'] = !expandedSections['today']">
                 <h3 class="text-lg font-semibold text-orange-800 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['today'] ? 'rotate-90' : ''">▶</span>
                     📅 Due Today
                     <span class="ml-2 bg-orange-200 text-orange-800 px-2 py-1 text-sm rounded-full">
                         {% set today_tasks = tasks|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list %}
@@ -240,7 +266,7 @@
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['today']" x-transition>
                 {% for task in tasks %}
                     {% if task.due_date == today and task.status != 'complete' %}
                         {{ render_task(task) }}
@@ -253,8 +279,11 @@
 
         <!-- This Week -->
         <div class="bg-white rounded-lg shadow-sm border border-blue-200">
-            <div class="border-b border-blue-200 px-6 py-4 bg-blue-50">
+            <div class="border-b border-blue-200 px-6 py-4 bg-blue-50 cursor-pointer hover:bg-blue-100" 
+                 @click="expandedSections['this_week'] = !expandedSections['this_week']">
                 <h3 class="text-lg font-semibold text-blue-800 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['this_week'] ? 'rotate-90' : ''">▶</span>
                     📆 This Week
                     <span class="ml-2 bg-blue-200 text-blue-800 px-2 py-1 text-sm rounded-full">
                         {% set this_week_count = 0 %}
@@ -267,7 +296,7 @@
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['this_week']" x-transition>
                 {% for task in tasks %}
                     {% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}
                         {{ render_task(task) }}
@@ -280,8 +309,11 @@
 
         <!-- Later -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50">
+            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
+                 @click="expandedSections['later'] = !expandedSections['later']">
                 <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['later'] ? 'rotate-90' : ''">▶</span>
                     📊 Later
                     <span class="ml-2 bg-gray-200 text-gray-800 px-2 py-1 text-sm rounded-full">
                         {% set later_count = 0 %}
@@ -294,7 +326,7 @@
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['later']" x-transition>
                 {% for task in tasks %}
                     {% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}
                         {{ render_task(task) }}
@@ -307,15 +339,18 @@
 
         <!-- No Due Date -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50">
+            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
+                 @click="expandedSections['no_date'] = !expandedSections['no_date']">
                 <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['no_date'] ? 'rotate-90' : ''">▶</span>
                     ❓ No Due Date
                     <span class="ml-2 bg-gray-200 text-gray-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('due_date', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('due_date', 'none')|list|length }}
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['no_date']" x-transition>
                 {% for task in tasks %}
                     {% if not task.due_date and (task.status != 'complete' or showCompleted) %}
                         {{ render_task(task) }}
