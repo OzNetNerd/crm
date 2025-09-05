@@ -39,6 +39,37 @@
     }
 }" class="space-y-6">
 
+    <!-- Task Summary -->
+    <div class="bg-white rounded-lg shadow-sm border p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Task Summary</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">
+                    {{ tasks|selectattr('status', 'equalto', 'todo')|list|length }}
+                </div>
+                <div class="text-sm text-gray-500">To Do</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-yellow-600">
+                    {{ tasks|selectattr('status', 'equalto', 'in-progress')|list|length }}
+                </div>
+                <div class="text-sm text-gray-500">In Progress</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">
+                    {{ tasks|selectattr('status', 'equalto', 'complete')|list|length }}
+                </div>
+                <div class="text-sm text-gray-500">Complete</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-red-600">
+                    {{ tasks|selectattr('is_overdue', 'equalto', True)|list|length }}
+                </div>
+                <div class="text-sm text-gray-500">Overdue</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Enhanced Filters and Controls -->
     <div class="bg-white rounded-lg shadow-sm border p-4">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
@@ -164,15 +195,18 @@
     <div x-show="groupBy === 'priority'" class="space-y-4">
         <!-- High Priority -->
         <div class="bg-white rounded-lg shadow-sm border border-red-200">
-            <div class="border-b border-red-200 px-6 py-4 bg-red-50">
+            <div class="border-b border-red-200 px-6 py-4 bg-red-50 cursor-pointer hover:bg-red-100" 
+                 @click="expandedSections['high'] = !expandedSections['high']">
                 <h3 class="text-lg font-semibold text-red-800 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['high'] ? 'rotate-90' : ''">▶</span>
                     🔥 High Priority
                     <span class="ml-2 bg-red-200 text-red-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('priority', 'equalto', 'high')|list|length }}
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['high']" x-transition>
                 {% for task in tasks %}
                     {% if task.priority == 'high' and (task.status != 'complete' or showCompleted) %}
                         {{ render_task(task) }}
@@ -185,15 +219,18 @@
 
         <!-- Medium Priority -->
         <div class="bg-white rounded-lg shadow-sm border border-yellow-200">
-            <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50">
+            <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50 cursor-pointer hover:bg-yellow-100" 
+                 @click="expandedSections['medium'] = !expandedSections['medium']">
                 <h3 class="text-lg font-semibold text-yellow-800 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['medium'] ? 'rotate-90' : ''">▶</span>
                     ⚠️ Medium Priority
                     <span class="ml-2 bg-yellow-200 text-yellow-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('priority', 'equalto', 'medium')|list|length }}
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['medium']" x-transition>
                 {% for task in tasks %}
                     {% if task.priority == 'medium' and (task.status != 'complete' or showCompleted) %}
                         {{ render_task(task) }}
@@ -206,15 +243,18 @@
 
         <!-- Low Priority -->
         <div class="bg-white rounded-lg shadow-sm border border-green-200">
-            <div class="border-b border-green-200 px-6 py-4 bg-green-50">
+            <div class="border-b border-green-200 px-6 py-4 bg-green-50 cursor-pointer hover:bg-green-100" 
+                 @click="expandedSections['low'] = !expandedSections['low']">
                 <h3 class="text-lg font-semibold text-green-800 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['low'] ? 'rotate-90' : ''">▶</span>
                     📋 Low Priority
                     <span class="ml-2 bg-green-200 text-green-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('priority', 'equalto', 'low')|list|length }}
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['low']" x-transition>
                 {% for task in tasks %}
                     {% if task.priority == 'low' and (task.status != 'complete' or showCompleted) %}
                         {{ render_task(task) }}
@@ -366,15 +406,18 @@
     <div x-show="groupBy === 'entity'" class="space-y-4">
         <!-- Company Tasks -->
         <div class="bg-white rounded-lg shadow-sm border border-blue-200">
-            <div class="border-b border-blue-200 px-6 py-4 bg-blue-50">
+            <div class="border-b border-blue-200 px-6 py-4 bg-blue-50 cursor-pointer hover:bg-blue-100" 
+                 @click="expandedSections['company'] = !expandedSections['company']">
                 <h3 class="text-lg font-semibold text-blue-800 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['company'] ? 'rotate-90' : ''">▶</span>
                     🏢 Company Tasks
                     <span class="ml-2 bg-blue-200 text-blue-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('entity_type', 'equalto', 'company')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'company')|list|length }}
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['company']" x-transition>
                 {% for task in tasks %}
                     {% if task.entity_type == 'company' and (task.status != 'complete' or showCompleted) %}
                         {{ render_task(task) }}
@@ -387,15 +430,18 @@
 
         <!-- Contact Tasks -->
         <div class="bg-white rounded-lg shadow-sm border border-green-200">
-            <div class="border-b border-green-200 px-6 py-4 bg-green-50">
+            <div class="border-b border-green-200 px-6 py-4 bg-green-50 cursor-pointer hover:bg-green-100" 
+                 @click="expandedSections['contact'] = !expandedSections['contact']">
                 <h3 class="text-lg font-semibold text-green-800 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['contact'] ? 'rotate-90' : ''">▶</span>
                     👤 Contact Tasks
                     <span class="ml-2 bg-green-200 text-green-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('entity_type', 'equalto', 'contact')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'contact')|list|length }}
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['contact']" x-transition>
                 {% for task in tasks %}
                     {% if task.entity_type == 'contact' and (task.status != 'complete' or showCompleted) %}
                         {{ render_task(task) }}
@@ -408,15 +454,18 @@
 
         <!-- Opportunity Tasks -->
         <div class="bg-white rounded-lg shadow-sm border border-yellow-200">
-            <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50">
+            <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50 cursor-pointer hover:bg-yellow-100" 
+                 @click="expandedSections['opportunity'] = !expandedSections['opportunity']">
                 <h3 class="text-lg font-semibold text-yellow-800 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['opportunity'] ? 'rotate-90' : ''">▶</span>
                     💰 Opportunity Tasks
                     <span class="ml-2 bg-yellow-200 text-yellow-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('entity_type', 'equalto', 'opportunity')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'opportunity')|list|length }}
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['opportunity']" x-transition>
                 {% for task in tasks %}
                     {% if task.entity_type == 'opportunity' and (task.status != 'complete' or showCompleted) %}
                         {{ render_task(task) }}
@@ -429,15 +478,18 @@
 
         <!-- Unrelated Tasks -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50">
+            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
+                 @click="expandedSections['unrelated'] = !expandedSections['unrelated']">
                 <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <span class="mr-2 transition-transform duration-200" 
+                          :class="expandedSections['unrelated'] ? 'rotate-90' : ''">▶</span>
                     📋 General Tasks
                     <span class="ml-2 bg-gray-200 text-gray-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('entity_type', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'none')|list|length }}
                     </span>
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="p-6" x-show="expandedSections['unrelated']" x-transition>
                 {% for task in tasks %}
                     {% if not task.entity_type and (task.status != 'complete' or showCompleted) %}
                         {{ render_task(task) }}
@@ -451,35 +503,6 @@
 
 </div>
 
-<div class="mt-8 bg-white rounded-lg shadow-sm border p-6">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4">Task Summary</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="text-center">
-            <div class="text-2xl font-bold text-blue-600">
-                {{ tasks|selectattr('status', 'equalto', 'todo')|list|length }}
-            </div>
-            <div class="text-sm text-gray-500">To Do</div>
-        </div>
-        <div class="text-center">
-            <div class="text-2xl font-bold text-yellow-600">
-                {{ tasks|selectattr('status', 'equalto', 'in-progress')|list|length }}
-            </div>
-            <div class="text-sm text-gray-500">In Progress</div>
-        </div>
-        <div class="text-center">
-            <div class="text-2xl font-bold text-green-600">
-                {{ tasks|selectattr('status', 'equalto', 'complete')|list|length }}
-            </div>
-            <div class="text-sm text-gray-500">Complete</div>
-        </div>
-        <div class="text-center">
-            <div class="text-2xl font-bold text-red-600">
-                {{ tasks|selectattr('is_overdue', 'equalto', True)|list|length }}
-            </div>
-            <div class="text-sm text-gray-500">Overdue</div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
