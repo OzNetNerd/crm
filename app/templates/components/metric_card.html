@@ -46,7 +46,7 @@
   {% set container_attrs = 'href="' + href + '"' if href else '' %}
   {% set hover_classes = 'hover:shadow-md transition-shadow cursor-pointer' if href else '' %}
   
-  <{{ container_tag }} {{ container_attrs|safe }} class="bg-white rounded-lg shadow-sm border p-6 {{ hover_classes }} {{ additional_classes }}">
+  <{{ container_tag }} {{ container_attrs|safe }} class="card-padded-lg {{ hover_classes }} {{ additional_classes }}">
     <div class="flex items-center">
       <div class="flex-shrink-0">
         <div class="w-8 h-8 {{ theme.bg }} rounded-lg flex items-center justify-center {{ theme.text }}">
@@ -102,7 +102,7 @@
   } %}
   {% set value_color = text_colors.get(color_theme, 'text-gray-600') %}
   
-  <{{ container_tag }} {{ container_attrs|safe }} class="bg-white rounded-lg shadow-sm border p-6 {{ hover_classes }} {{ additional_classes }}">
+  <{{ container_tag }} {{ container_attrs|safe }} class="card-padded-lg {{ hover_classes }} {{ additional_classes }}">
     <div class="text-center">
       <div class="text-3xl font-bold {{ value_color }}">{{ value }}</div>
       <div class="text-secondary mt-1">{{ label }}</div>
@@ -163,7 +163,7 @@
     'gray': 'text-gray-600'
   } %}
   
-  <div class="bg-white rounded-lg shadow-sm border p-6 {{ additional_classes }}">
+  <div class="card-padded-lg {{ additional_classes }}">
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-section-title">{{ title }}</h2>
       {% if summary_text %}

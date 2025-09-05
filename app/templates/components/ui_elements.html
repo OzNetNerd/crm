@@ -70,10 +70,10 @@
   {{ expand_collapse_controls('sectionStates', 'ml-4') }}
 #}
 {% macro expand_collapse_controls(target_sections, additional_classes='') %}
-<div class="flex items-center space-x-2 border-l pl-4 {{ additional_classes }}">
+<div class="flex items-center gap-4 border-l pl-4 {{ additional_classes }}">
     <button @click="Object.keys({{ target_sections }}).forEach(key => {{ target_sections }}[key] = true)"
             class="text-secondary-dark hover:text-gray-900">Expand All</button>
-    <span class="text-gray-400">|</span>
+    <div class="border-l border-gray-300 h-5"></div>
     <button @click="Object.keys({{ target_sections }}).forEach(key => {{ target_sections }}[key] = false)"
             class="text-secondary-dark hover:text-gray-900">Collapse All</button>
 </div>
@@ -117,4 +117,138 @@
 #}
 {% macro entity_link_button(url, text='View Details', classes='mt-3 block w-full text-center bg-gray-50 text-gray-700 py-2 rounded-md hover:bg-gray-100') %}
 <a href="{{ url }}" class="{{ classes }}">{{ text }}</a>
+{% endmacro %}
+
+{#
+  Dropdown Select - Single-select dropdown with consistent styling
+  
+  Parameters:
+  - model (required): Alpine.js x-model binding name
+  - options (required): List of options as [{'value': 'val', 'label': 'Label'}] or simple strings
+  - placeholder (optional): Placeholder text for empty option (default: 'Select...')
+  - classes (optional): Additional CSS classes (default: standard input styling)
+  
+  Usage:
+  {{ dropdown_select('groupBy', [{'value': 'stage', 'label': 'Pipeline Stage'}], 'Group by:') }}
+  {{ dropdown_select('sortBy', ['name', 'date', 'priority']) }}
+#}
+{% macro dropdown_select(model, options, placeholder='Select...', classes='px-3 py-2 border border-gray-300 rounded-md text-sm') %}
+<div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
+    <button type="button" 
+            class="select-custom {{ classes }}" 
+            @click="open = !open"
+            x-init="if (!{{ model }} || {{ model }} === '') { {{ model }} = '{{ options[0].value if options[0] is mapping else options[0] }}' }">
+        {% for option in options %}
+        {% if option is mapping %}
+        <span x-show="{{ model }} === '{{ option.value }}'">{{ option.label }}</span>
+        {% else %}
+        <span x-show="{{ model }} === '{{ option }}'">{{ option|title }}</span>
+        {% endif %}
+        {% endfor %}
+    </button>
+    
+    <div x-show="open" 
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="transform opacity-0 scale-95 -translate-x-1/2"
+         x-transition:enter-end="transform opacity-100 scale-100 -translate-x-1/2"
+         x-transition:leave="transition ease-in duration-75"
+         x-transition:leave-start="transform opacity-100 scale-100 -translate-x-1/2"
+         x-transition:leave-end="transform opacity-0 scale-95 -translate-x-1/2"
+         class="multiselect-dropdown">
+        
+        <div class="multiselect-options">
+            {% for option in options %}
+            <div class="multiselect-option" 
+                 @click="{{ model }} = '{{ option.value if option is mapping else option }}'; open = false">
+                <span>{{ option.label if option is mapping else option|title }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  Dropdown Multi-Select - Multi-select dropdown with search and Select All/Deselect All
+  
+  Parameters:
+  - model (required): Alpine.js x-model binding name (should be an array)
+  - options (required): List of options as [{'value': 'val', 'label': 'Label'}] or simple strings
+  - placeholder (optional): Button text when no items selected (default: 'Select...')
+  - with_search (optional): Include search functionality (default: false)
+  - classes (optional): Additional CSS classes for the button
+  
+  Usage:
+  {{ dropdown_multiselect('priorityFilter', [{'value': 'high', 'label': 'High'}], 'All Priorities') }}
+  {{ dropdown_multiselect('companyFilter', companies, 'All Companies', with_search=true) }}
+#}
+{% macro dropdown_multiselect(model, options, placeholder='Select...', with_search=false, classes='px-3 py-2 border border-gray-300 rounded-md text-sm') %}
+<div class="multiselect-custom" x-data="{ open: false, searchTerm: '' }" @click.away="open = false">
+    <button type="button" 
+            class="multiselect-button {{ classes }}" 
+            @click="open = !open">
+        <!-- Initial fallback text that shows before Alpine.js initializes -->
+        <span class="initial-text">{{ placeholder }}</span>
+        <!-- Alpine.js controlled content -->
+        <span x-show="{{ model }}.length === 0" x-cloak>{{ placeholder }}</span>
+        <span x-show="{{ model }}.length === 1" x-cloak>
+            {% for option in options %}
+            <span x-show="{{ model }}.includes('{{ option.value if option is mapping else option }}')" x-cloak>
+                {{ option.label if option is mapping else option }}
+            </span>
+            {% endfor %}
+        </span>
+        <span x-show="{{ model }}.length > 1" x-text="{{ model }}.length + ' selected'" x-cloak></span>
+    </button>
+    
+    <div x-show="open" 
+         x-cloak
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="transform opacity-0 scale-95 -translate-x-1/2"
+         x-transition:enter-end="transform opacity-100 scale-100 -translate-x-1/2"
+         x-transition:leave="transition ease-in duration-75"
+         x-transition:leave-start="transform opacity-100 scale-100 -translate-x-1/2"
+         x-transition:leave-end="transform opacity-0 scale-95 -translate-x-1/2"
+         class="multiselect-dropdown"
+         style="display: none">
+        
+        <div class="multiselect-header">
+            {% if with_search %}
+            <input type="text" 
+                   x-model="searchTerm" 
+                   class="multiselect-search" 
+                   placeholder="Search..."
+                   @click.stop>
+            {% endif %}
+            <div class="multiselect-controls">
+                <span class="multiselect-control-btn" 
+                      @click="{{ model }} = ['high', 'medium', 'low']">Select All</span>
+                <span class="multiselect-control-btn" 
+                      @click="{{ model }} = []">Deselect All</span>
+            </div>
+        </div>
+        
+        <div class="multiselect-options">
+            {% for option in options %}
+            <div class="multiselect-option" 
+                 {% if with_search %}x-show="!searchTerm || '{{ option.label if option is mapping else option }}'.toLowerCase().includes(searchTerm.toLowerCase())"{% endif %}
+                 @click="
+                    const value = '{{ option.value if option is mapping else option }}';
+                    const index = {{ model }}.indexOf(value);
+                    if (index === -1) {
+                        {{ model }}.push(value);
+                    } else {
+                        {{ model }}.splice(index, 1);
+                    }
+                 ">
+                <input type="checkbox" 
+                       class="multiselect-checkbox"
+                       :checked="{{ model }}.includes('{{ option.value if option is mapping else option }}')"
+                       @click.stop>
+                <span>{{ option.label if option is mapping else option }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endmacro %}

@@ -5,9 +5,11 @@ from app.models import db, Note
 notes_bp = Blueprint('notes', __name__, url_prefix='/api/notes')
 
 
+# Legacy route - DEPRECATED: Use entity-specific routes instead  
+# e.g. POST /api/tasks/123/notes instead of POST /api/notes/
 @notes_bp.route('/', methods=['POST'])
 def create_note():
-    """Create a new note for an entity"""
+    """DEPRECATED: Create a new note for an entity - use POST /<entity>/<id>/notes instead"""
     try:
         data = request.get_json()
         
@@ -87,9 +89,11 @@ def delete_note(note_id):
         return jsonify({'error': str(e)}), 500
 
 
+# Legacy route - DEPRECATED: Use entity-specific routes instead
+# e.g. /api/tasks/123/notes instead of /api/notes/entity/task/123
 @notes_bp.route('/entity/<string:entity_type>/<int:entity_id>')
 def get_entity_notes(entity_type, entity_id):
-    """Get all notes for a specific entity"""
+    """DEPRECATED: Get all notes for a specific entity - use /<entity>/<id>/notes instead"""
     try:
         notes = Note.query.filter_by(
             entity_type=entity_type,

@@ -34,7 +34,7 @@
 
 <!-- Optional Summary Section -->
 {% if summary_data %}
-<div class="mb-8 bg-white rounded-lg shadow-sm border p-6">
+<div class="mb-8 card-padded-lg">
     <h2 class="text-section-title mb-4">{{ summary_data.title }}</h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         {% for stat in summary_data.stats %}

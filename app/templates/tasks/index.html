@@ -2,7 +2,26 @@
 {% from "components/task_card.html" import render_task %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/icons.html" import clipboard_list_icon, bolt_icon, check_circle_icon_solid, fire_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, calendar_days_icon, calendar_icon, chart_bar_icon, question_mark_circle_icon, building_office_icon, user_icon, currency_dollar_icon, chevron_right_icon %}
-{% from "components/ui_elements.html" import expand_collapse_controls %}
+{% from "components/ui_elements.html" import expand_collapse_controls, dropdown_select, dropdown_multiselect %}
+
+{# Task Group Header Macro - DRY implementation of Pattern A #}
+{% macro task_group_header(section_key, title, icon_html, badge_html, border_color, bg_color, hover_color, text_class, with_buttons=true) %}
+<div class="border-b border-{{ border_color }}-200 px-6 py-4 bg-{{ bg_color }}-50 cursor-pointer hover:bg-{{ hover_color }}-100" 
+     @click="expandedSections['{{ section_key }}'] = !expandedSections['{{ section_key }}']">
+    <div class="flex items-center justify-between">
+        <h3 class="{{ text_class }}">
+            <span class="mr-2 transition-transform duration-200" :class="expandedSections['{{ section_key }}'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ icon_html|safe }} {{ title }}{{ badge_html|safe }}
+        </h3>
+        {% if with_buttons %}
+        <div class="flex items-center space-x-2 text-sm text-gray-500" x-show="expandedSections['{{ section_key }}']">
+            <button @click.stop="expandAllTasksInGroup('{{ section_key }}')" class="hover:text-blue-600 transition-colors">Expand All</button>
+            <span>|</span>
+            <button @click.stop="collapseAllTasksInGroup('{{ section_key }}')" class="hover:text-blue-600 transition-colors">Collapse All</button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
 
 {% block title %}Tasks - CRM{% endblock %}
 
@@ -47,8 +66,8 @@
 <div x-data="{ 
     groupBy: 'status',
     showCompleted: false,
-    priorityFilter: '',
-    entityFilter: '',
+    priorityFilter: [],
+    entityFilter: [],
     expandedSections: {
         'todo': true,
         'in-progress': true,
@@ -79,39 +98,37 @@
     <!-- Task Summary now handled by page_layout template -->
 
     <!-- Enhanced Filters and Controls -->
-    <div class="bg-white rounded-lg shadow-sm border p-4">
+    <div class="card-padded">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div class="flex flex-wrap items-center gap-4">
-                <label class="text-label-dark">Group by:</label>
-                <select x-model="groupBy" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
-                    <option value="due_date">Due Date</option>
-                    <option value="priority">Priority</option>
-                    <option value="entity">Related To</option>
-                    <option value="status">Status</option>
-                </select>
+                <label class="flex items-center text-label-dark">Group by:</label>
+                {{ dropdown_select('groupBy', [
+                    {'value': 'due_date', 'label': 'Due Date'},
+                    {'value': 'priority', 'label': 'Priority'},
+                    {'value': 'entity', 'label': 'Related To'},
+                    {'value': 'status', 'label': 'Status'}
+                ]) }}
                 
                 <label class="flex items-center">
                     <input type="checkbox" x-model="showCompleted" class="mr-2">
-                    <span class="text-sm text-gray-700">Show Completed</span>
+                    <span class="text-secondary-dark">Show Completed</span>
                 </label>
 
                 {{ expand_collapse_controls('expandedSections') }}
             </div>
             
             <div class="flex items-center space-x-3">
-                <select x-model="priorityFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
-                    <option value="">All Priorities</option>
-                    <option value="high">High</option>
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                </select>
+                {{ dropdown_multiselect('priorityFilter', [
+                    {'value': 'high', 'label': 'High'},
+                    {'value': 'medium', 'label': 'Medium'},
+                    {'value': 'low', 'label': 'Low'}
+                ], 'All Priorities') }}
                 
-                <select x-model="entityFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
-                    <option value="">All Entities</option>
-                    <option value="company">Companies</option>
-                    <option value="contact">Contacts</option>
-                    <option value="opportunity">Opportunities</option>
-                </select>
+                {{ dropdown_multiselect('entityFilter', [
+                    {'value': 'company', 'label': 'Companies'},
+                    {'value': 'contact', 'label': 'Contacts'},
+                    {'value': 'opportunity', 'label': 'Opportunities'}
+                ], 'All Entities') }}
             </div>
         </div>
     </div>
@@ -119,24 +136,12 @@
     <!-- Tasks by Status -->
     <div x-show="groupBy === 'status'" class="space-y-4">
         <!-- To Do Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border">
-            <div class="border-b border-gray-200 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-status-header cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded" 
-                        @click="expandedSections['todo'] = !expandedSections['todo']">
-                        <span class="mr-2 transition-transform duration-200" :class="expandedSections['todo'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ clipboard_list_icon("w-5 h-5 mr-1") }} To Do<span class="ml-2 badge-standard badge-blue">{{ tasks|selectattr('status', 'equalto', 'todo')|list|length }}</span>
-                    </h3>
-                    <div class="flex items-center space-x-2 text-sm text-gray-500" x-show="expandedSections['todo']">
-                        <button @click.stop="expandAllTasksInGroup('todo')" class="hover:text-blue-600 transition-colors">Expand All</button>
-                        <span>|</span>
-                        <button @click.stop="collapseAllTasksInGroup('todo')" class="hover:text-blue-600 transition-colors">Collapse All</button>
-                    </div>
-                </div>
-            </div>
+        <div class="card">
+            {{ task_group_header('todo', 'To Do', clipboard_list_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue">' + (tasks|selectattr('status', 'equalto', 'todo')|list|length)|string + '</span>', 'blue', 'blue', 'blue', 'text-status-header') }}
             <div class="p-6" x-show="expandedSections['todo']" x-transition>
                 {% for task in tasks %}
                     {% if task.status == 'todo' %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'todo') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -145,24 +150,12 @@
         </div>
 
         <!-- In Progress Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border">
-            <div class="border-b border-gray-200 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-status-header cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded" 
-                        @click="expandedSections['in-progress'] = !expandedSections['in-progress']">
-                        <span class="mr-2 transition-transform duration-200" :class="expandedSections['in-progress'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ bolt_icon("w-5 h-5 mr-1") }} In Progress<span class="ml-2 badge-standard badge-yellow">{{ tasks|selectattr('status', 'equalto', 'in-progress')|list|length }}</span>
-                    </h3>
-                    <div class="flex items-center space-x-2 text-sm text-gray-500" x-show="expandedSections['in-progress']">
-                        <button @click.stop="expandAllTasksInGroup('in-progress')" class="hover:text-blue-600 transition-colors">Expand All</button>
-                        <span>|</span>
-                        <button @click.stop="collapseAllTasksInGroup('in-progress')" class="hover:text-blue-600 transition-colors">Collapse All</button>
-                    </div>
-                </div>
-            </div>
+        <div class="card">
+            {{ task_group_header('in-progress', 'In Progress', bolt_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-yellow">' + (tasks|selectattr('status', 'equalto', 'in-progress')|list|length)|string + '</span>', 'yellow', 'yellow', 'yellow', 'text-status-header') }}
             <div class="p-6" x-show="expandedSections['in-progress']" x-transition>
                 {% for task in tasks %}
                     {% if task.status == 'in-progress' %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'in-progress') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -171,25 +164,13 @@
         </div>
 
         <!-- Completed Tasks (conditional) -->
-        <div x-show="showCompleted" class="bg-white rounded-lg shadow-sm border">
-            <div class="border-b border-gray-200 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-status-header cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded" 
-                        @click="expandedSections['complete'] = !expandedSections['complete']">
-                        <span class="mr-2 transition-transform duration-200" :class="expandedSections['complete'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ check_circle_icon_solid("w-5 h-5 mr-1") }} Completed<span class="ml-2 badge-standard badge-green">{{ tasks|selectattr('status', 'equalto', 'complete')|list|length }}</span>
-                    </h3>
-                    <div class="flex items-center space-x-2 text-sm text-gray-500" x-show="expandedSections['complete']">
-                        <button @click.stop="expandAllTasksInGroup('complete')" class="hover:text-blue-600 transition-colors">Expand All</button>
-                        <span>|</span>
-                        <button @click.stop="collapseAllTasksInGroup('complete')" class="hover:text-blue-600 transition-colors">Collapse All</button>
-                    </div>
-                </div>
-            </div>
+        <div x-show="showCompleted" class="card">
+            {{ task_group_header('complete', 'Completed', check_circle_icon_solid("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-green">' + (tasks|selectattr('status', 'equalto', 'complete')|list|length)|string + '</span>', 'green', 'green', 'green', 'text-status-header') }}
             <div class="p-6" x-show="expandedSections['complete']" x-transition>
                 {% for task in tasks %}
                     {% if task.status == 'complete' %}
                         <div class="opacity-60">
-                            {{ render_task(task) }}
+                            {{ render_task(task, 'complete') }}
                         </div>
                     {% endif %}
                 {% else %}
@@ -202,17 +183,12 @@
     <!-- Tasks by Priority -->
     <div x-show="groupBy === 'priority'" class="space-y-4">
         <!-- High Priority -->
-        <div class="bg-white rounded-lg shadow-sm border border-red-200">
-            <div class="border-b border-red-200 px-6 py-4 bg-red-50 cursor-pointer hover:bg-red-100" 
-                 @click="expandedSections['high'] = !expandedSections['high']">
-                <h3 class="text-status-overdue">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['high'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ fire_icon_solid("w-5 h-5 mr-1") }} High Priority<span class="ml-2 badge-standard badge-red">{{ tasks|selectattr('priority', 'equalto', 'high')|list|length }}</span>
-                </h3>
-            </div>
+        <div class="card-danger">
+            {{ task_group_header('high', 'High Priority', fire_icon_solid("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-red">' + (tasks|selectattr('priority', 'equalto', 'high')|list|length)|string + '</span>', 'red', 'red', 'red', 'text-status-overdue') }}
             <div class="p-6" x-show="expandedSections['high']" x-transition>
                 {% for task in tasks %}
                     {% if task.priority == 'high' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'high') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -221,17 +197,12 @@
         </div>
 
         <!-- Medium Priority -->
-        <div class="bg-white rounded-lg shadow-sm border border-yellow-200">
-            <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50 cursor-pointer hover:bg-yellow-100" 
-                 @click="expandedSections['medium'] = !expandedSections['medium']">
-                <h3 class="text-status-warning">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['medium'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ exclamation_triangle_icon("w-5 h-5 mr-1") }} Medium Priority<span class="ml-2 badge-standard badge-yellow">{{ tasks|selectattr('priority', 'equalto', 'medium')|list|length }}</span>
-                </h3>
-            </div>
+        <div class="card-warning">
+            {{ task_group_header('medium', 'Medium Priority', exclamation_triangle_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-yellow">' + (tasks|selectattr('priority', 'equalto', 'medium')|list|length)|string + '</span>', 'yellow', 'yellow', 'yellow', 'text-status-warning') }}
             <div class="p-6" x-show="expandedSections['medium']" x-transition>
                 {% for task in tasks %}
                     {% if task.priority == 'medium' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'medium') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -240,17 +211,12 @@
         </div>
 
         <!-- Low Priority -->
-        <div class="bg-white rounded-lg shadow-sm border border-green-200">
-            <div class="border-b border-green-200 px-6 py-4 bg-green-50 cursor-pointer hover:bg-green-100" 
-                 @click="expandedSections['low'] = !expandedSections['low']">
-                <h3 class="text-status-success">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['low'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ clipboard_list_icon("w-5 h-5 mr-1") }} Low Priority<span class="ml-2 badge-standard badge-green">{{ tasks|selectattr('priority', 'equalto', 'low')|list|length }}</span>
-                </h3>
-            </div>
+        <div class="card-success">
+            {{ task_group_header('low', 'Low Priority', clipboard_list_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-green">' + (tasks|selectattr('priority', 'equalto', 'low')|list|length)|string + '</span>', 'green', 'green', 'green', 'text-status-success') }}
             <div class="p-6" x-show="expandedSections['low']" x-transition>
                 {% for task in tasks %}
                     {% if task.priority == 'low' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'low') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -262,19 +228,14 @@
     <!-- Tasks by Due Date -->
     <div x-show="groupBy === 'due_date'" class="space-y-4">
         <!-- Overdue -->
-        <div class="bg-white rounded-lg shadow-sm border border-red-200">
-            <div class="border-b border-red-200 px-6 py-4 bg-red-50 cursor-pointer hover:bg-red-100" 
-                 @click="expandedSections['overdue'] = !expandedSections['overdue']">
-                <h3 class="text-status-overdue">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['overdue'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ exclamation_circle_icon_solid("w-5 h-5 mr-1") }} Overdue<span class="ml-2 badge-standard badge-red">{{ tasks|selectattr('is_overdue', 'equalto', True)|list|length }}</span>
-                </h3>
-            </div>
+        <div class="card-danger">
+            {{ task_group_header('overdue', 'Overdue', exclamation_circle_icon_solid("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-red">' + (tasks|selectattr('is_overdue', 'equalto', True)|list|length)|string + '</span>', 'red', 'red', 'red', 'text-status-overdue') }}
             <div class="p-6" x-show="expandedSections['overdue']" x-transition>
                 {% set overdue_task_list = [] %}
                 {% for task in tasks %}
                     {% if task.is_overdue and (task.status != 'complete' or showCompleted) %}
                         {% set _ = overdue_task_list.append(task) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'overdue') }}
                     {% endif %}
                 {% endfor %}
                 {% if overdue_task_list|length == 0 %}
@@ -284,19 +245,14 @@
         </div>
 
         <!-- Today -->
-        <div class="bg-white rounded-lg shadow-sm border border-orange-200">
-            <div class="border-b border-orange-200 px-6 py-4 bg-orange-50 cursor-pointer hover:bg-orange-100" 
-                 @click="expandedSections['today'] = !expandedSections['today']">
-                <h3 class="text-status-warning">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['today'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ calendar_days_icon("w-5 h-5 mr-1") }} Due Today<span class="ml-2 badge-standard badge-orange">{% set today_tasks = tasks|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list %}{{ today_tasks|length }}</span>
-                </h3>
-            </div>
+        <div class="card-orange">
+            {{ task_group_header('today', 'Due Today', calendar_days_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-orange">' + (tasks|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list|length)|string + '</span>', 'orange', 'orange', 'orange', 'text-status-warning') }}
             <div class="p-6" x-show="expandedSections['today']" x-transition>
                 {% set today_task_list = [] %}
                 {% for task in tasks %}
                     {% if task.due_date == today and task.status != 'complete' %}
                         {% set _ = today_task_list.append(task) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'today') }}
                     {% endif %}
                 {% endfor %}
                 {% if today_task_list|length == 0 %}
@@ -306,19 +262,14 @@
         </div>
 
         <!-- This Week -->
-        <div class="bg-white rounded-lg shadow-sm border border-blue-200">
-            <div class="border-b border-blue-200 px-6 py-4 bg-blue-50 cursor-pointer hover:bg-blue-100" 
-                 @click="expandedSections['this_week'] = !expandedSections['this_week']">
-                <h3 class="text-status-info">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['this_week'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ calendar_icon("w-5 h-5 mr-1") }} This Week<span class="ml-2 badge-standard badge-blue">{% set this_week_tasks = [] %}{% for task in tasks %}{% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}{% set _ = this_week_tasks.append(task) %}{% endif %}{% endfor %}{{ this_week_tasks|length }}</span>
-                </h3>
-            </div>
+        <div class="card-info">
+            {% set this_week_tasks = [] %}{% for task in tasks %}{% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}{% set _ = this_week_tasks.append(task) %}{% endif %}{% endfor %}{{ task_group_header('this_week', 'This Week', calendar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue">' + (this_week_tasks|length)|string + '</span>', 'blue', 'blue', 'blue', 'text-status-info') }}
             <div class="p-6" x-show="expandedSections['this_week']" x-transition>
                 {% set this_week_task_list = [] %}
                 {% for task in tasks %}
                     {% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}
                         {% set _ = this_week_task_list.append(task) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'this_week') }}
                     {% endif %}
                 {% endfor %}
                 {% if this_week_task_list|length == 0 %}
@@ -328,19 +279,14 @@
         </div>
 
         <!-- Later -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
-                 @click="expandedSections['later'] = !expandedSections['later']">
-                <h3 class="text-status-neutral">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['later'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ chart_bar_icon("w-5 h-5 mr-1") }} Later<span class="ml-2 badge-standard badge-gray">{% set later_tasks = [] %}{% for task in tasks %}{% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}{% set _ = later_tasks.append(task) %}{% endif %}{% endfor %}{{ later_tasks|length }}</span>
-                </h3>
-            </div>
+        <div class="card-neutral">
+            {% set later_tasks = [] %}{% for task in tasks %}{% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}{% set _ = later_tasks.append(task) %}{% endif %}{% endfor %}{{ task_group_header('later', 'Later', chart_bar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray">' + (later_tasks|length)|string + '</span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
             <div class="p-6" x-show="expandedSections['later']" x-transition>
                 {% set later_task_list = [] %}
                 {% for task in tasks %}
                     {% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}
                         {% set _ = later_task_list.append(task) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'later') }}
                     {% endif %}
                 {% endfor %}
                 {% if later_task_list|length == 0 %}
@@ -350,19 +296,14 @@
         </div>
 
         <!-- No Due Date -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
-                 @click="expandedSections['no_date'] = !expandedSections['no_date']">
-                <h3 class="text-status-neutral">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['no_date'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ question_mark_circle_icon("w-5 h-5 mr-1") }} No Due Date<span class="ml-2 badge-standard badge-gray">{{ tasks|selectattr('due_date', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('due_date', 'none')|list|length }}</span>
-                </h3>
-            </div>
+        <div class="card-neutral">
+            {{ task_group_header('no_date', 'No Due Date', question_mark_circle_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray">' + (tasks|selectattr('due_date', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('due_date', 'none')|list|length)|string + '</span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
             <div class="p-6" x-show="expandedSections['no_date']" x-transition>
                 {% set no_date_task_list = [] %}
                 {% for task in tasks %}
                     {% if not task.due_date and (task.status != 'complete' or showCompleted) %}
                         {% set _ = no_date_task_list.append(task) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'no_date') }}
                     {% endif %}
                 {% endfor %}
                 {% if no_date_task_list|length == 0 %}
@@ -375,17 +316,12 @@
     <!-- Tasks by Related To -->
     <div x-show="groupBy === 'entity'" class="space-y-4">
         <!-- Company Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border border-blue-200">
-            <div class="border-b border-blue-200 px-6 py-4 bg-blue-50 cursor-pointer hover:bg-blue-100" 
-                 @click="expandedSections['company'] = !expandedSections['company']">
-                <h3 class="text-status-info">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['company'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ building_office_icon("w-5 h-5 mr-1") }} Company Tasks<span class="ml-2 badge-standard badge-blue">{{ tasks|selectattr('entity_type', 'equalto', 'company')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'company')|list|length }}</span>
-                </h3>
-            </div>
+        <div class="card-info">
+            {{ task_group_header('company', 'Company Tasks', building_office_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue">' + (tasks|selectattr('entity_type', 'equalto', 'company')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'company')|list|length)|string + '</span>', 'blue', 'blue', 'blue', 'text-status-info') }}
             <div class="p-6" x-show="expandedSections['company']" x-transition>
                 {% for task in tasks %}
                     {% if task.entity_type == 'company' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'company') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -394,17 +330,12 @@
         </div>
 
         <!-- Contact Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border border-green-200">
-            <div class="border-b border-green-200 px-6 py-4 bg-green-50 cursor-pointer hover:bg-green-100" 
-                 @click="expandedSections['contact'] = !expandedSections['contact']">
-                <h3 class="text-status-success">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['contact'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ user_icon("w-5 h-5 mr-1") }} Contact Tasks<span class="ml-2 badge-standard badge-green">{{ tasks|selectattr('entity_type', 'equalto', 'contact')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'contact')|list|length }}</span>
-                </h3>
-            </div>
+        <div class="card-success">
+            {{ task_group_header('contact', 'Contact Tasks', user_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-green">' + (tasks|selectattr('entity_type', 'equalto', 'contact')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'contact')|list|length)|string + '</span>', 'green', 'green', 'green', 'text-status-success') }}
             <div class="p-6" x-show="expandedSections['contact']" x-transition>
                 {% for task in tasks %}
                     {% if task.entity_type == 'contact' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'contact') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -413,17 +344,12 @@
         </div>
 
         <!-- Opportunity Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border border-yellow-200">
-            <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50 cursor-pointer hover:bg-yellow-100" 
-                 @click="expandedSections['opportunity'] = !expandedSections['opportunity']">
-                <h3 class="text-status-warning">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['opportunity'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ currency_dollar_icon("w-5 h-5 mr-1") }} Opportunity Tasks<span class="ml-2 badge-standard badge-yellow">{{ tasks|selectattr('entity_type', 'equalto', 'opportunity')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'opportunity')|list|length }}</span>
-                </h3>
-            </div>
+        <div class="card-warning">
+            {{ task_group_header('opportunity', 'Opportunity Tasks', currency_dollar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-yellow">' + (tasks|selectattr('entity_type', 'equalto', 'opportunity')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'opportunity')|list|length)|string + '</span>', 'yellow', 'yellow', 'yellow', 'text-status-warning') }}
             <div class="p-6" x-show="expandedSections['opportunity']" x-transition>
                 {% for task in tasks %}
                     {% if task.entity_type == 'opportunity' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'opportunity') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -432,17 +358,12 @@
         </div>
 
         <!-- Unrelated Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
-                 @click="expandedSections['unrelated'] = !expandedSections['unrelated']">
-                <h3 class="text-status-neutral">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['unrelated'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ clipboard_list_icon("w-5 h-5 mr-1") }} General Tasks<span class="ml-2 badge-standard badge-gray">{{ tasks|selectattr('entity_type', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'none')|list|length }}</span>
-                </h3>
-            </div>
+        <div class="card-neutral">
+            {{ task_group_header('unrelated', 'General Tasks', clipboard_list_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray">' + (tasks|selectattr('entity_type', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'none')|list|length)|string + '</span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
             <div class="p-6" x-show="expandedSections['unrelated']" x-transition>
                 {% for task in tasks %}
                     {% if not task.entity_type and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'unrelated') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>

@@ -49,3 +49,4 @@ def new():
                          companies=companies, 
                          contacts=contacts, 
                          opportunities=opportunities)
+
