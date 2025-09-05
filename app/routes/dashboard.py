@@ -1,31 +1,72 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from flask import Blueprint, render_template, request, jsonify
-from app.models import db, Task, Company, Contact, Opportunity
+from sqlalchemy import func
+from app.models import db, Task, Company, Contact, Opportunity, Note
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
 
 @dashboard_bp.route('/')
 def index():
-    tasks = Task.query.filter(Task.status != 'complete').order_by(Task.due_date.asc()).all()
-    
-    # Group tasks by sections
     today = date.today()
     
-    sections = {
-        'overdue': [t for t in tasks if t.is_overdue],
-        'today': [t for t in tasks if t.due_date == today and not t.is_overdue],
-        'this_week': [t for t in tasks if t.due_date and t.due_date > today and 
-                     (t.due_date - today).days <= 7],
-        'next_week': [t for t in tasks if t.due_date and 
-                     (t.due_date - today).days > 7 and (t.due_date - today).days <= 14],
+    # Quick stats for overview
+    task_stats = {
+        'overdue': Task.query.filter(Task.due_date < today, Task.status != 'complete').count(),
+        'today': Task.query.filter(Task.due_date == today, Task.status != 'complete').count(),
+        'this_week': Task.query.filter(
+            Task.due_date > today,
+            Task.due_date <= today + timedelta(days=7),
+            Task.status != 'complete'
+        ).count(),
         'completed_today': Task.query.filter(
             Task.status == 'complete',
             Task.completed_at >= datetime.combine(today, datetime.min.time())
-        ).all()
+        ).count()
     }
     
-    return render_template('dashboard/index.html', sections=sections)
+    # Pipeline overview
+    opportunities = Opportunity.query.all()
+    pipeline_stats = {
+        'prospect': sum(float(opp.value or 0) for opp in opportunities if opp.stage == 'prospect'),
+        'qualified': sum(float(opp.value or 0) for opp in opportunities if opp.stage == 'qualified'),
+        'proposal': sum(float(opp.value or 0) for opp in opportunities if opp.stage == 'proposal'),
+        'negotiation': sum(float(opp.value or 0) for opp in opportunities if opp.stage == 'negotiation'),
+        'total_value': sum(float(opp.value or 0) for opp in opportunities),
+        'total_count': len(opportunities)
+    }
+    
+    # Recent activity (last 5 items)
+    recent_tasks = Task.query.order_by(Task.created_at.desc()).limit(5).all()
+    recent_notes = Note.query.order_by(Note.created_at.desc()).limit(3).all()
+    recent_opportunities = Opportunity.query.order_by(Opportunity.created_at.desc()).limit(3).all()
+    
+    # Key metrics
+    metrics = {
+        'total_companies': Company.query.count(),
+        'total_contacts': Contact.query.count(),
+        'total_opportunities': Opportunity.query.count(),
+        'total_tasks': Task.query.count()
+    }
+    
+    # Critical alerts
+    overdue_tasks = Task.query.filter(Task.due_date < today, Task.status != 'complete').limit(5).all()
+    closing_soon = Opportunity.query.filter(
+        Opportunity.expected_close_date <= today + timedelta(days=7),
+        Opportunity.expected_close_date >= today,
+        Opportunity.stage.in_(['proposal', 'negotiation'])
+    ).limit(5).all()
+    
+    return render_template('dashboard/index.html', 
+                         task_stats=task_stats,
+                         pipeline_stats=pipeline_stats,
+                         recent_tasks=recent_tasks,
+                         recent_notes=recent_notes,
+                         recent_opportunities=recent_opportunities,
+                         metrics=metrics,
+                         overdue_tasks=overdue_tasks,
+                         closing_soon=closing_soon,
+                         today=today)
 
 
 @dashboard_bp.route('/tasks/<int:task_id>/complete', methods=['POST'])

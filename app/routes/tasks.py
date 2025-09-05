@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for
 from app.models import db, Task, Company, Contact, Opportunity
 
@@ -8,7 +8,8 @@ tasks_bp = Blueprint('tasks', __name__)
 @tasks_bp.route('/')
 def index():
     tasks = Task.query.order_by(Task.due_date.asc()).all()
-    return render_template('tasks/index.html', tasks=tasks)
+    today = date.today()
+    return render_template('tasks/index.html', tasks=tasks, today=today)
 
 
 @tasks_bp.route('/<int:task_id>')
