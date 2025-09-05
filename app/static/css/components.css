@@ -311,8 +311,8 @@
 .multiselect-dropdown {
     position: absolute;
     top: 100%;
-    left: 0;
-    right: 0;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 50;
     background-color: white;
     border: 1px solid #d1d5db;
@@ -321,6 +321,8 @@
     max-height: 16rem;
     overflow-y: auto;
     margin-top: 0.25rem;
+    min-width: 100%;
+    width: max-content;
 }
 
 .multiselect-header {
@@ -375,6 +377,7 @@
     cursor: pointer;
     border-bottom: 1px solid #f3f4f6;
     transition: background-color 0.15s ease-in-out;
+    white-space: nowrap;
 }
 
 .multiselect-option:hover {
