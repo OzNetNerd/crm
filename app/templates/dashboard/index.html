@@ -1,6 +1,7 @@
 {% extends "base/layout.html" %}
 {% from "components/icons.html" import building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon %}
 {% from "components/metric_card.html" import metric_card, stat_card, overview_section %}
+{% from "components/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
 
 {% block title %}Dashboard - CRM{% endblock %}
 
@@ -67,48 +68,30 @@
     <div class="space-y-6">
         <!-- Overdue Tasks Alert -->
         {% if overdue_tasks %}
-        <div class="bg-red-50 border border-red-200 rounded-lg p-6">
-            <a href="/tasks/" class="text-lg font-semibold text-red-800 mb-4 hover:text-red-900 hover:underline transition-all duration-200 flex items-center gap-2">
-                {{ exclamation_circle_icon_solid("w-5 h-5 text-red-600") }} Overdue Tasks
-            </a>
-            <div class="space-y-3">
-                {% for task in overdue_tasks %}
-                <div class="flex items-center justify-between bg-white p-3 rounded border">
-                    <div>
-                        <div class="text-sm font-medium text-gray-900">{{ task.description }}</div>
-                        <div class="text-xs text-red-600 mt-1">
-                            Due: {{ task.due_date.strftime('%d/%m/%y') }}{% if task.is_overdue %}{% set days_overdue = (task.due_date.today() - task.due_date).days %} • -{{ days_overdue }} day{{ 's' if days_overdue != 1 else '' }} ago{% endif %}{% if task.opportunity_value %} • ${{ "{:,.0f}".format(task.opportunity_value) }}{% elif task.entity_name %} • {{ task.entity_name }}{% endif %}
-                        </div>
-                    </div>
-                    <a href="/tasks/" class="text-red-600 hover:text-red-800 text-sm font-medium">
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% call list_section('Overdue Tasks', href='/tasks/', theme_color='red', icon_macro=exclamation_circle_icon_solid('w-5 h-5 text-red-600')) %}
+            {% for task in overdue_tasks %}
+                {{ alert_list_item(
+                    title=task.description,
+                    warning_text='Due: ' + task.due_date.strftime('%d/%m/%y') + ((' • -' + ((task.due_date.today() - task.due_date).days|string) + ' day' + ('s' if (task.due_date.today() - task.due_date).days != 1 else '') + ' ago') if task.is_overdue else '') + ((' • $' + "{:,.0f}".format(task.opportunity_value)) if task.opportunity_value else ((' • ' + task.entity_name) if task.entity_name else '')),
+                    warning_color='red',
+                    action_href='/tasks/'
+                ) }}
+            {% endfor %}
+        {% endcall %}
         {% endif %}
 
         <!-- Closing Soon Opportunities -->
         {% if closing_soon %}
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-            <a href="/opportunities/" class="text-lg font-semibold text-yellow-800 mb-4 hover:text-yellow-900 hover:underline transition-all duration-200 flex items-center gap-2">
-                {{ calendar_days_icon("w-5 h-5 text-yellow-600") }} Closing Soon
-            </a>
-            <div class="space-y-3">
-                {% for opp in closing_soon %}
-                <div class="flex items-center justify-between bg-white p-3 rounded border">
-                    <div>
-                        <div class="text-sm font-medium text-gray-900">{{ opp.name }}</div>
-                        <div class="text-xs text-yellow-600 mt-1">
-                            ${{ "{:,.0f}".format(opp.value or 0) }} • {{ opp.expected_close_date.strftime('%d/%m/%y') }}
-                        </div>
-                    </div>
-                    <a href="/opportunities/" class="text-yellow-600 hover:text-yellow-800 text-sm font-medium">
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% call list_section('Closing Soon', href='/opportunities/', theme_color='yellow', icon_macro=calendar_days_icon('w-5 h-5 text-yellow-600')) %}
+            {% for opp in closing_soon %}
+                {{ alert_list_item(
+                    title=opp.name,
+                    warning_text='$' + "{:,.0f}".format(opp.value or 0) + ' • ' + opp.expected_close_date.strftime('%d/%m/%y'),
+                    warning_color='yellow',
+                    action_href='/opportunities/'
+                ) }}
+            {% endfor %}
+        {% endcall %}
         {% endif %}
 
         <!-- Quick Actions -->
@@ -134,72 +117,39 @@
     <!-- Recent Activity -->
     <div class="space-y-6">
         <!-- Recent Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-            <a href="/tasks/" class="text-lg font-semibold text-gray-900 mb-4 hover:text-gray-700 hover:underline transition-all duration-200 block">Recent Tasks</a>
-            <div class="space-y-3">
-                {% for task in recent_tasks %}
-                <div class="flex items-center justify-between bg-white p-3 rounded border">
-                    <div>
-                        <div class="text-sm font-medium text-gray-900">{{ task.description }}</div>
-                        <div class="text-xs mt-1 {{ 'text-red-600' if task.priority == 'high' else
-                                              'text-yellow-600' if task.priority == 'medium' else
-                                              'text-green-600' }}">
-                            {% if task.due_date %}Due: {{ task.due_date.strftime('%d/%m/%y') }}{% if task.is_overdue %}{% set days_overdue = (task.due_date.today() - task.due_date).days %} • -{{ days_overdue }} day{{ 's' if days_overdue != 1 else '' }} ago{% elif task.due_date > task.due_date.today() %}{% set days_to_go = (task.due_date - task.due_date.today()).days %} • {{ days_to_go }} day{{ 's' if days_to_go != 1 else '' }} to go{% endif %}{% if task.opportunity_value %} • ${{ "{:,.0f}".format(task.opportunity_value) }}{% elif task.entity_name %} • {{ task.entity_name }}{% endif %}{% else %}No due date{% endif %}
-                        </div>
-                    </div>
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                        {{ 'bg-red-100 text-red-800' if task.priority == 'high' else
-                           'bg-yellow-100 text-yellow-800' if task.priority == 'medium' else
-                           'bg-green-100 text-green-800' }}">
-                        {{ task.priority|title }}
-                    </span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% call list_section('Recent Tasks', href='/tasks/') %}
+            {% for task in recent_tasks %}
+                {{ simple_list_item(
+                    title=task.description,
+                    subtitle=(('Due: ' + task.due_date.strftime('%d/%m/%y') + ((' • -' + ((task.due_date.today() - task.due_date).days|string) + ' day' + ('s' if (task.due_date.today() - task.due_date).days != 1 else '') + ' ago') if task.is_overdue else ((' • ' + ((task.due_date - task.due_date.today()).days|string) + ' day' + ('s' if (task.due_date - task.due_date.today()).days != 1 else '') + ' to go') if task.due_date > task.due_date.today() else '')) + ((' • $' + "{:,.0f}".format(task.opportunity_value)) if task.opportunity_value else ((' • ' + task.entity_name) if task.entity_name else ''))) if task.due_date else 'No due date'),
+                    badge_text=task.priority|title,
+                    badge_color='red' if task.priority == 'high' else 'yellow' if task.priority == 'medium' else 'green'
+                ) }}
+            {% endfor %}
+        {% endcall %}
 
         <!-- Recent Opportunities -->
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-            <a href="/opportunities/" class="text-lg font-semibold text-gray-900 mb-4 hover:text-gray-700 hover:underline transition-all duration-200 block">Recent Opportunities</a>
-            <div class="space-y-3">
-                {% for opp in recent_opportunities %}
-                <div class="flex items-center justify-between bg-white p-3 rounded border">
-                    <div>
-                        <p class="text-sm font-medium text-gray-900">{{ opp.name }}</p>
-                        <p class="text-xs text-gray-500 mt-1">
-                            {{ opp.company.name }} • ${{ "{:,.0f}".format(opp.value or 0) }}
-                        </p>
-                    </div>
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                        {{ 'bg-green-100 text-green-800' if opp.stage == 'prospect' else
-                           'bg-blue-100 text-blue-800' if opp.stage == 'qualified' else
-                           'bg-yellow-100 text-yellow-800' if opp.stage == 'proposal' else
-                           'bg-orange-100 text-orange-800' if opp.stage == 'negotiation' else
-                           'bg-gray-100 text-gray-800' }}">
-                        {{ opp.stage|title }}
-                    </span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% call list_section('Recent Opportunities', href='/opportunities/') %}
+            {% for opp in recent_opportunities %}
+                {{ simple_list_item(
+                    title=opp.name,
+                    subtitle=opp.company.name + ' • $' + "{:,.0f}".format(opp.value or 0),
+                    badge_text=opp.stage|title,
+                    badge_color='green' if opp.stage == 'prospect' else 'blue' if opp.stage == 'qualified' else 'yellow' if opp.stage == 'proposal' else 'orange' if opp.stage == 'negotiation' else 'gray'
+                ) }}
+            {% endfor %}
+        {% endcall %}
 
         <!-- Recent Notes -->
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Notes</h3>
-            <div class="space-y-3">
-                {% for note in recent_notes %}
-                <div class="bg-white p-3 rounded border">
-                    <div class="border-l-4 border-blue-500 pl-4">
-                        <p class="text-sm font-medium text-gray-900">{{ note.content }}</p>
-                        <p class="text-xs text-gray-500 mt-1">
-                            {{ note.created_at.strftime('%m/%d %H:%M') }}
-                            {% if note.entity_name %} • {{ note.entity_name }}{% endif %}
-                        </p>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% call list_section('Recent Notes') %}
+            {% for note in recent_notes %}
+                {{ note_list_item(
+                    content=note.content,
+                    metadata=note.created_at.strftime('%m/%d %H:%M') + ((' • ' + note.entity_name) if note.entity_name else ''),
+                    accent_color='blue'
+                ) }}
+            {% endfor %}
+        {% endcall %}
     </div>
 </div>
 {% endblock %}
