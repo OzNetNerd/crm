@@ -120,3 +120,75 @@
 {% macro simple_stat_card(label, value, color='gray') %}
   {{ stat_card(label, value, color) }}
 {% endmacro %}
+
+{# 
+  Overview Section Macro - Flexible multi-stat overview with header
+  
+  Parameters:
+  - title (required): Section heading (e.g., "Sales Pipeline")
+  - summary_text (optional): Right-aligned summary info 
+  - stats (required): List of {value, value_color, label} objects (any length)
+  - additional_classes (optional): Extra container classes
+  
+  Example:
+  {% set my_stats = [
+    {value: '$50K', value_color: 'green', label: 'Prospect'},
+    {value: '$75K', value_color: 'blue', label: 'Qualified'}
+  ] %}
+  {{ overview_section('Sales Pipeline', 'Total: $125K', my_stats) }}
+#}
+{% macro overview_section(title, summary_text=None, stats=[], additional_classes='mb-8') %}
+  {# Dynamic grid sizing based on stats count #}
+  {% set stats_count = stats|length %}
+  {% if stats_count <= 2 %}
+    {% set grid_classes = 'grid-cols-' + stats_count|string %}
+  {% elif stats_count == 3 %}
+    {% set grid_classes = 'grid-cols-3' %}
+  {% elif stats_count == 4 %}
+    {% set grid_classes = 'grid-cols-2 md:grid-cols-4' %}
+  {% elif stats_count == 5 %}
+    {% set grid_classes = 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5' %}
+  {% else %}
+    {% set grid_classes = 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6' %}
+  {% endif %}
+  
+  {# Map value_color to text classes (reuse existing color system) #}
+  {% set text_colors = {
+    'red': 'text-red-600',
+    'orange': 'text-orange-600', 
+    'blue': 'text-blue-600',
+    'green': 'text-green-600',
+    'purple': 'text-purple-600',
+    'yellow': 'text-yellow-600',
+    'gray': 'text-gray-600'
+  } %}
+  
+  <div class="bg-white rounded-lg shadow-sm border p-6 {{ additional_classes }}">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-lg font-semibold text-gray-900">{{ title }}</h2>
+      {% if summary_text %}
+        <div class="text-sm text-gray-500">{{ summary_text }}</div>
+      {% endif %}
+    </div>
+    <div class="grid {{ grid_classes }} gap-4">
+      {% for stat in stats %}
+        {% set color_class = text_colors.get(stat.value_color, 'text-gray-600') %}
+        <div class="text-center">
+          <div class="text-2xl font-bold {{ color_class }}">{{ stat.value }}</div>
+          <div class="text-sm text-gray-500">{{ stat.label }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endmacro %}
+
+{#
+  Simple Overview Section - Simplified version for basic use cases
+  
+  Parameters:
+  - title (required): Section heading
+  - stats (required): List of {value, value_color, label} objects
+#}
+{% macro simple_overview_section(title, stats) %}
+  {{ overview_section(title, None, stats) }}
+{% endmacro %}

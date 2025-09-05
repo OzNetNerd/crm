@@ -1,6 +1,6 @@
 {% extends "base/layout.html" %}
 {% from "components/icons.html" import building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon %}
-{% from "components/metric_card.html" import metric_card, stat_card %}
+{% from "components/metric_card.html" import metric_card, stat_card, overview_section %}
 
 {% block title %}Dashboard - CRM{% endblock %}
 
@@ -33,40 +33,34 @@
 </div>
 
 <!-- Pipeline Overview -->
-<div class="bg-white rounded-lg shadow-sm border p-6 mb-8">
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-lg font-semibold text-gray-900">Sales Pipeline</h2>
-        <div class="text-sm text-gray-500">
-            Total: ${{ "{:,.0f}".format(pipeline_stats.total_value) }} ({{ pipeline_stats.total_count }} opportunities)
-        </div>
-    </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="text-center">
-            <div class="text-2xl font-bold text-green-600">
-                ${{ "{:,.0f}".format(pipeline_stats.prospect) }}
-            </div>
-            <div class="text-sm text-gray-500">Prospect</div>
-        </div>
-        <div class="text-center">
-            <div class="text-2xl font-bold text-blue-600">
-                ${{ "{:,.0f}".format(pipeline_stats.qualified) }}
-            </div>
-            <div class="text-sm text-gray-500">Qualified</div>
-        </div>
-        <div class="text-center">
-            <div class="text-2xl font-bold text-yellow-600">
-                ${{ "{:,.0f}".format(pipeline_stats.proposal) }}
-            </div>
-            <div class="text-sm text-gray-500">Proposal</div>
-        </div>
-        <div class="text-center">
-            <div class="text-2xl font-bold text-orange-600">
-                ${{ "{:,.0f}".format(pipeline_stats.negotiation) }}
-            </div>
-            <div class="text-sm text-gray-500">Negotiation</div>
-        </div>
-    </div>
-</div>
+{% set pipeline_stats_list = [
+  {
+    value: '$' + "{:,.0f}".format(pipeline_stats.prospect), 
+    value_color: 'green', 
+    label: 'Prospect'
+  },
+  {
+    value: '$' + "{:,.0f}".format(pipeline_stats.qualified), 
+    value_color: 'blue', 
+    label: 'Qualified'
+  },
+  {
+    value: '$' + "{:,.0f}".format(pipeline_stats.proposal), 
+    value_color: 'yellow', 
+    label: 'Proposal'
+  },
+  {
+    value: '$' + "{:,.0f}".format(pipeline_stats.negotiation), 
+    value_color: 'orange', 
+    label: 'Negotiation'
+  }
+] %}
+
+{{ overview_section(
+  'Sales Pipeline', 
+  'Total: $' + "{:,.0f}".format(pipeline_stats.total_value) + ' (' + pipeline_stats.total_count|string + ' opportunities)',
+  pipeline_stats_list
+) }}
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
     <!-- Critical Alerts -->
