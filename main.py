@@ -9,6 +9,7 @@ from app.routes.tasks import tasks_bp
 from app.routes.tasks_api import tasks_api_bp
 from app.routes.search import search_bp
 from app.routes.api import api_bp
+from app.routes.api_notes import api_notes_bp
 from app.routes.notes import notes_bp
 
 
@@ -54,13 +55,14 @@ def create_app():
     db.init_app(app)
 
     app.register_blueprint(dashboard_bp, url_prefix="/")
-    app.register_blueprint(companies_bp, url_prefix="/api/companies")
-    app.register_blueprint(contacts_bp, url_prefix="/api/contacts")
-    app.register_blueprint(opportunities_bp, url_prefix="/api/opportunities")
+    app.register_blueprint(companies_bp, url_prefix="/companies")
+    app.register_blueprint(contacts_bp, url_prefix="/contacts")
+    app.register_blueprint(opportunities_bp, url_prefix="/opportunities")
     app.register_blueprint(tasks_bp, url_prefix="/tasks")
     app.register_blueprint(tasks_api_bp, url_prefix="/api/tasks")
     app.register_blueprint(search_bp, url_prefix="/")
     app.register_blueprint(api_bp)
+    app.register_blueprint(api_notes_bp)
     app.register_blueprint(notes_bp)
 
     with app.app_context():
