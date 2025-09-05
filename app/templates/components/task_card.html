@@ -29,8 +29,8 @@
      :class="{ 'ring-2 ring-blue-200 bg-blue-50': isEditing }">
     
     <!-- Task description with badges and reschedule buttons -->
-    <div class="flex items-start justify-between mb-3">
-        <div class="flex items-start space-x-2 flex-grow">
+    <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center space-x-2 flex-grow">
             {% set priority_color = 'red' if task.priority == 'high' else
                                   'yellow' if task.priority == 'medium' else
                                   'green' %}
