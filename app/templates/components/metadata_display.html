@@ -70,6 +70,13 @@
         {% set _ = metadata_parts.append(entity_data.name) %}
     {% endif %}
     
+    {# Opportunity Stage #}
+    {% if entity_data.opportunity_stage %}
+        {% set _ = metadata_parts.append(entity_data.opportunity_stage|title) %}
+    {% elif entity_data.stage and options.get('entity_type') == 'opportunity' %}
+        {% set _ = metadata_parts.append(entity_data.stage|title) %}
+    {% endif %}
+    
     {# Opportunity Size #}
     {% if entity_data.value %}
         {% set _ = metadata_parts.append('$' + "{:,.0f}".format(entity_data.value)) %}
@@ -100,7 +107,17 @@
         {% set _ = metadata_parts.append(age_display(entity_data.deal_age)) %}
     {% endif %}
     
-    <div class="text-metadata">
+    {# Details link #}
+    {% if options.get('include_details_link') and entity_data.id %}
+        {% set details_onclick = options.get('details_onclick', 'openTaskDetailModal(' + entity_data.id|string + ')') %}
+        {% set _ = metadata_parts.append('<span class="text-link-interactive" onclick="event.stopPropagation(); ' + details_onclick + '">Details</span>') %}
+    {% endif %}
+    
+    {% if options.get('return_string') %}
         {{ build_metadata_parts(metadata_parts) }}
-    </div>
+    {% else %}
+        <div class="text-metadata">
+            {{ build_metadata_parts(metadata_parts) }}
+        </div>
+    {% endif %}
 {% endmacro %}

@@ -4,35 +4,15 @@
 {% from "components/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
 {% from "components/page_template.html" import simple_page_header %}
 {% from "components/quick_actions.html" import default_dashboard_actions %}
+{% from "components/metadata_display.html" import standard_card_metadata %}
 
-{# Macro for consistent task metadata formatting #}
+{# Use standard metadata macro for consistency #}
 {% macro task_metadata(task) %}
-    {% set parts = [] %}
-    {# Due date and days ago/to go #}
-    {% if task.due_date %}
-        {% set due_part = 'Due: ' + task.due_date.strftime('%d/%m/%y') %}
-        {% if task.is_overdue %}
-            {% set days_diff = (task.due_date.today() - task.due_date).days %}
-            {% set due_part = due_part + ' • ' + days_diff|string + ' day' + ('s' if days_diff != 1 else '') + ' ago' %}
-        {% elif task.due_date > task.due_date.today() %}
-            {% set days_diff = (task.due_date - task.due_date.today()).days %}
-            {% set due_part = due_part + ' • ' + days_diff|string + ' day' + ('s' if days_diff != 1 else '') + ' to go' %}
-        {% endif %}
-        {% set _ = parts.append(due_part) %}
-    {% endif %}
-    {# Company name #}
-    {% if task.company_name %}
-        {% set _ = parts.append(task.company_name) %}
-    {% endif %}
-    {# Opportunity name #}
-    {% if task.opportunity_name %}
-        {% set _ = parts.append(task.opportunity_name) %}
-    {% endif %}
-    {# Person's name (contacts only) #}
-    {% if task.entity_name and task.entity_type == 'contact' %}
-        {% set _ = parts.append(task.entity_name) %}
-    {% endif %}
-    {{ parts|join(' • ') if parts else 'No due date' }}
+    {{ standard_card_metadata(task, {
+        'include_date': true,
+        'today': task.due_date.today() if task.due_date else none,
+        'return_string': true
+    }) or 'No due date' }}
 {% endmacro %}
 
 {% block title %}Dashboard - CRM{% endblock %}
