@@ -2,13 +2,19 @@
 {% from "components/icons.html" import building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon %}
 {% from "components/metric_card.html" import metric_card, stat_card, overview_section %}
 {% from "components/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
+{% from "components/quick_actions.html" import default_dashboard_actions %}
 
 {% block title %}Dashboard - CRM{% endblock %}
 
 {% block content %}
-<div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-    <p class="text-gray-600">Overview of your CRM performance and activity</p>
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+        <p class="text-gray-600">Overview of your CRM performance and activity</p>
+    </div>
+    <div class="flex-shrink-0">
+        {{ default_dashboard_actions() }}
+    </div>
 </div>
 
 <!-- Key Metrics -->
@@ -94,24 +100,6 @@
         {% endcall %}
         {% endif %}
 
-        <!-- Quick Actions -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 class="text-lg font-semibold text-blue-800 mb-4">Quick Actions</h3>
-            <div class="grid grid-cols-1 gap-3">
-                <button onclick="openNewTaskModal()" 
-                        class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 text-left">
-                    + New Task
-                </button>
-                <a href="/companies/new" 
-                   class="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 block text-center">
-                    + New Company
-                </a>
-                <a href="/opportunities/new" 
-                   class="w-full bg-yellow-600 text-white px-4 py-3 rounded-lg hover:bg-yellow-700 block text-center">
-                    + New Opportunity
-                </a>
-            </div>
-        </div>
     </div>
 
     <!-- Recent Activity -->
