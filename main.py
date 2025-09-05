@@ -13,10 +13,33 @@ def get_database_path():
     """Find the git root directory and return database path."""
     current = Path.cwd()
     while current != current.parent:
-        if (current / ".git").exists():
-            return f"sqlite:///{current}/instance/crm.db"
+        git_path = current / ".git"
+        if git_path.exists():
+            if git_path.is_file():
+                # Worktree: read gitdir from .git file
+                gitdir_content = git_path.read_text().strip()
+                if gitdir_content.startswith("gitdir: "):
+                    gitdir = gitdir_content[8:]  # Remove "gitdir: " prefix
+                    print(f"DEBUG: gitdir = {gitdir}")
+                    # Get main repo root from worktree gitdir
+                    # gitdir points to /path/to/repo/.git/worktrees/branch
+                    # we need /path/to/repo
+                    git_dir = Path(gitdir)  # /home/will/code/crm/.git/worktrees/text
+                    print(f"DEBUG: git_dir = {git_dir}")
+                    main_repo_root = git_dir.parent.parent.parent  # /home/will/code/crm
+                    print(f"DEBUG: main_repo_root = {main_repo_root}")
+                    db_path = f"sqlite:///{main_repo_root}/instance/crm.db"
+                    print(f"DEBUG: Worktree detected, using main repo database: {db_path}")
+                    return db_path
+            else:
+                # Regular git repo
+                db_path = f"sqlite:///{current}/instance/crm.db"
+                print(f"DEBUG: Using database path: {db_path}")
+                return db_path
         current = current.parent
-    return "sqlite:///crm.db"  # fallback
+    fallback = "sqlite:///crm.db"
+    print(f"DEBUG: Using fallback database path: {fallback}")
+    return fallback
 
 
 def create_app():
