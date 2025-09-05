@@ -50,8 +50,10 @@
     color: #4b5563; /* text-gray-600 */
 }
 
+/* Semantic color classes */
+.text-error-color { @apply text-red-600; }
+
 /* Error and status messages */
-.text-error { @apply text-xs text-red-600 mt-1; }
 .text-error-inline { @apply text-xs text-red-600; }
 
 /* Metadata and small secondary text */
