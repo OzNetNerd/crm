@@ -20,6 +20,11 @@
     font-weight: 500; /* font-medium */
     color: #111827; /* text-gray-900 */
 }
+.text-title-primary { 
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 500; /* font-medium */
+    color: #111827; /* text-gray-900 */
+}
 
 /* Form labels */
 .text-form-label { 
