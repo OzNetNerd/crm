@@ -1,7 +1,8 @@
 {% from "components/icons.html" import check_icon, pencil_icon, document_icon %}
 {% from "components/list_section.html" import status_badge %}
+{% from "components/metadata_display.html" import standard_card_metadata, format_date_with_status %}
 {% macro render_task(task, group_key='', current_group_value='') %}
-<div class="task-card card-padded mb-3 cursor-pointer hover:shadow-md transition-shadow" 
+<div class="task-card card-padded" 
      data-task-id="{{ task.id }}"
      @click="expanded = !expanded; if (expanded) loadNotes()"
      @expand-all-tasks.window="if ($event.detail.group === '{{ group_key }}' && !expanded) { expanded = true; loadNotes(); }"
@@ -204,76 +205,32 @@
 
     <!-- Task metadata -->
     <div class="flex items-center justify-between">
-        <div class="text-metadata">
-            {# Build metadata parts list #}
-            {% set metadata_parts = [] %}
+        {# Standard metadata when not editing or no pending changes #}
+        <div x-show="!isEditing || pendingDays === 0">
+            {{ standard_card_metadata(task, {
+                'include_date': true,
+                'today': task.due_date.today() if task.due_date else none,
+                'include_details_link': true,
+                'return_string': false
+            }) }}
+        </div>
+        
+        {# Due date section when editing with pending changes #}
+        <div x-show="isEditing && pendingDays !== 0" class="text-metadata">
+            {# Custom due date display for editing mode #}
+            {% if task.due_date %}
+                Due: <span class="line-through text-gray-400">{{ task.due_date.strftime('%d/%m/%y') }}</span>
+                <span class="text-blue-600 font-medium" x-text="getNewDueDate()"></span>
+                (<span x-text="pendingDays > 0 ? '+' + pendingDays : pendingDays"></span> day<span x-text="Math.abs(pendingDays) === 1 ? '' : 's'"></span>)
+                •
+            {% endif %}
             
-            {# Due date section - shown when not editing or no pending changes #}
-            <span x-show="!isEditing || pendingDays === 0">
-                {% if task.due_date %}
-                    {% set due_part = 'Due: ' + task.due_date.strftime('%d/%m/%y') %}
-                    {% if task.is_overdue %}
-                        {% set days_diff = (task.due_date.today() - task.due_date).days %}
-                        {% set due_part = due_part + ' • ' + days_diff|string + ' day' + ('s' if days_diff != 1 else '') + ' ago' %}
-                    {% elif task.due_date > task.due_date.today() %}
-                        {% set days_diff = (task.due_date - task.due_date.today()).days %}
-                        {% set due_part = due_part + ' • ' + days_diff|string + ' day' + ('s' if days_diff != 1 else '') + ' to go' %}
-                    {% endif %}
-                    {{ due_part }}
-                {% endif %}
-                
-                {# Company name #}
-                {% if task.company_name %}
-                    {% if task.due_date %} • {% endif %}{{ task.company_name }}
-                {% endif %}
-                
-                {# Opportunity name #}
-                {% if task.opportunity_name %}
-                    {% if task.due_date or task.company_name %} • {% endif %}{{ task.opportunity_name }}
-                {% endif %}
-                
-                {# Person's name (contacts only) #}
-                {% if task.entity_name and task.entity_type == 'contact' %}
-                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }}
-                {% endif %}
-                
-                {# Details link for all tasks #}
-                <span class="inline-flex items-center ml-1">
-                    {% if task.due_date or task.company_name or task.opportunity_name or (task.entity_name and task.entity_type == 'contact') %} • {% endif %}
-                    <span class="ml-1 text-link-interactive" @click.stop="openTaskDetailModal({{ task.id }})">Details</span>
-                </span>
-            </span>
-            
-            {# Due date section - shown when editing with pending changes #}
-            <span x-show="isEditing && pendingDays !== 0">
-                {% if task.due_date %}
-                    Due: 
-                    <span class="line-through text-gray-400">{{ task.due_date.strftime('%d/%m/%y') }}</span>
-                    <span class="text-blue-600 font-medium" x-text="getNewDueDate()"></span>
-                    (<span x-text="pendingDays > 0 ? '+' + pendingDays : pendingDays"></span> day<span x-text="Math.abs(pendingDays) === 1 ? '' : 's'"></span>)
-                {% endif %}
-                
-                {# Company name #}
-                {% if task.company_name %}
-                    {% if task.due_date %} • {% endif %}{{ task.company_name }}
-                {% endif %}
-                
-                {# Opportunity name #}
-                {% if task.opportunity_name %}
-                    {% if task.due_date or task.company_name %} • {% endif %}{{ task.opportunity_name }}
-                {% endif %}
-                
-                {# Person's name (contacts only) #}
-                {% if task.entity_name and task.entity_type == 'contact' %}
-                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }}
-                {% endif %}
-                
-                {# Details link for all tasks #}
-                <span class="inline-flex items-center ml-1">
-                    {% if task.due_date or task.company_name or task.opportunity_name or (task.entity_name and task.entity_type == 'contact') %} • {% endif %}
-                    <span class="ml-1 text-link-interactive" @click.stop="openTaskDetailModal({{ task.id }})">Details</span>
-                </span>
-            </span>
+            {# Use macro for remaining metadata without date #}
+            {{ standard_card_metadata(task, {
+                'include_date': false,
+                'include_details_link': true,
+                'return_string': true
+            }) }}
         </div>
         
         <!-- Action buttons at bottom right -->

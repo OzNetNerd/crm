@@ -1,4 +1,5 @@
 {% from "components/ui_elements.html" import action_button, pluralized_count %}
+{% from "components/metadata_display.html" import standard_card_metadata %}
 
 {% macro render_contact(contact) %}
 <div class="px-6 py-4 hover:bg-gray-50">
@@ -18,6 +19,8 @@
                         {{ contact.company.name }}
                     </span>
                 </div>
+                {# Add standardized metadata #}
+                {{ standard_card_metadata(contact, {'entity_type': 'contact'}) }}
             </div>
         </div>
         

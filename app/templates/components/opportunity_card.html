@@ -1,6 +1,7 @@
 {% from "components/icons.html" import check_icon %}
 {% from "components/list_section.html" import status_badge %}
 {% from "components/ui_elements.html" import action_button %}
+{% from "components/metadata_display.html" import standard_card_metadata, format_date_with_status, contact_count_display, age_display %}
 
 {% macro render_opportunity(opportunity, today) %}
 <div class="opportunity-card card-padded mb-3" 
@@ -45,26 +46,16 @@
     <!-- Opportunity metadata -->
     <div class="flex items-center justify-between">
         <div class="text-metadata">
+            {# Close date with status #}
             {% if opportunity.expected_close_date %}
                 <span class="{{ 'text-red-600' if opportunity.expected_close_date < today else 'text-gray-500' }}">
-                    Close: {{ opportunity.expected_close_date.strftime('%d/%m/%y') }}
-                    {% if opportunity.expected_close_date < today %}
-                        • Overdue
-                    {% elif opportunity.expected_close_date == today %}
-                        • Due today
-                    {% endif %}
+                    {{ format_date_with_status(opportunity.expected_close_date, "Close", today) }}
                 </span>
             {% endif %}
             
-            {% if opportunity.contacts %}
-                {% if opportunity.expected_close_date %} • {% endif %}
-                {{ opportunity.contacts|length }} contact{{ 's' if opportunity.contacts|length != 1 else '' }}
-            {% endif %}
-            
-            {% if opportunity.deal_age is defined %}
-                {% if opportunity.expected_close_date or opportunity.contacts %} • {% endif %}
-                {{ opportunity.deal_age }} days old
-            {% endif %}
+            {# Standard metadata: Company • Opportunity • Size • Stakeholder #}
+            {% if opportunity.expected_close_date %} • {% endif %}
+            {{ standard_card_metadata(opportunity, {'entity_type': 'opportunity', 'include_contact_count': true, 'include_age': true}) }}
         </div>
         
         <!-- Action buttons at bottom right -->
