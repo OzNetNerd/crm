@@ -2,8 +2,7 @@
 {% from "components/list_section.html" import status_badge %}
 {% macro render_task(task) %}
 <div class="task-card bg-white rounded-lg shadow-sm border p-4 mb-3" 
-     data-task-id="{{ task.id }}"
-     x-data="{ editing: false, description: '{{ task.description }}' }">
+     data-task-id="{{ task.id }}">
     
     <!-- Priority indicator -->
     <div class="flex items-center justify-between mb-2">
@@ -42,19 +41,9 @@
         </div>
     </div>
 
-    <!-- Task description (inline editable) -->
-    <div x-show="!editing" @click="editing = true" class="cursor-pointer mb-2">
+    <!-- Task description -->
+    <div class="mb-2">
         <p class="text-label-primary">{{ task.description }}</p>
-    </div>
-    
-    <div x-show="editing" class="mb-2">
-        <input x-model="description" 
-               @keydown.enter="updateTask({{ task.id }}, { description }); editing = false"
-               @keydown.escape="editing = false; description = '{{ task.description }}'"
-               @blur="editing = false"
-               x-ref="editInput"
-               x-init="$nextTick(() => editing && $refs.editInput.focus())"
-               class="w-full px-3 py-2 border border-gray-300 rounded-md text-action-sm">
     </div>
 
     <!-- Task metadata -->
