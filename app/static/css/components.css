@@ -243,3 +243,12 @@
 .text-action-sm { 
     font-size: 0.875rem; /* text-sm */
 }
+
+/* Empty state messages */
+.text-empty-state { 
+    font-size: 0.875rem; /* text-sm */
+    color: #6b7280; /* text-gray-500 */
+    text-align: center;
+    padding-top: 1rem; /* py-4 */
+    padding-bottom: 1rem; /* py-4 */
+}
