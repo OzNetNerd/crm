@@ -101,7 +101,7 @@
     <div class="card-padded">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div class="flex flex-wrap items-center gap-4">
-                <label class="text-label-dark">Group by:</label>
+                <label class="flex items-center text-label-dark">Group by:</label>
                 {{ dropdown_select('groupBy', [
                     {'value': 'due_date', 'label': 'Due Date'},
                     {'value': 'priority', 'label': 'Priority'},
@@ -111,7 +111,7 @@
                 
                 <label class="flex items-center">
                     <input type="checkbox" x-model="showCompleted" class="mr-2">
-                    <span class="text-sm text-gray-700">Show Completed</span>
+                    <span class="text-secondary-dark">Show Completed</span>
                 </label>
 
                 {{ expand_collapse_controls('expandedSections') }}

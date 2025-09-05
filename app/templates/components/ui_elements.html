@@ -70,10 +70,10 @@
   {{ expand_collapse_controls('sectionStates', 'ml-4') }}
 #}
 {% macro expand_collapse_controls(target_sections, additional_classes='') %}
-<div class="flex items-center space-x-2 border-l pl-4 {{ additional_classes }}">
+<div class="flex items-center gap-4 border-l pl-4 {{ additional_classes }}">
     <button @click="Object.keys({{ target_sections }}).forEach(key => {{ target_sections }}[key] = true)"
             class="text-secondary-dark hover:text-gray-900">Expand All</button>
-    <span class="text-gray-400">|</span>
+    <div class="border-l border-gray-300 h-5"></div>
     <button @click="Object.keys({{ target_sections }}).forEach(key => {{ target_sections }}[key] = false)"
             class="text-secondary-dark hover:text-gray-900">Collapse All</button>
 </div>
