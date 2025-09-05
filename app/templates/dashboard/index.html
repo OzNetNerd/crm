@@ -1,4 +1,6 @@
 {% extends "base/layout.html" %}
+{% from "components/icons.html" import building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon %}
+{% from "components/metric_card.html" import metric_card %}
 
 {% block title %}Dashboard - CRM{% endblock %}
 
@@ -10,69 +12,13 @@
 
 <!-- Key Metrics -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="flex items-center">
-            <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    🏢
-                </div>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-                <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">Companies</dt>
-                    <dd class="text-2xl font-bold text-gray-900">{{ metrics.total_companies }}</dd>
-                </dl>
-            </div>
-        </div>
-    </div>
+    {{ metric_card('Companies', metrics.total_companies, building_office_icon(), 'blue') }}
 
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="flex items-center">
-            <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    👤
-                </div>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-                <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">Contacts</dt>
-                    <dd class="text-2xl font-bold text-gray-900">{{ metrics.total_contacts }}</dd>
-                </dl>
-            </div>
-        </div>
-    </div>
+    {{ metric_card('Contacts', metrics.total_contacts, user_icon(), 'green') }}
 
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="flex items-center">
-            <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    💰
-                </div>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-                <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">Opportunities</dt>
-                    <dd class="text-2xl font-bold text-gray-900">{{ metrics.total_opportunities }}</dd>
-                </dl>
-            </div>
-        </div>
-    </div>
+    {{ metric_card('Opportunities', metrics.total_opportunities, currency_dollar_icon(), 'yellow') }}
 
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="flex items-center">
-            <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    ✓
-                </div>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-                <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">Total Tasks</dt>
-                    <dd class="text-2xl font-bold text-gray-900">{{ metrics.total_tasks }}</dd>
-                </dl>
-            </div>
-        </div>
-    </div>
+    {{ metric_card('Total Tasks', metrics.total_tasks, check_icon(), 'purple') }}
 </div>
 
 <!-- Task Quick Stats -->
@@ -148,7 +94,9 @@
         <!-- Overdue Tasks Alert -->
         {% if overdue_tasks %}
         <div class="bg-red-50 border border-red-200 rounded-lg p-6">
-            <a href="/tasks/" class="text-lg font-semibold text-red-800 mb-4 hover:text-red-900 hover:underline transition-all duration-200 block">🚨 Overdue Tasks</a>
+            <a href="/tasks/" class="text-lg font-semibold text-red-800 mb-4 hover:text-red-900 hover:underline transition-all duration-200 flex items-center gap-2">
+                {{ exclamation_circle_icon_solid("w-5 h-5 text-red-600") }} Overdue Tasks
+            </a>
             <div class="space-y-3">
                 {% for task in overdue_tasks %}
                 <div class="flex items-center justify-between bg-white p-3 rounded border">
@@ -169,7 +117,9 @@
         <!-- Closing Soon Opportunities -->
         {% if closing_soon %}
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-            <a href="/opportunities/" class="text-lg font-semibold text-yellow-800 mb-4 hover:text-yellow-900 hover:underline transition-all duration-200 block">⏰ Closing Soon</a>
+            <a href="/opportunities/" class="text-lg font-semibold text-yellow-800 mb-4 hover:text-yellow-900 hover:underline transition-all duration-200 flex items-center gap-2">
+                {{ calendar_days_icon("w-5 h-5 text-yellow-600") }} Closing Soon
+            </a>
             <div class="space-y-3">
                 {% for opp in closing_soon %}
                 <div class="flex items-center justify-between bg-white p-3 rounded border">

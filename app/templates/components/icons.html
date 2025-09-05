@@ -1,0 +1,113 @@
+{# Heroicons SVG Icon Macros #}
+
+{# Building Office Icon (Company) #}
+{% macro building_office_icon(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l8-4v18M9 9h1m0 0h1m-1 0v1m0-1V8m3 1h1m0 0h1m-1 0v1m0-1V8"/>
+</svg>
+{% endmacro %}
+
+{# User Icon (Contact) #}
+{% macro user_icon(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+</svg>
+{% endmacro %}
+
+{# Currency Dollar Icon (Opportunity) #}
+{% macro currency_dollar_icon(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+</svg>
+{% endmacro %}
+
+{# Check Icon (Task/General Check) #}
+{% macro check_icon(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+</svg>
+{% endmacro %}
+
+{# Clipboard Document List Icon (To Do) #}
+{% macro clipboard_list_icon(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+</svg>
+{% endmacro %}
+
+{# Bolt Icon (In Progress) #}
+{% macro bolt_icon(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+</svg>
+{% endmacro %}
+
+{# Check Circle Icon Solid (Completed) #}
+{% macro check_circle_icon_solid(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="currentColor" viewBox="0 0 24 24">
+  <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"/>
+</svg>
+{% endmacro %}
+
+{# Fire Icon Solid (High Priority) #}
+{% macro fire_icon_solid(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="currentColor" viewBox="0 0 24 24">
+  <path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177A7.547 7.547 0 016.648 6.61a.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 011.925-3.545 3.75 3.75 0 013.255 3.717z" clip-rule="evenodd"/>
+</svg>
+{% endmacro %}
+
+{# Exclamation Triangle Icon (Medium Priority) #}
+{% macro exclamation_triangle_icon(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.268 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+</svg>
+{% endmacro %}
+
+{# Calendar Days Icon (Due Today) #}
+{% macro calendar_days_icon(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+</svg>
+{% endmacro %}
+
+{# Calendar Icon (This Week) #}
+{% macro calendar_icon(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+</svg>
+{% endmacro %}
+
+{# Chart Bar Icon (Later) #}
+{% macro chart_bar_icon(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+</svg>
+{% endmacro %}
+
+{# Exclamation Circle Icon Solid (Overdue) #}
+{% macro exclamation_circle_icon_solid(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="currentColor" viewBox="0 0 24 24">
+  <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/>
+</svg>
+{% endmacro %}
+
+{# Question Mark Circle Icon (No Due Date) #}
+{% macro question_mark_circle_icon(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+</svg>
+{% endmacro %}
+
+{# Document Icon (General/Fallback) #}
+{% macro document_icon(class="w-6 h-6") %}
+<svg class="{{ class }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+</svg>
+{% endmacro %}
+
+{# Chevron Right Icon (Expand/Collapse) #}
+{% macro chevron_right_icon(class="w-4 h-4") %}
+<svg class="{{ class }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+</svg>
+{% endmacro %}

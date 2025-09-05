@@ -1,0 +1,75 @@
+{# Flexible Metric Card Macro #}
+
+{# Color theme mapping for consistent styling #}
+{% set color_themes = {
+  'blue': {
+    'bg': 'bg-blue-100',
+    'text': 'text-blue-600'
+  },
+  'green': {
+    'bg': 'bg-green-100', 
+    'text': 'text-green-600'
+  },
+  'yellow': {
+    'bg': 'bg-yellow-100',
+    'text': 'text-yellow-600'  
+  },
+  'purple': {
+    'bg': 'bg-purple-100',
+    'text': 'text-purple-600'
+  },
+  'red': {
+    'bg': 'bg-red-100',
+    'text': 'text-red-600'
+  },
+  'gray': {
+    'bg': 'bg-gray-100',
+    'text': 'text-gray-600'
+  }
+} %}
+
+{# 
+  Metric Card Macro
+  
+  Parameters:
+  - title (required): The metric title/label
+  - value (required): The metric value (number, text, or HTML)
+  - icon_macro (required): Icon macro call (e.g., building_office_icon())
+  - color_theme (optional): Color theme - blue, green, yellow, purple, red, gray (default: blue)
+  - href (optional): URL to make the card clickable
+  - additional_classes (optional): Extra CSS classes for the container
+  - icon_size (optional): Icon size classes (default: w-5 h-5)
+#}
+{% macro metric_card(title, value, icon_macro, color_theme='blue', href=None, additional_classes='', icon_size='w-5 h-5') %}
+  {% set theme = color_themes.get(color_theme, color_themes['blue']) %}
+  {% set container_tag = 'a' if href else 'div' %}
+  {% set container_attrs = 'href="' + href + '"' if href else '' %}
+  {% set hover_classes = 'hover:shadow-md transition-shadow cursor-pointer' if href else '' %}
+  
+  <{{ container_tag }} {{ container_attrs|safe }} class="bg-white rounded-lg shadow-sm border p-6 {{ hover_classes }} {{ additional_classes }}">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div class="w-8 h-8 {{ theme.bg }} rounded-lg flex items-center justify-center {{ theme.text }}">
+          {{ icon_macro|replace('w-5 h-5', icon_size) }}
+        </div>
+      </div>
+      <div class="ml-5 w-0 flex-1">
+        <dl>
+          <dt class="text-sm font-medium text-gray-500 truncate">{{ title }}</dt>
+          <dd class="text-2xl font-bold text-gray-900">{{ value }}</dd>
+        </dl>
+      </div>
+    </div>
+  </{{ container_tag }}>
+{% endmacro %}
+
+{#
+  Simple Metric Card - Simplified version for basic use cases
+  
+  Parameters:
+  - title, value, icon_macro (required)
+  - color (optional): blue, green, yellow, purple (default: blue)
+#}
+{% macro simple_metric_card(title, value, icon_macro, color='blue') %}
+  {{ metric_card(title, value, icon_macro, color) }}
+{% endmacro %}

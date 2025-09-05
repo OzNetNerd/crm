@@ -1,5 +1,6 @@
 {% extends "base/layout.html" %}
 {% from "components/task_card.html" import render_task %}
+{% from "components/icons.html" import clipboard_list_icon, bolt_icon, check_circle_icon_solid, fire_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, calendar_days_icon, calendar_icon, chart_bar_icon, question_mark_circle_icon, building_office_icon, user_icon, currency_dollar_icon, chevron_right_icon %}
 
 {% block title %}Tasks - CRM{% endblock %}
 
@@ -122,8 +123,8 @@
                  @click="expandedSections['todo'] = !expandedSections['todo']">
                 <h3 class="text-lg font-semibold text-gray-900 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['todo'] ? 'rotate-90' : ''">▶</span>
-                    📋 To Do
+                          :class="expandedSections['todo'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ clipboard_list_icon("w-5 h-5 mr-1") }} To Do
                     <span class="ml-2 bg-blue-100 text-blue-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('status', 'equalto', 'todo')|list|length }}
                     </span>
@@ -146,8 +147,8 @@
                  @click="expandedSections['in-progress'] = !expandedSections['in-progress']">
                 <h3 class="text-lg font-semibold text-gray-900 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['in-progress'] ? 'rotate-90' : ''">▶</span>
-                    ⚡ In Progress
+                          :class="expandedSections['in-progress'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ bolt_icon("w-5 h-5 mr-1") }} In Progress
                     <span class="ml-2 bg-yellow-100 text-yellow-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('status', 'equalto', 'in-progress')|list|length }}
                     </span>
@@ -170,8 +171,8 @@
                  @click="expandedSections['complete'] = !expandedSections['complete']">
                 <h3 class="text-lg font-semibold text-gray-900 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['complete'] ? 'rotate-90' : ''">▶</span>
-                    ✅ Completed
+                          :class="expandedSections['complete'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ check_circle_icon_solid("w-5 h-5 mr-1") }} Completed
                     <span class="ml-2 bg-green-100 text-green-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('status', 'equalto', 'complete')|list|length }}
                     </span>
@@ -199,8 +200,8 @@
                  @click="expandedSections['high'] = !expandedSections['high']">
                 <h3 class="text-lg font-semibold text-red-800 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['high'] ? 'rotate-90' : ''">▶</span>
-                    🔥 High Priority
+                          :class="expandedSections['high'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ fire_icon_solid("w-5 h-5 mr-1") }} High Priority
                     <span class="ml-2 bg-red-200 text-red-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('priority', 'equalto', 'high')|list|length }}
                     </span>
@@ -223,8 +224,8 @@
                  @click="expandedSections['medium'] = !expandedSections['medium']">
                 <h3 class="text-lg font-semibold text-yellow-800 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['medium'] ? 'rotate-90' : ''">▶</span>
-                    ⚠️ Medium Priority
+                          :class="expandedSections['medium'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ exclamation_triangle_icon("w-5 h-5 mr-1") }} Medium Priority
                     <span class="ml-2 bg-yellow-200 text-yellow-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('priority', 'equalto', 'medium')|list|length }}
                     </span>
@@ -247,8 +248,8 @@
                  @click="expandedSections['low'] = !expandedSections['low']">
                 <h3 class="text-lg font-semibold text-green-800 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['low'] ? 'rotate-90' : ''">▶</span>
-                    📋 Low Priority
+                          :class="expandedSections['low'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ clipboard_list_icon("w-5 h-5 mr-1") }} Low Priority
                     <span class="ml-2 bg-green-200 text-green-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('priority', 'equalto', 'low')|list|length }}
                     </span>
@@ -274,8 +275,8 @@
                  @click="expandedSections['overdue'] = !expandedSections['overdue']">
                 <h3 class="text-lg font-semibold text-red-800 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['overdue'] ? 'rotate-90' : ''">▶</span>
-                    🚨 Overdue
+                          :class="expandedSections['overdue'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ exclamation_circle_icon_solid("w-5 h-5 mr-1") }} Overdue
                     <span class="ml-2 bg-red-200 text-red-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('is_overdue', 'equalto', True)|list|length }}
                     </span>
@@ -301,8 +302,8 @@
                  @click="expandedSections['today'] = !expandedSections['today']">
                 <h3 class="text-lg font-semibold text-orange-800 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['today'] ? 'rotate-90' : ''">▶</span>
-                    📅 Due Today
+                          :class="expandedSections['today'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ calendar_days_icon("w-5 h-5 mr-1") }} Due Today
                     <span class="ml-2 bg-orange-200 text-orange-800 px-2 py-1 text-sm rounded-full">
                         {% set today_tasks = tasks|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list %}
                         {{ today_tasks|length }}
@@ -329,8 +330,8 @@
                  @click="expandedSections['this_week'] = !expandedSections['this_week']">
                 <h3 class="text-lg font-semibold text-blue-800 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['this_week'] ? 'rotate-90' : ''">▶</span>
-                    📆 This Week
+                          :class="expandedSections['this_week'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ calendar_icon("w-5 h-5 mr-1") }} This Week
                     <span class="ml-2 bg-blue-200 text-blue-800 px-2 py-1 text-sm rounded-full">
                         {% set this_week_tasks = [] %}
                         {% for task in tasks %}
@@ -362,8 +363,8 @@
                  @click="expandedSections['later'] = !expandedSections['later']">
                 <h3 class="text-lg font-semibold text-gray-800 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['later'] ? 'rotate-90' : ''">▶</span>
-                    📊 Later
+                          :class="expandedSections['later'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ chart_bar_icon("w-5 h-5 mr-1") }} Later
                     <span class="ml-2 bg-gray-200 text-gray-800 px-2 py-1 text-sm rounded-full">
                         {% set later_tasks = [] %}
                         {% for task in tasks %}
@@ -395,8 +396,8 @@
                  @click="expandedSections['no_date'] = !expandedSections['no_date']">
                 <h3 class="text-lg font-semibold text-gray-800 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['no_date'] ? 'rotate-90' : ''">▶</span>
-                    ❓ No Due Date
+                          :class="expandedSections['no_date'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ question_mark_circle_icon("w-5 h-5 mr-1") }} No Due Date
                     <span class="ml-2 bg-gray-200 text-gray-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('due_date', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('due_date', 'none')|list|length }}
                     </span>
@@ -425,8 +426,8 @@
                  @click="expandedSections['company'] = !expandedSections['company']">
                 <h3 class="text-lg font-semibold text-blue-800 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['company'] ? 'rotate-90' : ''">▶</span>
-                    🏢 Company Tasks
+                          :class="expandedSections['company'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ building_office_icon("w-5 h-5 mr-1") }} Company Tasks
                     <span class="ml-2 bg-blue-200 text-blue-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('entity_type', 'equalto', 'company')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'company')|list|length }}
                     </span>
@@ -449,8 +450,8 @@
                  @click="expandedSections['contact'] = !expandedSections['contact']">
                 <h3 class="text-lg font-semibold text-green-800 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['contact'] ? 'rotate-90' : ''">▶</span>
-                    👤 Contact Tasks
+                          :class="expandedSections['contact'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ user_icon("w-5 h-5 mr-1") }} Contact Tasks
                     <span class="ml-2 bg-green-200 text-green-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('entity_type', 'equalto', 'contact')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'contact')|list|length }}
                     </span>
@@ -473,8 +474,8 @@
                  @click="expandedSections['opportunity'] = !expandedSections['opportunity']">
                 <h3 class="text-lg font-semibold text-yellow-800 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['opportunity'] ? 'rotate-90' : ''">▶</span>
-                    💰 Opportunity Tasks
+                          :class="expandedSections['opportunity'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ currency_dollar_icon("w-5 h-5 mr-1") }} Opportunity Tasks
                     <span class="ml-2 bg-yellow-200 text-yellow-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('entity_type', 'equalto', 'opportunity')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'opportunity')|list|length }}
                     </span>
@@ -497,8 +498,8 @@
                  @click="expandedSections['unrelated'] = !expandedSections['unrelated']">
                 <h3 class="text-lg font-semibold text-gray-800 flex items-center">
                     <span class="mr-2 transition-transform duration-200" 
-                          :class="expandedSections['unrelated'] ? 'rotate-90' : ''">▶</span>
-                    📋 General Tasks
+                          :class="expandedSections['unrelated'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
+                    {{ clipboard_list_icon("w-5 h-5 mr-1") }} General Tasks
                     <span class="ml-2 bg-gray-200 text-gray-800 px-2 py-1 text-sm rounded-full">
                         {{ tasks|selectattr('entity_type', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'none')|list|length }}
                     </span>
