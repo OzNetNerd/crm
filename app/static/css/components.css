@@ -105,12 +105,65 @@
 }
 
 /* Task status headers */
-.text-status-header { @apply text-lg font-semibold flex items-center; }
-.text-status-overdue { @apply text-lg font-semibold text-red-800 flex items-center; }
-.text-status-warning { @apply text-lg font-semibold text-yellow-800 flex items-center; }
-.text-status-success { @apply text-lg font-semibold text-green-800 flex items-center; }
-.text-status-info { @apply text-lg font-semibold text-blue-800 flex items-center; }
-.text-status-neutral { @apply text-lg font-semibold text-gray-800 flex items-center; }
+.text-status-header { 
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 600; /* font-semibold */
+    display: flex;
+    align-items: center;
+    white-space: nowrap; /* Prevent text wrapping */
+    flex-wrap: nowrap; /* Prevent flex items from wrapping */
+    gap: 0.5rem; /* Consistent spacing between elements */
+}
+.text-status-overdue { 
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 600; /* font-semibold */
+    color: #991b1b; /* text-red-800 */
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+}
+.text-status-warning { 
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 600; /* font-semibold */
+    color: #a16207; /* text-yellow-800 */
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+}
+.text-status-success { 
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 600; /* font-semibold */
+    color: #166534; /* text-green-800 */
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+}
+.text-status-info { 
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 600; /* font-semibold */
+    color: #1e40af; /* text-blue-800 */
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+}
+.text-status-neutral { 
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 600; /* font-semibold */
+    color: #1f2937; /* text-gray-800 */
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+}
 
 /* Metric displays */
 .text-metric-value { @apply text-2xl font-bold text-gray-900; }
