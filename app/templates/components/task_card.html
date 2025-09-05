@@ -206,7 +206,7 @@
     <!-- Task metadata -->
     <div class="flex items-center justify-between">
         {# Standard metadata when not editing or no pending changes #}
-        <span x-show="!isEditing || pendingDays === 0">
+        <div x-show="!isEditing || pendingDays === 0" class="text-metadata">
             {% set metadata_parts = [] %}
             
             {# Due date with status #}
@@ -215,35 +215,70 @@
                 {% set _ = metadata_parts.append(date_part) %}
             {% endif %}
             
-            {# Standard metadata: Company • Opportunity • Stakeholder #}
-            {{ standard_card_metadata(task, {'include_date': false}) }}
+            {# Company name #}
+            {% if task.company_name %}
+                {% set _ = metadata_parts.append(task.company_name) %}
+            {% endif %}
+            
+            {# Opportunity name #}
+            {% if task.opportunity_name %}
+                {% set _ = metadata_parts.append(task.opportunity_name) %}
+            {% endif %}
+            
+            {# Opportunity value #}
+            {% if task.opportunity_value %}
+                {% set _ = metadata_parts.append('$' + "{:,.0f}".format(task.opportunity_value)) %}
+            {% endif %}
+            
+            {# Stakeholder name #}
+            {% if task.entity_name and task.entity_type == 'contact' %}
+                {% set _ = metadata_parts.append(task.entity_name) %}
+            {% endif %}
             
             {# Details link #}
-            {% if task.due_date or task.company_name or task.opportunity_name or (task.entity_name and task.entity_type == 'contact') %}
-                <span class="text-metadata"> • <span class="text-link-interactive" @click.stop="openTaskDetailModal({{ task.id }})">Details</span></span>
-            {% else %}
-                <span class="text-metadata"><span class="text-link-interactive" @click.stop="openTaskDetailModal({{ task.id }})">Details</span></span>
-            {% endif %}
-        </span>
+            {% set _ = metadata_parts.append('<span class="text-link-interactive" onclick="event.stopPropagation(); openTaskDetailModal(' + task.id|string + ')">Details</span>') %}
+            
+            {% for part in metadata_parts %}
+                {% if part %}{{ part|safe }}{% if not loop.last %} • {% endif %}{% endif %}
+            {% endfor %}
+        </div>
         
         {# Due date section when editing with pending changes #}
-        <span x-show="isEditing && pendingDays !== 0">
-            <div class="text-metadata">
-                {% if task.due_date %}
-                    Due: 
-                    <span class="line-through text-gray-400">{{ task.due_date.strftime('%d/%m/%y') }}</span>
-                    <span class="text-blue-600 font-medium" x-text="getNewDueDate()"></span>
-                    (<span x-text="pendingDays > 0 ? '+' + pendingDays : pendingDays"></span> day<span x-text="Math.abs(pendingDays) === 1 ? '' : 's'"></span>)
-                    •
-                {% endif %}
-                
-                {# Standard metadata: Company • Opportunity • Stakeholder #}
-                {{ standard_card_metadata(task, {'include_date': false}) }}
-                
-                {# Details link #}
-                • <span class="text-link-interactive" @click.stop="openTaskDetailModal({{ task.id }})">Details</span>
-            </div>
-        </span>
+        <div x-show="isEditing && pendingDays !== 0" class="text-metadata">
+            {% set editing_parts = [] %}
+            
+            {# Due date with editing changes #}
+            {% if task.due_date %}
+                {% set _ = editing_parts.append('Due: <span class="line-through text-gray-400">' + task.due_date.strftime('%d/%m/%y') + '</span> <span class="text-blue-600 font-medium" x-text="getNewDueDate()"></span> (<span x-text="pendingDays > 0 ? \'+\' + pendingDays : pendingDays"></span> day<span x-text="Math.abs(pendingDays) === 1 ? \'\' : \'s\'"></span>)') %}
+            {% endif %}
+            
+            {# Company name #}
+            {% if task.company_name %}
+                {% set _ = editing_parts.append(task.company_name) %}
+            {% endif %}
+            
+            {# Opportunity name #}
+            {% if task.opportunity_name %}
+                {% set _ = editing_parts.append(task.opportunity_name) %}
+            {% endif %}
+            
+            {# Opportunity value #}
+            {% if task.opportunity_value %}
+                {% set _ = editing_parts.append('$' + "{:,.0f}".format(task.opportunity_value)) %}
+            {% endif %}
+            
+            {# Stakeholder name #}
+            {% if task.entity_name and task.entity_type == 'contact' %}
+                {% set _ = editing_parts.append(task.entity_name) %}
+            {% endif %}
+            
+            {# Details link #}
+            {% set _ = editing_parts.append('<span class="text-link-interactive" onclick="event.stopPropagation(); openTaskDetailModal(' + task.id|string + ')">Details</span>') %}
+            
+            {% for part in editing_parts %}
+                {% if part %}{{ part|safe }}{% if not loop.last %} • {% endif %}{% endif %}
+            {% endfor %}
+        </div>
         
         <!-- Action buttons at bottom right -->
         <div class="flex items-center space-x-1" :class="{ 'opacity-50 pointer-events-none': isEditing }">
