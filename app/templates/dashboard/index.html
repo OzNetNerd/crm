@@ -155,7 +155,7 @@
                     <div>
                         <div class="text-sm font-medium text-gray-900">{{ task.description }}</div>
                         <div class="text-xs text-red-600 mt-1">
-                            Due: {{ task.due_date.strftime('%d/%m/%y') }}{% if task.is_overdue %} • -{{ (task.due_date.today() - task.due_date).days }} days ago{% endif %}
+                            Due: {{ task.due_date.strftime('%d/%m/%y') }}{% if task.is_overdue %}{% set days_overdue = (task.due_date.today() - task.due_date).days %} • -{{ days_overdue }} day{{ 's' if days_overdue != 1 else '' }} ago{% endif %}{% if task.opportunity_value %} • ${{ "{:,.0f}".format(task.opportunity_value) }}{% elif task.entity_name %} • {{ task.entity_name }}{% endif %}
                         </div>
                     </div>
                     <a href="/tasks/" class="text-red-600 hover:text-red-800 text-sm font-medium">
@@ -220,7 +220,7 @@
                         <div class="text-xs mt-1 {{ 'text-red-600' if task.priority == 'high' else
                                               'text-yellow-600' if task.priority == 'medium' else
                                               'text-green-600' }}">
-                            {% if task.due_date %}Due: {{ task.due_date.strftime('%d/%m/%y') }}{% if task.is_overdue %} • -{{ (task.due_date.today() - task.due_date).days }} days ago{% elif task.due_date > task.due_date.today() %} • {{ (task.due_date - task.due_date.today()).days }} days to go{% endif %}{% else %}No due date{% endif %}
+                            {% if task.due_date %}Due: {{ task.due_date.strftime('%d/%m/%y') }}{% if task.is_overdue %}{% set days_overdue = (task.due_date.today() - task.due_date).days %} • -{{ days_overdue }} day{{ 's' if days_overdue != 1 else '' }} ago{% elif task.due_date > task.due_date.today() %}{% set days_to_go = (task.due_date - task.due_date.today()).days %} • {{ days_to_go }} day{{ 's' if days_to_go != 1 else '' }} to go{% endif %}{% if task.opportunity_value %} • ${{ "{:,.0f}".format(task.opportunity_value) }}{% elif task.entity_name %} • {{ task.entity_name }}{% endif %}{% else %}No due date{% endif %}
                         </div>
                     </div>
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
