@@ -297,12 +297,14 @@
     background-repeat: no-repeat;
     background-position: calc(100% - 12px) center;
     background-size: 16px 16px;
-    padding-right: 2.5rem;
+    padding-right: 3rem;
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
-    overflow: hidden;
+    display: inline-block;
+    width: 160px;
     text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .multiselect-button:focus {
