@@ -3,11 +3,12 @@
 {% macro render_task(task) %}
 <div class="task-card bg-white rounded-lg shadow-sm border p-4 mb-3 cursor-pointer hover:shadow-md transition-shadow" 
      data-task-id="{{ task.id }}"
-     @click="openTaskDetailModal({{ task.id }})"
+     @click="expanded = !expanded"
      x-data="{ 
         pendingDays: 0, 
         isEditing: false,
         showSaveButtons: false,
+        expanded: false,
         originalDueDate: '{{ task.due_date.strftime('%d/%m/%y') if task.due_date else '' }}',
         getNewDueDate() {
             if (!this.originalDueDate || this.pendingDays === 0) return this.originalDueDate;
@@ -160,16 +161,67 @@
         
         <!-- Action buttons at bottom right -->
         <div class="flex items-center space-x-1" :class="{ 'opacity-50 pointer-events-none': isEditing }">
-            <button onclick="deleteTask({{ task.id }})" 
+            <button @click.stop="openTaskDetailModal({{ task.id }})" 
+                    class="px-2 py-1 rounded text-gray-400 hover:text-gray-600 text-action-sm hover:bg-gray-50 transition-colors duration-200" 
+                    title="Open task details">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+            </button>
+            <button @click.stop="deleteTask({{ task.id }})" 
                     class="px-2 py-1 rounded text-danger-hover text-action-sm hover:bg-red-50 transition-colors duration-200" 
                     title="Delete task">
                 ×
             </button>
-            <button onclick="completeTask({{ task.id }})" 
+            <button @click.stop="completeTask({{ task.id }})" 
                     class="px-2 py-1 rounded text-success-hover text-action-sm hover:bg-green-50 transition-colors duration-200" 
                     title="Complete task">
                 {{ check_icon("w-4 h-4") }}
             </button>
+        </div>
+    </div>
+    
+    <!-- Expanded Comments Section -->
+    <div x-show="expanded" 
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 transform scale-95"
+         x-transition:enter-end="opacity-100 transform scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 transform scale-100"
+         x-transition:leave-end="opacity-0 transform scale-95"
+         class="mt-4 pt-4 border-t border-gray-100">
+        <div class="space-y-3">
+            <h4 class="text-sm font-medium text-gray-900">Comments & Notes</h4>
+            
+            <!-- Add Comment Form -->
+            <div>
+                <textarea placeholder="Add a comment..." 
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
+                          rows="2"></textarea>
+                <button class="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                    Add Comment
+                </button>
+            </div>
+            
+            <!-- Comments List -->
+            <div class="space-y-2 max-h-48 overflow-y-auto">
+                <!-- Sample comment for demonstration -->
+                <div class="bg-gray-50 p-2 rounded text-sm">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs text-gray-500">2 hours ago</span>
+                        <div class="flex items-center space-x-1">
+                            <button class="text-xs text-gray-400 hover:text-gray-600">Edit</button>
+                            <span class="text-xs text-gray-300">|</span>
+                            <button class="text-xs text-red-400 hover:text-red-600">Delete</button>
+                        </div>
+                    </div>
+                    <p class="text-gray-700">Follow up with client about contract details</p>
+                </div>
+                
+                <div class="text-center text-gray-500 text-sm py-4">
+                    No comments yet. Add one above to get started.
+                </div>
+            </div>
         </div>
     </div>
 </div>
