@@ -76,10 +76,10 @@
             <div class="flex flex-wrap items-center gap-4">
                 <label class="text-sm font-medium text-gray-700">Group by:</label>
                 <select x-model="groupBy" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
-                    <option value="status">Status</option>
-                    <option value="priority">Priority</option>
                     <option value="due_date">Due Date</option>
+                    <option value="priority">Priority</option>
                     <option value="entity">Related To</option>
+                    <option value="status">Status</option>
                 </select>
                 
                 <label class="flex items-center">
@@ -100,8 +100,8 @@
                 <select x-model="priorityFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
                     <option value="">All Priorities</option>
                     <option value="high">High</option>
-                    <option value="medium">Medium</option>
                     <option value="low">Low</option>
+                    <option value="medium">Medium</option>
                 </select>
                 
                 <select x-model="entityFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
@@ -135,7 +135,7 @@
                         {{ render_task(task) }}
                     {% endif %}
                 {% else %}
-                    <p class="text-gray-500 text-center py-4">No todo tasks</p>
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
                 {% endfor %}
             </div>
         </div>
@@ -159,7 +159,7 @@
                         {{ render_task(task) }}
                     {% endif %}
                 {% else %}
-                    <p class="text-gray-500 text-center py-4">No tasks in progress</p>
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
                 {% endfor %}
             </div>
         </div>
@@ -185,7 +185,7 @@
                         </div>
                     {% endif %}
                 {% else %}
-                    <p class="text-gray-500 text-center py-4">No completed tasks</p>
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
                 {% endfor %}
             </div>
         </div>
@@ -212,7 +212,7 @@
                         {{ render_task(task) }}
                     {% endif %}
                 {% else %}
-                    <p class="text-gray-500 text-center py-4">No high priority tasks</p>
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
                 {% endfor %}
             </div>
         </div>
@@ -236,7 +236,7 @@
                         {{ render_task(task) }}
                     {% endif %}
                 {% else %}
-                    <p class="text-gray-500 text-center py-4">No medium priority tasks</p>
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
                 {% endfor %}
             </div>
         </div>
@@ -260,7 +260,7 @@
                         {{ render_task(task) }}
                     {% endif %}
                 {% else %}
-                    <p class="text-gray-500 text-center py-4">No low priority tasks</p>
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
                 {% endfor %}
             </div>
         </div>
@@ -282,13 +282,16 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['overdue']" x-transition>
+                {% set overdue_task_list = [] %}
                 {% for task in tasks %}
                     {% if task.is_overdue and (task.status != 'complete' or showCompleted) %}
+                        {% set _ = overdue_task_list.append(task) %}
                         {{ render_task(task) }}
                     {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No overdue tasks</p>
                 {% endfor %}
+                {% if overdue_task_list|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
+                {% endif %}
             </div>
         </div>
 
@@ -315,7 +318,7 @@
                     {% endif %}
                 {% endfor %}
                 {% if today_task_list|length == 0 %}
-                    <p class="text-gray-500 text-center py-4">No tasks due today</p>
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
                 {% endif %}
             </div>
         </div>
@@ -340,13 +343,16 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['this_week']" x-transition>
+                {% set this_week_task_list = [] %}
                 {% for task in tasks %}
                     {% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}
+                        {% set _ = this_week_task_list.append(task) %}
                         {{ render_task(task) }}
                     {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No tasks due this week</p>
                 {% endfor %}
+                {% if this_week_task_list|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
+                {% endif %}
             </div>
         </div>
 
@@ -370,13 +376,16 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['later']" x-transition>
+                {% set later_task_list = [] %}
                 {% for task in tasks %}
                     {% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}
+                        {% set _ = later_task_list.append(task) %}
                         {{ render_task(task) }}
                     {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No tasks scheduled for later</p>
                 {% endfor %}
+                {% if later_task_list|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
+                {% endif %}
             </div>
         </div>
 
@@ -394,13 +403,16 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['no_date']" x-transition>
+                {% set no_date_task_list = [] %}
                 {% for task in tasks %}
                     {% if not task.due_date and (task.status != 'complete' or showCompleted) %}
+                        {% set _ = no_date_task_list.append(task) %}
                         {{ render_task(task) }}
                     {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No tasks without due dates</p>
                 {% endfor %}
+                {% if no_date_task_list|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -426,7 +438,7 @@
                         {{ render_task(task) }}
                     {% endif %}
                 {% else %}
-                    <p class="text-gray-500 text-center py-4">No company-related tasks</p>
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
                 {% endfor %}
             </div>
         </div>
@@ -450,7 +462,7 @@
                         {{ render_task(task) }}
                     {% endif %}
                 {% else %}
-                    <p class="text-gray-500 text-center py-4">No contact-related tasks</p>
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
                 {% endfor %}
             </div>
         </div>
@@ -474,7 +486,7 @@
                         {{ render_task(task) }}
                     {% endif %}
                 {% else %}
-                    <p class="text-gray-500 text-center py-4">No opportunity-related tasks</p>
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
                 {% endfor %}
             </div>
         </div>
@@ -498,7 +510,7 @@
                         {{ render_task(task) }}
                     {% endif %}
                 {% else %}
-                    <p class="text-gray-500 text-center py-4">No general tasks</p>
+                    <p class="text-gray-500 text-center py-4">No matching tasks found</p>
                 {% endfor %}
             </div>
         </div>
