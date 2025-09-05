@@ -265,3 +265,16 @@ window.updateTask = function(taskId, updates) {
 window.openTaskModal = function(taskId) {
     return ModalManager.openTaskModal(taskId);
 };
+
+window.saveReschedule = function(taskId, days) {
+    if (days === 0) return; // No changes to save
+    
+    return TaskManager.rescheduleTask(taskId, days).then(() => {
+        // Reset the editing state after successful save
+        const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+        if (taskCard) {
+            // Trigger Alpine.js data reset
+            taskCard.dispatchEvent(new CustomEvent('reschedule-saved'));
+        }
+    });
+};
