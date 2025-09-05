@@ -579,12 +579,20 @@ function formatDate(isoString) {
                         <h3 class="text-title-primary leading-6">Task Details</h3>
                         <p class="text-metadata" x-show="task" x-text="task?.company_name ? `${task.company_name}${task.opportunity_name ? ' • ' + task.opportunity_name : ''}` : 'No related entity'"></p>
                     </div>
-                    <button @click="show = false" class="text-gray-400 hover:text-gray-600">
-                        <span class="sr-only">Close</span>
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    <div class="flex items-center space-x-2">
+                        <button @click="openTaskModal(taskId)" class="text-gray-400 hover:text-gray-600" title="Open in new window">
+                            <span class="sr-only">Open in new window</span>
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </button>
+                        <button @click="show = false" class="text-gray-400 hover:text-gray-600">
+                            <span class="sr-only">Close</span>
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -672,8 +680,9 @@ function formatDate(isoString) {
                                 <div class="bg-white p-3 border border-gray-200 rounded">
                                     <div class="flex items-center justify-between mb-2">
                                         <p class="text-xs text-gray-500" x-text="formatDate(note.created_at)"></p>
-                                        <div class="flex space-x-1">
+                                        <div class="flex items-center space-x-1">
                                             <button @click="editNote(note)" class="text-xs text-gray-400 hover:text-gray-600">Edit</button>
+                                            <span class="text-xs text-gray-300">|</span>
                                             <button @click="deleteNote(note.id)" class="text-xs text-red-400 hover:text-red-600">Delete</button>
                                         </div>
                                     </div>
@@ -880,8 +889,9 @@ function formatDate(isoString) {
                                 <div class="bg-white p-3 border border-gray-200 rounded">
                                     <div class="flex items-center justify-between mb-2">
                                         <p class="text-xs text-gray-500" x-text="formatDate(note.created_at)"></p>
-                                        <div class="flex space-x-1">
+                                        <div class="flex items-center space-x-1">
                                             <button @click="editNote(note)" class="text-xs text-gray-400 hover:text-gray-600">Edit</button>
+                                            <span class="text-xs text-gray-300">|</span>
                                             <button @click="deleteNote(note.id)" class="text-xs text-red-400 hover:text-red-600">Delete</button>
                                         </div>
                                     </div>
@@ -1058,8 +1068,9 @@ function formatDate(isoString) {
                                 <div class="bg-white p-3 border border-gray-200 rounded">
                                     <div class="flex items-center justify-between mb-2">
                                         <p class="text-xs text-gray-500" x-text="formatDate(note.created_at)"></p>
-                                        <div class="flex space-x-1">
+                                        <div class="flex items-center space-x-1">
                                             <button @click="editNote(note)" class="text-xs text-gray-400 hover:text-gray-600">Edit</button>
+                                            <span class="text-xs text-gray-300">|</span>
                                             <button @click="deleteNote(note.id)" class="text-xs text-red-400 hover:text-red-600">Delete</button>
                                         </div>
                                     </div>
@@ -1259,8 +1270,9 @@ function formatDate(isoString) {
                                 <div class="bg-white p-3 border border-gray-200 rounded">
                                     <div class="flex items-center justify-between mb-2">
                                         <p class="text-xs text-gray-500" x-text="formatDate(note.created_at)"></p>
-                                        <div class="flex space-x-1">
+                                        <div class="flex items-center space-x-1">
                                             <button @click="editNote(note)" class="text-xs text-gray-400 hover:text-gray-600">Edit</button>
+                                            <span class="text-xs text-gray-300">|</span>
                                             <button @click="deleteNote(note.id)" class="text-xs text-red-400 hover:text-red-600">Delete</button>
                                         </div>
                                     </div>
