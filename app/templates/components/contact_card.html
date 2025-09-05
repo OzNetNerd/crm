@@ -13,7 +13,7 @@
                 <div class="text-name">{{ contact.name }}</div>
                 <div class="text-secondary">
                     {% if contact.role %}{{ contact.role }} • {% endif %}
-                    <span class="cursor-pointer hover:text-blue-600 hover:underline" 
+                    <span class="cursor-pointer text-blue-400 hover:text-blue-600" 
                           onclick="openCompanyDetailModal({{ contact.company.id }})">
                         {{ contact.company.name }}
                     </span>
