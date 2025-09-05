@@ -544,60 +544,65 @@ function formatDate(isoString) {
             
             <!-- Content -->
             <div class="bg-white px-6 py-4" x-show="!loading">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" x-show="task">
-                    <!-- Task Details (Left Column) -->
-                    <div class="space-y-4">
-                        <h4 class="text-section-title">Task Information</h4>
-                        
+                <div x-show="task" class="space-y-6">
+                    <!-- Task Information Section -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Description (Left Column) -->
                         <div>
-                            <label class="text-form-label">Description</label>
-                            <textarea x-model="task.description"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                      rows="3"></textarea>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-form-label">Due Date</label>
-                                <input type="date" x-model="task.due_date"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-                            </div>
-                            <div>
-                                <label class="text-form-label">Priority</label>
-                                <select x-model="task.priority"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-                                    <option value="low">Low</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="high">High</option>
-                                </select>
+                            <h4 class="text-section-title">Task Information</h4>
+                            <div class="mt-4">
+                                <label class="text-form-label">Description</label>
+                                <textarea x-model="task.description"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                          rows="3"></textarea>
                             </div>
                         </div>
                         
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-form-label">Status</label>
-                                <select x-model="task.status"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-                                    <option value="todo">To Do</option>
-                                    <option value="in-progress">In Progress</option>
-                                    <option value="complete">Complete</option>
-                                </select>
+                        <!-- Task Details (Right Column) -->
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-form-label">Due Date</label>
+                                    <input type="date" x-model="task.due_date"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                </div>
+                                <div>
+                                    <label class="text-form-label">Priority</label>
+                                    <select x-model="task.priority"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div>
-                                <label class="text-form-label">Next Step</label>
-                                <select x-model="task.next_step_type"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-                                    <option value="">None</option>
-                                    <option value="call">Call</option>
-                                    <option value="email">Email</option>
-                                    <option value="meeting">Meeting</option>
-                                    <option value="demo">Demo</option>
-                                </select>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-form-label">Status</label>
+                                    <select x-model="task.status"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                        <option value="todo">To Do</option>
+                                        <option value="in-progress">In Progress</option>
+                                        <option value="complete">Complete</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-form-label">Next Step</label>
+                                    <select x-model="task.next_step_type"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                        <option value="">None</option>
+                                        <option value="call">Call</option>
+                                        <option value="email">Email</option>
+                                        <option value="meeting">Meeting</option>
+                                        <option value="demo">Demo</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Notes Section (Right Column) -->
+                    <!-- Notes Section (Full Width Below) -->
                     <div class="space-y-4">
                         <h4 class="text-section-title">Notes & Comments</h4>
                         
