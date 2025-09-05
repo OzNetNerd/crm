@@ -138,10 +138,6 @@ class TaskManager {
     }
 
     static async deleteTask(taskId) {
-        if (!confirm('Are you sure you want to delete this task?')) {
-            return;
-        }
-        
         try {
             const response = await fetch(`/tasks/${taskId}`, {
                 method: 'DELETE',
@@ -230,17 +226,36 @@ document.addEventListener('keydown', function(e) {
 window.TaskManager = TaskManager;
 window.ModalManager = ModalManager;
 
-// Global function wrappers for backward compatibility
+// Global function wrappers with confirmation dialogs
 window.completeTask = function(taskId) {
-    return TaskManager.completeTask(taskId);
+    window.showConfirmationModal({
+        title: 'Complete Task',
+        message: 'Are you sure you want to mark this task as complete?',
+        confirmText: 'Complete',
+        confirmClass: 'bg-green-600 hover:bg-green-700',
+        confirmAction: () => TaskManager.completeTask(taskId)
+    });
 };
 
 window.rescheduleTask = function(taskId, days) {
-    return TaskManager.rescheduleTask(taskId, days);
+    const dayText = days === 1 ? 'day' : 'days';
+    window.showConfirmationModal({
+        title: 'Reschedule Task',
+        message: `Are you sure you want to reschedule this task by ${days} ${dayText}?`,
+        confirmText: 'Reschedule',
+        confirmClass: 'bg-blue-600 hover:bg-blue-700',
+        confirmAction: () => TaskManager.rescheduleTask(taskId, days)
+    });
 };
 
 window.deleteTask = function(taskId) {
-    return TaskManager.deleteTask(taskId);
+    window.showConfirmationModal({
+        title: 'Delete Task',
+        message: 'Are you sure you want to delete this task? This action cannot be undone.',
+        confirmText: 'Delete',
+        confirmClass: 'bg-red-600 hover:bg-red-700',
+        confirmAction: () => TaskManager.deleteTask(taskId)
+    });
 };
 
 window.updateTask = function(taskId, updates) {

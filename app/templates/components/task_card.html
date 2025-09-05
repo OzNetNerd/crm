@@ -19,11 +19,6 @@
         
         <!-- Quick actions -->
         <div class="flex items-center space-x-1">
-            <button onclick="completeTask({{ task.id }})" 
-                    class="px-2 py-1 rounded text-success-hover text-action-sm hover:bg-green-50 transition-colors duration-200" 
-                    title="Complete task">
-                {{ check_icon("w-4 h-4") }}
-            </button>
             <button onclick="rescheduleTask({{ task.id }}, 1)" 
                     class="px-2 py-1 rounded text-info-hover text-action-sm hover:bg-blue-50 transition-colors duration-200" 
                     title="Reschedule +1 day">
@@ -38,6 +33,11 @@
                     class="px-2 py-1 rounded text-danger-hover text-action-sm hover:bg-red-50 transition-colors duration-200" 
                     title="Delete task">
                 ×
+            </button>
+            <button onclick="completeTask({{ task.id }})" 
+                    class="px-2 py-1 rounded text-success-hover text-action-sm hover:bg-green-50 transition-colors duration-200" 
+                    title="Complete task">
+                {{ check_icon("w-4 h-4") }}
             </button>
         </div>
     </div>
