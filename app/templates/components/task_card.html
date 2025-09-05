@@ -1,8 +1,9 @@
 {% from "components/icons.html" import check_icon %}
 {% from "components/list_section.html" import status_badge %}
 {% macro render_task(task) %}
-<div class="task-card bg-white rounded-lg shadow-sm border p-4 mb-3" 
+<div class="task-card bg-white rounded-lg shadow-sm border p-4 mb-3 cursor-pointer hover:shadow-md transition-shadow" 
      data-task-id="{{ task.id }}"
+     @click="openTaskDetailModal({{ task.id }})"
      x-data="{ 
         pendingDays: 0, 
         isEditing: false,

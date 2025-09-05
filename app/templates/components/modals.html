@@ -305,7 +305,498 @@ window.showConfirmationModal = function(options) {
         detail: options 
     }));
 };
+
+// Enhanced modal functions
+window.openTaskDetailModal = function(taskId) {
+    window.dispatchEvent(new CustomEvent('open-task-detail-modal', { detail: { taskId } }));
+};
+
+window.openContactDetailModal = function(contactId) {
+    window.dispatchEvent(new CustomEvent('open-contact-detail-modal', { detail: { contactId } }));
+};
+
+window.openCompanyDetailModal = function(companyId) {
+    window.dispatchEvent(new CustomEvent('open-company-detail-modal', { detail: { companyId } }));
+};
+
+window.openOpportunityDetailModal = function(opportunityId) {
+    window.dispatchEvent(new CustomEvent('open-opportunity-detail-modal', { detail: { opportunityId } }));
+};
+
+// Task detail modal functions
+async function loadTaskDetails(taskId) {
+    try {
+        const response = await fetch(`/api/tasks/${taskId}`);
+        if (response.ok) {
+            const data = await response.json();
+            // Update Alpine data via custom event
+            window.dispatchEvent(new CustomEvent('task-details-loaded', { 
+                detail: { 
+                    task: data,
+                    notes: data.notes || []
+                } 
+            }));
+        }
+    } catch (error) {
+        console.error('Error loading task details:', error);
+    }
+}
+
+async function saveTaskDetails() {
+    // Implementation will be added via Alpine.js scope
+    console.log('Save task details functionality');
+}
+
+async function addNote() {
+    // Implementation will be added via Alpine.js scope
+    console.log('Add note functionality');
+}
+
+// Contact detail modal functions
+async function loadContactDetails(contactId) {
+    try {
+        const response = await fetch(`/api/contacts/${contactId}`);
+        if (response.ok) {
+            const data = await response.json();
+            window.dispatchEvent(new CustomEvent('contact-details-loaded', { 
+                detail: { 
+                    contact: data,
+                    notes: data.notes || []
+                } 
+            }));
+        }
+    } catch (error) {
+        console.error('Error loading contact details:', error);
+    }
+}
+
+async function saveContactDetails() {
+    console.log('Save contact details functionality');
+}
+
+async function addContactNote() {
+    console.log('Add contact note functionality');
+}
+
+// Utility functions
+function formatDate(isoString) {
+    const date = new Date(isoString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
 </script>
 
 <!-- Include the confirmation modal instance -->
 {{ confirmation_modal("task-confirmation") }}
+
+<!-- Enhanced Task Detail Modal with Notes -->
+<div x-data="{
+        show: false,
+        taskId: null,
+        task: null,
+        notes: [],
+        newNote: '',
+        loading: false,
+        saving: false,
+        
+        async saveTaskDetails() {
+            if (!this.task) return;
+            this.saving = true;
+            
+            try {
+                const response = await fetch(`/api/tasks/${this.taskId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        description: this.task.description,
+                        due_date: this.task.due_date,
+                        priority: this.task.priority,
+                        status: this.task.status,
+                        next_step_type: this.task.next_step_type
+                    })
+                });
+                
+                if (response.ok) {
+                    // Refresh task list if needed
+                    location.reload();
+                } else {
+                    alert('Failed to save task');
+                }
+            } catch (error) {
+                console.error('Error saving task:', error);
+                alert('Failed to save task');
+            } finally {
+                this.saving = false;
+            }
+        },
+        
+        async addNote() {
+            if (!this.newNote.trim()) return;
+            
+            try {
+                const response = await fetch('/api/notes/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: this.newNote,
+                        entity_type: 'task',
+                        entity_id: this.taskId,
+                        is_internal: true
+                    })
+                });
+                
+                if (response.ok) {
+                    const newNote = await response.json();
+                    this.notes.unshift(newNote);
+                    this.newNote = '';
+                } else {
+                    alert('Failed to add note');
+                }
+            } catch (error) {
+                console.error('Error adding note:', error);
+                alert('Failed to add note');
+            }
+        }
+    }"
+    @open-task-detail-modal.window="show = true; taskId = $event.detail.taskId; loading = true; loadTaskDetails(taskId)"
+    @task-details-loaded.window="task = $event.detail.task; notes = $event.detail.notes; loading = false"
+    @close-modal.window="show = false"
+    x-show="show"
+    class="fixed inset-0 z-50 overflow-y-auto"
+    style="display: none;"
+    x-transition:enter="ease-out duration-300"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="ease-in duration-200"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0">
+    
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="show = false"></div>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+            <!-- Header -->
+            <div class="bg-white px-6 pt-6 pb-4 border-b border-gray-200">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h3 class="text-title-primary leading-6">Task Details</h3>
+                        <p class="text-metadata" x-show="task" x-text="task?.company_name ? `${task.company_name}${task.opportunity_name ? ' • ' + task.opportunity_name : ''}` : 'No related entity'"></p>
+                    </div>
+                    <button @click="show = false" class="text-gray-400 hover:text-gray-600">
+                        <span class="sr-only">Close</span>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="bg-white px-6 py-4" x-show="!loading">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" x-show="task">
+                    <!-- Task Details (Left Column) -->
+                    <div class="space-y-4">
+                        <h4 class="text-section-title">Task Information</h4>
+                        
+                        <div>
+                            <label class="text-form-label">Description</label>
+                            <textarea x-model="task.description"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                      rows="3"></textarea>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-form-label">Due Date</label>
+                                <input type="date" x-model="task.due_date"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                            </div>
+                            <div>
+                                <label class="text-form-label">Priority</label>
+                                <select x-model="task.priority"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-form-label">Status</label>
+                                <select x-model="task.status"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                    <option value="todo">To Do</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="complete">Complete</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-form-label">Next Step</label>
+                                <select x-model="task.next_step_type"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                    <option value="">None</option>
+                                    <option value="call">Call</option>
+                                    <option value="email">Email</option>
+                                    <option value="meeting">Meeting</option>
+                                    <option value="demo">Demo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notes Section (Right Column) -->
+                    <div class="space-y-4">
+                        <h4 class="text-section-title">Notes & Comments</h4>
+                        
+                        <!-- Add Note Form -->
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <textarea x-model="newNote"
+                                      placeholder="Add a note or comment..."
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
+                                      rows="3"></textarea>
+                            <button @click="addNote()"
+                                    :disabled="!newNote.trim()"
+                                    class="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-gray-400">
+                                Add Note
+                            </button>
+                        </div>
+                        
+                        <!-- Notes List -->
+                        <div class="max-h-64 overflow-y-auto space-y-3">
+                            <template x-for="note in notes" :key="note.id">
+                                <div class="bg-white p-3 border border-gray-200 rounded">
+                                    <p class="text-sm text-gray-900" x-text="note.content"></p>
+                                    <p class="text-xs text-gray-500 mt-1" x-text="formatDate(note.created_at)"></p>
+                                </div>
+                            </template>
+                            <div x-show="notes.length === 0" class="text-center text-gray-500 py-8">
+                                No notes yet. Add one above to get started.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Loading State -->
+                <div x-show="loading" class="flex items-center justify-center py-8">
+                    <div class="text-gray-500">Loading...</div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="bg-gray-50 px-6 py-3 sm:flex sm:flex-row-reverse">
+                <button @click="saveTaskDetails()"
+                        :disabled="saving"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 disabled:bg-gray-400 sm:ml-3 sm:w-auto sm:text-sm">
+                    <span x-show="!saving">Save Changes</span>
+                    <span x-show="saving">Saving...</span>
+                </button>
+                <button @click="show = false"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Contact Detail Modal with Notes -->
+<div x-data="{
+        show: false,
+        contactId: null,
+        contact: null,
+        notes: [],
+        newNote: '',
+        loading: false,
+        saving: false,
+        
+        async saveContactDetails() {
+            if (!this.contact) return;
+            this.saving = true;
+            
+            try {
+                const response = await fetch(`/api/contacts/${this.contactId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: this.contact.name,
+                        role: this.contact.role,
+                        email: this.contact.email,
+                        phone: this.contact.phone
+                    })
+                });
+                
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Failed to save contact');
+                }
+            } catch (error) {
+                console.error('Error saving contact:', error);
+                alert('Failed to save contact');
+            } finally {
+                this.saving = false;
+            }
+        },
+        
+        async addContactNote() {
+            if (!this.newNote.trim()) return;
+            
+            try {
+                const response = await fetch('/api/notes/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: this.newNote,
+                        entity_type: 'contact',
+                        entity_id: this.contactId,
+                        is_internal: true
+                    })
+                });
+                
+                if (response.ok) {
+                    const newNote = await response.json();
+                    this.notes.unshift(newNote);
+                    this.newNote = '';
+                } else {
+                    alert('Failed to add note');
+                }
+            } catch (error) {
+                console.error('Error adding note:', error);
+                alert('Failed to add note');
+            }
+        }
+    }"
+    @open-contact-detail-modal.window="show = true; contactId = $event.detail.contactId; loading = true; loadContactDetails(contactId)"
+    @contact-details-loaded.window="contact = $event.detail.contact; notes = $event.detail.notes; loading = false"
+    @close-modal.window="show = false"
+    x-show="show"
+    class="fixed inset-0 z-50 overflow-y-auto"
+    style="display: none;"
+    x-transition:enter="ease-out duration-300"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="ease-in duration-200"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0">
+    
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="show = false"></div>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+            <!-- Header -->
+            <div class="bg-white px-6 pt-6 pb-4 border-b border-gray-200">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h3 class="text-title-primary leading-6">Contact Details</h3>
+                        <p class="text-metadata" x-show="contact" x-text="contact?.company_name || 'No company'"></p>
+                    </div>
+                    <button @click="show = false" class="text-gray-400 hover:text-gray-600">
+                        <span class="sr-only">Close</span>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="bg-white px-6 py-4" x-show="!loading">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" x-show="contact">
+                    <!-- Contact Details (Left Column) -->
+                    <div class="space-y-4">
+                        <h4 class="text-section-title">Contact Information</h4>
+                        
+                        <div>
+                            <label class="text-form-label">Name</label>
+                            <input type="text" x-model="contact.name"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                        </div>
+                        
+                        <div>
+                            <label class="text-form-label">Role</label>
+                            <input type="text" x-model="contact.role"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                        </div>
+                        
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="text-form-label">Email</label>
+                                <input type="email" x-model="contact.email"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                            </div>
+                            <div>
+                                <label class="text-form-label">Phone</label>
+                                <input type="tel" x-model="contact.phone"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                            </div>
+                        </div>
+                        
+                        <!-- Opportunities -->
+                        <div x-show="contact?.opportunities?.length > 0">
+                            <label class="text-form-label">Opportunities</label>
+                            <div class="space-y-2">
+                                <template x-for="opp in contact.opportunities" :key="opp.id">
+                                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                        <span class="text-sm" x-text="opp.name"></span>
+                                        <span class="text-xs text-gray-500" x-text="opp.stage"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notes Section (Right Column) -->
+                    <div class="space-y-4">
+                        <h4 class="text-section-title">Notes & Comments</h4>
+                        
+                        <!-- Add Note Form -->
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <textarea x-model="newNote"
+                                      placeholder="Add a note or comment..."
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
+                                      rows="3"></textarea>
+                            <button @click="addContactNote()"
+                                    :disabled="!newNote.trim()"
+                                    class="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-gray-400">
+                                Add Note
+                            </button>
+                        </div>
+                        
+                        <!-- Notes List -->
+                        <div class="max-h-64 overflow-y-auto space-y-3">
+                            <template x-for="note in notes" :key="note.id">
+                                <div class="bg-white p-3 border border-gray-200 rounded">
+                                    <p class="text-sm text-gray-900" x-text="note.content"></p>
+                                    <p class="text-xs text-gray-500 mt-1" x-text="formatDate(note.created_at)"></p>
+                                </div>
+                            </template>
+                            <div x-show="notes.length === 0" class="text-center text-gray-500 py-8">
+                                No notes yet. Add one above to get started.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Loading State -->
+                <div x-show="loading" class="flex items-center justify-center py-8">
+                    <div class="text-gray-500">Loading...</div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="bg-gray-50 px-6 py-3 sm:flex sm:flex-row-reverse">
+                <button @click="saveContactDetails()"
+                        :disabled="saving"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 disabled:bg-gray-400 sm:ml-3 sm:w-auto sm:text-sm">
+                    <span x-show="!saving">Save Changes</span>
+                    <span x-show="saving">Saving...</span>
+                </button>
+                <button @click="show = false"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
