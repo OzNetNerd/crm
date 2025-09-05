@@ -5,7 +5,7 @@
   
   Parameters:
   - onclick (required): JavaScript function call to execute on click
-  - icon (optional): Symbol or text to display (default: '→')
+  - icon (optional): Symbol or text to display (default: '')
   - classes (optional): CSS classes for styling (default: standard gray styling)
   - id (optional): HTML id attribute
   
@@ -13,7 +13,7 @@
   {{ action_button('openContactModal(' + contact.id|string + ')') }}
   {{ action_button('openModal()', '⋯', 'text-blue-400 hover:text-blue-600') }}
 #}
-{% macro action_button(onclick, icon='→', classes='text-gray-400 hover:text-gray-600', id=None) %}
+{% macro action_button(onclick, icon='', classes='text-gray-400 hover:text-gray-600', id=None) %}
 <button onclick="{{ onclick }}" 
         class="{{ classes }}"
         {% if id %}id="{{ id }}"{% endif %}>
