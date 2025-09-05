@@ -1,18 +1,45 @@
 {% extends "base/layout.html" %}
+{% from "components/page_template.html" import page_layout %}
 
 {% block title %}Contacts - CRM{% endblock %}
 
 {% block content %}
-<div class="mb-8 flex items-center justify-between">
-    <div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Contacts</h1>
-        <p class="text-gray-600">Manage your contact relationships</p>
-    </div>
-    <button onclick="openNewContactModal()" 
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-        + New Contact
-    </button>
-</div>
+{% set contact_stats = {
+    'title': 'Contact Overview',
+    'stats': [
+        {
+            'value': contacts|length,
+            'label': 'Total Contacts',
+            'color_class': 'text-blue-600'
+        },
+        {
+            'value': contacts|selectattr('email')|list|length,
+            'label': 'With Email',
+            'color_class': 'text-green-600'
+        },
+        {
+            'value': contacts|selectattr('phone')|list|length,
+            'label': 'With Phone',
+            'color_class': 'text-purple-600'
+        },
+        {
+            'value': contacts|map(attribute='opportunities')|map('length')|sum,
+            'label': 'Total Opportunities',
+            'color_class': 'text-orange-600'
+        }
+    ]
+} %}
+
+{% set contact_buttons = [
+    {
+        'label': 'New Contact',
+        'onclick': 'openNewContactModal()',
+        'color': 'blue',
+        'icon': ''
+    }
+] %}
+
+{% call page_layout("Contacts", "Manage your contact relationships", buttons=contact_buttons, summary_data=contact_stats) %}
 
 <div class="bg-white shadow overflow-hidden sm:rounded-md">
     <ul class="divide-y divide-gray-200">
@@ -73,6 +100,8 @@
         {% endfor %}
     </ul>
 </div>
+
+{% endcall %}
 {% endblock %}
 
 {% block scripts %}

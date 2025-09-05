@@ -1,18 +1,45 @@
 {% extends "base/layout.html" %}
+{% from "components/page_template.html" import page_layout %}
 
 {% block title %}Companies - CRM{% endblock %}
 
 {% block content %}
-<div class="mb-8 flex items-center justify-between">
-    <div>
-        <h1 class="text-page-title">Companies</h1>
-        <p class="text-secondary-dark">Manage your company relationships</p>
-    </div>
-    <button onclick="openNewCompanyModal()" 
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-        + New Company
-    </button>
-</div>
+{% set company_stats = {
+    'title': 'Company Overview',
+    'stats': [
+        {
+            'value': companies|length,
+            'label': 'Total Companies',
+            'color_class': 'text-blue-600'
+        },
+        {
+            'value': companies|selectattr('industry')|list|length,
+            'label': 'With Industry',
+            'color_class': 'text-green-600'
+        },
+        {
+            'value': companies|map(attribute='contacts')|map('length')|sum if companies|selectattr('contacts')|list else 0,
+            'label': 'Total Contacts',
+            'color_class': 'text-purple-600'
+        },
+        {
+            'value': companies|selectattr('contacts')|list|length,
+            'label': 'Active Relationships',
+            'color_class': 'text-orange-600'
+        }
+    ]
+} %}
+
+{% set company_buttons = [
+    {
+        'label': 'New Company',
+        'onclick': 'openNewCompanyModal()',
+        'color': 'blue',
+        'icon': ''
+    }
+] %}
+
+{% call page_layout("Companies", "Manage your company relationships", buttons=company_buttons, summary_data=company_stats) %}
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for company in companies %}
@@ -56,6 +83,8 @@
         </div>
     {% endfor %}
 </div>
+
+{% endcall %}
 {% endblock %}
 
 {% block scripts %}

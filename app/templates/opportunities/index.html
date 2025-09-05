@@ -1,18 +1,46 @@
 {% extends "base/layout.html" %}
+{% from "components/page_template.html" import page_layout %}
+{% from "components/quick_actions.html" import opportunities_page_actions %}
 
 {% block title %}Opportunities - CRM{% endblock %}
 
 {% block content %}
-<div class="mb-8 flex items-center justify-between">
-    <div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Opportunities</h1>
-        <p class="text-gray-600">Track your sales pipeline</p>
-    </div>
-    <button onclick="openNewOpportunityModal()" 
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-        + New Opportunity
-    </button>
-</div>
+{% set pipeline_stats = {
+    'title': 'Pipeline Summary',
+    'stats': [
+        {
+            'value': '${:,.0f}'.format(opportunities|selectattr('stage', 'equalto', 'prospect')|sum(attribute='value') or 0),
+            'label': 'Prospect',
+            'color_class': 'text-green-600'
+        },
+        {
+            'value': '${:,.0f}'.format(opportunities|selectattr('stage', 'equalto', 'qualified')|sum(attribute='value') or 0),
+            'label': 'Qualified', 
+            'color_class': 'text-blue-600'
+        },
+        {
+            'value': '${:,.0f}'.format(opportunities|selectattr('stage', 'equalto', 'proposal')|sum(attribute='value') or 0),
+            'label': 'Proposal',
+            'color_class': 'text-yellow-600'
+        },
+        {
+            'value': '${:,.0f}'.format(opportunities|selectattr('stage', 'equalto', 'negotiation')|sum(attribute='value') or 0),
+            'label': 'Negotiation',
+            'color_class': 'text-orange-600'
+        }
+    ]
+} %}
+
+{% set opportunity_buttons = [
+    {
+        'label': 'New Opportunity',
+        'onclick': 'openNewOpportunityModal()',
+        'color': 'blue',
+        'icon': ''
+    }
+] %}
+
+{% call page_layout("Opportunities", "Track your sales pipeline", buttons=opportunity_buttons, summary_data=pipeline_stats) %}
 
 <div class="bg-white shadow overflow-hidden sm:rounded-md">
     <ul class="divide-y divide-gray-200">
@@ -96,35 +124,7 @@
     </ul>
 </div>
 
-<div class="mt-8 bg-white rounded-lg shadow-sm border p-6">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4">Pipeline Summary</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="text-center">
-            <div class="text-2xl font-bold text-green-600">
-                ${{ "{:,.0f}".format(opportunities|selectattr('stage', 'equalto', 'prospect')|sum(attribute='value') or 0) }}
-            </div>
-            <div class="text-sm text-gray-500">Prospect</div>
-        </div>
-        <div class="text-center">
-            <div class="text-2xl font-bold text-blue-600">
-                ${{ "{:,.0f}".format(opportunities|selectattr('stage', 'equalto', 'qualified')|sum(attribute='value') or 0) }}
-            </div>
-            <div class="text-sm text-gray-500">Qualified</div>
-        </div>
-        <div class="text-center">
-            <div class="text-2xl font-bold text-yellow-600">
-                ${{ "{:,.0f}".format(opportunities|selectattr('stage', 'equalto', 'proposal')|sum(attribute='value') or 0) }}
-            </div>
-            <div class="text-sm text-gray-500">Proposal</div>
-        </div>
-        <div class="text-center">
-            <div class="text-2xl font-bold text-orange-600">
-                ${{ "{:,.0f}".format(opportunities|selectattr('stage', 'equalto', 'negotiation')|sum(attribute='value') or 0) }}
-            </div>
-            <div class="text-sm text-gray-500">Negotiation</div>
-        </div>
-    </div>
-</div>
+{% endcall %}
 {% endblock %}
 
 {% block scripts %}

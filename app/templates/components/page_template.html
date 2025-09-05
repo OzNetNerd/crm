@@ -1,0 +1,78 @@
+{# Page Template - Unified layout system for consistent page structure #}
+
+{% from "components/quick_actions.html" import quick_actions_buttons %}
+
+{#
+  Page Layout Macro - Standardized page structure with consistent header, summary, and content areas
+  
+  Parameters:
+  - title (required): Page title text (e.g., "Companies", "Tasks")
+  - subtitle (required): Page description text (e.g., "Manage your company relationships")
+  - buttons (optional): Array of button objects for quick_actions_buttons macro
+  - summary_data (optional): Dict with 'title' and 'stats' array for metric display
+  - additional_header_content (optional): Extra content to display in header area
+  
+  Usage:
+  {% call page_layout("Companies", "Manage your company relationships", buttons=company_buttons, summary_data=company_stats) %}
+    <!-- Page-specific content goes here -->
+  {% endcall %}
+#}
+{% macro page_layout(title, subtitle, buttons=None, summary_data=None, additional_header_content=None) %}
+<!-- Standardized Page Header -->
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <h1 class="text-page-title">{{ title }}</h1>
+        <p class="text-secondary-dark">{{ subtitle }}</p>
+        {% if additional_header_content %}{{ additional_header_content }}{% endif %}
+    </div>
+    {% if buttons %}
+    <div class="flex-shrink-0">
+        {{ quick_actions_buttons(buttons) }}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Optional Summary Section -->
+{% if summary_data %}
+<div class="mb-8 bg-white rounded-lg shadow-sm border p-6">
+    <h2 class="text-section-title mb-4">{{ summary_data.title }}</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {% for stat in summary_data.stats %}
+        <div class="text-center">
+            <div class="text-2xl font-bold {{ stat.color_class or 'text-gray-900' }}">
+                {{ stat.value }}
+            </div>
+            <div class="text-sm text-gray-500">{{ stat.label }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Main Content Area -->
+<div class="space-y-6">
+    {{ caller() }}
+</div>
+{% endmacro %}
+
+{#
+  Simple Page Header - For pages that only need header without summary
+  
+  Parameters:
+  - title (required): Page title
+  - subtitle (required): Page description  
+  - buttons (optional): Button array for actions
+#}
+{% macro simple_page_header(title, subtitle, buttons=None) %}
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <h1 class="text-page-title">{{ title }}</h1>
+        <p class="text-secondary-dark">{{ subtitle }}</p>
+    </div>
+    {% if buttons %}
+    <div class="flex-shrink-0">
+        {{ quick_actions_buttons(buttons) }}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}

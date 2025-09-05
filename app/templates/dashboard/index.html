@@ -2,20 +2,34 @@
 {% from "components/icons.html" import building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon %}
 {% from "components/metric_card.html" import metric_card, stat_card, overview_section %}
 {% from "components/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
+{% from "components/page_template.html" import simple_page_header %}
 {% from "components/quick_actions.html" import default_dashboard_actions %}
 
 {% block title %}Dashboard - CRM{% endblock %}
 
 {% block content %}
-<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-        <p class="text-gray-600">Overview of your CRM performance and activity</p>
-    </div>
-    <div class="flex-shrink-0">
-        {{ default_dashboard_actions() }}
-    </div>
-</div>
+{% set dashboard_buttons = [
+    {
+        'label': 'New Task',
+        'onclick': 'openNewTaskModal()',
+        'color': 'blue',
+        'icon': ''
+    },
+    {
+        'label': 'New Company',
+        'url': '/companies/new',
+        'color': 'green', 
+        'icon': ''
+    },
+    {
+        'label': 'New Opportunity',
+        'url': '/opportunities/new',
+        'color': 'yellow',
+        'icon': ''
+    }
+] %}
+
+{{ simple_page_header("Dashboard", "Overview of your CRM performance and activity", buttons=dashboard_buttons) }}
 
 <!-- Key Metrics -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
