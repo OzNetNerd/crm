@@ -248,7 +248,7 @@
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Opportunities</h3>
             <div class="space-y-3">
                 {% for opp in recent_opportunities %}
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between bg-white p-3 rounded border">
                     <div>
                         <p class="text-sm font-medium text-gray-900">{{ opp.name }}</p>
                         <p class="text-xs text-gray-500">
@@ -278,12 +278,14 @@
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Notes</h3>
             <div class="space-y-3">
                 {% for note in recent_notes %}
-                <div class="border-l-4 border-blue-500 pl-4">
-                    <p class="text-sm text-gray-900">{{ note.content[:100] }}{% if note.content|length > 100 %}...{% endif %}</p>
-                    <p class="text-xs text-gray-500 mt-1">
-                        {{ note.created_at.strftime('%m/%d %H:%M') }}
-                        {% if note.entity_name %} • {{ note.entity_name }}{% endif %}
-                    </p>
+                <div class="bg-white p-3 rounded border">
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <p class="text-sm text-gray-900">{{ note.content[:100] }}{% if note.content|length > 100 %}...{% endif %}</p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            {{ note.created_at.strftime('%m/%d %H:%M') }}
+                            {% if note.entity_name %} • {{ note.entity_name }}{% endif %}
+                        </p>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
