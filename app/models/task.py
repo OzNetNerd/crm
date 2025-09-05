@@ -43,5 +43,13 @@ class Task(db.Model):
         
         return entity.name if entity else None
     
+    @property
+    def opportunity_value(self):
+        if self.entity_type == 'opportunity' and self.entity_id:
+            from .opportunity import Opportunity
+            opportunity = Opportunity.query.get(self.entity_id)
+            return opportunity.value if opportunity else None
+        return None
+    
     def __repr__(self):
         return f'<Task {self.description[:50]}>'

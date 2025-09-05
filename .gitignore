@@ -1,6 +1,7 @@
 # Virtual Environment
 venv/
 .venv/
+.worktrees/
 
 # Python Cache
 __pycache__/
