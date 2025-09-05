@@ -93,6 +93,14 @@
 .text-link-subtle:hover {
     color: #4b5563; /* hover:text-gray-600 */
 }
+.text-link-interactive { 
+    color: #60a5fa; /* text-blue-400 */
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+.text-link-interactive:hover {
+    color: #2563eb; /* hover:text-blue-600 */
+}
 
 /* Navigation */
 .text-nav-link { @apply text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium; }

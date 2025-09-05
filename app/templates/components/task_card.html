@@ -37,7 +37,7 @@
             if (this.notesLoaded) return;
             
             try {
-                const response = await fetch(`/api/notes/task/{{ task.id }}`);
+                const response = await fetch(`/api/tasks/{{ task.id }}/notes`);
                 if (response.ok) {
                     this.notes = await response.json();
                     this.notesLoaded = true;
@@ -107,13 +107,11 @@
             if (!this.newComment.trim()) return;
             
             try {
-                const response = await fetch('/api/notes/', {
+                const response = await fetch(`/api/tasks/{{ task.id }}/notes`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         content: this.newComment,
-                        entity_type: 'task',
-                        entity_id: {{ task.id }},
                         is_internal: true
                     })
                 });
@@ -236,7 +234,7 @@
                 
                 {# Person's name (contacts only) #}
                 {% if task.entity_name and task.entity_type == 'contact' %}
-                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }}<span class="inline-flex items-center ml-1"> • <span class="ml-1 cursor-pointer text-gray-400 hover:text-gray-600 transition-colors duration-200" @click.stop="openTaskDetailModal({{ task.id }})">{{ document_icon("w-3 h-3") }}</span></span>
+                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }}<span class="inline-flex items-center ml-1"> • <span class="ml-1 text-link-interactive" @click.stop="openTaskDetailModal({{ task.id }})">Details</span></span>
                 {% endif %}
             </span>
             
@@ -261,7 +259,7 @@
                 
                 {# Person's name (contacts only) #}
                 {% if task.entity_name and task.entity_type == 'contact' %}
-                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }}<span class="inline-flex items-center ml-1"> • <span class="ml-1 cursor-pointer text-gray-400 hover:text-gray-600 transition-colors duration-200" @click.stop="openTaskDetailModal({{ task.id }})">{{ document_icon("w-3 h-3") }}</span></span>
+                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }}<span class="inline-flex items-center ml-1"> • <span class="ml-1 text-link-interactive" @click.stop="openTaskDetailModal({{ task.id }})">Details</span></span>
                 {% endif %}
             </span>
         </div>
