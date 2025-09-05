@@ -266,6 +266,24 @@
     padding-bottom: 1rem; /* py-4 */
 }
 
+/* Form Components */
+/* Custom select styling with controlled chevron positioning */
+
+.select-custom {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23374151'><path d='M4.5 6.5L8 10l3.5-3.5H4.5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 12px) center;
+    background-size: 16px 16px;
+    padding-right: 2.5rem;
+}
+
+.select-custom:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px #2563eb;
+}
+
 /* Card Components */
 /* Base card styling used throughout the application */
 
