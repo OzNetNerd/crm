@@ -1,6 +1,6 @@
 {% extends "base/layout.html" %}
 {% from "components/icons.html" import building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon %}
-{% from "components/metric_card.html" import metric_card %}
+{% from "components/metric_card.html" import metric_card, stat_card %}
 
 {% block title %}Dashboard - CRM{% endblock %}
 
@@ -23,33 +23,13 @@
 
 <!-- Task Quick Stats -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="text-center">
-            <div class="text-3xl font-bold text-red-600">{{ task_stats.overdue }}</div>
-            <div class="text-sm text-gray-500 mt-1">Overdue Tasks</div>
-        </div>
-    </div>
+    {{ stat_card('Overdue Tasks', task_stats.overdue, 'red') }}
 
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="text-center">
-            <div class="text-3xl font-bold text-orange-600">{{ task_stats.today }}</div>
-            <div class="text-sm text-gray-500 mt-1">Due Today</div>
-        </div>
-    </div>
+    {{ stat_card('Due Today', task_stats.today, 'orange') }}
 
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="text-center">
-            <div class="text-3xl font-bold text-blue-600">{{ task_stats.this_week }}</div>
-            <div class="text-sm text-gray-500 mt-1">This Week</div>
-        </div>
-    </div>
+    {{ stat_card('This Week', task_stats.this_week, 'blue') }}
 
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="text-center">
-            <div class="text-3xl font-bold text-green-600">{{ task_stats.completed_today }}</div>
-            <div class="text-sm text-gray-500 mt-1">Completed Today</div>
-        </div>
-    </div>
+    {{ stat_card('Completed Today', task_stats.completed_today, 'green') }}
 </div>
 
 <!-- Pipeline Overview -->

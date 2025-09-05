@@ -73,3 +73,50 @@
 {% macro simple_metric_card(title, value, icon_macro, color='blue') %}
   {{ metric_card(title, value, icon_macro, color) }}
 {% endmacro %}
+
+{# 
+  Stat Card Macro - Centered number/text layout (no icon)
+  
+  Parameters:
+  - label (required): Bottom text label  
+  - value (required): Large number/text to display
+  - color_theme (optional): Color theme - red, orange, blue, green, purple, yellow, gray (default: gray)
+  - href (optional): URL to make the card clickable
+  - additional_classes (optional): Extra CSS classes for the container
+#}
+{% macro stat_card(label, value, color_theme='gray', href=None, additional_classes='') %}
+  {% set theme = color_themes.get(color_theme, color_themes['gray']) %}
+  {% set container_tag = 'a' if href else 'div' %}
+  {% set container_attrs = 'href="' + href + '"' if href else '' %}
+  {% set hover_classes = 'hover:shadow-md transition-shadow cursor-pointer' if href else '' %}
+  
+  {# Map color themes to text colors for large numbers #}
+  {% set text_colors = {
+    'red': 'text-red-600',
+    'orange': 'text-orange-600', 
+    'blue': 'text-blue-600',
+    'green': 'text-green-600',
+    'purple': 'text-purple-600',
+    'yellow': 'text-yellow-600',
+    'gray': 'text-gray-600'
+  } %}
+  {% set value_color = text_colors.get(color_theme, 'text-gray-600') %}
+  
+  <{{ container_tag }} {{ container_attrs|safe }} class="bg-white rounded-lg shadow-sm border p-6 {{ hover_classes }} {{ additional_classes }}">
+    <div class="text-center">
+      <div class="text-3xl font-bold {{ value_color }}">{{ value }}</div>
+      <div class="text-sm text-gray-500 mt-1">{{ label }}</div>
+    </div>
+  </{{ container_tag }}>
+{% endmacro %}
+
+{#
+  Simple Stat Card - Simplified version for basic use cases
+  
+  Parameters:
+  - label, value (required)
+  - color (optional): red, orange, blue, green (default: gray)
+#}
+{% macro simple_stat_card(label, value, color='gray') %}
+  {{ stat_card(label, value, color) }}
+{% endmacro %}
