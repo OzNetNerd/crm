@@ -50,12 +50,12 @@
                                 </span>
                             {% endif %}
                             
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                {{ 'bg-green-100 text-green-800' if opportunity.stage == 'prospect' else
-                                   'bg-blue-100 text-blue-800' if opportunity.stage == 'qualified' else
-                                   'bg-yellow-100 text-yellow-800' if opportunity.stage == 'proposal' else
-                                   'bg-orange-100 text-orange-800' if opportunity.stage == 'negotiation' else
-                                   'bg-gray-100 text-gray-800' }}">
+                            <span class="inline-flex items-center badge-standard 
+                                {{ 'badge-green' if opportunity.stage == 'prospect' else
+                                   'badge-blue' if opportunity.stage == 'qualified' else
+                                   'badge-yellow' if opportunity.stage == 'proposal' else
+                                   'badge-orange' if opportunity.stage == 'negotiation' else
+                                   'badge-gray' }}">
                                 {{ opportunity.stage|title }}
                             </span>
                         </div>

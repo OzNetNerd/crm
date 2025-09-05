@@ -7,8 +7,8 @@
 {% block content %}
 <div class="mb-8 flex items-center justify-between">
     <div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">All Tasks</h1>
-        <p class="text-gray-600">Manage all your tasks in one place</p>
+        <h1 class="text-page-title">All Tasks</h1>
+        <p class="text-secondary-dark">Manage all your tasks in one place</p>
     </div>
     <button onclick="openNewTaskModal()" 
             class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
@@ -42,7 +42,7 @@
 
     <!-- Task Summary -->
     <div class="bg-white rounded-lg shadow-sm border p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Task Summary</h2>
+        <h2 class="text-section-title mb-4">Task Summary</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="text-center">
                 <div class="text-2xl font-bold text-blue-600">
@@ -75,7 +75,7 @@
     <div class="bg-white rounded-lg shadow-sm border p-4">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div class="flex flex-wrap items-center gap-4">
-                <label class="text-sm font-medium text-gray-700">Group by:</label>
+                <label class="text-label-dark">Group by:</label>
                 <select x-model="groupBy" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
                     <option value="due_date">Due Date</option>
                     <option value="priority">Priority</option>
@@ -121,11 +121,11 @@
         <div class="bg-white rounded-lg shadow-sm border">
             <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
                  @click="expandedSections['todo'] = !expandedSections['todo']">
-                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <h3 class="text-status-header">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['todo'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ clipboard_list_icon("w-5 h-5 mr-1") }} To Do
-                    <span class="ml-2 bg-blue-100 text-blue-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-blue">
                         {{ tasks|selectattr('status', 'equalto', 'todo')|list|length }}
                     </span>
                 </h3>
@@ -145,11 +145,11 @@
         <div class="bg-white rounded-lg shadow-sm border">
             <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
                  @click="expandedSections['in-progress'] = !expandedSections['in-progress']">
-                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <h3 class="text-status-header">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['in-progress'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ bolt_icon("w-5 h-5 mr-1") }} In Progress
-                    <span class="ml-2 bg-yellow-100 text-yellow-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-yellow">
                         {{ tasks|selectattr('status', 'equalto', 'in-progress')|list|length }}
                     </span>
                 </h3>
@@ -169,11 +169,11 @@
         <div x-show="showCompleted" class="bg-white rounded-lg shadow-sm border">
             <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
                  @click="expandedSections['complete'] = !expandedSections['complete']">
-                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <h3 class="text-status-header">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['complete'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ check_circle_icon_solid("w-5 h-5 mr-1") }} Completed
-                    <span class="ml-2 bg-green-100 text-green-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-green">
                         {{ tasks|selectattr('status', 'equalto', 'complete')|list|length }}
                     </span>
                 </h3>
@@ -198,11 +198,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-red-200">
             <div class="border-b border-red-200 px-6 py-4 bg-red-50 cursor-pointer hover:bg-red-100" 
                  @click="expandedSections['high'] = !expandedSections['high']">
-                <h3 class="text-lg font-semibold text-red-800 flex items-center">
+                <h3 class="text-status-overdue">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['high'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ fire_icon_solid("w-5 h-5 mr-1") }} High Priority
-                    <span class="ml-2 bg-red-200 text-red-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-red">
                         {{ tasks|selectattr('priority', 'equalto', 'high')|list|length }}
                     </span>
                 </h3>
@@ -222,11 +222,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-yellow-200">
             <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50 cursor-pointer hover:bg-yellow-100" 
                  @click="expandedSections['medium'] = !expandedSections['medium']">
-                <h3 class="text-lg font-semibold text-yellow-800 flex items-center">
+                <h3 class="text-status-warning">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['medium'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ exclamation_triangle_icon("w-5 h-5 mr-1") }} Medium Priority
-                    <span class="ml-2 bg-yellow-200 text-yellow-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-yellow">
                         {{ tasks|selectattr('priority', 'equalto', 'medium')|list|length }}
                     </span>
                 </h3>
@@ -246,11 +246,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-green-200">
             <div class="border-b border-green-200 px-6 py-4 bg-green-50 cursor-pointer hover:bg-green-100" 
                  @click="expandedSections['low'] = !expandedSections['low']">
-                <h3 class="text-lg font-semibold text-green-800 flex items-center">
+                <h3 class="text-status-success">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['low'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ clipboard_list_icon("w-5 h-5 mr-1") }} Low Priority
-                    <span class="ml-2 bg-green-200 text-green-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-green">
                         {{ tasks|selectattr('priority', 'equalto', 'low')|list|length }}
                     </span>
                 </h3>
@@ -273,11 +273,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-red-200">
             <div class="border-b border-red-200 px-6 py-4 bg-red-50 cursor-pointer hover:bg-red-100" 
                  @click="expandedSections['overdue'] = !expandedSections['overdue']">
-                <h3 class="text-lg font-semibold text-red-800 flex items-center">
+                <h3 class="text-status-overdue">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['overdue'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ exclamation_circle_icon_solid("w-5 h-5 mr-1") }} Overdue
-                    <span class="ml-2 bg-red-200 text-red-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-red">
                         {{ tasks|selectattr('is_overdue', 'equalto', True)|list|length }}
                     </span>
                 </h3>
@@ -300,11 +300,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-orange-200">
             <div class="border-b border-orange-200 px-6 py-4 bg-orange-50 cursor-pointer hover:bg-orange-100" 
                  @click="expandedSections['today'] = !expandedSections['today']">
-                <h3 class="text-lg font-semibold text-orange-800 flex items-center">
+                <h3 class="text-status-warning">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['today'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ calendar_days_icon("w-5 h-5 mr-1") }} Due Today
-                    <span class="ml-2 bg-orange-200 text-orange-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-orange">
                         {% set today_tasks = tasks|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list %}
                         {{ today_tasks|length }}
                     </span>
@@ -328,11 +328,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-blue-200">
             <div class="border-b border-blue-200 px-6 py-4 bg-blue-50 cursor-pointer hover:bg-blue-100" 
                  @click="expandedSections['this_week'] = !expandedSections['this_week']">
-                <h3 class="text-lg font-semibold text-blue-800 flex items-center">
+                <h3 class="text-status-info">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['this_week'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ calendar_icon("w-5 h-5 mr-1") }} This Week
-                    <span class="ml-2 bg-blue-200 text-blue-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-blue">
                         {% set this_week_tasks = [] %}
                         {% for task in tasks %}
                             {% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}
@@ -361,11 +361,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
                  @click="expandedSections['later'] = !expandedSections['later']">
-                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                <h3 class="text-status-neutral">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['later'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ chart_bar_icon("w-5 h-5 mr-1") }} Later
-                    <span class="ml-2 bg-gray-200 text-gray-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-gray">
                         {% set later_tasks = [] %}
                         {% for task in tasks %}
                             {% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}
@@ -394,11 +394,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
                  @click="expandedSections['no_date'] = !expandedSections['no_date']">
-                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                <h3 class="text-status-neutral">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['no_date'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ question_mark_circle_icon("w-5 h-5 mr-1") }} No Due Date
-                    <span class="ml-2 bg-gray-200 text-gray-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-gray">
                         {{ tasks|selectattr('due_date', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('due_date', 'none')|list|length }}
                     </span>
                 </h3>
@@ -424,11 +424,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-blue-200">
             <div class="border-b border-blue-200 px-6 py-4 bg-blue-50 cursor-pointer hover:bg-blue-100" 
                  @click="expandedSections['company'] = !expandedSections['company']">
-                <h3 class="text-lg font-semibold text-blue-800 flex items-center">
+                <h3 class="text-status-info">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['company'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ building_office_icon("w-5 h-5 mr-1") }} Company Tasks
-                    <span class="ml-2 bg-blue-200 text-blue-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-blue">
                         {{ tasks|selectattr('entity_type', 'equalto', 'company')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'company')|list|length }}
                     </span>
                 </h3>
@@ -448,11 +448,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-green-200">
             <div class="border-b border-green-200 px-6 py-4 bg-green-50 cursor-pointer hover:bg-green-100" 
                  @click="expandedSections['contact'] = !expandedSections['contact']">
-                <h3 class="text-lg font-semibold text-green-800 flex items-center">
+                <h3 class="text-status-success">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['contact'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ user_icon("w-5 h-5 mr-1") }} Contact Tasks
-                    <span class="ml-2 bg-green-200 text-green-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-green">
                         {{ tasks|selectattr('entity_type', 'equalto', 'contact')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'contact')|list|length }}
                     </span>
                 </h3>
@@ -472,11 +472,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-yellow-200">
             <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50 cursor-pointer hover:bg-yellow-100" 
                  @click="expandedSections['opportunity'] = !expandedSections['opportunity']">
-                <h3 class="text-lg font-semibold text-yellow-800 flex items-center">
+                <h3 class="text-status-warning">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['opportunity'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ currency_dollar_icon("w-5 h-5 mr-1") }} Opportunity Tasks
-                    <span class="ml-2 bg-yellow-200 text-yellow-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-yellow">
                         {{ tasks|selectattr('entity_type', 'equalto', 'opportunity')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'opportunity')|list|length }}
                     </span>
                 </h3>
@@ -496,11 +496,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
                  @click="expandedSections['unrelated'] = !expandedSections['unrelated']">
-                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                <h3 class="text-status-neutral">
                     <span class="mr-2 transition-transform duration-200" 
                           :class="expandedSections['unrelated'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>
                     {{ clipboard_list_icon("w-5 h-5 mr-1") }} General Tasks
-                    <span class="ml-2 bg-gray-200 text-gray-800 px-2 py-1 text-sm rounded-full">
+                    <span class="ml-2 badge-standard badge-gray">
                         {{ tasks|selectattr('entity_type', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'none')|list|length }}
                     </span>
                 </h3>

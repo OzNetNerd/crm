@@ -1,0 +1,68 @@
+/* Text Styling Components */
+/* Core text patterns with semantic naming */
+
+/* Labels and metadata */
+.text-label { @apply text-sm font-medium text-gray-500 truncate; }
+.text-label-dark { @apply text-sm font-medium text-gray-700; }
+.text-label-primary { @apply text-sm font-medium text-gray-900; }
+
+/* Form labels */
+.text-form-label { @apply block text-sm font-medium text-gray-700 mb-1; }
+
+/* Secondary text */
+.text-secondary { @apply text-sm text-gray-500; }
+.text-secondary-dark { @apply text-sm text-gray-600; }
+
+/* Error and status messages */
+.text-error { @apply text-xs text-red-600 mt-1; }
+.text-error-inline { @apply text-xs text-red-600; }
+
+/* Section titles and headings */
+.text-section-title { @apply text-lg font-semibold text-gray-900; }
+.text-page-title { @apply text-3xl font-bold text-gray-900 mb-2; }
+.text-brand { @apply text-xl font-semibold text-gray-900; }
+
+/* Action links */
+.text-link { @apply text-sm text-blue-600 hover:text-blue-800; }
+.text-link-subtle { @apply text-gray-400 hover:text-gray-600; }
+
+/* Navigation */
+.text-nav-link { @apply text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium; }
+
+/* Status colors with semantic meaning */
+.text-success { @apply text-green-600; }
+.text-success-hover { @apply text-green-600 hover:text-green-800; }
+.text-warning { @apply text-yellow-800; }
+.text-danger { @apply text-red-600; }
+.text-danger-hover { @apply text-red-600 hover:text-red-800; }
+.text-info { @apply text-blue-600; }
+.text-info-hover { @apply text-blue-600 hover:text-blue-800; }
+
+/* Task status headers */
+.text-status-header { @apply text-lg font-semibold flex items-center; }
+.text-status-overdue { @apply text-lg font-semibold text-red-800 flex items-center; }
+.text-status-warning { @apply text-lg font-semibold text-yellow-800 flex items-center; }
+.text-status-success { @apply text-lg font-semibold text-green-800 flex items-center; }
+.text-status-info { @apply text-lg font-semibold text-blue-800 flex items-center; }
+.text-status-neutral { @apply text-lg font-semibold text-gray-800 flex items-center; }
+
+/* Metric displays */
+.text-metric-value { @apply text-2xl font-bold text-gray-900; }
+.text-metric-large { @apply text-lg font-semibold text-green-600; }
+
+/* Badge text */
+.text-badge { @apply text-xs font-medium; }
+.text-badge-overdue { @apply text-red-600 text-xs font-medium; }
+.text-badge-tag { @apply bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded; }
+
+/* Standardized badges */
+.badge-standard { @apply px-2 py-1 text-xs font-medium rounded-full; }
+.badge-red { @apply bg-red-100 text-red-800; }
+.badge-yellow { @apply bg-yellow-100 text-yellow-800; }
+.badge-green { @apply bg-green-100 text-green-800; }
+.badge-blue { @apply bg-blue-100 text-blue-800; }
+.badge-orange { @apply bg-orange-100 text-orange-800; }
+.badge-gray { @apply bg-gray-100 text-gray-800; }
+
+/* Action buttons with text */
+.text-action-sm { @apply text-sm; }

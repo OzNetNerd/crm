@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from app.models import db
@@ -8,10 +10,19 @@ from app.routes.opportunities import opportunities_bp
 from app.routes.tasks import tasks_bp
 from app.routes.search import search_bp
 
+def get_database_path():
+    """Find the git root directory and return database path."""
+    current = Path.cwd()
+    while current != current.parent:
+        if (current / '.git').exists():
+            return f'sqlite:///{current}/instance/crm.db'
+        current = current.parent
+    return 'sqlite:///crm.db'  # fallback
+
 def create_app():
     app = Flask(__name__, template_folder='app/templates', static_folder='app/static')
     app.config['SECRET_KEY'] = 'dev-secret-key'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///crm.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = get_database_path()
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     db.init_app(app)

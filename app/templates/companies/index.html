@@ -5,8 +5,8 @@
 {% block content %}
 <div class="mb-8 flex items-center justify-between">
     <div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Companies</h1>
-        <p class="text-gray-600">Manage your company relationships</p>
+        <h1 class="text-page-title">Companies</h1>
+        <p class="text-secondary-dark">Manage your company relationships</p>
     </div>
     <button onclick="openNewCompanyModal()" 
             class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
@@ -18,25 +18,25 @@
     {% for company in companies %}
         <div class="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
             <div class="flex items-start justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">{{ company.name }}</h3>
+                <h3 class="text-section-title">{{ company.name }}</h3>
                 <button onclick="openCompanyModal({{ company.id }})" 
-                        class="text-gray-400 hover:text-gray-600">
+                        class="text-link-subtle">
                     ⋯
                 </button>
             </div>
             
             {% if company.industry %}
-                <p class="text-sm text-gray-600 mb-2">{{ company.industry }}</p>
+                <p class="text-secondary-dark mb-2">{{ company.industry }}</p>
             {% endif %}
             
             {% if company.website %}
                 <a href="{{ company.website }}" target="_blank" 
-                   class="text-sm text-blue-600 hover:text-blue-800 mb-3 block">
+                   class="text-link mb-3 block">
                     {{ company.website }}
                 </a>
             {% endif %}
             
-            <div class="flex items-center justify-between text-sm text-gray-500 mt-4 pt-4 border-t">
+            <div class="flex items-center justify-between text-secondary mt-4 pt-4 border-t">
                 <span>{{ company.contacts|length }} contacts</span>
                 <span>{{ company.opportunities|length }} opportunities</span>
             </div>
@@ -48,7 +48,7 @@
         </div>
     {% else %}
         <div class="col-span-full text-center py-12">
-            <p class="text-gray-500 mb-4">No companies found</p>
+            <p class="text-secondary mb-4">No companies found</p>
             <button onclick="openNewCompanyModal()" 
                     class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
                 Add Your First Company
