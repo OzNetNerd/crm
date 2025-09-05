@@ -1,3 +1,4 @@
+{% from "components/icons.html" import check_icon %}
 {% macro render_task(task) %}
 <div class="task-card bg-white rounded-lg shadow-sm border p-4 mb-3" 
      x-data="{ editing: false, description: '{{ task.description }}' }">
@@ -21,7 +22,7 @@
         <div class="flex items-center space-x-2">
             <button onclick="completeTask({{ task.id }})" 
                     class="text-green-600 hover:text-green-800 text-sm">
-                ✓
+                {{ check_icon("w-4 h-4") }}
             </button>
             <button onclick="rescheduleTask({{ task.id }}, 1)" 
                     class="text-blue-600 hover:text-blue-800 text-sm" title="Reschedule +1 day">

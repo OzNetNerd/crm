@@ -1,4 +1,7 @@
 {% extends "base/layout.html" %}
+{% from "components/icons.html" import building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon %}
+{% from "components/metric_card.html" import metric_card, stat_card, overview_section %}
+{% from "components/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
 
 {% block title %}Dashboard - CRM{% endblock %}
 
@@ -10,181 +13,85 @@
 
 <!-- Key Metrics -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="flex items-center">
-            <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    🏢
-                </div>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-                <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">Companies</dt>
-                    <dd class="text-2xl font-bold text-gray-900">{{ metrics.total_companies }}</dd>
-                </dl>
-            </div>
-        </div>
-    </div>
+    {{ metric_card('Companies', metrics.total_companies, building_office_icon(), 'blue') }}
 
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="flex items-center">
-            <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    👤
-                </div>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-                <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">Contacts</dt>
-                    <dd class="text-2xl font-bold text-gray-900">{{ metrics.total_contacts }}</dd>
-                </dl>
-            </div>
-        </div>
-    </div>
+    {{ metric_card('Contacts', metrics.total_contacts, user_icon(), 'green') }}
 
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="flex items-center">
-            <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    💰
-                </div>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-                <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">Opportunities</dt>
-                    <dd class="text-2xl font-bold text-gray-900">{{ metrics.total_opportunities }}</dd>
-                </dl>
-            </div>
-        </div>
-    </div>
+    {{ metric_card('Opportunities', metrics.total_opportunities, currency_dollar_icon(), 'yellow') }}
 
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="flex items-center">
-            <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    ✓
-                </div>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-                <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">Total Tasks</dt>
-                    <dd class="text-2xl font-bold text-gray-900">{{ metrics.total_tasks }}</dd>
-                </dl>
-            </div>
-        </div>
-    </div>
+    {{ metric_card('Total Tasks', metrics.total_tasks, check_icon(), 'purple') }}
 </div>
 
 <!-- Task Quick Stats -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="text-center">
-            <div class="text-3xl font-bold text-red-600">{{ task_stats.overdue }}</div>
-            <div class="text-sm text-gray-500 mt-1">Overdue Tasks</div>
-        </div>
-    </div>
+    {{ stat_card('Overdue Tasks', task_stats.overdue, 'red') }}
 
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="text-center">
-            <div class="text-3xl font-bold text-orange-600">{{ task_stats.today }}</div>
-            <div class="text-sm text-gray-500 mt-1">Due Today</div>
-        </div>
-    </div>
+    {{ stat_card('Due Today', task_stats.today, 'orange') }}
 
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="text-center">
-            <div class="text-3xl font-bold text-blue-600">{{ task_stats.this_week }}</div>
-            <div class="text-sm text-gray-500 mt-1">This Week</div>
-        </div>
-    </div>
+    {{ stat_card('This Week', task_stats.this_week, 'blue') }}
 
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-        <div class="text-center">
-            <div class="text-3xl font-bold text-green-600">{{ task_stats.completed_today }}</div>
-            <div class="text-sm text-gray-500 mt-1">Completed Today</div>
-        </div>
-    </div>
+    {{ stat_card('Completed Today', task_stats.completed_today, 'green') }}
 </div>
 
 <!-- Pipeline Overview -->
-<div class="bg-white rounded-lg shadow-sm border p-6 mb-8">
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-lg font-semibold text-gray-900">Sales Pipeline</h2>
-        <div class="text-sm text-gray-500">
-            Total: ${{ "{:,.0f}".format(pipeline_stats.total_value) }} ({{ pipeline_stats.total_count }} opportunities)
-        </div>
-    </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="text-center">
-            <div class="text-2xl font-bold text-green-600">
-                ${{ "{:,.0f}".format(pipeline_stats.prospect) }}
-            </div>
-            <div class="text-sm text-gray-500">Prospect</div>
-        </div>
-        <div class="text-center">
-            <div class="text-2xl font-bold text-blue-600">
-                ${{ "{:,.0f}".format(pipeline_stats.qualified) }}
-            </div>
-            <div class="text-sm text-gray-500">Qualified</div>
-        </div>
-        <div class="text-center">
-            <div class="text-2xl font-bold text-yellow-600">
-                ${{ "{:,.0f}".format(pipeline_stats.proposal) }}
-            </div>
-            <div class="text-sm text-gray-500">Proposal</div>
-        </div>
-        <div class="text-center">
-            <div class="text-2xl font-bold text-orange-600">
-                ${{ "{:,.0f}".format(pipeline_stats.negotiation) }}
-            </div>
-            <div class="text-sm text-gray-500">Negotiation</div>
-        </div>
-    </div>
-</div>
+{% set pipeline_stats_list = [
+  {
+    'value': '$' + "{:,.0f}".format(pipeline_stats.prospect), 
+    'value_color': 'green', 
+    'label': 'Prospect'
+  },
+  {
+    'value': '$' + "{:,.0f}".format(pipeline_stats.qualified), 
+    'value_color': 'blue', 
+    'label': 'Qualified'
+  },
+  {
+    'value': '$' + "{:,.0f}".format(pipeline_stats.proposal), 
+    'value_color': 'yellow', 
+    'label': 'Proposal'
+  },
+  {
+    'value': '$' + "{:,.0f}".format(pipeline_stats.negotiation), 
+    'value_color': 'orange', 
+    'label': 'Negotiation'
+  }
+] %}
+
+{{ overview_section(
+  'Sales Pipeline', 
+  'Total: $' + "{:,.0f}".format(pipeline_stats.total_value) + ' (' + pipeline_stats.total_count|string + ' opportunities)',
+  pipeline_stats_list
+) }}
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
     <!-- Critical Alerts -->
     <div class="space-y-6">
         <!-- Overdue Tasks Alert -->
         {% if overdue_tasks %}
-        <div class="bg-red-50 border border-red-200 rounded-lg p-6">
-            <a href="/tasks/" class="text-lg font-semibold text-red-800 mb-4 hover:text-red-900 hover:underline transition-all duration-200 block">🚨 Overdue Tasks</a>
-            <div class="space-y-3">
-                {% for task in overdue_tasks %}
-                <div class="flex items-center justify-between bg-white p-3 rounded border">
-                    <div>
-                        <div class="text-sm font-medium text-gray-900">{{ task.description }}</div>
-                        <div class="text-xs text-red-600 mt-1">
-                            Due: {{ task.due_date.strftime('%d/%m/%y') }}{% if task.is_overdue %}{% set days_overdue = (task.due_date.today() - task.due_date).days %} • -{{ days_overdue }} day{{ 's' if days_overdue != 1 else '' }} ago{% endif %}{% if task.opportunity_value %} • ${{ "{:,.0f}".format(task.opportunity_value) }}{% elif task.entity_name %} • {{ task.entity_name }}{% endif %}
-                        </div>
-                    </div>
-                    <a href="/tasks/" class="text-red-600 hover:text-red-800 text-sm font-medium">
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% call list_section('Overdue Tasks', href='/tasks/', theme_color='red', icon_macro=exclamation_circle_icon_solid('w-5 h-5 text-red-600')) %}
+            {% for task in overdue_tasks %}
+                {{ alert_list_item(
+                    title=task.description,
+                    warning_text='Due: ' + task.due_date.strftime('%d/%m/%y') + ((' • -' + ((task.due_date.today() - task.due_date).days|string) + ' day' + ('s' if (task.due_date.today() - task.due_date).days != 1 else '') + ' ago') if task.is_overdue else '') + ((' • $' + "{:,.0f}".format(task.opportunity_value)) if task.opportunity_value else ((' • ' + task.entity_name) if task.entity_name else '')),
+                    warning_color='red',
+                    action_href='/tasks/'
+                ) }}
+            {% endfor %}
+        {% endcall %}
         {% endif %}
 
         <!-- Closing Soon Opportunities -->
         {% if closing_soon %}
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-            <a href="/opportunities/" class="text-lg font-semibold text-yellow-800 mb-4 hover:text-yellow-900 hover:underline transition-all duration-200 block">⏰ Closing Soon</a>
-            <div class="space-y-3">
-                {% for opp in closing_soon %}
-                <div class="flex items-center justify-between bg-white p-3 rounded border">
-                    <div>
-                        <div class="text-sm font-medium text-gray-900">{{ opp.name }}</div>
-                        <div class="text-xs text-yellow-600 mt-1">
-                            ${{ "{:,.0f}".format(opp.value or 0) }} • {{ opp.expected_close_date.strftime('%d/%m/%y') }}
-                        </div>
-                    </div>
-                    <a href="/opportunities/" class="text-yellow-600 hover:text-yellow-800 text-sm font-medium">
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% call list_section('Closing Soon', href='/opportunities/', theme_color='yellow', icon_macro=calendar_days_icon('w-5 h-5 text-yellow-600')) %}
+            {% for opp in closing_soon %}
+                {{ alert_list_item(
+                    title=opp.name,
+                    warning_text='$' + "{:,.0f}".format(opp.value or 0) + ' • ' + opp.expected_close_date.strftime('%d/%m/%y'),
+                    warning_color='yellow',
+                    action_href='/opportunities/'
+                ) }}
+            {% endfor %}
+        {% endcall %}
         {% endif %}
 
         <!-- Quick Actions -->
@@ -210,72 +117,39 @@
     <!-- Recent Activity -->
     <div class="space-y-6">
         <!-- Recent Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-            <a href="/tasks/" class="text-lg font-semibold text-gray-900 mb-4 hover:text-gray-700 hover:underline transition-all duration-200 block">Recent Tasks</a>
-            <div class="space-y-3">
-                {% for task in recent_tasks %}
-                <div class="flex items-center justify-between bg-white p-3 rounded border">
-                    <div>
-                        <div class="text-sm font-medium text-gray-900">{{ task.description }}</div>
-                        <div class="text-xs mt-1 {{ 'text-red-600' if task.priority == 'high' else
-                                              'text-yellow-600' if task.priority == 'medium' else
-                                              'text-green-600' }}">
-                            {% if task.due_date %}Due: {{ task.due_date.strftime('%d/%m/%y') }}{% if task.is_overdue %}{% set days_overdue = (task.due_date.today() - task.due_date).days %} • -{{ days_overdue }} day{{ 's' if days_overdue != 1 else '' }} ago{% elif task.due_date > task.due_date.today() %}{% set days_to_go = (task.due_date - task.due_date.today()).days %} • {{ days_to_go }} day{{ 's' if days_to_go != 1 else '' }} to go{% endif %}{% if task.opportunity_value %} • ${{ "{:,.0f}".format(task.opportunity_value) }}{% elif task.entity_name %} • {{ task.entity_name }}{% endif %}{% else %}No due date{% endif %}
-                        </div>
-                    </div>
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                        {{ 'bg-red-100 text-red-800' if task.priority == 'high' else
-                           'bg-yellow-100 text-yellow-800' if task.priority == 'medium' else
-                           'bg-green-100 text-green-800' }}">
-                        {{ task.priority|title }}
-                    </span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% call list_section('Recent Tasks', href='/tasks/') %}
+            {% for task in recent_tasks %}
+                {{ simple_list_item(
+                    title=task.description,
+                    subtitle=(('Due: ' + task.due_date.strftime('%d/%m/%y') + ((' • -' + ((task.due_date.today() - task.due_date).days|string) + ' day' + ('s' if (task.due_date.today() - task.due_date).days != 1 else '') + ' ago') if task.is_overdue else ((' • ' + ((task.due_date - task.due_date.today()).days|string) + ' day' + ('s' if (task.due_date - task.due_date.today()).days != 1 else '') + ' to go') if task.due_date > task.due_date.today() else '')) + ((' • $' + "{:,.0f}".format(task.opportunity_value)) if task.opportunity_value else ((' • ' + task.entity_name) if task.entity_name else ''))) if task.due_date else 'No due date'),
+                    badge_text=task.priority|title,
+                    badge_color='red' if task.priority == 'high' else 'yellow' if task.priority == 'medium' else 'green'
+                ) }}
+            {% endfor %}
+        {% endcall %}
 
         <!-- Recent Opportunities -->
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-            <a href="/opportunities/" class="text-lg font-semibold text-gray-900 mb-4 hover:text-gray-700 hover:underline transition-all duration-200 block">Recent Opportunities</a>
-            <div class="space-y-3">
-                {% for opp in recent_opportunities %}
-                <div class="flex items-center justify-between bg-white p-3 rounded border">
-                    <div>
-                        <p class="text-sm font-medium text-gray-900">{{ opp.name }}</p>
-                        <p class="text-xs text-gray-500 mt-1">
-                            {{ opp.company.name }} • ${{ "{:,.0f}".format(opp.value or 0) }}
-                        </p>
-                    </div>
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                        {{ 'bg-green-100 text-green-800' if opp.stage == 'prospect' else
-                           'bg-blue-100 text-blue-800' if opp.stage == 'qualified' else
-                           'bg-yellow-100 text-yellow-800' if opp.stage == 'proposal' else
-                           'bg-orange-100 text-orange-800' if opp.stage == 'negotiation' else
-                           'bg-gray-100 text-gray-800' }}">
-                        {{ opp.stage|title }}
-                    </span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% call list_section('Recent Opportunities', href='/opportunities/') %}
+            {% for opp in recent_opportunities %}
+                {{ simple_list_item(
+                    title=opp.name,
+                    subtitle=opp.company.name + ' • $' + "{:,.0f}".format(opp.value or 0),
+                    badge_text=opp.stage|title,
+                    badge_color='green' if opp.stage == 'prospect' else 'blue' if opp.stage == 'qualified' else 'yellow' if opp.stage == 'proposal' else 'orange' if opp.stage == 'negotiation' else 'gray'
+                ) }}
+            {% endfor %}
+        {% endcall %}
 
         <!-- Recent Notes -->
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Notes</h3>
-            <div class="space-y-3">
-                {% for note in recent_notes %}
-                <div class="bg-white p-3 rounded border">
-                    <div class="border-l-4 border-blue-500 pl-4">
-                        <p class="text-sm font-medium text-gray-900">{{ note.content }}</p>
-                        <p class="text-xs text-gray-500 mt-1">
-                            {{ note.created_at.strftime('%m/%d %H:%M') }}
-                            {% if note.entity_name %} • {{ note.entity_name }}{% endif %}
-                        </p>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% call list_section('Recent Notes') %}
+            {% for note in recent_notes %}
+                {{ note_list_item(
+                    content=note.content,
+                    metadata=note.created_at.strftime('%m/%d %H:%M') + ((' • ' + note.entity_name) if note.entity_name else ''),
+                    accent_color='blue'
+                ) }}
+            {% endfor %}
+        {% endcall %}
     </div>
 </div>
 {% endblock %}
