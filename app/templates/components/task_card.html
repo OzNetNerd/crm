@@ -9,6 +9,9 @@
         isEditing: false,
         showSaveButtons: false,
         expanded: false,
+        newComment: '',
+        editingCommentId: null,
+        editingCommentText: '',
         originalDueDate: '{{ task.due_date.strftime('%d/%m/%y') if task.due_date else '' }}',
         getNewDueDate() {
             if (!this.originalDueDate || this.pendingDays === 0) return this.originalDueDate;
@@ -25,6 +28,26 @@
             this.pendingDays = 0;
             this.isEditing = false;
             this.showSaveButtons = false;
+        },
+        startEditComment(commentId, currentText) {
+            this.editingCommentId = commentId;
+            this.editingCommentText = currentText;
+        },
+        cancelEditComment() {
+            this.editingCommentId = null;
+            this.editingCommentText = '';
+        },
+        saveEditComment() {
+            // TODO: Save to backend
+            console.log('Saving comment edit:', this.editingCommentText);
+            this.editingCommentId = null;
+            this.editingCommentText = '';
+        },
+        deleteComment(commentId) {
+            if (confirm('Are you sure you want to delete this comment?')) {
+                // TODO: Delete from backend
+                console.log('Deleting comment:', commentId);
+            }
         }
      }"
      @reschedule-saved.window="cancelChanges()"
@@ -195,28 +218,40 @@
             
             <!-- Add Comment Form -->
             <div @click.stop>
-                <textarea placeholder="Add a comment..." 
+                <textarea x-model="newComment"
+                          placeholder="Add a comment..." 
                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
                           rows="2"></textarea>
-                <button class="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
-                    Add Comment
+                <button :disabled="!newComment.trim()"
+                        class="px-3 py-2 text-sm rounded transition-all duration-200"
+                        :class="newComment.trim() ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
+                    Submit
                 </button>
             </div>
             
             <!-- Comments List -->
             <div class="space-y-2 max-h-48 overflow-y-auto">
-                <!-- Sample comment for demonstration -->
-                <div class="bg-gray-50 p-2 rounded text-sm">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="text-xs text-gray-500">2 hours ago</span>
-                        <div class="flex items-center space-x-1">
-                            <button @click.stop class="text-xs text-gray-400 hover:text-gray-600">Edit</button>
-                            <span class="text-xs text-gray-300">|</span>
-                            <button @click.stop class="text-xs text-red-400 hover:text-red-600">Delete</button>
+                <!-- Dynamic comments would go here - for now showing placeholder -->
+                <template x-if="false">
+                    <div class="bg-gray-50 p-2 rounded text-sm">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs text-gray-500">2 hours ago</span>
+                            <div class="flex items-center space-x-1">
+                                <button @click.stop="startEditComment(1, 'Follow up with client about contract details')" class="text-xs text-gray-400 hover:text-gray-600">Edit</button>
+                                <span class="text-xs text-gray-300">|</span>
+                                <button @click.stop="deleteComment(1)" class="text-xs text-red-400 hover:text-red-600">Delete</button>
+                            </div>
                         </div>
+                        <div x-show="editingCommentId === 1">
+                            <textarea x-model="editingCommentText" class="w-full px-2 py-1 border border-gray-300 rounded text-sm mb-2" rows="2"></textarea>
+                            <div class="flex space-x-2">
+                                <button @click.stop="saveEditComment()" class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">Save</button>
+                                <button @click.stop="cancelEditComment()" class="px-2 py-1 border border-gray-300 text-xs rounded hover:bg-gray-50">Cancel</button>
+                            </div>
+                        </div>
+                        <p x-show="editingCommentId !== 1" class="text-gray-700">Follow up with client about contract details</p>
                     </div>
-                    <p class="text-gray-700">Follow up with client about contract details</p>
-                </div>
+                </template>
                 
                 <div class="text-center text-gray-500 text-sm py-4">
                     No comments yet. Add one above to get started.
