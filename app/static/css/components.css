@@ -354,6 +354,7 @@
 .multiselect-controls {
     display: flex;
     gap: 0.5rem;
+    justify-content: center;
 }
 
 .multiselect-control-btn {
