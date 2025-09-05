@@ -112,13 +112,13 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['prospect']" x-transition>
-                {% for opportunity in opportunities %}
-                    {% if opportunity.stage == 'prospect' %}
-                        {{ render_opportunity(opportunity, today) }}
-                    {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No opportunities in this stage</p>
+                {% set prospect_opportunities = opportunities|selectattr('stage', 'equalto', 'prospect')|list %}
+                {% for opportunity in prospect_opportunities %}
+                    {{ render_opportunity(opportunity, today) }}
                 {% endfor %}
+                {% if prospect_opportunities|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No opportunities in this category</p>
+                {% endif %}
             </div>
         </div>
 
@@ -131,13 +131,13 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['qualified']" x-transition>
-                {% for opportunity in opportunities %}
-                    {% if opportunity.stage == 'qualified' %}
-                        {{ render_opportunity(opportunity, today) }}
-                    {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No opportunities in this stage</p>
+                {% set qualified_opportunities = opportunities|selectattr('stage', 'equalto', 'qualified')|list %}
+                {% for opportunity in qualified_opportunities %}
+                    {{ render_opportunity(opportunity, today) }}
                 {% endfor %}
+                {% if qualified_opportunities|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No opportunities in this category</p>
+                {% endif %}
             </div>
         </div>
 
@@ -150,13 +150,13 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['proposal']" x-transition>
-                {% for opportunity in opportunities %}
-                    {% if opportunity.stage == 'proposal' %}
-                        {{ render_opportunity(opportunity, today) }}
-                    {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No opportunities in this stage</p>
+                {% set proposal_opportunities = opportunities|selectattr('stage', 'equalto', 'proposal')|list %}
+                {% for opportunity in proposal_opportunities %}
+                    {{ render_opportunity(opportunity, today) }}
                 {% endfor %}
+                {% if proposal_opportunities|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No opportunities in this category</p>
+                {% endif %}
             </div>
         </div>
 
@@ -169,13 +169,13 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['negotiation']" x-transition>
-                {% for opportunity in opportunities %}
-                    {% if opportunity.stage == 'negotiation' %}
-                        {{ render_opportunity(opportunity, today) }}
-                    {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No opportunities in this stage</p>
+                {% set negotiation_opportunities = opportunities|selectattr('stage', 'equalto', 'negotiation')|list %}
+                {% for opportunity in negotiation_opportunities %}
+                    {{ render_opportunity(opportunity, today) }}
                 {% endfor %}
+                {% if negotiation_opportunities|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No opportunities in this category</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -191,13 +191,18 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['overdue']" x-transition>
-                {% for opportunity in opportunities %}
-                    {% if opportunity.expected_close_date and opportunity.expected_close_date < today %}
-                        {{ render_opportunity(opportunity, today) }}
+                {% set overdue_opportunities = [] %}
+                {% for opp in opportunities %}
+                    {% if opp.expected_close_date and opp.expected_close_date < today %}
+                        {% set _ = overdue_opportunities.append(opp) %}
                     {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No opportunities in this stage</p>
                 {% endfor %}
+                {% for opportunity in overdue_opportunities %}
+                    {{ render_opportunity(opportunity, today) }}
+                {% endfor %}
+                {% if overdue_opportunities|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No opportunities in this category</p>
+                {% endif %}
             </div>
         </div>
 
@@ -210,13 +215,18 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['this_week']" x-transition>
-                {% for opportunity in opportunities %}
-                    {% if opportunity.expected_close_date and opportunity.expected_close_date >= today and (opportunity.expected_close_date - today).days <= 7 %}
-                        {{ render_opportunity(opportunity, today) }}
+                {% set this_week_opportunities = [] %}
+                {% for opp in opportunities %}
+                    {% if opp.expected_close_date and opp.expected_close_date >= today and (opp.expected_close_date - today).days <= 7 %}
+                        {% set _ = this_week_opportunities.append(opp) %}
                     {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No opportunities in this stage</p>
                 {% endfor %}
+                {% for opportunity in this_week_opportunities %}
+                    {{ render_opportunity(opportunity, today) }}
+                {% endfor %}
+                {% if this_week_opportunities|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No opportunities in this category</p>
+                {% endif %}
             </div>
         </div>
 
@@ -229,13 +239,18 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['this_month']" x-transition>
-                {% for opportunity in opportunities %}
-                    {% if opportunity.expected_close_date and opportunity.expected_close_date >= today and (opportunity.expected_close_date - today).days > 7 and (opportunity.expected_close_date - today).days <= 30 %}
-                        {{ render_opportunity(opportunity, today) }}
+                {% set this_month_opportunities = [] %}
+                {% for opp in opportunities %}
+                    {% if opp.expected_close_date and opp.expected_close_date >= today and (opp.expected_close_date - today).days > 7 and (opp.expected_close_date - today).days <= 30 %}
+                        {% set _ = this_month_opportunities.append(opp) %}
                     {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No opportunities in this stage</p>
                 {% endfor %}
+                {% for opportunity in this_month_opportunities %}
+                    {{ render_opportunity(opportunity, today) }}
+                {% endfor %}
+                {% if this_month_opportunities|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No opportunities in this category</p>
+                {% endif %}
             </div>
         </div>
 
@@ -248,13 +263,18 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['later']" x-transition>
-                {% for opportunity in opportunities %}
-                    {% if opportunity.expected_close_date and (opportunity.expected_close_date - today).days > 30 %}
-                        {{ render_opportunity(opportunity, today) }}
+                {% set later_opportunities = [] %}
+                {% for opp in opportunities %}
+                    {% if opp.expected_close_date and (opp.expected_close_date - today).days > 30 %}
+                        {% set _ = later_opportunities.append(opp) %}
                     {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No opportunities in this stage</p>
                 {% endfor %}
+                {% for opportunity in later_opportunities %}
+                    {{ render_opportunity(opportunity, today) }}
+                {% endfor %}
+                {% if later_opportunities|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No opportunities in this category</p>
+                {% endif %}
             </div>
         </div>
 
@@ -267,13 +287,13 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['no_date']" x-transition>
-                {% for opportunity in opportunities %}
-                    {% if not opportunity.expected_close_date %}
-                        {{ render_opportunity(opportunity, today) }}
-                    {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No opportunities in this stage</p>
+                {% set no_date_opportunities = opportunities|selectattr('expected_close_date', 'none')|list %}
+                {% for opportunity in no_date_opportunities %}
+                    {{ render_opportunity(opportunity, today) }}
                 {% endfor %}
+                {% if no_date_opportunities|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No opportunities in this category</p>
+                {% endif %}
             </div>
         </div>
     </div>
