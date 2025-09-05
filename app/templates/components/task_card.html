@@ -7,7 +7,6 @@
         pendingDays: 0, 
         isEditing: false,
         showSaveButtons: false,
-        saveTimeout: null,
         originalDueDate: '{{ task.due_date.strftime('%d/%m/%y') if task.due_date else '' }}',
         getNewDueDate() {
             if (!this.originalDueDate || this.pendingDays === 0) return this.originalDueDate;
@@ -18,25 +17,12 @@
         adjustDays(days) {
             this.pendingDays += days;
             this.isEditing = true;
-            
-            // Clear existing timeout
-            if (this.saveTimeout) {
-                clearTimeout(this.saveTimeout);
-            }
-            
-            // Show save buttons after 1 second of no activity
-            this.saveTimeout = setTimeout(() => {
-                this.showSaveButtons = true;
-            }, 1000);
+            this.showSaveButtons = true;
         },
         cancelChanges() {
             this.pendingDays = 0;
             this.isEditing = false;
             this.showSaveButtons = false;
-            if (this.saveTimeout) {
-                clearTimeout(this.saveTimeout);
-                this.saveTimeout = null;
-            }
         }
      }"
      @reschedule-saved.window="cancelChanges()"
@@ -81,19 +67,6 @@
                     </button>
                 </div>
                 
-                <!-- Action buttons (disabled when editing) -->
-                <div class="flex items-center space-x-1" :class="{ 'opacity-50 pointer-events-none': isEditing }">
-                    <button onclick="deleteTask({{ task.id }})" 
-                            class="px-2 py-1 rounded text-danger-hover text-action-sm hover:bg-red-50 transition-colors duration-200" 
-                            title="Delete task">
-                        ×
-                    </button>
-                    <button onclick="completeTask({{ task.id }})" 
-                            class="px-2 py-1 rounded text-success-hover text-action-sm hover:bg-green-50 transition-colors duration-200" 
-                            title="Complete task">
-                        {{ check_icon("w-4 h-4") }}
-                    </button>
-                </div>
             </div>
             
             <!-- Save/Cancel buttons (overlay below with absolute positioning) -->
@@ -153,6 +126,20 @@
             {% if task.next_step_type %}
                 <span class="text-badge-tag">{{ task.next_step_type }}</span>
             {% endif %}
+        </div>
+        
+        <!-- Action buttons at bottom right -->
+        <div class="flex items-center space-x-1" :class="{ 'opacity-50 pointer-events-none': isEditing }">
+            <button onclick="deleteTask({{ task.id }})" 
+                    class="px-2 py-1 rounded text-danger-hover text-action-sm hover:bg-red-50 transition-colors duration-200" 
+                    title="Delete task">
+                ×
+            </button>
+            <button onclick="completeTask({{ task.id }})" 
+                    class="px-2 py-1 rounded text-success-hover text-action-sm hover:bg-green-50 transition-colors duration-200" 
+                    title="Complete task">
+                {{ check_icon("w-4 h-4") }}
+            </button>
         </div>
     </div>
 </div>
