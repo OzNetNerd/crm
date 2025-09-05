@@ -52,3 +52,55 @@
         {% if part %}{{ part }}{% if not loop.last %} {{ metadata_separator() }} {% endif %}{% endif %}
     {% endfor %}
 {% endmacro %}
+
+{% macro standard_card_metadata(entity_data, options={}) %}
+    {% set metadata_parts = [] %}
+    
+    {# Company Name #}
+    {% if entity_data.company_name %}
+        {% set _ = metadata_parts.append(entity_data.company_name) %}
+    {% elif entity_data.company and entity_data.company.name %}
+        {% set _ = metadata_parts.append(entity_data.company.name) %}
+    {% endif %}
+    
+    {# Opportunity Name #}
+    {% if entity_data.opportunity_name %}
+        {% set _ = metadata_parts.append(entity_data.opportunity_name) %}
+    {% elif entity_data.name and options.get('entity_type') == 'opportunity' %}
+        {% set _ = metadata_parts.append(entity_data.name) %}
+    {% endif %}
+    
+    {# Opportunity Size #}
+    {% if entity_data.value %}
+        {% set _ = metadata_parts.append('$' + "{:,.0f}".format(entity_data.value)) %}
+    {% elif entity_data.opportunity_value %}
+        {% set _ = metadata_parts.append('$' + "{:,.0f}".format(entity_data.opportunity_value)) %}
+    {% endif %}
+    
+    {# Stakeholder Name #}
+    {% if entity_data.entity_name and entity_data.entity_type == 'contact' %}
+        {% set _ = metadata_parts.append(entity_data.entity_name) %}
+    {% elif entity_data.name and options.get('entity_type') == 'contact' %}
+        {% set _ = metadata_parts.append(entity_data.name) %}
+    {% elif entity_data.contacts and entity_data.contacts|length == 1 %}
+        {% set _ = metadata_parts.append(entity_data.contacts[0].name) %}
+    {% endif %}
+    
+    {# Additional context items if specified in options #}
+    {% if options.get('include_date') and entity_data.due_date %}
+        {% set date_part = format_date_with_status(entity_data.due_date, "Due", options.get('today')) %}
+        {% set _ = metadata_parts.insert(0, date_part) %}
+    {% endif %}
+    
+    {% if options.get('include_contact_count') and entity_data.contacts and entity_data.contacts|length > 1 %}
+        {% set _ = metadata_parts.append(contact_count_display(entity_data.contacts)) %}
+    {% endif %}
+    
+    {% if options.get('include_age') and entity_data.deal_age is defined %}
+        {% set _ = metadata_parts.append(age_display(entity_data.deal_age)) %}
+    {% endif %}
+    
+    <div class="text-metadata">
+        {{ build_metadata_parts(metadata_parts) }}
+    </div>
+{% endmacro %}
