@@ -25,6 +25,11 @@
     font-weight: 500; /* font-medium */
     color: #111827; /* text-gray-900 */
 }
+.text-name { 
+    font-size: 1.1em;
+    font-weight: 400; /* font-normal */
+    color: #111827; /* text-gray-900 */
+}
 
 /* Form labels */
 .text-form-label { 

@@ -10,10 +10,13 @@
                 </div>
             </div>
             <div class="ml-4">
-                <div class="text-title-primary">{{ contact.name }}</div>
+                <div class="text-name">{{ contact.name }}</div>
                 <div class="text-secondary">
                     {% if contact.role %}{{ contact.role }} • {% endif %}
-                    {{ contact.company.name }}
+                    <span class="cursor-pointer hover:text-blue-600 hover:underline" 
+                          onclick="openCompanyDetailModal({{ contact.company.id }})">
+                        {{ contact.company.name }}
+                    </span>
                 </div>
             </div>
         </div>
