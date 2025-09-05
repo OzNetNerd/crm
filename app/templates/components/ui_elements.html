@@ -133,16 +133,39 @@
   {{ dropdown_select('sortBy', ['name', 'date', 'priority']) }}
 #}
 {% macro dropdown_select(model, options, placeholder='Select...', classes='px-3 py-2 border border-gray-300 rounded-md text-sm') %}
-<select x-model="{{ model }}" class="select-custom {{ classes }}">
-    <option value="">{{ placeholder }}</option>
-    {% for option in options %}
+<div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
+    <button type="button" 
+            class="select-custom {{ classes }}" 
+            @click="open = !open"
+            x-init="if (!{{ model }} || {{ model }} === '') { {{ model }} = '{{ options[0].value if options[0] is mapping else options[0] }}' }">
+        {% for option in options %}
         {% if option is mapping %}
-            <option value="{{ option.value }}">{{ option.label }}</option>
+        <span x-show="{{ model }} === '{{ option.value }}'">{{ option.label }}</span>
         {% else %}
-            <option value="{{ option }}">{{ option|title }}</option>
+        <span x-show="{{ model }} === '{{ option }}'">{{ option|title }}</span>
         {% endif %}
-    {% endfor %}
-</select>
+        {% endfor %}
+    </button>
+    
+    <div x-show="open" 
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="transform opacity-0 scale-95 -translate-x-1/2"
+         x-transition:enter-end="transform opacity-100 scale-100 -translate-x-1/2"
+         x-transition:leave="transition ease-in duration-75"
+         x-transition:leave-start="transform opacity-100 scale-100 -translate-x-1/2"
+         x-transition:leave-end="transform opacity-0 scale-95 -translate-x-1/2"
+         class="multiselect-dropdown">
+        
+        <div class="multiselect-options">
+            {% for option in options %}
+            <div class="multiselect-option" 
+                 @click="{{ model }} = '{{ option.value if option is mapping else option }}'; open = false">
+                <span>{{ option.label if option is mapping else option|title }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endmacro %}
 
 {#
@@ -164,15 +187,18 @@
     <button type="button" 
             class="multiselect-button {{ classes }}" 
             @click="open = !open">
-        <span x-show="{{ model }}.length === 0">{{ placeholder }}</span>
-        <span x-show="{{ model }}.length === 1">
+        <!-- Initial fallback text that shows before Alpine.js initializes -->
+        <span class="initial-text">{{ placeholder }}</span>
+        <!-- Alpine.js controlled content -->
+        <span x-show="{{ model }}.length === 0" x-cloak>{{ placeholder }}</span>
+        <span x-show="{{ model }}.length === 1" x-cloak>
             {% for option in options %}
-            <span x-show="{{ model }}.includes('{{ option.value if option is mapping else option }}')">
+            <span x-show="{{ model }}.includes('{{ option.value if option is mapping else option }}')" x-cloak>
                 {{ option.label if option is mapping else option }}
             </span>
             {% endfor %}
         </span>
-        <span x-show="{{ model }}.length > 1" x-text="{{ model }}.length + ' selected'"></span>
+        <span x-show="{{ model }}.length > 1" x-text="{{ model }}.length + ' selected'" x-cloak></span>
     </button>
     
     <div x-show="open" 

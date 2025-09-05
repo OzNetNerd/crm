@@ -271,11 +271,20 @@
 
 .select-custom {
     appearance: none;
+    background-color: white;
     background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23374151'><path d='M4.5 6.5L8 10l3.5-3.5H4.5z'/></svg>");
     background-repeat: no-repeat;
     background-position: calc(100% - 12px) center;
     background-size: 16px 16px;
-    padding-right: 2.5rem;
+    padding-right: 3rem;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    display: inline-block;
+    width: 160px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-align: center;
 }
 
 .select-custom:focus {
@@ -324,8 +333,6 @@
     border: 1px solid #d1d5db;
     border-radius: 0.375rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    max-height: 16rem;
-    overflow-y: auto;
     margin-top: 0.25rem;
     min-width: 200px;
     width: 200px;
@@ -372,8 +379,9 @@
 }
 
 .multiselect-options {
-    max-height: 10rem;
-    overflow-y: auto;
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
 }
 
 .multiselect-option {
@@ -405,6 +413,11 @@
 /* Hide elements with x-cloak until Alpine.js is initialized */
 [x-cloak] { 
     display: none !important; 
+}
+
+/* Hide initial text once Alpine.js is ready */
+[x-data] .initial-text {
+    display: none;
 }
 
 /* Card Components */
