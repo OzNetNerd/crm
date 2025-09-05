@@ -58,7 +58,7 @@
 }" class="space-y-6">
 
     <!-- Enhanced Filters and Controls -->
-    <div class="bg-white rounded-lg shadow-sm border p-4">
+    <div class="card-padded">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div class="flex flex-wrap items-center gap-4">
                 <label class="text-label-dark">Group by:</label>
@@ -78,7 +78,7 @@
     <div x-show="groupBy === 'company'" class="space-y-4">
         {% set companies = contacts | groupby('company.name') %}
         {% for company_name, company_contacts in companies %}
-            <div class="bg-white rounded-lg shadow-sm border">
+            <div class="card">
                 <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
                      @click="expandedSections['{{ company_name|replace("'", "\\'")|replace('"', '\\"') }}'] = !expandedSections['{{ company_name|replace("'", "\\'")|replace('"', '\\"') }}']">                    <h3 class="text-status-header">
                         <span class="mr-2 transition-transform duration-200" :class="expandedSections['{{ company_name|replace("'", "\\'")|replace('"', '\\"') }}'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ building_office_icon("w-5 h-5 mr-1") }} {{ company_name }}<span class="ml-2 badge-standard badge-blue">{{ company_contacts|list|length }}</span>
@@ -97,7 +97,7 @@
     <div x-show="groupBy === 'industry'" class="space-y-4">
         {% set industries = contacts | groupby('company.industry') %}
         {% for industry, industry_contacts in industries %}
-            <div class="bg-white rounded-lg shadow-sm border">
+            <div class="card">
                 <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
                      @click="expandedSections['{{ industry or 'Unknown Industry' }}'] = !expandedSections['{{ industry or 'Unknown Industry' }}']">                    <h3 class="text-status-header">
                         <span class="mr-2 transition-transform duration-200" :class="expandedSections['{{ industry or 'Unknown Industry' }}'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ building_office_icon("w-5 h-5 mr-1") }} {{ industry or 'Unknown Industry' }}<span class="ml-2 badge-standard badge-green">{{ industry_contacts|list|length }}</span>
@@ -116,7 +116,7 @@
     <div x-show="groupBy === 'role'" class="space-y-4">
         {% set roles = contacts | groupby('role') %}
         {% for role, role_contacts in roles %}
-            <div class="bg-white rounded-lg shadow-sm border">
+            <div class="card">
                 <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
                      @click="expandedSections['{{ role or 'No Role Specified' }}'] = !expandedSections['{{ role or 'No Role Specified' }}']">                    <h3 class="text-status-header">
                         <span class="mr-2 transition-transform duration-200" :class="expandedSections['{{ role or 'No Role Specified' }}'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ user_icon("w-5 h-5 mr-1") }} {{ role or 'No Role Specified' }}<span class="ml-2 badge-standard badge-yellow">{{ role_contacts|list|length }}</span>
@@ -134,7 +134,7 @@
     <!-- Contacts by Contact Info -->
     <div x-show="groupBy === 'contact_info'" class="space-y-4">
         <!-- Complete Contact Info -->
-        <div class="bg-white rounded-lg shadow-sm border border-green-200">
+        <div class="card-success">
             <div class="border-b border-green-200 px-6 py-4 bg-green-50 cursor-pointer hover:bg-green-100" 
                  @click="expandedSections['complete_info'] = !expandedSections['complete_info']">
                 <h3 class="text-status-success">
@@ -151,7 +151,7 @@
         </div>
 
         <!-- Email Only -->
-        <div class="bg-white rounded-lg shadow-sm border border-blue-200">
+        <div class="card-info">
             <div class="border-b border-blue-200 px-6 py-4 bg-blue-50 cursor-pointer hover:bg-blue-100" 
                  @click="expandedSections['with_email'] = !expandedSections['with_email']">
                 <h3 class="text-status-info">
@@ -168,7 +168,7 @@
         </div>
 
         <!-- Phone Only -->
-        <div class="bg-white rounded-lg shadow-sm border border-yellow-200">
+        <div class="card-warning">
             <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50 cursor-pointer hover:bg-yellow-100" 
                  @click="expandedSections['with_phone'] = !expandedSections['with_phone']">
                 <h3 class="text-status-warning">
@@ -185,7 +185,7 @@
         </div>
 
         <!-- Missing Contact Info -->
-        <div class="bg-white rounded-lg shadow-sm border border-red-200">
+        <div class="card-danger">
             <div class="border-b border-red-200 px-6 py-4 bg-red-50 cursor-pointer hover:bg-red-100" 
                  @click="expandedSections['missing_info'] = !expandedSections['missing_info']">
                 <h3 class="text-status-overdue">
@@ -204,7 +204,7 @@
 
     <!-- Fallback for no contacts -->
     {% if not contacts %}
-        <div class="bg-white rounded-lg shadow-sm border p-8 text-center">
+        <div class="card p-8 text-center">
             <p class="text-gray-500 mb-4">No contacts found</p>
             <button onclick="openNewContactModal()" 
                     class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">

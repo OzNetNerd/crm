@@ -79,7 +79,7 @@
     <!-- Task Summary now handled by page_layout template -->
 
     <!-- Enhanced Filters and Controls -->
-    <div class="bg-white rounded-lg shadow-sm border p-4">
+    <div class="card-padded">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div class="flex flex-wrap items-center gap-4">
                 <label class="text-label-dark">Group by:</label>
@@ -119,7 +119,7 @@
     <!-- Tasks by Status -->
     <div x-show="groupBy === 'status'" class="space-y-4">
         <!-- To Do Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border">
+        <div class="card">
             <div class="border-b border-gray-200 px-6 py-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-status-header cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded" 
@@ -145,7 +145,7 @@
         </div>
 
         <!-- In Progress Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border">
+        <div class="card">
             <div class="border-b border-gray-200 px-6 py-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-status-header cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded" 
@@ -171,7 +171,7 @@
         </div>
 
         <!-- Completed Tasks (conditional) -->
-        <div x-show="showCompleted" class="bg-white rounded-lg shadow-sm border">
+        <div x-show="showCompleted" class="card">
             <div class="border-b border-gray-200 px-6 py-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-status-header cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded" 
@@ -202,7 +202,7 @@
     <!-- Tasks by Priority -->
     <div x-show="groupBy === 'priority'" class="space-y-4">
         <!-- High Priority -->
-        <div class="bg-white rounded-lg shadow-sm border border-red-200">
+        <div class="card-danger">
             <div class="border-b border-red-200 px-6 py-4 bg-red-50 cursor-pointer hover:bg-red-100" 
                  @click="expandedSections['high'] = !expandedSections['high']">
                 <h3 class="text-status-overdue">
@@ -221,7 +221,7 @@
         </div>
 
         <!-- Medium Priority -->
-        <div class="bg-white rounded-lg shadow-sm border border-yellow-200">
+        <div class="card-warning">
             <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50 cursor-pointer hover:bg-yellow-100" 
                  @click="expandedSections['medium'] = !expandedSections['medium']">
                 <h3 class="text-status-warning">
@@ -240,7 +240,7 @@
         </div>
 
         <!-- Low Priority -->
-        <div class="bg-white rounded-lg shadow-sm border border-green-200">
+        <div class="card-success">
             <div class="border-b border-green-200 px-6 py-4 bg-green-50 cursor-pointer hover:bg-green-100" 
                  @click="expandedSections['low'] = !expandedSections['low']">
                 <h3 class="text-status-success">
@@ -262,7 +262,7 @@
     <!-- Tasks by Due Date -->
     <div x-show="groupBy === 'due_date'" class="space-y-4">
         <!-- Overdue -->
-        <div class="bg-white rounded-lg shadow-sm border border-red-200">
+        <div class="card-danger">
             <div class="border-b border-red-200 px-6 py-4 bg-red-50 cursor-pointer hover:bg-red-100" 
                  @click="expandedSections['overdue'] = !expandedSections['overdue']">
                 <h3 class="text-status-overdue">
@@ -284,7 +284,7 @@
         </div>
 
         <!-- Today -->
-        <div class="bg-white rounded-lg shadow-sm border border-orange-200">
+        <div class="card-orange">
             <div class="border-b border-orange-200 px-6 py-4 bg-orange-50 cursor-pointer hover:bg-orange-100" 
                  @click="expandedSections['today'] = !expandedSections['today']">
                 <h3 class="text-status-warning">
@@ -306,7 +306,7 @@
         </div>
 
         <!-- This Week -->
-        <div class="bg-white rounded-lg shadow-sm border border-blue-200">
+        <div class="card-info">
             <div class="border-b border-blue-200 px-6 py-4 bg-blue-50 cursor-pointer hover:bg-blue-100" 
                  @click="expandedSections['this_week'] = !expandedSections['this_week']">
                 <h3 class="text-status-info">
@@ -328,7 +328,7 @@
         </div>
 
         <!-- Later -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="card-neutral">
             <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
                  @click="expandedSections['later'] = !expandedSections['later']">
                 <h3 class="text-status-neutral">
@@ -350,7 +350,7 @@
         </div>
 
         <!-- No Due Date -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="card-neutral">
             <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
                  @click="expandedSections['no_date'] = !expandedSections['no_date']">
                 <h3 class="text-status-neutral">
@@ -375,7 +375,7 @@
     <!-- Tasks by Related To -->
     <div x-show="groupBy === 'entity'" class="space-y-4">
         <!-- Company Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border border-blue-200">
+        <div class="card-info">
             <div class="border-b border-blue-200 px-6 py-4 bg-blue-50 cursor-pointer hover:bg-blue-100" 
                  @click="expandedSections['company'] = !expandedSections['company']">
                 <h3 class="text-status-info">
@@ -394,7 +394,7 @@
         </div>
 
         <!-- Contact Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border border-green-200">
+        <div class="card-success">
             <div class="border-b border-green-200 px-6 py-4 bg-green-50 cursor-pointer hover:bg-green-100" 
                  @click="expandedSections['contact'] = !expandedSections['contact']">
                 <h3 class="text-status-success">
@@ -413,7 +413,7 @@
         </div>
 
         <!-- Opportunity Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border border-yellow-200">
+        <div class="card-warning">
             <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50 cursor-pointer hover:bg-yellow-100" 
                  @click="expandedSections['opportunity'] = !expandedSections['opportunity']">
                 <h3 class="text-status-warning">
@@ -432,7 +432,7 @@
         </div>
 
         <!-- Unrelated Tasks -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="card-neutral">
             <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
                  @click="expandedSections['unrelated'] = !expandedSections['unrelated']">
                 <h3 class="text-status-neutral">
