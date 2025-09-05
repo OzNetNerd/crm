@@ -6,7 +6,6 @@ Creates realistic test data for all CRM entities
 
 import random
 from datetime import datetime, date, timedelta
-from decimal import Decimal
 
 from app.models import db, Company, Contact, Opportunity, Task, Note
 from main import create_app
@@ -139,7 +138,7 @@ def create_opportunities(companies, contacts):
         for i in range(num_opps):
             opportunity = Opportunity(
                 name=f"{random.choice(OPPORTUNITY_TEMPLATES)} - {company.name}",
-                value=Decimal(random.randint(5000, 500000)),
+                value=Decimal(random.randint(5000, 500000)),  # $5,000 to $500,000
                 probability=random.randint(10, 90),
                 expected_close_date=date.today() + timedelta(days=random.randint(30, 180)),
                 stage=random.choice(STAGES),

@@ -64,7 +64,7 @@
 {% endmacro %}
 
 <!-- Task Details Modal -->
-<div x-data="{ show: false, taskId: null, task: null }" 
+<div x-data="{ show: false, taskId: null, task: { description: '', due_date: '', priority: '', next_step_type: '' } }" 
      @open-task-modal.window="show = true; taskId = $event.detail.taskId; loadTask(taskId)"
      @close-modal.window="show = false"
      x-show="show" 
@@ -437,7 +437,13 @@ function formatDate(isoString) {
 <div x-data="{
         show: false,
         taskId: null,
-        task: null,
+        task: {
+            description: '',
+            due_date: '',
+            priority: '',
+            status: '',
+            next_step_type: ''
+        },
         originalTask: null,
         loading: false,
         saving: false,
@@ -598,7 +604,13 @@ function formatDate(isoString) {
 <div x-data="{
         show: false,
         contactId: null,
-        contact: null,
+        contact: {
+            name: '',
+            role: '',
+            email: '',
+            phone: '',
+            opportunities: []
+        },
         notes: [],
         newNote: '',
         loading: false,
@@ -805,7 +817,11 @@ function formatDate(isoString) {
 <div x-data="{
         show: false,
         companyId: null,
-        company: null,
+        company: {
+            name: '',
+            industry: '',
+            website: ''
+        },
         notes: [],
         newNote: '',
         loading: false,
@@ -985,7 +1001,13 @@ function formatDate(isoString) {
 <div x-data="{
         show: false,
         opportunityId: null,
-        opportunity: null,
+        opportunity: {
+            name: '',
+            value: '',
+            probability: '',
+            stage: '',
+            expected_close_date: ''
+        },
         notes: [],
         newNote: '',
         loading: false,

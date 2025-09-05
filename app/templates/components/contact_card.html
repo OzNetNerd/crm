@@ -26,20 +26,7 @@
                 </a>
             {% endif %}
             
-            {% if contact.phone %}
-                <a href="tel:{{ contact.phone }}" 
-                   class="text-sm text-gray-600 hover:text-gray-800">
-                    {{ contact.phone }}
-                </a>
-            {% endif %}
-            
             <div class="flex items-center space-x-2">
-                {% if contact.opportunities|length > 0 %}
-                    <span class="text-xs text-gray-500">
-                        {{ pluralized_count(contact.opportunities|length, 'opportunity', short=true) }}
-                    </span>
-                {% endif %}
-                
                 {{ action_button('openContactModal(' + contact.id|string + ')') }}
             </div>
         </div>

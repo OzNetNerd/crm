@@ -19,9 +19,9 @@ app/
 ```
 
 ## Entity Relationships (Using "Opportunities" terminology)
-- **Companies** → **Opportunities**: One-to-many (company has multiple opportunities)
-- **Companies** → **Contacts**: One-to-many (company has multiple stakeholders) 
-- **Contacts** → **Opportunities**: Many-to-many (stakeholder involved in multiple opportunities)
+- **Companies** to **Opportunities**: One-to-many (company has multiple opportunities)
+- **Companies** to **Contacts**: One-to-many (company has multiple stakeholders) 
+- **Contacts** to **Opportunities**: Many-to-many (stakeholder involved in multiple opportunities)
 - **Tasks**: Link to any entity (Companies/Contacts/Opportunities) via polymorphic relationship
 - **Notes**: Attach to any entity (Companies/Contacts/Opportunities/Tasks) as commentary/updates
 
@@ -57,7 +57,7 @@ notes: id, content, is_internal, entity_type, entity_id, created_at
 ## Key Technical Decisions
 1. **No frontend framework**: Alpine.js handles all interactivity needs
 2. **Minimal API**: Only for partial updates (complete task, save edit, search)
-3. **Template inheritance**: Base layout → dashboard → task components
+3. **Template inheritance**: Base layout to dashboard to task components
 4. **Component reuse**: Shared task card, modal, form field templates
 5. **Progressive enhancement**: Works with JS disabled, enhanced with JS
 
