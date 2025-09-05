@@ -141,7 +141,7 @@
             <div class="p-6" x-show="expandedSections['todo']" x-transition>
                 {% for task in tasks %}
                     {% if task.status == 'todo' %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'todo') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -155,7 +155,7 @@
             <div class="p-6" x-show="expandedSections['in-progress']" x-transition>
                 {% for task in tasks %}
                     {% if task.status == 'in-progress' %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'in-progress') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -170,7 +170,7 @@
                 {% for task in tasks %}
                     {% if task.status == 'complete' %}
                         <div class="opacity-60">
-                            {{ render_task(task) }}
+                            {{ render_task(task, 'complete') }}
                         </div>
                     {% endif %}
                 {% else %}
@@ -188,7 +188,7 @@
             <div class="p-6" x-show="expandedSections['high']" x-transition>
                 {% for task in tasks %}
                     {% if task.priority == 'high' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'high') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -202,7 +202,7 @@
             <div class="p-6" x-show="expandedSections['medium']" x-transition>
                 {% for task in tasks %}
                     {% if task.priority == 'medium' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'medium') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -216,7 +216,7 @@
             <div class="p-6" x-show="expandedSections['low']" x-transition>
                 {% for task in tasks %}
                     {% if task.priority == 'low' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'low') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -235,7 +235,7 @@
                 {% for task in tasks %}
                     {% if task.is_overdue and (task.status != 'complete' or showCompleted) %}
                         {% set _ = overdue_task_list.append(task) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'overdue') }}
                     {% endif %}
                 {% endfor %}
                 {% if overdue_task_list|length == 0 %}
@@ -252,7 +252,7 @@
                 {% for task in tasks %}
                     {% if task.due_date == today and task.status != 'complete' %}
                         {% set _ = today_task_list.append(task) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'today') }}
                     {% endif %}
                 {% endfor %}
                 {% if today_task_list|length == 0 %}
@@ -269,7 +269,7 @@
                 {% for task in tasks %}
                     {% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}
                         {% set _ = this_week_task_list.append(task) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'this_week') }}
                     {% endif %}
                 {% endfor %}
                 {% if this_week_task_list|length == 0 %}
@@ -286,7 +286,7 @@
                 {% for task in tasks %}
                     {% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}
                         {% set _ = later_task_list.append(task) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'later') }}
                     {% endif %}
                 {% endfor %}
                 {% if later_task_list|length == 0 %}
@@ -303,7 +303,7 @@
                 {% for task in tasks %}
                     {% if not task.due_date and (task.status != 'complete' or showCompleted) %}
                         {% set _ = no_date_task_list.append(task) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'no_date') }}
                     {% endif %}
                 {% endfor %}
                 {% if no_date_task_list|length == 0 %}
@@ -321,7 +321,7 @@
             <div class="p-6" x-show="expandedSections['company']" x-transition>
                 {% for task in tasks %}
                     {% if task.entity_type == 'company' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'company') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -335,7 +335,7 @@
             <div class="p-6" x-show="expandedSections['contact']" x-transition>
                 {% for task in tasks %}
                     {% if task.entity_type == 'contact' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'contact') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -349,7 +349,7 @@
             <div class="p-6" x-show="expandedSections['opportunity']" x-transition>
                 {% for task in tasks %}
                     {% if task.entity_type == 'opportunity' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'opportunity') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -363,7 +363,7 @@
             <div class="p-6" x-show="expandedSections['unrelated']" x-transition>
                 {% for task in tasks %}
                     {% if not task.entity_type and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task) }}
+                        {{ render_task(task, 'unrelated') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
