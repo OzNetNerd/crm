@@ -155,7 +155,7 @@
                     <div>
                         <div class="text-sm font-medium text-gray-900">{{ task.description }}</div>
                         <div class="text-xs text-red-600 mt-1">
-                            Due: {{ task.due_date.strftime('%m/%d/%y') }}{% if task.is_overdue %} • -{{ (task.due_date.today() - task.due_date).days }} days ago{% endif %}
+                            Due: {{ task.due_date.strftime('%d/%m/%y') }}{% if task.is_overdue %} • -{{ (task.due_date.today() - task.due_date).days }} days ago{% endif %}
                         </div>
                     </div>
                     <a href="/tasks/" class="text-red-600 hover:text-red-800 text-sm font-medium">
@@ -176,7 +176,7 @@
                     <div>
                         <div class="text-sm font-medium text-gray-900">{{ opp.name }}</div>
                         <div class="text-xs text-yellow-600 mt-1">
-                            ${{ "{:,.0f}".format(opp.value or 0) }} • {{ opp.expected_close_date.strftime('%m/%d/%y') }}
+                            ${{ "{:,.0f}".format(opp.value or 0) }} • {{ opp.expected_close_date.strftime('%d/%m/%y') }}
                         </div>
                     </div>
                     <a href="/opportunities/" class="text-yellow-600 hover:text-yellow-800 text-sm font-medium">
@@ -220,7 +220,7 @@
                         <div class="text-xs mt-1 {{ 'text-red-600' if task.priority == 'high' else
                                               'text-yellow-600' if task.priority == 'medium' else
                                               'text-green-600' }}">
-                            {% if task.due_date %}Due: {{ task.due_date.strftime('%m/%d/%y') }}{% if task.is_overdue %} • -{{ (task.due_date.today() - task.due_date).days }} days ago{% endif %}{% else %}No due date{% endif %}
+                            {% if task.due_date %}Due: {{ task.due_date.strftime('%d/%m/%y') }}{% if task.is_overdue %} • -{{ (task.due_date.today() - task.due_date).days }} days ago{% elif task.due_date > task.due_date.today() %} • {{ (task.due_date - task.due_date.today()).days }} days to go{% endif %}{% else %}No due date{% endif %}
                         </div>
                     </div>
                     <a href="/tasks/" class="{{ 'text-red-600 hover:text-red-800' if task.priority == 'high' else
