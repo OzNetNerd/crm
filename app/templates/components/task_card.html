@@ -234,7 +234,7 @@
                 
                 {# Person's name (contacts only) #}
                 {% if task.entity_name and task.entity_type == 'contact' %}
-                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }} • {{ pencil_icon("w-3 h-3") }}
+                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }}<span class="inline-flex items-center ml-1"> • <span class="ml-1">{{ pencil_icon("w-3 h-3") }}</span></span>
                 {% endif %}
             </span>
             
@@ -259,7 +259,7 @@
                 
                 {# Person's name (contacts only) #}
                 {% if task.entity_name and task.entity_type == 'contact' %}
-                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }} • {{ pencil_icon("w-3 h-3") }}
+                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }}<span class="inline-flex items-center ml-1"> • <span class="ml-1">{{ pencil_icon("w-3 h-3") }}</span></span>
                 {% endif %}
             </span>
         </div>
