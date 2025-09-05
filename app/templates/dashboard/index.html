@@ -148,7 +148,7 @@
         <!-- Overdue Tasks Alert -->
         {% if overdue_tasks %}
         <div class="bg-red-50 border border-red-200 rounded-lg p-6">
-            <a href="/tasks/" class="text-lg font-semibold text-red-800 mb-4 hover:text-red-900 block">🚨 Overdue Tasks</a>
+            <a href="/tasks/" class="text-lg font-semibold text-red-800 mb-4 hover:text-red-900 hover:underline transition-all duration-200 block">🚨 Overdue Tasks</a>
             <div class="space-y-3">
                 {% for task in overdue_tasks %}
                 <div class="flex items-center justify-between bg-white p-3 rounded border">
@@ -169,7 +169,7 @@
         <!-- Closing Soon Opportunities -->
         {% if closing_soon %}
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-            <a href="/opportunities/" class="text-lg font-semibold text-yellow-800 mb-4 hover:text-yellow-900 block">⏰ Closing Soon</a>
+            <a href="/opportunities/" class="text-lg font-semibold text-yellow-800 mb-4 hover:text-yellow-900 hover:underline transition-all duration-200 block">⏰ Closing Soon</a>
             <div class="space-y-3">
                 {% for opp in closing_soon %}
                 <div class="flex items-center justify-between bg-white p-3 rounded border">
@@ -211,7 +211,7 @@
     <div class="space-y-6">
         <!-- Recent Tasks -->
         <div class="bg-white rounded-lg shadow-sm border p-6">
-            <a href="/tasks/" class="text-lg font-semibold text-gray-900 mb-4 hover:text-gray-700 block">Recent Tasks</a>
+            <a href="/tasks/" class="text-lg font-semibold text-gray-900 mb-4 hover:text-gray-700 hover:underline transition-all duration-200 block">Recent Tasks</a>
             <div class="space-y-3">
                 {% for task in recent_tasks %}
                 <div class="flex items-center justify-between bg-white p-3 rounded border">
@@ -234,7 +234,7 @@
 
         <!-- Recent Opportunities -->
         <div class="bg-white rounded-lg shadow-sm border p-6">
-            <a href="/opportunities/" class="text-lg font-semibold text-gray-900 mb-4 hover:text-gray-700 block">Recent Opportunities</a>
+            <a href="/opportunities/" class="text-lg font-semibold text-gray-900 mb-4 hover:text-gray-700 hover:underline transition-all duration-200 block">Recent Opportunities</a>
             <div class="space-y-3">
                 {% for opp in recent_opportunities %}
                 <div class="flex items-center justify-between bg-white p-3 rounded border">

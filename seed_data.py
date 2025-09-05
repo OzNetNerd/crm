@@ -59,7 +59,7 @@ TASK_TEMPLATES = [
     'Send revised proposal to {}',
     'Schedule follow-up call with {}',
     'Prepare demo presentation for {}',
-    'Research {}'s competitors',
+    'Research {}\'s competitors',
     'Draft contract terms for {}',
     'Conduct needs assessment with {}',
     'Send project timeline to {}',
