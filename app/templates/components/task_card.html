@@ -2,7 +2,19 @@
 {% from "components/list_section.html" import status_badge %}
 {% macro render_task(task) %}
 <div class="task-card bg-white rounded-lg shadow-sm border p-4 mb-3" 
-     data-task-id="{{ task.id }}">
+     data-task-id="{{ task.id }}"
+     x-data="{ 
+        pendingDays: 0, 
+        isEditing: false,
+        originalDueDate: '{{ task.due_date.strftime('%d/%m/%y') if task.due_date else '' }}',
+        getNewDueDate() {
+            if (!this.originalDueDate || this.pendingDays === 0) return this.originalDueDate;
+            const date = new Date('{{ task.due_date.isoformat() if task.due_date else '' }}');
+            date.setDate(date.getDate() + this.pendingDays);
+            return date.toLocaleDateString('en-GB');
+        }
+     }"
+     :class="{ 'ring-2 ring-blue-200 bg-blue-50': isEditing }">
     
     <!-- Priority indicator -->
     <div class="flex items-center justify-between mb-2">

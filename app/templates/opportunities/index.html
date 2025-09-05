@@ -1,6 +1,7 @@
 {% extends "base/layout.html" %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/quick_actions.html" import opportunities_page_actions %}
+{% from "components/ui_elements.html" import action_button %}
 
 {% block title %}Opportunities - CRM{% endblock %}
 
@@ -105,10 +106,7 @@
                         <span class="text-xs text-gray-500 mr-3">
                             {{ opportunity.deal_age }} days old
                         </span>
-                        <button onclick="openOpportunityModal({{ opportunity.id }})" 
-                                class="text-gray-400 hover:text-gray-600">
-                            →
-                        </button>
+                        {{ action_button('openOpportunityModal(' + opportunity.id|string + ')') }}
                     </div>
                 </div>
             </li>
