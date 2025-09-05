@@ -307,13 +307,16 @@
                 </h3>
             </div>
             <div class="p-6" x-show="expandedSections['today']" x-transition>
+                {% set today_task_list = [] %}
                 {% for task in tasks %}
                     {% if task.due_date == today and task.status != 'complete' %}
+                        {% set _ = today_task_list.append(task) %}
                         {{ render_task(task) }}
                     {% endif %}
-                {% else %}
-                    <p class="text-gray-500 text-center py-4">No tasks due today</p>
                 {% endfor %}
+                {% if today_task_list|length == 0 %}
+                    <p class="text-gray-500 text-center py-4">No tasks due today</p>
+                {% endif %}
             </div>
         </div>
 
@@ -326,13 +329,13 @@
                           :class="expandedSections['this_week'] ? 'rotate-90' : ''">▶</span>
                     📆 This Week
                     <span class="ml-2 bg-blue-200 text-blue-800 px-2 py-1 text-sm rounded-full">
-                        {% set this_week_count = 0 %}
+                        {% set this_week_tasks = [] %}
                         {% for task in tasks %}
                             {% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}
-                                {% set this_week_count = this_week_count + 1 %}
+                                {% set _ = this_week_tasks.append(task) %}
                             {% endif %}
                         {% endfor %}
-                        {{ this_week_count }}
+                        {{ this_week_tasks|length }}
                     </span>
                 </h3>
             </div>
@@ -356,13 +359,13 @@
                           :class="expandedSections['later'] ? 'rotate-90' : ''">▶</span>
                     📊 Later
                     <span class="ml-2 bg-gray-200 text-gray-800 px-2 py-1 text-sm rounded-full">
-                        {% set later_count = 0 %}
+                        {% set later_tasks = [] %}
                         {% for task in tasks %}
                             {% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}
-                                {% set later_count = later_count + 1 %}
+                                {% set _ = later_tasks.append(task) %}
                             {% endif %}
                         {% endfor %}
-                        {{ later_count }}
+                        {{ later_tasks|length }}
                     </span>
                 </h3>
             </div>
