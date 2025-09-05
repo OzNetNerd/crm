@@ -59,7 +59,7 @@
                             {% endif %}
                         </div>
                         
-                        <div class="mt-2 flex items-center text-sm text-gray-500 space-x-4">
+                        <div class="mt-2 flex items-center text-secondary space-x-4">
                             <span>{{ opportunity.company.name }}</span>
                             
                             {% if opportunity.probability %}
@@ -89,7 +89,7 @@
                         </div>
                         
                         {% if opportunity.contacts %}
-                            <div class="mt-2 text-sm text-gray-500">
+                            <div class="mt-2 text-secondary">
                                 Contacts: 
                                 {% for contact in opportunity.contacts[:3] %}
                                     {{ contact.name }}{% if not loop.last %}, {% endif %}

@@ -35,7 +35,7 @@
             <div class="text-2xl font-bold {{ stat.color_class or 'text-gray-900' }}">
                 {{ stat.value }}
             </div>
-            <div class="text-sm text-gray-500">{{ stat.label }}</div>
+            <div class="text-secondary">{{ stat.label }}</div>
         </div>
         {% endfor %}
     </div>
@@ -56,7 +56,7 @@
     <div class="text-2xl font-bold {{ color_class }}">
         {{ value }}
     </div>
-    <div class="text-sm text-gray-500">{{ label }}</div>
+    <div class="text-secondary">{{ label }}</div>
 </div>
 {% endmacro %}
 
@@ -89,7 +89,7 @@
             <div class="text-xl font-bold text-{{ item.color }}-600">
                 {{ item.count }}
                 {% if show_percentages and item.percentage %}
-                <span class="text-sm text-gray-500 font-normal">({{ item.percentage }}%)</span>
+                <span class="text-secondary font-normal">({{ item.percentage }}%)</span>
                 {% endif %}
             </div>
         </div>
