@@ -94,7 +94,7 @@
                 <div x-show="task" class="space-y-4">
                     <div>
                         <label class="text-form-label">Description</label>
-                        <textarea x-model="task?.description" 
+                        <textarea x-model="task.description" 
                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                                   rows="3"></textarea>
                     </div>
@@ -102,13 +102,13 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="text-form-label">Due Date</label>
-                            <input type="date" x-model="task?.due_date" 
+                            <input type="date" x-model="task.due_date" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                         </div>
                         
                         <div>
                             <label class="text-form-label">Priority</label>
-                            <select x-model="task?.priority" 
+                            <select x-model="task.priority" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                                 <option value="low">Low</option>
                                 <option value="medium">Medium</option>
@@ -119,7 +119,7 @@
                     
                     <div>
                         <label class="text-form-label">Next Step Type</label>
-                        <select x-model="task?.next_step_type" 
+                        <select x-model="task.next_step_type" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                             <option value="">None</option>
                             <option value="call">Call</option>

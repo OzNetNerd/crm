@@ -65,6 +65,14 @@
         'contact': true,
         'opportunity': true,
         'unrelated': true
+    },
+    
+    expandAllTasksInGroup(groupName) {
+        this.$dispatch('expand-all-tasks', { group: groupName });
+    },
+    
+    collapseAllTasksInGroup(groupName) {
+        this.$dispatch('collapse-all-tasks', { group: groupName });
     }
 }" class="space-y-6">
 
@@ -112,11 +120,18 @@
     <div x-show="groupBy === 'status'" class="space-y-4">
         <!-- To Do Tasks -->
         <div class="bg-white rounded-lg shadow-sm border">
-            <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
-                 @click="expandedSections['todo'] = !expandedSections['todo']">
-                <h3 class="text-status-header">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['todo'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ clipboard_list_icon("w-5 h-5 mr-1") }} To Do<span class="ml-2 badge-standard badge-blue">{{ tasks|selectattr('status', 'equalto', 'todo')|list|length }}</span>
-                </h3>
+            <div class="border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-status-header cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded" 
+                        @click="expandedSections['todo'] = !expandedSections['todo']">
+                        <span class="mr-2 transition-transform duration-200" :class="expandedSections['todo'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ clipboard_list_icon("w-5 h-5 mr-1") }} To Do<span class="ml-2 badge-standard badge-blue">{{ tasks|selectattr('status', 'equalto', 'todo')|list|length }}</span>
+                    </h3>
+                    <div class="flex items-center space-x-2 text-sm text-gray-500" x-show="expandedSections['todo']">
+                        <button @click.stop="expandAllTasksInGroup('todo')" class="hover:text-blue-600 transition-colors">Expand All</button>
+                        <span>|</span>
+                        <button @click.stop="collapseAllTasksInGroup('todo')" class="hover:text-blue-600 transition-colors">Collapse All</button>
+                    </div>
+                </div>
             </div>
             <div class="p-6" x-show="expandedSections['todo']" x-transition>
                 {% for task in tasks %}
@@ -131,11 +146,18 @@
 
         <!-- In Progress Tasks -->
         <div class="bg-white rounded-lg shadow-sm border">
-            <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
-                 @click="expandedSections['in-progress'] = !expandedSections['in-progress']">
-                <h3 class="text-status-header">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['in-progress'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ bolt_icon("w-5 h-5 mr-1") }} In Progress<span class="ml-2 badge-standard badge-yellow">{{ tasks|selectattr('status', 'equalto', 'in-progress')|list|length }}</span>
-                </h3>
+            <div class="border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-status-header cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded" 
+                        @click="expandedSections['in-progress'] = !expandedSections['in-progress']">
+                        <span class="mr-2 transition-transform duration-200" :class="expandedSections['in-progress'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ bolt_icon("w-5 h-5 mr-1") }} In Progress<span class="ml-2 badge-standard badge-yellow">{{ tasks|selectattr('status', 'equalto', 'in-progress')|list|length }}</span>
+                    </h3>
+                    <div class="flex items-center space-x-2 text-sm text-gray-500" x-show="expandedSections['in-progress']">
+                        <button @click.stop="expandAllTasksInGroup('in-progress')" class="hover:text-blue-600 transition-colors">Expand All</button>
+                        <span>|</span>
+                        <button @click.stop="collapseAllTasksInGroup('in-progress')" class="hover:text-blue-600 transition-colors">Collapse All</button>
+                    </div>
+                </div>
             </div>
             <div class="p-6" x-show="expandedSections['in-progress']" x-transition>
                 {% for task in tasks %}
@@ -150,11 +172,18 @@
 
         <!-- Completed Tasks (conditional) -->
         <div x-show="showCompleted" class="bg-white rounded-lg shadow-sm border">
-            <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
-                 @click="expandedSections['complete'] = !expandedSections['complete']">
-                <h3 class="text-status-header">
-                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['complete'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ check_circle_icon_solid("w-5 h-5 mr-1") }} Completed<span class="ml-2 badge-standard badge-green">{{ tasks|selectattr('status', 'equalto', 'complete')|list|length }}</span>
-                </h3>
+            <div class="border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-status-header cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded" 
+                        @click="expandedSections['complete'] = !expandedSections['complete']">
+                        <span class="mr-2 transition-transform duration-200" :class="expandedSections['complete'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ check_circle_icon_solid("w-5 h-5 mr-1") }} Completed<span class="ml-2 badge-standard badge-green">{{ tasks|selectattr('status', 'equalto', 'complete')|list|length }}</span>
+                    </h3>
+                    <div class="flex items-center space-x-2 text-sm text-gray-500" x-show="expandedSections['complete']">
+                        <button @click.stop="expandAllTasksInGroup('complete')" class="hover:text-blue-600 transition-colors">Expand All</button>
+                        <span>|</span>
+                        <button @click.stop="collapseAllTasksInGroup('complete')" class="hover:text-blue-600 transition-colors">Collapse All</button>
+                    </div>
+                </div>
             </div>
             <div class="p-6" x-show="expandedSections['complete']" x-transition>
                 {% for task in tasks %}
