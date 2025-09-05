@@ -157,7 +157,6 @@
                         <div class="text-sm text-red-600">Due: {{ task.due_date.strftime('%m/%d/%y') }}</div>
                     </div>
                     <a href="/tasks/" class="text-red-600 hover:text-red-800 text-sm font-medium">
-                        View →
                     </a>
                 </div>
                 {% endfor %}
@@ -184,7 +183,6 @@
                         </div>
                     </div>
                     <a href="/opportunities/" class="text-yellow-600 hover:text-yellow-800 text-sm font-medium">
-                        View →
                     </a>
                 </div>
                 {% endfor %}
@@ -231,7 +229,6 @@
                     <a href="/tasks/" class="{{ 'text-red-600 hover:text-red-800' if task.priority == 'high' else
                                                 'text-yellow-600 hover:text-yellow-800' if task.priority == 'medium' else
                                                 'text-green-600 hover:text-green-800' }} text-sm font-medium">
-                        View →
                     </a>
                 </div>
                 {% endfor %}
