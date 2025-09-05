@@ -435,21 +435,85 @@ function formatDate(isoString) {
 <!-- Include the confirmation modal instance -->
 {{ confirmation_modal("task-confirmation") }}
 
-<!-- Enhanced Task Detail Modal -->
+<!-- Enhanced Task Detail Modal with Tabs -->
 <div x-data="{
         show: false,
         taskId: null,
+        activeTab: 'task',
         task: {
             description: '',
             due_date: '',
             priority: '',
             status: '',
-            next_step_type: ''
+            next_step_type: '',
+            company_id: null,
+            opportunity_id: null,
+            company_name: '',
+            opportunity_name: ''
         },
+        company: null,
+        opportunity: null,
+        stakeholders: [],
         originalTask: null,
         loading: false,
         saving: false,
         hasChanges: false,
+        
+        switchTab(tab) {
+            this.activeTab = tab;
+            // Load related data when switching to specific tabs
+            if (tab === 'company' && this.task.company_id && !this.company) {
+                this.loadCompanyData();
+            } else if (tab === 'opportunity' && this.task.opportunity_id && !this.opportunity) {
+                this.loadOpportunityData();
+            } else if (tab === 'stakeholders' && (this.task.company_id || this.task.opportunity_id) && this.stakeholders.length === 0) {
+                this.loadStakeholders();
+            }
+        },
+        
+        async loadCompanyData() {
+            if (!this.task.company_id) return;
+            try {
+                const response = await fetch(`/api/companies/${this.task.company_id}`);
+                if (response.ok) {
+                    this.company = await response.json();
+                }
+            } catch (error) {
+                console.error('Error loading company data:', error);
+            }
+        },
+        
+        async loadOpportunityData() {
+            if (!this.task.opportunity_id) return;
+            try {
+                const response = await fetch(`/api/opportunities/${this.task.opportunity_id}`);
+                if (response.ok) {
+                    this.opportunity = await response.json();
+                }
+            } catch (error) {
+                console.error('Error loading opportunity data:', error);
+            }
+        },
+        
+        async loadStakeholders() {
+            try {
+                let url = '';
+                if (this.task.opportunity_id) {
+                    url = `/api/opportunities/${this.task.opportunity_id}/contacts`;
+                } else if (this.task.company_id) {
+                    url = `/api/companies/${this.task.company_id}/contacts`;
+                }
+                
+                if (url) {
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        this.stakeholders = await response.json();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading stakeholders:', error);
+            }
+        },
         
         async saveTaskDetails() {
             if (!this.task) return;
@@ -502,7 +566,7 @@ function formatDate(isoString) {
         <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all max-w-4xl w-full mx-4">
             <!-- Header -->
             <div class="bg-white px-6 pt-6 pb-4 border-b border-gray-200">
-                <div class="flex items-start justify-between">
+                <div class="flex items-start justify-between mb-4">
                     <div>
                         <h3 class="text-title-primary leading-6">Task Details</h3>
                         <p class="text-metadata" x-show="task" x-text="task?.company_name ? `${task.company_name}${task.opportunity_name ? ' • ' + task.opportunity_name : ''}` : 'No related entity'"></p>
@@ -514,11 +578,41 @@ function formatDate(isoString) {
                         </svg>
                     </button>
                 </div>
+                
+                <!-- Tab Navigation -->
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button @click="switchTab('task')" 
+                                :class="activeTab === 'task' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                            Task Details
+                        </button>
+                        <button @click="switchTab('company')" 
+                                x-show="task?.company_id"
+                                :class="activeTab === 'company' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                            Company
+                        </button>
+                        <button @click="switchTab('opportunity')" 
+                                x-show="task?.opportunity_id"
+                                :class="activeTab === 'opportunity' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                            Opportunity
+                        </button>
+                        <button @click="switchTab('stakeholders')" 
+                                x-show="task?.company_id || task?.opportunity_id"
+                                :class="activeTab === 'stakeholders' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                            Stakeholders
+                        </button>
+                    </nav>
+                </div>
             </div>
             
             <!-- Content -->
             <div class="bg-white px-6 py-4" x-show="!loading">
-                <div x-show="task" class="space-y-6">
+                <!-- Task Details Tab -->
+                <div x-show="activeTab === 'task' && task" class="space-y-6">
                     <!-- Task Information Section -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Description (Left Column) -->
@@ -573,6 +667,104 @@ function formatDate(isoString) {
                                         <option value="demo">Demo</option>
                                     </select>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Company Tab -->
+                <div x-show="activeTab === 'company' && company" class="space-y-6">
+                    <div>
+                        <h4 class="text-section-title">Company Information</h4>
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-form-label">Company Name</label>
+                                <p class="text-secondary" x-text="company?.name || 'N/A'"></p>
+                            </div>
+                            <div>
+                                <label class="text-form-label">Industry</label>
+                                <p class="text-secondary" x-text="company?.industry || 'N/A'"></p>
+                            </div>
+                            <div>
+                                <label class="text-form-label">Website</label>
+                                <p class="text-secondary">
+                                    <a x-show="company?.website" :href="company?.website" target="_blank" 
+                                       class="text-link hover:underline" x-text="company?.website"></a>
+                                    <span x-show="!company?.website">N/A</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Opportunity Tab -->
+                <div x-show="activeTab === 'opportunity' && opportunity" class="space-y-6">
+                    <div>
+                        <h4 class="text-section-title">Opportunity Information</h4>
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-form-label">Opportunity Name</label>
+                                <p class="text-secondary" x-text="opportunity?.name || 'N/A'"></p>
+                            </div>
+                            <div>
+                                <label class="text-form-label">Stage</label>
+                                <p class="text-secondary" x-text="opportunity?.stage || 'N/A'"></p>
+                            </div>
+                            <div>
+                                <label class="text-form-label">Value</label>
+                                <p class="text-secondary" x-text="opportunity?.value ? '$' + new Intl.NumberFormat().format(opportunity.value) : 'N/A'"></p>
+                            </div>
+                            <div>
+                                <label class="text-form-label">Probability</label>
+                                <p class="text-secondary" x-text="opportunity?.probability ? opportunity.probability + '%' : 'N/A'"></p>
+                            </div>
+                            <div>
+                                <label class="text-form-label">Expected Close Date</label>
+                                <p class="text-secondary" x-text="opportunity?.expected_close_date || 'N/A'"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stakeholders Tab -->
+                <div x-show="activeTab === 'stakeholders'" class="space-y-6">
+                    <div>
+                        <h4 class="text-section-title">Stakeholders</h4>
+                        <div class="mt-4">
+                            <div x-show="stakeholders.length > 0" class="space-y-3">
+                                <template x-for="contact in stakeholders" :key="contact.id">
+                                    <div class="card-padded">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="text-form-label">Name</label>
+                                                <p class="text-secondary" x-text="contact.name"></p>
+                                            </div>
+                                            <div>
+                                                <label class="text-form-label">Role</label>
+                                                <p class="text-secondary" x-text="contact.role || 'N/A'"></p>
+                                            </div>
+                                            <div>
+                                                <label class="text-form-label">Email</label>
+                                                <p class="text-secondary">
+                                                    <a x-show="contact.email" :href="'mailto:' + contact.email" 
+                                                       class="text-link hover:underline" x-text="contact.email"></a>
+                                                    <span x-show="!contact.email">N/A</span>
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label class="text-form-label">Phone</label>
+                                                <p class="text-secondary">
+                                                    <a x-show="contact.phone" :href="'tel:' + contact.phone" 
+                                                       class="text-link hover:underline" x-text="contact.phone"></a>
+                                                    <span x-show="!contact.phone">N/A</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <div x-show="stakeholders.length === 0" class="text-empty-state">
+                                No stakeholders found for this task.
                             </div>
                         </div>
                     </div>

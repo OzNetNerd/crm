@@ -218,6 +218,9 @@ document.addEventListener('keydown', function(e) {
     
     // Escape: Close modals/deselect tasks
     if (e.key === 'Escape') {
+        // Close any open modals
+        window.dispatchEvent(new CustomEvent('close-modal'));
+        // Deselect tasks
         Alpine.store('dashboard').deselectAllTasks();
     }
 });
