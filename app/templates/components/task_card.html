@@ -54,8 +54,13 @@
 
     <!-- Task metadata -->
     <div class="flex items-center justify-between">
-        <div class="text-metadata">
-            {% if task.due_date %}Due: {{ task.due_date.strftime('%d/%m/%y') }}{% endif %}{% if task.due_date and task.entity_name %} • {% endif %}{% if task.entity_name %}{{ task.entity_name }}{% endif %}{% if task.next_step_type and (task.due_date or task.entity_name) %} • {% endif %}{% if task.next_step_type %}{{ task.next_step_type }}{% endif %}
+        <div class="flex items-center space-x-3">
+            <div class="text-metadata">
+                {% if task.due_date %}Due: {{ task.due_date.strftime('%d/%m/%y') }}{% endif %}{% if task.due_date and task.entity_name %} • {% endif %}{% if task.entity_name %}{{ task.entity_name }}{% endif %}
+            </div>
+            {% if task.next_step_type %}
+                <span class="text-badge-tag">{{ task.next_step_type }}</span>
+            {% endif %}
         </div>
         
         <button onclick="openTaskModal({{ task.id }})" 
