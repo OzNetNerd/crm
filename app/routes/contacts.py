@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for
-from app.models import db, Contact, Company, Opportunity
+from app.models import db, Contact, Company, Opportunity, Note
 
 contacts_bp = Blueprint('contacts', __name__)
 
@@ -39,3 +39,65 @@ def new():
     
     companies = Company.query.order_by(Company.name).all()
     return render_template('contacts/new.html', companies=companies)
+
+
+@contacts_bp.route('/<int:contact_id>/notes', methods=['GET'])
+def get_contact_notes(contact_id):
+    """Get all notes for a specific contact"""
+    try:
+        # Verify contact exists
+        contact = Contact.query.get_or_404(contact_id)
+        
+        notes = Note.query.filter_by(
+            entity_type='contact',
+            entity_id=contact_id
+        ).order_by(Note.created_at.desc()).all()
+        
+        return jsonify([{
+            'id': note.id,
+            'content': note.content,
+            'entity_type': note.entity_type,
+            'entity_id': note.entity_id,
+            'is_internal': note.is_internal,
+            'created_at': note.created_at.isoformat(),
+            'entity_name': note.entity_name
+        } for note in notes])
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@contacts_bp.route('/<int:contact_id>/notes', methods=['POST'])
+def create_contact_note(contact_id):
+    """Create a new note for a specific contact"""
+    try:
+        # Verify contact exists
+        contact = Contact.query.get_or_404(contact_id)
+        
+        data = request.get_json()
+        if not data or not data.get('content'):
+            return jsonify({'error': 'Note content is required'}), 400
+        
+        note = Note(
+            content=data['content'],
+            entity_type='contact',
+            entity_id=contact_id,
+            is_internal=data.get('is_internal', True)
+        )
+        
+        db.session.add(note)
+        db.session.commit()
+        
+        return jsonify({
+            'id': note.id,
+            'content': note.content,
+            'entity_type': note.entity_type,
+            'entity_id': note.entity_id,
+            'is_internal': note.is_internal,
+            'created_at': note.created_at.isoformat(),
+            'entity_name': note.entity_name
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500

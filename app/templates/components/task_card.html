@@ -234,8 +234,14 @@
                 
                 {# Person's name (contacts only) #}
                 {% if task.entity_name and task.entity_type == 'contact' %}
-                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }}<span class="inline-flex items-center ml-1"> • <span class="ml-1 text-link-interactive" @click.stop="openTaskDetailModal({{ task.id }})">Details</span></span>
+                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }}
                 {% endif %}
+                
+                {# Details link for all tasks #}
+                <span class="inline-flex items-center ml-1">
+                    {% if task.due_date or task.company_name or task.opportunity_name or (task.entity_name and task.entity_type == 'contact') %} • {% endif %}
+                    <span class="ml-1 text-link-interactive" @click.stop="openTaskDetailModal({{ task.id }})">Details</span>
+                </span>
             </span>
             
             {# Due date section - shown when editing with pending changes #}
@@ -259,8 +265,14 @@
                 
                 {# Person's name (contacts only) #}
                 {% if task.entity_name and task.entity_type == 'contact' %}
-                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }}<span class="inline-flex items-center ml-1"> • <span class="ml-1 text-link-interactive" @click.stop="openTaskDetailModal({{ task.id }})">Details</span></span>
+                    {% if task.due_date or task.company_name or task.opportunity_name %} • {% endif %}{{ task.entity_name }}
                 {% endif %}
+                
+                {# Details link for all tasks #}
+                <span class="inline-flex items-center ml-1">
+                    {% if task.due_date or task.company_name or task.opportunity_name or (task.entity_name and task.entity_type == 'contact') %} • {% endif %}
+                    <span class="ml-1 text-link-interactive" @click.stop="openTaskDetailModal({{ task.id }})">Details</span>
+                </span>
             </span>
         </div>
         
