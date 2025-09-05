@@ -186,7 +186,7 @@
             {% endif %}
             <div class="multiselect-controls">
                 <span class="multiselect-control-btn" 
-                      @click="{{ model }} = {{ options|tojson|safe }}.map(opt => typeof opt === 'string' ? opt : opt.value)">Select All</span>
+                      @click="{{ model }} = ['high', 'medium', 'low']">Select All</span>
                 <span class="multiselect-control-btn" 
                       @click="{{ model }} = []">Deselect All</span>
             </div>
