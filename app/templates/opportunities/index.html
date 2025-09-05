@@ -1,7 +1,9 @@
 {% extends "base/layout.html" %}
+{% from "components/opportunity_card.html" import render_opportunity %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/quick_actions.html" import opportunities_page_actions %}
-{% from "components/ui_elements.html" import action_button %}
+{% from "components/ui_elements.html" import action_button, expand_collapse_controls %}
+{% from "components/icons.html" import chevron_right_icon, building_office_icon, currency_dollar_icon, chart_bar_icon, clock_icon %}
 
 {% block title %}Opportunities - CRM{% endblock %}
 
@@ -43,83 +45,250 @@
 
 {% call page_layout("Opportunities", "Track your sales pipeline", buttons=opportunity_buttons, summary_data=pipeline_stats) %}
 
-<div class="bg-white shadow overflow-hidden sm:rounded-md">
-    <ul class="divide-y divide-gray-200">
-        {% for opportunity in opportunities %}
-            <li class="px-6 py-4 hover:bg-gray-50">
-                <div class="flex items-center justify-between">
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-title-primary truncate">
-                                {{ opportunity.name }}
-                            </h3>
-                            {% if opportunity.value %}
-                                <div class="text-lg font-semibold text-green-600">
-                                    ${{ "{:,.0f}".format(opportunity.value) }}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mt-2 flex items-center text-secondary space-x-4">
-                            <span>{{ opportunity.company.name }}</span>
-                            
-                            {% if opportunity.probability %}
-                                <span class="flex items-center">
-                                    <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                                        <div class="bg-blue-600 h-2 rounded-full" 
-                                             style="width: {{ opportunity.probability }}%"></div>
-                                    </div>
-                                    {{ opportunity.probability }}%
-                                </span>
-                            {% endif %}
-                            
-                            {% if opportunity.expected_close_date %}
-                                <span class="{{ 'text-red-600' if opportunity.expected_close_date < today else 'text-gray-500' }}">
-                                    Close: {{ opportunity.expected_close_date.strftime('%m/%d/%y') }}
-                                </span>
-                            {% endif %}
-                            
-                            <span class="inline-flex items-center badge-standard 
-                                {{ 'badge-green' if opportunity.stage == 'prospect' else
-                                   'badge-blue' if opportunity.stage == 'qualified' else
-                                   'badge-yellow' if opportunity.stage == 'proposal' else
-                                   'badge-orange' if opportunity.stage == 'negotiation' else
-                                   'badge-gray' }}">
-                                {{ opportunity.stage|title }}
-                            </span>
-                        </div>
-                        
-                        {% if opportunity.contacts %}
-                            <div class="mt-2 text-secondary">
-                                Contacts: 
-                                {% for contact in opportunity.contacts[:3] %}
-                                    {{ contact.name }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                                {% if opportunity.contacts|length > 3 %}
-                                    and {{ opportunity.contacts|length - 3 }} more
-                                {% endif %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="ml-4 flex items-center">
-                        <span class="text-xs text-gray-500 mr-3">
-                            {{ opportunity.deal_age }} days old
-                        </span>
-                        {{ action_button('openOpportunityModal(' + opportunity.id|string + ')') }}
-                    </div>
-                </div>
-            </li>
-        {% else %}
-            <li class="px-6 py-12 text-center">
-                <p class="text-gray-500 mb-4">No opportunities found</p>
-                <button onclick="openNewOpportunityModal()" 
-                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                    Add Your First Opportunity
-                </button>
-            </li>
-        {% endfor %}
-    </ul>
+<div x-data="{ 
+    groupBy: 'stage',
+    showClosed: false,
+    stageFilter: '',
+    companyFilter: '',
+    expandedSections: {
+        'prospect': true,
+        'qualified': true,
+        'proposal': true,
+        'negotiation': true,
+        'overdue': true,
+        'this_week': true,
+        'this_month': true,
+        'later': true,
+        'no_date': true
+    }
+}" class="space-y-6">
+
+    <!-- Enhanced Filters and Controls -->
+    <div class="bg-white rounded-lg shadow-sm border p-4">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            <div class="flex flex-wrap items-center gap-4">
+                <label class="text-label-dark">Group by:</label>
+                <select x-model="groupBy" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <option value="stage">Pipeline Stage</option>
+                    <option value="close_date">Close Date</option>
+                    <option value="value">Deal Value</option>
+                </select>
+                
+                <label class="flex items-center">
+                    <input type="checkbox" x-model="showClosed" class="mr-2">
+                    <span class="text-sm text-gray-700">Show Closed</span>
+                </label>
+
+                {{ expand_collapse_controls('expandedSections') }}
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <select x-model="stageFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <option value="">All Stages</option>
+                    <option value="prospect">Prospect</option>
+                    <option value="qualified">Qualified</option>
+                    <option value="proposal">Proposal</option>
+                    <option value="negotiation">Negotiation</option>
+                </select>
+                
+                <select x-model="companyFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <option value="">All Companies</option>
+                    {% for company in opportunities|map(attribute='company')|unique %}
+                        <option value="{{ company.name }}">{{ company.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Opportunities by Stage -->
+    <div x-show="groupBy === 'stage'" class="space-y-4">
+        <!-- Prospect -->
+        <div class="bg-white rounded-lg shadow-sm border border-green-200">
+            <div class="border-b border-green-200 px-6 py-4 bg-green-50 cursor-pointer hover:bg-green-100" 
+                 @click="expandedSections['prospect'] = !expandedSections['prospect']">
+                <h3 class="text-status-success">
+                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['prospect'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ building_office_icon("w-5 h-5 mr-1") }} Prospect<span class="ml-2 badge-standard badge-green">{{ opportunities|selectattr('stage', 'equalto', 'prospect')|list|length }}</span>
+                </h3>
+            </div>
+            <div class="p-6" x-show="expandedSections['prospect']" x-transition>
+                {% for opportunity in opportunities %}
+                    {% if opportunity.stage == 'prospect' %}
+                        {{ render_opportunity(opportunity, today) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No opportunities in this stage</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Qualified -->
+        <div class="bg-white rounded-lg shadow-sm border border-blue-200">
+            <div class="border-b border-blue-200 px-6 py-4 bg-blue-50 cursor-pointer hover:bg-blue-100" 
+                 @click="expandedSections['qualified'] = !expandedSections['qualified']">
+                <h3 class="text-status-info">
+                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['qualified'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ chart_bar_icon("w-5 h-5 mr-1") }} Qualified<span class="ml-2 badge-standard badge-blue">{{ opportunities|selectattr('stage', 'equalto', 'qualified')|list|length }}</span>
+                </h3>
+            </div>
+            <div class="p-6" x-show="expandedSections['qualified']" x-transition>
+                {% for opportunity in opportunities %}
+                    {% if opportunity.stage == 'qualified' %}
+                        {{ render_opportunity(opportunity, today) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No opportunities in this stage</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Proposal -->
+        <div class="bg-white rounded-lg shadow-sm border border-yellow-200">
+            <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50 cursor-pointer hover:bg-yellow-100" 
+                 @click="expandedSections['proposal'] = !expandedSections['proposal']">
+                <h3 class="text-status-warning">
+                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['proposal'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ currency_dollar_icon("w-5 h-5 mr-1") }} Proposal<span class="ml-2 badge-standard badge-yellow">{{ opportunities|selectattr('stage', 'equalto', 'proposal')|list|length }}</span>
+                </h3>
+            </div>
+            <div class="p-6" x-show="expandedSections['proposal']" x-transition>
+                {% for opportunity in opportunities %}
+                    {% if opportunity.stage == 'proposal' %}
+                        {{ render_opportunity(opportunity, today) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No opportunities in this stage</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Negotiation -->
+        <div class="bg-white rounded-lg shadow-sm border border-orange-200">
+            <div class="border-b border-orange-200 px-6 py-4 bg-orange-50 cursor-pointer hover:bg-orange-100" 
+                 @click="expandedSections['negotiation'] = !expandedSections['negotiation']">
+                <h3 class="text-status-warning">
+                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['negotiation'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ clock_icon("w-5 h-5 mr-1") }} Negotiation<span class="ml-2 badge-standard badge-orange">{{ opportunities|selectattr('stage', 'equalto', 'negotiation')|list|length }}</span>
+                </h3>
+            </div>
+            <div class="p-6" x-show="expandedSections['negotiation']" x-transition>
+                {% for opportunity in opportunities %}
+                    {% if opportunity.stage == 'negotiation' %}
+                        {{ render_opportunity(opportunity, today) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No opportunities in this stage</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Opportunities by Close Date -->
+    <div x-show="groupBy === 'close_date'" class="space-y-4">
+        <!-- Overdue -->
+        <div class="bg-white rounded-lg shadow-sm border border-red-200">
+            <div class="border-b border-red-200 px-6 py-4 bg-red-50 cursor-pointer hover:bg-red-100" 
+                 @click="expandedSections['overdue'] = !expandedSections['overdue']">
+                <h3 class="text-status-overdue">
+                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['overdue'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ clock_icon("w-5 h-5 mr-1") }} Overdue<span class="ml-2 badge-standard badge-red">{{ opportunities|selectattr('expected_close_date', 'lt', today)|list|length }}</span>
+                </h3>
+            </div>
+            <div class="p-6" x-show="expandedSections['overdue']" x-transition>
+                {% for opportunity in opportunities %}
+                    {% if opportunity.expected_close_date and opportunity.expected_close_date < today %}
+                        {{ render_opportunity(opportunity, today) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No overdue opportunities</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- This Week -->
+        <div class="bg-white rounded-lg shadow-sm border border-orange-200">
+            <div class="border-b border-orange-200 px-6 py-4 bg-orange-50 cursor-pointer hover:bg-orange-100" 
+                 @click="expandedSections['this_week'] = !expandedSections['this_week']">
+                <h3 class="text-status-warning">
+                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['this_week'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ clock_icon("w-5 h-5 mr-1") }} This Week<span class="ml-2 badge-standard badge-orange">{% set this_week_opps = [] %}{% for opp in opportunities %}{% if opp.expected_close_date and opp.expected_close_date >= today and (opp.expected_close_date - today).days <= 7 %}{% set _ = this_week_opps.append(opp) %}{% endif %}{% endfor %}{{ this_week_opps|length }}</span>
+                </h3>
+            </div>
+            <div class="p-6" x-show="expandedSections['this_week']" x-transition>
+                {% for opportunity in opportunities %}
+                    {% if opportunity.expected_close_date and opportunity.expected_close_date >= today and (opportunity.expected_close_date - today).days <= 7 %}
+                        {{ render_opportunity(opportunity, today) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No opportunities closing this week</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- This Month -->
+        <div class="bg-white rounded-lg shadow-sm border border-blue-200">
+            <div class="border-b border-blue-200 px-6 py-4 bg-blue-50 cursor-pointer hover:bg-blue-100" 
+                 @click="expandedSections['this_month'] = !expandedSections['this_month']">
+                <h3 class="text-status-info">
+                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['this_month'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ clock_icon("w-5 h-5 mr-1") }} This Month<span class="ml-2 badge-standard badge-blue">{% set this_month_opps = [] %}{% for opp in opportunities %}{% if opp.expected_close_date and opp.expected_close_date >= today and (opp.expected_close_date - today).days > 7 and (opp.expected_close_date - today).days <= 30 %}{% set _ = this_month_opps.append(opp) %}{% endif %}{% endfor %}{{ this_month_opps|length }}</span>
+                </h3>
+            </div>
+            <div class="p-6" x-show="expandedSections['this_month']" x-transition>
+                {% for opportunity in opportunities %}
+                    {% if opportunity.expected_close_date and opportunity.expected_close_date >= today and (opportunity.expected_close_date - today).days > 7 and (opportunity.expected_close_date - today).days <= 30 %}
+                        {{ render_opportunity(opportunity, today) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No opportunities closing this month</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Later -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
+                 @click="expandedSections['later'] = !expandedSections['later']">
+                <h3 class="text-status-neutral">
+                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['later'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ clock_icon("w-5 h-5 mr-1") }} Later<span class="ml-2 badge-standard badge-gray">{% set later_opps = [] %}{% for opp in opportunities %}{% if opp.expected_close_date and (opp.expected_close_date - today).days > 30 %}{% set _ = later_opps.append(opp) %}{% endif %}{% endfor %}{{ later_opps|length }}</span>
+                </h3>
+            </div>
+            <div class="p-6" x-show="expandedSections['later']" x-transition>
+                {% for opportunity in opportunities %}
+                    {% if opportunity.expected_close_date and (opportunity.expected_close_date - today).days > 30 %}
+                        {{ render_opportunity(opportunity, today) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No opportunities closing later</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- No Close Date -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100" 
+                 @click="expandedSections['no_date'] = !expandedSections['no_date']">
+                <h3 class="text-status-neutral">
+                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['no_date'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ clock_icon("w-5 h-5 mr-1") }} No Close Date<span class="ml-2 badge-standard badge-gray">{{ opportunities|selectattr('expected_close_date', 'none')|list|length }}</span>
+                </h3>
+            </div>
+            <div class="p-6" x-show="expandedSections['no_date']" x-transition>
+                {% for opportunity in opportunities %}
+                    {% if not opportunity.expected_close_date %}
+                        {{ render_opportunity(opportunity, today) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No opportunities without close dates</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Default view when no opportunities -->
+    {% if not opportunities %}
+        <div class="bg-white rounded-lg shadow-sm border p-12 text-center">
+            <p class="text-gray-500 mb-4">No opportunities found</p>
+            <button onclick="openNewOpportunityModal()" 
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                Add Your First Opportunity
+            </button>
+        </div>
+    {% endif %}
+
 </div>
 
 {% endcall %}
@@ -133,8 +302,14 @@ function openNewOpportunityModal() {
 }
 
 function openOpportunityModal(opportunityId) {
-    // TODO: Implement opportunity details modal
-    console.log('Opening opportunity modal for:', opportunityId);
+    openOpportunityDetailModal(opportunityId);
+}
+
+function deleteOpportunity(opportunityId) {
+    if (confirm('Are you sure you want to delete this opportunity?')) {
+        // TODO: Implement opportunity deletion
+        console.log('Deleting opportunity:', opportunityId);
+    }
 }
 </script>
 {% endblock %}
