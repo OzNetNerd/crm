@@ -322,7 +322,7 @@
                                 <button @click.stop="deleteComment(note.id)" class="text-xs text-red-400 hover:text-red-600">Delete</button>
                             </div>
                         </div>
-                        <div x-show="editingCommentId === note.id">
+                        <div x-show="editingCommentId === note.id" @click.stop>
                             <textarea x-model="editingCommentText" class="w-full px-2 py-1 border border-gray-300 rounded text-sm mb-2" rows="2"></textarea>
                             <div class="flex space-x-2">
                                 <button @click.stop="saveEditComment()" class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">Save</button>
