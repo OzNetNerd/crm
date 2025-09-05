@@ -2,7 +2,7 @@
 {% from "components/contact_card.html" import render_contact %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/icons.html" import building_office_icon, user_icon, chevron_right_icon %}
-{% from "components/ui_elements.html" import expand_collapse_controls %}
+{% from "components/ui_elements.html" import expand_collapse_controls, dropdown_select, dropdown_multiselect %}
 
 {% block title %}Contacts - CRM{% endblock %}
 
@@ -62,12 +62,12 @@
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div class="flex flex-wrap items-center gap-4">
                 <label class="text-label-dark">Group by:</label>
-                <select x-model="groupBy" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
-                    <option value="company">Company</option>
-                    <option value="industry">Industry</option>
-                    <option value="role">Role</option>
-                    <option value="contact_info">Contact Info</option>
-                </select>
+                {{ dropdown_select('groupBy', [
+                    {'value': 'company', 'label': 'Company'},
+                    {'value': 'industry', 'label': 'Industry'},
+                    {'value': 'role', 'label': 'Role'},
+                    {'value': 'contact_info', 'label': 'Contact Info'}
+                ]) }}
                 
                 {{ expand_collapse_controls('expandedSections') }}
             </div>

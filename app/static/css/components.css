@@ -284,6 +284,113 @@
     box-shadow: 0 0 0 2px #2563eb;
 }
 
+/* Multi-select dropdown styling */
+.multiselect-custom {
+    position: relative;
+    display: inline-block;
+}
+
+.multiselect-button {
+    appearance: none;
+    background-color: white;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23374151'><path d='M4.5 6.5L8 10l3.5-3.5H4.5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 12px) center;
+    background-size: 16px 16px;
+    padding-right: 2.5rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.multiselect-button:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px #2563eb;
+}
+
+.multiselect-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background-color: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    max-height: 16rem;
+    overflow-y: auto;
+    margin-top: 0.25rem;
+}
+
+.multiselect-header {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.multiselect-search {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.multiselect-search:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px #2563eb;
+}
+
+.multiselect-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.multiselect-control-btn {
+    font-size: 0.75rem;
+    color: #2563eb;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.multiselect-control-btn:hover {
+    background-color: #eff6ff;
+}
+
+.multiselect-options {
+    max-height: 10rem;
+    overflow-y: auto;
+}
+
+.multiselect-option {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.multiselect-option:hover {
+    background-color: #f3f4f6;
+}
+
+.multiselect-option:last-child {
+    border-bottom: none;
+}
+
+.multiselect-checkbox {
+    margin-right: 0.5rem;
+    width: 1rem;
+    height: 1rem;
+}
+
 /* Card Components */
 /* Base card styling used throughout the application */
 

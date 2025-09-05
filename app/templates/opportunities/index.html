@@ -2,7 +2,7 @@
 {% from "components/opportunity_card.html" import render_opportunity %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/quick_actions.html" import opportunities_page_actions %}
-{% from "components/ui_elements.html" import action_button, expand_collapse_controls %}
+{% from "components/ui_elements.html" import action_button, expand_collapse_controls, dropdown_select, dropdown_multiselect %}
 {% from "components/icons.html" import chevron_right_icon, building_office_icon, currency_dollar_icon, chart_bar_icon, clock_icon %}
 
 {% block title %}Opportunities - CRM{% endblock %}
@@ -48,8 +48,8 @@
 <div x-data="{ 
     groupBy: 'stage',
     showClosed: false,
-    stageFilter: '',
-    companyFilter: '',
+    stageFilter: [],
+    companyFilter: [],
     expandedSections: {
         'prospect': true,
         'qualified': true,
@@ -68,11 +68,11 @@
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div class="flex flex-wrap items-center gap-4">
                 <label class="text-label-dark">Group by:</label>
-                <select x-model="groupBy" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
-                    <option value="stage">Pipeline Stage</option>
-                    <option value="close_date">Close Date</option>
-                    <option value="value">Deal Value</option>
-                </select>
+                {{ dropdown_select('groupBy', [
+                    {'value': 'stage', 'label': 'Pipeline Stage'},
+                    {'value': 'close_date', 'label': 'Close Date'},
+                    {'value': 'value', 'label': 'Deal Value'}
+                ]) }}
                 
                 <label class="flex items-center">
                     <input type="checkbox" x-model="showClosed" class="mr-2">
@@ -83,20 +83,18 @@
             </div>
             
             <div class="flex items-center space-x-3">
-                <select x-model="stageFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
-                    <option value="">All Stages</option>
-                    <option value="prospect">Prospect</option>
-                    <option value="qualified">Qualified</option>
-                    <option value="proposal">Proposal</option>
-                    <option value="negotiation">Negotiation</option>
-                </select>
+                {{ dropdown_multiselect('stageFilter', [
+                    {'value': 'prospect', 'label': 'Prospect'},
+                    {'value': 'qualified', 'label': 'Qualified'},
+                    {'value': 'proposal', 'label': 'Proposal'},
+                    {'value': 'negotiation', 'label': 'Negotiation'}
+                ], 'All Stages') }}
                 
-                <select x-model="companyFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
-                    <option value="">All Companies</option>
-                    {% for company in opportunities|map(attribute='company')|unique %}
-                        <option value="{{ company.name }}">{{ company.name }}</option>
-                    {% endfor %}
-                </select>
+                {% set company_options = [] %}
+                {% for company in opportunities|map(attribute='company.name')|unique %}
+                    {% set _ = company_options.append({'value': company, 'label': company}) %}
+                {% endfor %}
+                {{ dropdown_multiselect('companyFilter', company_options, 'All Companies', with_search=true) }}
             </div>
         </div>
     </div>

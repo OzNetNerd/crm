@@ -2,7 +2,7 @@
 {% from "components/task_card.html" import render_task %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/icons.html" import clipboard_list_icon, bolt_icon, check_circle_icon_solid, fire_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, calendar_days_icon, calendar_icon, chart_bar_icon, question_mark_circle_icon, building_office_icon, user_icon, currency_dollar_icon, chevron_right_icon %}
-{% from "components/ui_elements.html" import expand_collapse_controls %}
+{% from "components/ui_elements.html" import expand_collapse_controls, dropdown_select, dropdown_multiselect %}
 
 {# Task Group Header Macro - DRY implementation of Pattern A #}
 {% macro task_group_header(section_key, title, icon_html, badge_html, border_color, bg_color, hover_color, text_class, with_buttons=true) %}
@@ -66,8 +66,8 @@
 <div x-data="{ 
     groupBy: 'status',
     showCompleted: false,
-    priorityFilter: '',
-    entityFilter: '',
+    priorityFilter: [],
+    entityFilter: [],
     expandedSections: {
         'todo': true,
         'in-progress': true,
@@ -102,12 +102,12 @@
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div class="flex flex-wrap items-center gap-4">
                 <label class="text-label-dark">Group by:</label>
-                <select x-model="groupBy" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
-                    <option value="due_date">Due Date</option>
-                    <option value="priority">Priority</option>
-                    <option value="entity">Related To</option>
-                    <option value="status">Status</option>
-                </select>
+                {{ dropdown_select('groupBy', [
+                    {'value': 'due_date', 'label': 'Due Date'},
+                    {'value': 'priority', 'label': 'Priority'},
+                    {'value': 'entity', 'label': 'Related To'},
+                    {'value': 'status', 'label': 'Status'}
+                ]) }}
                 
                 <label class="flex items-center">
                     <input type="checkbox" x-model="showCompleted" class="mr-2">
@@ -118,19 +118,17 @@
             </div>
             
             <div class="flex items-center space-x-3">
-                <select x-model="priorityFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
-                    <option value="">All Priorities</option>
-                    <option value="high">High</option>
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                </select>
+                {{ dropdown_multiselect('priorityFilter', [
+                    {'value': 'high', 'label': 'High'},
+                    {'value': 'medium', 'label': 'Medium'},
+                    {'value': 'low', 'label': 'Low'}
+                ], 'All Priorities') }}
                 
-                <select x-model="entityFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
-                    <option value="">All Entities</option>
-                    <option value="company">Companies</option>
-                    <option value="contact">Contacts</option>
-                    <option value="opportunity">Opportunities</option>
-                </select>
+                {{ dropdown_multiselect('entityFilter', [
+                    {'value': 'company', 'label': 'Companies'},
+                    {'value': 'contact', 'label': 'Contacts'},
+                    {'value': 'opportunity', 'label': 'Opportunities'}
+                ], 'All Entities') }}
             </div>
         </div>
     </div>
