@@ -500,3 +500,14 @@
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
     border: 1px solid #e5e7eb; /* border border-gray-200 */
 }
+
+/* Task card specific styling */
+.task-card {
+    margin-bottom: 0.75rem; /* mb-3 */
+    cursor: pointer;
+    transition: box-shadow 0.15s ease-in-out; /* transition-shadow */
+}
+
+.task-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* hover:shadow-md */
+}

@@ -1,7 +1,7 @@
 {% from "components/icons.html" import check_icon, pencil_icon, document_icon %}
 {% from "components/list_section.html" import status_badge %}
 {% macro render_task(task, group_key='', current_group_value='') %}
-<div class="task-card card-padded mb-3 cursor-pointer hover:shadow-md transition-shadow" 
+<div class="task-card card-padded" 
      data-task-id="{{ task.id }}"
      @click="expanded = !expanded; if (expanded) loadNotes()"
      @expand-all-tasks.window="if ($event.detail.group === '{{ group_key }}' && !expanded) { expanded = true; loadNotes(); }"
