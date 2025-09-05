@@ -77,5 +77,14 @@ class Task(db.Model):
             return opportunity.name if opportunity else None
         return None
     
+    @property
+    def opportunity_stage(self):
+        """Get opportunity stage if task is linked to an opportunity"""
+        if self.entity_type == 'opportunity' and self.entity_id:
+            from .opportunity import Opportunity
+            opportunity = Opportunity.query.get(self.entity_id)
+            return opportunity.stage if opportunity else None
+        return None
+    
     def __repr__(self):
         return f'<Task {self.description[:50]}>'

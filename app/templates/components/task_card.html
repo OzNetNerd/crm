@@ -222,7 +222,11 @@
             
             {# Opportunity name #}
             {% if task.opportunity_name %}
-                {% set _ = metadata_parts.append(task.opportunity_name) %}
+                {% set opp_text = task.opportunity_name %}
+                {% if task.opportunity_stage %}
+                    {% set opp_text = opp_text + ' (' + task.opportunity_stage|title + ')' %}
+                {% endif %}
+                {% set _ = metadata_parts.append(opp_text) %}
             {% endif %}
             
             {# Opportunity value #}
@@ -259,7 +263,11 @@
             
             {# Opportunity name #}
             {% if task.opportunity_name %}
-                {% set _ = editing_parts.append(task.opportunity_name) %}
+                {% set opp_text = task.opportunity_name %}
+                {% if task.opportunity_stage %}
+                    {% set opp_text = opp_text + ' (' + task.opportunity_stage|title + ')' %}
+                {% endif %}
+                {% set _ = editing_parts.append(opp_text) %}
             {% endif %}
             
             {# Opportunity value #}
