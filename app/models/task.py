@@ -51,5 +51,31 @@ class Task(db.Model):
             return opportunity.value if opportunity else None
         return None
     
+    @property
+    def company_name(self):
+        """Get company name regardless of entity type"""
+        if self.entity_type == 'company' and self.entity_id:
+            from .company import Company
+            company = Company.query.get(self.entity_id)
+            return company.name if company else None
+        elif self.entity_type == 'contact' and self.entity_id:
+            from .contact import Contact
+            contact = Contact.query.get(self.entity_id)
+            return contact.company.name if contact and contact.company else None
+        elif self.entity_type == 'opportunity' and self.entity_id:
+            from .opportunity import Opportunity
+            opportunity = Opportunity.query.get(self.entity_id)
+            return opportunity.company.name if opportunity and opportunity.company else None
+        return None
+    
+    @property
+    def opportunity_name(self):
+        """Get opportunity name if task is linked to an opportunity or contact with opportunities"""
+        if self.entity_type == 'opportunity' and self.entity_id:
+            from .opportunity import Opportunity
+            opportunity = Opportunity.query.get(self.entity_id)
+            return opportunity.name if opportunity else None
+        return None
+    
     def __repr__(self):
         return f'<Task {self.description[:50]}>'
