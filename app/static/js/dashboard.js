@@ -1,0 +1,231 @@
+// Enhanced Alpine.js interactivity for the dashboard
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Persist section states in localStorage
+    Alpine.store('dashboard', {
+        sections: JSON.parse(localStorage.getItem('dashboard-sections') || JSON.stringify({
+            overdue: true,
+            today: true,
+            thisWeek: false,
+            nextWeek: false,
+            completedToday: false,
+            byCompany: false,
+            byPriority: false
+        })),
+        
+        filters: {
+            priority: '',
+            entity: '',
+            search: ''
+        },
+        
+        selectedTasks: [],
+        
+        toggleSection(section) {
+            this.sections[section] = !this.sections[section];
+            localStorage.setItem('dashboard-sections', JSON.stringify(this.sections));
+        },
+        
+        expandAll() {
+            Object.keys(this.sections).forEach(key => {
+                this.sections[key] = true;
+            });
+            localStorage.setItem('dashboard-sections', JSON.stringify(this.sections));
+        },
+        
+        collapseAll() {
+            Object.keys(this.sections).forEach(key => {
+                this.sections[key] = false;
+            });
+            // Keep critical sections expanded
+            this.sections.overdue = true;
+            this.sections.today = true;
+            localStorage.setItem('dashboard-sections', JSON.stringify(this.sections));
+        },
+        
+        toggleTaskSelection(taskId) {
+            const index = this.selectedTasks.indexOf(taskId);
+            if (index > -1) {
+                this.selectedTasks.splice(index, 1);
+            } else {
+                this.selectedTasks.push(taskId);
+            }
+        },
+        
+        selectAllTasks(taskIds) {
+            this.selectedTasks = [...new Set([...this.selectedTasks, ...taskIds])];
+        },
+        
+        deselectAllTasks() {
+            this.selectedTasks = [];
+        }
+    });
+});
+
+// Task management functions with better error handling and UX feedback
+class TaskManager {
+    static async completeTask(taskId, showNotification = true) {
+        try {
+            const response = await fetch(`/tasks/${taskId}/complete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (response.ok) {
+                if (showNotification) {
+                    this.showNotification('Task completed successfully', 'success');
+                }
+                // Smooth removal animation
+                const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+                if (taskCard) {
+                    taskCard.style.transition = 'opacity 0.3s ease-out';
+                    taskCard.style.opacity = '0';
+                    setTimeout(() => {
+                        location.reload(); // TODO: Replace with dynamic update
+                    }, 300);
+                }
+            } else {
+                throw new Error('Failed to complete task');
+            }
+        } catch (error) {
+            console.error('Error completing task:', error);
+            this.showNotification('Failed to complete task', 'error');
+        }
+    }
+
+    static async rescheduleTask(taskId, days, showNotification = true) {
+        try {
+            const response = await fetch(`/tasks/${taskId}/reschedule`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ days })
+            });
+            
+            if (response.ok) {
+                if (showNotification) {
+                    const dayText = days === 1 ? 'day' : 'days';
+                    this.showNotification(`Task rescheduled by ${days} ${dayText}`, 'success');
+                }
+                setTimeout(() => location.reload(), 500);
+            } else {
+                throw new Error('Failed to reschedule task');
+            }
+        } catch (error) {
+            console.error('Error rescheduling task:', error);
+            this.showNotification('Failed to reschedule task', 'error');
+        }
+    }
+
+    static async updateTask(taskId, updates, showNotification = false) {
+        try {
+            const response = await fetch(`/tasks/${taskId}/update`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+            
+            if (response.ok) {
+                if (showNotification) {
+                    this.showNotification('Task updated successfully', 'success');
+                }
+            } else {
+                throw new Error('Failed to update task');
+            }
+        } catch (error) {
+            console.error('Error updating task:', error);
+            this.showNotification('Failed to update task', 'error');
+        }
+    }
+
+    static async deleteTask(taskId) {
+        if (!confirm('Are you sure you want to delete this task?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/tasks/${taskId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (response.ok) {
+                this.showNotification('Task deleted successfully', 'success');
+                const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+                if (taskCard) {
+                    taskCard.style.transition = 'opacity 0.3s ease-out';
+                    taskCard.style.opacity = '0';
+                    setTimeout(() => {
+                        taskCard.remove();
+                    }, 300);
+                }
+            } else {
+                throw new Error('Failed to delete task');
+            }
+        } catch (error) {
+            console.error('Error deleting task:', error);
+            this.showNotification('Failed to delete task', 'error');
+        }
+    }
+
+    static async bulkCompleteTask(taskIds) {
+        try {
+            const promises = taskIds.map(id => this.completeTask(id, false));
+            await Promise.all(promises);
+            this.showNotification(`${taskIds.length} tasks completed`, 'success');
+            location.reload();
+        } catch (error) {
+            console.error('Error bulk completing tasks:', error);
+            this.showNotification('Failed to complete some tasks', 'error');
+        }
+    }
+
+    static showNotification(message, type = 'info') {
+        // Simple notification system - can be enhanced
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-6 py-3 rounded-md text-white z-50 ${
+            type === 'success' ? 'bg-green-500' :
+            type === 'error' ? 'bg-red-500' :
+            'bg-blue-500'
+        }`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.transition = 'opacity 0.3s ease-out';
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+}
+
+// Modal management
+class ModalManager {
+    static openTaskModal(taskId) {
+        // TODO: Implement full task details modal
+        console.log('Opening task modal for:', taskId);
+    }
+
+    static openNewTaskModal() {
+        // TODO: Implement new task creation modal
+        console.log('Opening new task modal');
+    }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + N: New task
+    if ((e.ctrlKey || e.metaKey) && e.key === 'n' && !e.target.matches('input, textarea')) {
+        e.preventDefault();
+        ModalManager.openNewTaskModal();
+    }
+    
+    // Escape: Close modals/deselect tasks
+    if (e.key === 'Escape') {
+        Alpine.store('dashboard').deselectAllTasks();
+    }
+});
+
+// Export for global access
+window.TaskManager = TaskManager;
+window.ModalManager = ModalManager;

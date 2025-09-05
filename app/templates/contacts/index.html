@@ -1,0 +1,90 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Contacts - CRM{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex items-center justify-between">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Contacts</h1>
+        <p class="text-gray-600">Manage your contact relationships</p>
+    </div>
+    <button onclick="openNewContactModal()" 
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+        + New Contact
+    </button>
+</div>
+
+<div class="bg-white shadow overflow-hidden sm:rounded-md">
+    <ul class="divide-y divide-gray-200">
+        {% for contact in contacts %}
+            <li class="px-6 py-4 hover:bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
+                                {{ contact.name[:2].upper() }}
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-lg font-medium text-gray-900">{{ contact.name }}</div>
+                            <div class="text-sm text-gray-500">
+                                {% if contact.role %}{{ contact.role }} • {% endif %}
+                                {{ contact.company.name }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        {% if contact.email %}
+                            <a href="mailto:{{ contact.email }}" 
+                               class="text-sm text-blue-600 hover:text-blue-800">
+                                {{ contact.email }}
+                            </a>
+                        {% endif %}
+                        
+                        {% if contact.phone %}
+                            <a href="tel:{{ contact.phone }}" 
+                               class="text-sm text-gray-600 hover:text-gray-800">
+                                {{ contact.phone }}
+                            </a>
+                        {% endif %}
+                        
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-gray-500">
+                                {{ contact.opportunities|length }} opp{{ 's' if contact.opportunities|length != 1 else '' }}
+                            </span>
+                            
+                            <button onclick="openContactModal({{ contact.id }})" 
+                                    class="text-gray-400 hover:text-gray-600">
+                                →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        {% else %}
+            <li class="px-6 py-12 text-center">
+                <p class="text-gray-500 mb-4">No contacts found</p>
+                <button onclick="openNewContactModal()" 
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    Add Your First Contact
+                </button>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openNewContactModal() {
+    // TODO: Implement new contact modal
+    console.log('Opening new contact modal');
+}
+
+function openContactModal(contactId) {
+    // TODO: Implement contact details modal
+    console.log('Opening contact modal for:', contactId);
+}
+</script>
+{% endblock %}

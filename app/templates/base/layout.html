@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CRM{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'priority-high': '#fef2f2',
+                        'priority-medium': '#fffbeb',
+                        'priority-low': '#f0fdf4'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-8">
+                    <a href="{{ url_for('dashboard.index') }}" class="text-xl font-semibold text-gray-900">CRM</a>
+                    <div class="flex space-x-6">
+                        <a href="{{ url_for('dashboard.index') }}" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Dashboard</a>
+                        <a href="{{ url_for('companies.index') }}" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Companies</a>
+                        <a href="{{ url_for('contacts.index') }}" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Contacts</a>
+                        <a href="{{ url_for('opportunities.index') }}" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Opportunities</a>
+                        <a href="{{ url_for('tasks.index') }}" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Tasks</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <input type="text" 
+                           id="global-search"
+                           placeholder="Search companies, contacts, opportunities..." 
+                           class="px-3 py-2 border border-gray-300 rounded-md text-sm w-64">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block modals %}{% endblock %}
+    
+    <script src="{{ url_for('static', filename='js/search.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

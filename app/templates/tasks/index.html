@@ -1,0 +1,456 @@
+{% extends "base/layout.html" %}
+{% from "components/task_card.html" import render_task %}
+
+{% block title %}Tasks - CRM{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex items-center justify-between">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">All Tasks</h1>
+        <p class="text-gray-600">Manage all your tasks in one place</p>
+    </div>
+    <button onclick="openNewTaskModal()" 
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+        + New Task
+    </button>
+</div>
+
+<div x-data="{ 
+    groupBy: 'status',
+    showCompleted: false,
+    priorityFilter: '',
+    entityFilter: '',
+    expandedSections: {
+        status: true,
+        priority: true,
+        due_date: true,
+        entity: true
+    }
+}" class="space-y-6">
+
+    <!-- Enhanced Filters and Controls -->
+    <div class="bg-white rounded-lg shadow-sm border p-4">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            <div class="flex flex-wrap items-center gap-4">
+                <label class="text-sm font-medium text-gray-700">Group by:</label>
+                <select x-model="groupBy" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <option value="status">Status</option>
+                    <option value="priority">Priority</option>
+                    <option value="due_date">Due Date</option>
+                    <option value="entity">Related To</option>
+                </select>
+                
+                <label class="flex items-center">
+                    <input type="checkbox" x-model="showCompleted" class="mr-2">
+                    <span class="text-sm text-gray-700">Show Completed</span>
+                </label>
+
+                <div class="flex items-center space-x-2 border-l pl-4">
+                    <button @click="Object.keys(expandedSections).forEach(key => expandedSections[key] = true)"
+                            class="text-sm text-gray-600 hover:text-gray-900">Expand All</button>
+                    <span class="text-gray-400">|</span>
+                    <button @click="Object.keys(expandedSections).forEach(key => expandedSections[key] = false)"
+                            class="text-sm text-gray-600 hover:text-gray-900">Collapse All</button>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <select x-model="priorityFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <option value="">All Priorities</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+                
+                <select x-model="entityFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <option value="">All Entities</option>
+                    <option value="company">Companies</option>
+                    <option value="contact">Contacts</option>
+                    <option value="opportunity">Opportunities</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks by Status -->
+    <div x-show="groupBy === 'status'" class="space-y-4">
+        <!-- To Do Tasks -->
+        <div class="bg-white rounded-lg shadow-sm border">
+            <div class="border-b border-gray-200 px-6 py-4">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    📋 To Do
+                    <span class="ml-2 bg-blue-100 text-blue-800 px-2 py-1 text-sm rounded-full">
+                        {{ tasks|selectattr('status', 'equalto', 'todo')|list|length }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if task.status == 'todo' %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No todo tasks</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- In Progress Tasks -->
+        <div class="bg-white rounded-lg shadow-sm border">
+            <div class="border-b border-gray-200 px-6 py-4">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    ⚡ In Progress
+                    <span class="ml-2 bg-yellow-100 text-yellow-800 px-2 py-1 text-sm rounded-full">
+                        {{ tasks|selectattr('status', 'equalto', 'in-progress')|list|length }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if task.status == 'in-progress' %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No tasks in progress</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Completed Tasks (conditional) -->
+        <div x-show="showCompleted" class="bg-white rounded-lg shadow-sm border">
+            <div class="border-b border-gray-200 px-6 py-4">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    ✅ Completed
+                    <span class="ml-2 bg-green-100 text-green-800 px-2 py-1 text-sm rounded-full">
+                        {{ tasks|selectattr('status', 'equalto', 'complete')|list|length }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if task.status == 'complete' %}
+                        <div class="opacity-60">
+                            {{ render_task(task) }}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No completed tasks</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks by Priority -->
+    <div x-show="groupBy === 'priority'" class="space-y-4">
+        <!-- High Priority -->
+        <div class="bg-white rounded-lg shadow-sm border border-red-200">
+            <div class="border-b border-red-200 px-6 py-4 bg-red-50">
+                <h3 class="text-lg font-semibold text-red-800 flex items-center">
+                    🔥 High Priority
+                    <span class="ml-2 bg-red-200 text-red-800 px-2 py-1 text-sm rounded-full">
+                        {{ tasks|selectattr('priority', 'equalto', 'high')|list|length }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if task.priority == 'high' and (task.status != 'complete' or showCompleted) %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No high priority tasks</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Medium Priority -->
+        <div class="bg-white rounded-lg shadow-sm border border-yellow-200">
+            <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50">
+                <h3 class="text-lg font-semibold text-yellow-800 flex items-center">
+                    ⚠️ Medium Priority
+                    <span class="ml-2 bg-yellow-200 text-yellow-800 px-2 py-1 text-sm rounded-full">
+                        {{ tasks|selectattr('priority', 'equalto', 'medium')|list|length }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if task.priority == 'medium' and (task.status != 'complete' or showCompleted) %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No medium priority tasks</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Low Priority -->
+        <div class="bg-white rounded-lg shadow-sm border border-green-200">
+            <div class="border-b border-green-200 px-6 py-4 bg-green-50">
+                <h3 class="text-lg font-semibold text-green-800 flex items-center">
+                    📋 Low Priority
+                    <span class="ml-2 bg-green-200 text-green-800 px-2 py-1 text-sm rounded-full">
+                        {{ tasks|selectattr('priority', 'equalto', 'low')|list|length }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if task.priority == 'low' and (task.status != 'complete' or showCompleted) %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No low priority tasks</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks by Due Date -->
+    <div x-show="groupBy === 'due_date'" class="space-y-4">
+        <!-- Overdue -->
+        <div class="bg-white rounded-lg shadow-sm border border-red-200">
+            <div class="border-b border-red-200 px-6 py-4 bg-red-50">
+                <h3 class="text-lg font-semibold text-red-800 flex items-center">
+                    🚨 Overdue
+                    <span class="ml-2 bg-red-200 text-red-800 px-2 py-1 text-sm rounded-full">
+                        {{ tasks|selectattr('is_overdue', 'equalto', True)|list|length }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if task.is_overdue and (task.status != 'complete' or showCompleted) %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No overdue tasks</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Today -->
+        <div class="bg-white rounded-lg shadow-sm border border-orange-200">
+            <div class="border-b border-orange-200 px-6 py-4 bg-orange-50">
+                <h3 class="text-lg font-semibold text-orange-800 flex items-center">
+                    📅 Due Today
+                    <span class="ml-2 bg-orange-200 text-orange-800 px-2 py-1 text-sm rounded-full">
+                        {% set today_tasks = tasks|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list %}
+                        {{ today_tasks|length }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if task.due_date == today and task.status != 'complete' %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No tasks due today</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- This Week -->
+        <div class="bg-white rounded-lg shadow-sm border border-blue-200">
+            <div class="border-b border-blue-200 px-6 py-4 bg-blue-50">
+                <h3 class="text-lg font-semibold text-blue-800 flex items-center">
+                    📆 This Week
+                    <span class="ml-2 bg-blue-200 text-blue-800 px-2 py-1 text-sm rounded-full">
+                        {% set this_week_count = 0 %}
+                        {% for task in tasks %}
+                            {% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}
+                                {% set this_week_count = this_week_count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ this_week_count }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No tasks due this week</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Later -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                    📊 Later
+                    <span class="ml-2 bg-gray-200 text-gray-800 px-2 py-1 text-sm rounded-full">
+                        {% set later_count = 0 %}
+                        {% for task in tasks %}
+                            {% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}
+                                {% set later_count = later_count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ later_count }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No tasks scheduled for later</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- No Due Date -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                    ❓ No Due Date
+                    <span class="ml-2 bg-gray-200 text-gray-800 px-2 py-1 text-sm rounded-full">
+                        {{ tasks|selectattr('due_date', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('due_date', 'none')|list|length }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if not task.due_date and (task.status != 'complete' or showCompleted) %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No tasks without due dates</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks by Related To -->
+    <div x-show="groupBy === 'entity'" class="space-y-4">
+        <!-- Company Tasks -->
+        <div class="bg-white rounded-lg shadow-sm border border-blue-200">
+            <div class="border-b border-blue-200 px-6 py-4 bg-blue-50">
+                <h3 class="text-lg font-semibold text-blue-800 flex items-center">
+                    🏢 Company Tasks
+                    <span class="ml-2 bg-blue-200 text-blue-800 px-2 py-1 text-sm rounded-full">
+                        {{ tasks|selectattr('entity_type', 'equalto', 'company')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'company')|list|length }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if task.entity_type == 'company' and (task.status != 'complete' or showCompleted) %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No company-related tasks</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Contact Tasks -->
+        <div class="bg-white rounded-lg shadow-sm border border-green-200">
+            <div class="border-b border-green-200 px-6 py-4 bg-green-50">
+                <h3 class="text-lg font-semibold text-green-800 flex items-center">
+                    👤 Contact Tasks
+                    <span class="ml-2 bg-green-200 text-green-800 px-2 py-1 text-sm rounded-full">
+                        {{ tasks|selectattr('entity_type', 'equalto', 'contact')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'contact')|list|length }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if task.entity_type == 'contact' and (task.status != 'complete' or showCompleted) %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No contact-related tasks</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Opportunity Tasks -->
+        <div class="bg-white rounded-lg shadow-sm border border-yellow-200">
+            <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50">
+                <h3 class="text-lg font-semibold text-yellow-800 flex items-center">
+                    💰 Opportunity Tasks
+                    <span class="ml-2 bg-yellow-200 text-yellow-800 px-2 py-1 text-sm rounded-full">
+                        {{ tasks|selectattr('entity_type', 'equalto', 'opportunity')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'opportunity')|list|length }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if task.entity_type == 'opportunity' and (task.status != 'complete' or showCompleted) %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No opportunity-related tasks</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Unrelated Tasks -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="border-b border-gray-200 px-6 py-4 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                    📋 General Tasks
+                    <span class="ml-2 bg-gray-200 text-gray-800 px-2 py-1 text-sm rounded-full">
+                        {{ tasks|selectattr('entity_type', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'none')|list|length }}
+                    </span>
+                </h3>
+            </div>
+            <div class="p-6">
+                {% for task in tasks %}
+                    {% if not task.entity_type and (task.status != 'complete' or showCompleted) %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No general tasks</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="mt-8 bg-white rounded-lg shadow-sm border p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Task Summary</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="text-center">
+            <div class="text-2xl font-bold text-blue-600">
+                {{ tasks|selectattr('status', 'equalto', 'todo')|list|length }}
+            </div>
+            <div class="text-sm text-gray-500">To Do</div>
+        </div>
+        <div class="text-center">
+            <div class="text-2xl font-bold text-yellow-600">
+                {{ tasks|selectattr('status', 'equalto', 'in-progress')|list|length }}
+            </div>
+            <div class="text-sm text-gray-500">In Progress</div>
+        </div>
+        <div class="text-center">
+            <div class="text-2xl font-bold text-green-600">
+                {{ tasks|selectattr('status', 'equalto', 'complete')|list|length }}
+            </div>
+            <div class="text-sm text-gray-500">Complete</div>
+        </div>
+        <div class="text-center">
+            <div class="text-2xl font-bold text-red-600">
+                {{ tasks|selectattr('is_overdue', 'equalto', True)|list|length }}
+            </div>
+            <div class="text-sm text-gray-500">Overdue</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openNewTaskModal() {
+    console.log('Opening new task modal');
+}
+</script>
+{% endblock %}
