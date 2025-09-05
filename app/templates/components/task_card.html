@@ -48,6 +48,13 @@
                 // TODO: Delete from backend
                 console.log('Deleting comment:', commentId);
             }
+        },
+        submitComment() {
+            if (!this.newComment.trim()) return;
+            // TODO: Submit to backend
+            console.log('Submitting comment:', this.newComment);
+            // Clear the form after submission
+            this.newComment = '';
         }
      }"
      @reschedule-saved.window="cancelChanges()"
@@ -222,10 +229,11 @@
                           placeholder="Add a comment..." 
                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
                           rows="2"></textarea>
-                <button :disabled="!newComment.trim()"
+                <button @click.stop="submitComment()"
+                        :disabled="!newComment.trim()"
                         class="px-3 py-2 text-sm rounded transition-all duration-200"
                         :class="newComment.trim() ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
-                    Submit
+                    Save
                 </button>
             </div>
             
