@@ -42,3 +42,49 @@
     }
 ]) }}
 {% endmacro %}
+
+{# Page-specific action button configurations #}
+
+{% macro companies_page_actions() %}
+{{ quick_actions_buttons([
+    {
+        'label': 'New Company',
+        'onclick': 'openNewCompanyModal()',
+        'color': 'blue',
+        'icon': plus_icon('w-4 h-4')
+    }
+]) }}
+{% endmacro %}
+
+{% macro contacts_page_actions() %}
+{{ quick_actions_buttons([
+    {
+        'label': 'New Contact',
+        'onclick': 'openNewContactModal()',
+        'color': 'blue',
+        'icon': plus_icon('w-4 h-4')
+    }
+]) }}
+{% endmacro %}
+
+{% macro opportunities_page_actions() %}
+{{ quick_actions_buttons([
+    {
+        'label': 'New Opportunity',
+        'onclick': 'openNewOpportunityModal()',
+        'color': 'blue',
+        'icon': plus_icon('w-4 h-4')
+    }
+]) }}
+{% endmacro %}
+
+{% macro tasks_page_actions() %}
+{{ quick_actions_buttons([
+    {
+        'label': 'New Task',
+        'onclick': 'openNewTaskModal()',
+        'color': 'blue',
+        'icon': plus_icon('w-4 h-4')
+    }
+]) }}
+{% endmacro %}

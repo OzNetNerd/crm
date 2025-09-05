@@ -1,78 +1,221 @@
 {% extends "base/layout.html" %}
+{% from "components/contact_card.html" import render_contact %}
+{% from "components/page_template.html" import page_layout %}
+{% from "components/icons.html" import building_office_icon, user_icon, chevron_right_icon %}
+{% from "components/ui_elements.html" import expand_collapse_controls %}
 
 {% block title %}Contacts - CRM{% endblock %}
 
 {% block content %}
-<div class="mb-8 flex items-center justify-between">
-    <div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Contacts</h1>
-        <p class="text-gray-600">Manage your contact relationships</p>
+{% set contact_stats = {
+    'title': 'Contact Overview',
+    'stats': [
+        {
+            'value': contacts|length,
+            'label': 'Total Contacts',
+            'color_class': 'text-blue-600'
+        },
+        {
+            'value': contacts|selectattr('email')|list|length,
+            'label': 'With Email',
+            'color_class': 'text-green-600'
+        },
+        {
+            'value': contacts|selectattr('phone')|list|length,
+            'label': 'With Phone',
+            'color_class': 'text-purple-600'
+        },
+        {
+            'value': contacts|map(attribute='opportunities')|map('length')|sum,
+            'label': 'Total Opportunities',
+            'color_class': 'text-orange-600'
+        }
+    ]
+} %}
+
+{% set contact_buttons = [
+    {
+        'label': 'New Contact',
+        'onclick': 'openNewContactModal()',
+        'color': 'blue',
+        'icon': ''
+    }
+] %}
+
+{% call page_layout("Contacts", "Manage your contact relationships", buttons=contact_buttons, summary_data=contact_stats) %}
+
+<div x-data="{ 
+    groupBy: 'company',
+    expandedSections: {
+        {% for contact in contacts %}
+            '{{ contact.company.name|replace("'", "\\'")|replace('"', '\\"') }}': true,
+        {% endfor %}
+        'with_email': true,
+        'with_phone': true,
+        'complete_info': true,
+        'missing_info': true
+    }
+}" class="space-y-6">
+
+    <!-- Enhanced Filters and Controls -->
+    <div class="bg-white rounded-lg shadow-sm border p-4">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            <div class="flex flex-wrap items-center gap-4">
+                <label class="text-label-dark">Group by:</label>
+                <select x-model="groupBy" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <option value="company">Company</option>
+                    <option value="industry">Industry</option>
+                    <option value="role">Role</option>
+                    <option value="contact_info">Contact Info</option>
+                </select>
+                
+                {{ expand_collapse_controls('expandedSections') }}
+            </div>
+        </div>
     </div>
-    <button onclick="openNewContactModal()" 
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-        + New Contact
-    </button>
+
+    <!-- Contacts by Company -->
+    <div x-show="groupBy === 'company'" class="space-y-4">
+        {% set companies = contacts | groupby('company.name') %}
+        {% for company_name, company_contacts in companies %}
+            <div class="bg-white rounded-lg shadow-sm border">
+                <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
+                     @click="expandedSections['{{ company_name|replace("'", "\\'")|replace('"', '\\"') }}'] = !expandedSections['{{ company_name|replace("'", "\\'")|replace('"', '\\"') }}']">                    <h3 class="text-status-header">
+                        <span class="mr-2 transition-transform duration-200" :class="expandedSections['{{ company_name|replace("'", "\\'")|replace('"', '\\"') }}'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ building_office_icon("w-5 h-5 mr-1") }} {{ company_name }}<span class="ml-2 badge-standard badge-blue">{{ company_contacts|list|length }}</span>
+                    </h3>
+                </div>
+                <div class="divide-y divide-gray-200" x-show="expandedSections['{{ company_name|replace("'", "\\'")|replace('"', '\\"') }}']" x-transition>
+                    {% for contact in company_contacts %}
+                        {{ render_contact(contact) }}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Contacts by Industry -->
+    <div x-show="groupBy === 'industry'" class="space-y-4">
+        {% set industries = contacts | groupby('company.industry') %}
+        {% for industry, industry_contacts in industries %}
+            <div class="bg-white rounded-lg shadow-sm border">
+                <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
+                     @click="expandedSections['{{ industry or 'Unknown Industry' }}'] = !expandedSections['{{ industry or 'Unknown Industry' }}']">                    <h3 class="text-status-header">
+                        <span class="mr-2 transition-transform duration-200" :class="expandedSections['{{ industry or 'Unknown Industry' }}'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ building_office_icon("w-5 h-5 mr-1") }} {{ industry or 'Unknown Industry' }}<span class="ml-2 badge-standard badge-green">{{ industry_contacts|list|length }}</span>
+                    </h3>
+                </div>
+                <div class="divide-y divide-gray-200" x-show="expandedSections['{{ industry or 'Unknown Industry' }}']" x-transition>
+                    {% for contact in industry_contacts %}
+                        {{ render_contact(contact) }}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Contacts by Role -->
+    <div x-show="groupBy === 'role'" class="space-y-4">
+        {% set roles = contacts | groupby('role') %}
+        {% for role, role_contacts in roles %}
+            <div class="bg-white rounded-lg shadow-sm border">
+                <div class="border-b border-gray-200 px-6 py-4 cursor-pointer hover:bg-gray-50" 
+                     @click="expandedSections['{{ role or 'No Role Specified' }}'] = !expandedSections['{{ role or 'No Role Specified' }}']">                    <h3 class="text-status-header">
+                        <span class="mr-2 transition-transform duration-200" :class="expandedSections['{{ role or 'No Role Specified' }}'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ user_icon("w-5 h-5 mr-1") }} {{ role or 'No Role Specified' }}<span class="ml-2 badge-standard badge-yellow">{{ role_contacts|list|length }}</span>
+                    </h3>
+                </div>
+                <div class="divide-y divide-gray-200" x-show="expandedSections['{{ role or 'No Role Specified' }}']" x-transition>
+                    {% for contact in role_contacts %}
+                        {{ render_contact(contact) }}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Contacts by Contact Info -->
+    <div x-show="groupBy === 'contact_info'" class="space-y-4">
+        <!-- Complete Contact Info -->
+        <div class="bg-white rounded-lg shadow-sm border border-green-200">
+            <div class="border-b border-green-200 px-6 py-4 bg-green-50 cursor-pointer hover:bg-green-100" 
+                 @click="expandedSections['complete_info'] = !expandedSections['complete_info']">
+                <h3 class="text-status-success">
+                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['complete_info'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ user_icon("w-5 h-5 mr-1") }} Complete Info (Email + Phone)<span class="ml-2 badge-standard badge-green">{{ contacts|selectattr('email')|selectattr('phone')|list|length }}</span>
+                </h3>
+            </div>
+            <div class="divide-y divide-gray-200" x-show="expandedSections['complete_info']" x-transition>
+                {% for contact in contacts %}
+                    {% if contact.email and contact.phone %}
+                        {{ render_contact(contact) }}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Email Only -->
+        <div class="bg-white rounded-lg shadow-sm border border-blue-200">
+            <div class="border-b border-blue-200 px-6 py-4 bg-blue-50 cursor-pointer hover:bg-blue-100" 
+                 @click="expandedSections['with_email'] = !expandedSections['with_email']">
+                <h3 class="text-status-info">
+                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['with_email'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ user_icon("w-5 h-5 mr-1") }} Email Only<span class="ml-2 badge-standard badge-blue">{{ contacts|selectattr('email')|rejectattr('phone')|list|length }}</span>
+                </h3>
+            </div>
+            <div class="divide-y divide-gray-200" x-show="expandedSections['with_email']" x-transition>
+                {% for contact in contacts %}
+                    {% if contact.email and not contact.phone %}
+                        {{ render_contact(contact) }}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Phone Only -->
+        <div class="bg-white rounded-lg shadow-sm border border-yellow-200">
+            <div class="border-b border-yellow-200 px-6 py-4 bg-yellow-50 cursor-pointer hover:bg-yellow-100" 
+                 @click="expandedSections['with_phone'] = !expandedSections['with_phone']">
+                <h3 class="text-status-warning">
+                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['with_phone'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ user_icon("w-5 h-5 mr-1") }} Phone Only<span class="ml-2 badge-standard badge-yellow">{{ contacts|selectattr('phone')|rejectattr('email')|list|length }}</span>
+                </h3>
+            </div>
+            <div class="divide-y divide-gray-200" x-show="expandedSections['with_phone']" x-transition>
+                {% for contact in contacts %}
+                    {% if contact.phone and not contact.email %}
+                        {{ render_contact(contact) }}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Missing Contact Info -->
+        <div class="bg-white rounded-lg shadow-sm border border-red-200">
+            <div class="border-b border-red-200 px-6 py-4 bg-red-50 cursor-pointer hover:bg-red-100" 
+                 @click="expandedSections['missing_info'] = !expandedSections['missing_info']">
+                <h3 class="text-status-overdue">
+                    <span class="mr-2 transition-transform duration-200" :class="expandedSections['missing_info'] ? 'rotate-90' : ''">{{ chevron_right_icon("w-4 h-4") }}</span>{{ user_icon("w-5 h-5 mr-1") }} Missing Contact Info<span class="ml-2 badge-standard badge-red">{{ contacts|rejectattr('email')|rejectattr('phone')|list|length }}</span>
+                </h3>
+            </div>
+            <div class="divide-y divide-gray-200" x-show="expandedSections['missing_info']" x-transition>
+                {% for contact in contacts %}
+                    {% if not contact.email and not contact.phone %}
+                        {{ render_contact(contact) }}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Fallback for no contacts -->
+    {% if not contacts %}
+        <div class="bg-white rounded-lg shadow-sm border p-8 text-center">
+            <p class="text-gray-500 mb-4">No contacts found</p>
+            <button onclick="openNewContactModal()" 
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                Add Your First Contact
+            </button>
+        </div>
+    {% endif %}
+
 </div>
 
-<div class="bg-white shadow overflow-hidden sm:rounded-md">
-    <ul class="divide-y divide-gray-200">
-        {% for contact in contacts %}
-            <li class="px-6 py-4 hover:bg-gray-50">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
-                                {{ contact.name[:2].upper() }}
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <div class="text-lg font-medium text-gray-900">{{ contact.name }}</div>
-                            <div class="text-sm text-gray-500">
-                                {% if contact.role %}{{ contact.role }} • {% endif %}
-                                {{ contact.company.name }}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center space-x-4">
-                        {% if contact.email %}
-                            <a href="mailto:{{ contact.email }}" 
-                               class="text-sm text-blue-600 hover:text-blue-800">
-                                {{ contact.email }}
-                            </a>
-                        {% endif %}
-                        
-                        {% if contact.phone %}
-                            <a href="tel:{{ contact.phone }}" 
-                               class="text-sm text-gray-600 hover:text-gray-800">
-                                {{ contact.phone }}
-                            </a>
-                        {% endif %}
-                        
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xs text-gray-500">
-                                {{ contact.opportunities|length }} opp{{ 's' if contact.opportunities|length != 1 else '' }}
-                            </span>
-                            
-                            <button onclick="openContactModal({{ contact.id }})" 
-                                    class="text-gray-400 hover:text-gray-600">
-                                →
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </li>
-        {% else %}
-            <li class="px-6 py-12 text-center">
-                <p class="text-gray-500 mb-4">No contacts found</p>
-                <button onclick="openNewContactModal()" 
-                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                    Add Your First Contact
-                </button>
-            </li>
-        {% endfor %}
-    </ul>
-</div>
+{% endcall %}
 {% endblock %}
 
 {% block scripts %}
@@ -83,8 +226,9 @@ function openNewContactModal() {
 }
 
 function openContactModal(contactId) {
-    // TODO: Implement contact details modal
-    console.log('Opening contact modal for:', contactId);
+    openContactDetailModal(contactId);
 }
 </script>
+
+{% include "components/modals.html" %}
 {% endblock %}

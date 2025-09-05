@@ -1,0 +1,85 @@
+{% from "components/icons.html" import check_icon %}
+{% from "components/list_section.html" import status_badge %}
+{% from "components/ui_elements.html" import action_button %}
+
+{% macro render_opportunity(opportunity, today) %}
+<div class="opportunity-card bg-white rounded-lg shadow-sm border p-4 mb-3" 
+     data-opportunity-id="{{ opportunity.id }}">
+    
+    <!-- Opportunity header with value and stage -->
+    <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center space-x-2 flex-grow">
+            {% set stage_color = 'green' if opportunity.stage == 'prospect' else
+                                'blue' if opportunity.stage == 'qualified' else
+                                'yellow' if opportunity.stage == 'proposal' else
+                                'orange' if opportunity.stage == 'negotiation' else
+                                'gray' %}
+            {{ status_badge(opportunity.stage, stage_color) }}
+            <h3 class="text-title-primary">{{ opportunity.name }}</h3>
+            
+            {% if opportunity.value %}
+                <div class="text-lg font-semibold text-green-600">
+                    ${{ "{:,.0f}".format(opportunity.value) }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Company and probability info -->
+    <div class="mb-2">
+        <div class="flex items-center space-x-4 text-secondary">
+            <span class="font-medium">{{ opportunity.company.name }}</span>
+            
+            {% if opportunity.probability %}
+                <span class="flex items-center">
+                    <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                        <div class="bg-blue-600 h-2 rounded-full" 
+                             style="width: {{ opportunity.probability }}%"></div>
+                    </div>
+                    {{ opportunity.probability }}%
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Opportunity metadata -->
+    <div class="flex items-center justify-between">
+        <div class="text-metadata">
+            {% if opportunity.expected_close_date %}
+                <span class="{{ 'text-red-600' if opportunity.expected_close_date < today else 'text-gray-500' }}">
+                    Close: {{ opportunity.expected_close_date.strftime('%d/%m/%y') }}
+                    {% if opportunity.expected_close_date < today %}
+                        • Overdue
+                    {% elif opportunity.expected_close_date == today %}
+                        • Due today
+                    {% endif %}
+                </span>
+            {% endif %}
+            
+            {% if opportunity.contacts %}
+                {% if opportunity.expected_close_date %} • {% endif %}
+                {{ opportunity.contacts|length }} contact{{ 's' if opportunity.contacts|length != 1 else '' }}
+            {% endif %}
+            
+            {% if opportunity.deal_age is defined %}
+                {% if opportunity.expected_close_date or opportunity.contacts %} • {% endif %}
+                {{ opportunity.deal_age }} days old
+            {% endif %}
+        </div>
+        
+        <!-- Action buttons at bottom right -->
+        <div class="flex items-center space-x-1">
+            <button onclick="deleteOpportunity({{ opportunity.id }})" 
+                    class="px-2 py-1 rounded text-danger-hover text-action-sm hover:bg-red-50 transition-colors duration-200" 
+                    title="Delete opportunity">
+                ×
+            </button>
+            <button onclick="openOpportunityModal({{ opportunity.id }})" 
+                    class="px-2 py-1 rounded text-info-hover text-action-sm hover:bg-blue-50 transition-colors duration-200" 
+                    title="View opportunity">
+                {{ check_icon("w-4 h-4") }}
+            </button>
+        </div>
+    </div>
+</div>
+{% endmacro %}

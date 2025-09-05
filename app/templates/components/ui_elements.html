@@ -1,0 +1,120 @@
+{# Common UI Elements - Reusable macros for consistent interface components #}
+
+{#
+  Action Button - Standardized clickable action button with consistent styling
+  
+  Parameters:
+  - onclick (required): JavaScript function call to execute on click
+  - icon (optional): Symbol or text to display (default: '')
+  - classes (optional): CSS classes for styling (default: standard gray styling)
+  - id (optional): HTML id attribute
+  
+  Usage:
+  {{ action_button('openContactModal(' + contact.id|string + ')') }}
+  {{ action_button('openModal()', '⋯', 'text-blue-400 hover:text-blue-600') }}
+#}
+{% macro action_button(onclick, icon='', classes='text-gray-400 hover:text-gray-600', id=None) %}
+<button onclick="{{ onclick }}" 
+        class="{{ classes }}"
+        {% if id %}id="{{ id }}"{% endif %}>
+    {{ icon }}
+</button>
+{% endmacro %}
+
+{#
+  Pluralized Count - Smart count display with automatic pluralization
+  
+  Parameters:
+  - count (required): Number to display
+  - singular (required): Singular form of the noun (e.g., 'opportunity')
+  - plural (optional): Plural form if different from singular + 's' (e.g., 'opportunities')
+  - short (optional): Use abbreviated form (e.g., 'opp' instead of 'opportunity')
+  - show_zero (optional): Show count even when zero (default: true)
+  
+  Usage:
+  {{ pluralized_count(contact.opportunities|length, 'opportunity', short=true) }}
+  {{ pluralized_count(company.contacts|length, 'contact') }}
+  {{ pluralized_count(items|length, 'item', 'items') }}
+#}
+{% macro pluralized_count(count, singular, plural=None, short=false, show_zero=false) %}
+{%- if count > 0 or show_zero -%}
+    {%- set display_singular = singular -%}
+    {%- if plural -%}
+        {%- set display_plural = plural -%}
+    {%- elif singular == 'opportunity' -%}
+        {%- set display_plural = 'opportunities' -%}
+    {%- else -%}
+        {%- set display_plural = singular + 's' -%}
+    {%- endif -%}
+    
+    {%- if short -%}
+        {%- if singular == 'opportunity' -%}
+            {%- set display_singular = 'opp' -%}
+            {%- set display_plural = 'opps' -%}
+        {%- endif -%}
+    {%- endif -%}
+    
+    {{ count }} {{ display_singular if count == 1 else display_plural }}
+{%- endif -%}
+{% endmacro %}
+
+{#
+  Expand/Collapse Controls - Standardized section expansion controls
+  
+  Parameters:
+  - target_sections (required): Alpine.js data object name containing section states
+  - additional_classes (optional): Extra CSS classes for the container
+  
+  Usage:
+  {{ expand_collapse_controls('expandedSections') }}
+  {{ expand_collapse_controls('sectionStates', 'ml-4') }}
+#}
+{% macro expand_collapse_controls(target_sections, additional_classes='') %}
+<div class="flex items-center space-x-2 border-l pl-4 {{ additional_classes }}">
+    <button @click="Object.keys({{ target_sections }}).forEach(key => {{ target_sections }}[key] = true)"
+            class="text-secondary-dark hover:text-gray-900">Expand All</button>
+    <span class="text-gray-400">|</span>
+    <button @click="Object.keys({{ target_sections }}).forEach(key => {{ target_sections }}[key] = false)"
+            class="text-secondary-dark hover:text-gray-900">Collapse All</button>
+</div>
+{% endmacro %}
+
+{#
+  Contact Info Badge - Display contact information status
+  
+  Parameters:
+  - contact (required): Contact object with email and phone attributes
+  - additional_classes (optional): Extra CSS classes
+  
+  Usage:
+  {{ contact_info_badge(contact) }}
+#}
+{% macro contact_info_badge(contact, additional_classes='') %}
+{%- set has_email = contact.email -%}
+{%- set has_phone = contact.phone -%}
+{%- if has_email and has_phone -%}
+    <span class="badge-standard badge-green {{ additional_classes }}">Complete Info</span>
+{%- elif has_email -%}
+    <span class="badge-standard badge-blue {{ additional_classes }}">Email Only</span>
+{%- elif has_phone -%}
+    <span class="badge-standard badge-yellow {{ additional_classes }}">Phone Only</span>
+{%- else -%}
+    <span class="badge-standard badge-red {{ additional_classes }}">Missing Info</span>
+{%- endif -%}
+{% endmacro %}
+
+{#
+  Entity Link Button - Standardized link button for entity detail pages
+  
+  Parameters:
+  - url (required): URL to navigate to
+  - text (optional): Button text (default: 'View Details')
+  - classes (optional): CSS classes for styling
+  
+  Usage:
+  {{ entity_link_button(url_for('companies.detail', company_id=company.id)) }}
+  {{ entity_link_button('/contacts/' + contact.id|string, 'View Contact') }}
+#}
+{% macro entity_link_button(url, text='View Details', classes='mt-3 block w-full text-center bg-gray-50 text-gray-700 py-2 rounded-md hover:bg-gray-100') %}
+<a href="{{ url }}" class="{{ classes }}">{{ text }}</a>
+{% endmacro %}

@@ -1,0 +1,35 @@
+{% from "components/ui_elements.html" import action_button, pluralized_count %}
+
+{% macro render_contact(contact) %}
+<div class="px-6 py-4 hover:bg-gray-50">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
+                    {{ contact.name[:2].upper() }}
+                </div>
+            </div>
+            <div class="ml-4">
+                <div class="text-title-primary">{{ contact.name }}</div>
+                <div class="text-secondary">
+                    {% if contact.role %}{{ contact.role }} • {% endif %}
+                    {{ contact.company.name }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+            {% if contact.email %}
+                <a href="mailto:{{ contact.email }}" 
+                   class="text-sm text-blue-600 hover:text-blue-800">
+                    {{ contact.email }}
+                </a>
+            {% endif %}
+            
+            <div class="flex items-center space-x-2">
+                {{ action_button('openContactModal(' + contact.id|string + ')') }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

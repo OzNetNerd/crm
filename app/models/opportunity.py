@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from . import db
 
 
@@ -7,7 +8,7 @@ class Opportunity(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
-    value = db.Column(db.Numeric(10, 2))
+    value = db.Column(db.Numeric(10, 2))  # Store monetary value in dollars
     probability = db.Column(db.Integer, default=0)  # 0-100 percentage
     expected_close_date = db.Column(db.Date)
     stage = db.Column(db.String(50), default='prospect')  # prospect/qualified/proposal/negotiation/closed
@@ -15,6 +16,7 @@ class Opportunity(db.Model):
     
     # Foreign keys
     company_id = db.Column(db.Integer, db.ForeignKey('companies.id'), nullable=False)
+    
     
     @property
     def deal_age(self):

@@ -62,8 +62,8 @@
   
   <div class="flex items-center justify-between bg-white p-3 rounded border {{ additional_classes }}">
     <div>
-      <div class="text-sm font-medium text-gray-900">{{ title }}</div>
-      <div class="text-xs text-gray-500 mt-1">{{ subtitle }}</div>
+      <div class="text-label-primary">{{ title }}</div>
+      <div class="text-metadata">{{ subtitle }}</div>
     </div>
     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ badge_class }}">
       {{ badge_text }}
@@ -97,7 +97,7 @@
   
   <div class="flex items-center justify-between bg-white p-3 rounded border {{ additional_classes }}">
     <div>
-      <div class="text-sm font-medium text-gray-900">{{ title }}</div>
+      <div class="text-label-primary">{{ title }}</div>
       <div class="text-xs {{ warning_class }} mt-1">{{ warning_text }}</div>
     </div>
     {% if action_href %}
@@ -127,8 +127,8 @@
   
   <div class="bg-white p-3 rounded border {{ additional_classes }}">
     <div class="border-l-4 {{ accent_class }} pl-4">
-      <p class="text-sm font-medium text-gray-900">{{ content }}</p>
-      <p class="text-xs text-gray-500 mt-1">{{ metadata }}</p>
+      <p class="text-label-primary">{{ content }}</p>
+      <p class="text-metadata">{{ metadata }}</p>
     </div>
   </div>
 {% endmacro %}
@@ -136,6 +136,20 @@
 {#
   Simple variants for common use cases
 #}
+{#
+  Status Badge - Standardized badge with consistent styling
+  
+  Parameters:
+  - text (required): Badge text content
+  - color (optional): Badge color - red, yellow, green, blue, orange, gray (default)
+  - use_title_case (optional): Apply title case formatting (default: true)
+#}
+{% macro status_badge(text, color='gray', use_title_case=true) %}
+  <span class="badge-standard badge-{{ color }}">
+    {{ text|title if use_title_case else text }}
+  </span>
+{% endmacro %}
+
 {% macro simple_list_section(title, items, href=None) %}
   {% call list_section(title, href=href) %}
     {% for item in items %}

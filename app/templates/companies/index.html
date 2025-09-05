@@ -1,54 +1,76 @@
 {% extends "base/layout.html" %}
+{% from "components/page_template.html" import page_layout %}
+{% from "components/ui_elements.html" import action_button, pluralized_count, entity_link_button %}
 
 {% block title %}Companies - CRM{% endblock %}
 
 {% block content %}
-<div class="mb-8 flex items-center justify-between">
-    <div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Companies</h1>
-        <p class="text-gray-600">Manage your company relationships</p>
-    </div>
-    <button onclick="openNewCompanyModal()" 
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-        + New Company
-    </button>
-</div>
+{% set company_stats = {
+    'title': 'Company Overview',
+    'stats': [
+        {
+            'value': companies|length,
+            'label': 'Total Companies',
+            'color_class': 'text-blue-600'
+        },
+        {
+            'value': companies|selectattr('industry')|list|length,
+            'label': 'With Industry',
+            'color_class': 'text-green-600'
+        },
+        {
+            'value': companies|map(attribute='contacts')|map('length')|sum if companies|selectattr('contacts')|list else 0,
+            'label': 'Total Contacts',
+            'color_class': 'text-purple-600'
+        },
+        {
+            'value': companies|selectattr('contacts')|list|length,
+            'label': 'Active Relationships',
+            'color_class': 'text-orange-600'
+        }
+    ]
+} %}
+
+{% set company_buttons = [
+    {
+        'label': 'New Company',
+        'onclick': 'openNewCompanyModal()',
+        'color': 'blue',
+        'icon': ''
+    }
+] %}
+
+{% call page_layout("Companies", "Manage your company relationships", buttons=company_buttons, summary_data=company_stats) %}
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for company in companies %}
         <div class="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
             <div class="flex items-start justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">{{ company.name }}</h3>
-                <button onclick="openCompanyModal({{ company.id }})" 
-                        class="text-gray-400 hover:text-gray-600">
-                    ⋯
-                </button>
+                <h3 class="text-section-title">{{ company.name }}</h3>
+                {{ action_button('openCompanyModal(' + company.id|string + ')', '⋯', 'text-link-subtle') }}
             </div>
             
             {% if company.industry %}
-                <p class="text-sm text-gray-600 mb-2">{{ company.industry }}</p>
+                <p class="text-secondary-dark mb-2">{{ company.industry }}</p>
             {% endif %}
             
             {% if company.website %}
                 <a href="{{ company.website }}" target="_blank" 
-                   class="text-sm text-blue-600 hover:text-blue-800 mb-3 block">
+                   class="text-link mb-3 block">
                     {{ company.website }}
                 </a>
             {% endif %}
             
-            <div class="flex items-center justify-between text-sm text-gray-500 mt-4 pt-4 border-t">
-                <span>{{ company.contacts|length }} contacts</span>
-                <span>{{ company.opportunities|length }} opportunities</span>
+            <div class="flex items-center justify-between text-secondary mt-4 pt-4 border-t">
+                <span>{{ pluralized_count(company.contacts|length, 'contact') }}</span>
+                <span>{{ pluralized_count(company.opportunities|length, 'opportunity', plural='opportunities') }}</span>
             </div>
             
-            <a href="{{ url_for('companies.detail', company_id=company.id) }}" 
-               class="mt-3 block w-full text-center bg-gray-50 text-gray-700 py-2 rounded-md hover:bg-gray-100">
-                View Details
-            </a>
+            {{ entity_link_button(url_for('companies.detail', company_id=company.id)) }}
         </div>
     {% else %}
         <div class="col-span-full text-center py-12">
-            <p class="text-gray-500 mb-4">No companies found</p>
+            <p class="text-secondary mb-4">No companies found</p>
             <button onclick="openNewCompanyModal()" 
                     class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
                 Add Your First Company
@@ -56,6 +78,8 @@
         </div>
     {% endfor %}
 </div>
+
+{% endcall %}
 {% endblock %}
 
 {% block scripts %}
@@ -66,8 +90,9 @@ function openNewCompanyModal() {
 }
 
 function openCompanyModal(companyId) {
-    // TODO: Implement company details modal
-    console.log('Opening company modal for:', companyId);
+    openCompanyDetailModal(companyId);
 }
 </script>
+
+{% include "components/modals.html" %}
 {% endblock %}

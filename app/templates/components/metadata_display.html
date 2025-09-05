@@ -1,0 +1,54 @@
+{% macro format_date_with_status(date_value, date_label="Due", today=none) %}
+    {% if date_value %}
+        {% set is_overdue = today and date_value < today %}
+        {% set is_today = today and date_value == today %}
+        
+        <span class="{{ 'text-red-600' if is_overdue else 'text-gray-500' }}">
+            {{ date_label }}: {{ date_value.strftime('%d/%m/%y') }}
+            {% if is_overdue %}
+                • {{ (today - date_value).days }} day{{ 's' if (today - date_value).days != 1 else '' }} ago
+            {% elif is_today %}
+                • Due today
+            {% elif today and date_value > today %}
+                • {{ (date_value - today).days }} day{{ 's' if (date_value - today).days != 1 else '' }} to go
+            {% endif %}
+        </span>
+    {% endif %}
+{% endmacro %}
+
+{% macro entity_link_display(entity_name, entity_type=none) %}
+    {% if entity_name %}
+        {% if entity_type == 'company' %}
+            <span class="text-metadata">{{ entity_name }}</span>
+        {% elif entity_type == 'contact' %}
+            <span class="text-metadata">{{ entity_name }}</span>
+        {% elif entity_type == 'opportunity' %}
+            <span class="text-metadata">{{ entity_name }}</span>
+        {% else %}
+            <span class="text-metadata">{{ entity_name }}</span>
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
+{% macro contact_count_display(contacts) %}
+    {% if contacts %}
+        {{ contacts|length }} contact{{ 's' if contacts|length != 1 else '' }}
+        {% if contacts|length <= 3 %}
+            ({% for contact in contacts %}{{ contact.name }}{% if not loop.last %}, {% endif %}{% endfor %})
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
+{% macro age_display(age_value, age_label="days old") %}
+    {% if age_value is defined and age_value is not none %}
+        {{ age_value }} {{ age_label }}
+    {% endif %}
+{% endmacro %}
+
+{% macro metadata_separator() %}•{% endmacro %}
+
+{% macro build_metadata_parts(parts_list) %}
+    {% for part in parts_list %}
+        {% if part %}{{ part }}{% if not loop.last %} {{ metadata_separator() }} {% endif %}{% endif %}
+    {% endfor %}
+{% endmacro %}
