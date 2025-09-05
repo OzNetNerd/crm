@@ -35,24 +35,24 @@
 <!-- Pipeline Overview -->
 {% set pipeline_stats_list = [
   {
-    value: '$' + "{:,.0f}".format(pipeline_stats.prospect), 
-    value_color: 'green', 
-    label: 'Prospect'
+    'value': '$' + "{:,.0f}".format(pipeline_stats.prospect), 
+    'value_color': 'green', 
+    'label': 'Prospect'
   },
   {
-    value: '$' + "{:,.0f}".format(pipeline_stats.qualified), 
-    value_color: 'blue', 
-    label: 'Qualified'
+    'value': '$' + "{:,.0f}".format(pipeline_stats.qualified), 
+    'value_color': 'blue', 
+    'label': 'Qualified'
   },
   {
-    value: '$' + "{:,.0f}".format(pipeline_stats.proposal), 
-    value_color: 'yellow', 
-    label: 'Proposal'
+    'value': '$' + "{:,.0f}".format(pipeline_stats.proposal), 
+    'value_color': 'yellow', 
+    'label': 'Proposal'
   },
   {
-    value: '$' + "{:,.0f}".format(pipeline_stats.negotiation), 
-    value_color: 'orange', 
-    label: 'Negotiation'
+    'value': '$' + "{:,.0f}".format(pipeline_stats.negotiation), 
+    'value_color': 'orange', 
+    'label': 'Negotiation'
   }
 ] %}
 
