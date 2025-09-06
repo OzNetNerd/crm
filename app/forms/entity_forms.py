@@ -81,7 +81,6 @@ class OpportunityForm(FlaskForm):
     company_id = IntegerField(
         "Company", validators=[DataRequired(), NumberRange(min=1)]
     )
-
     value = DecimalField(
         "Value ($)",
         validators=[Optional(), NumberRange(min=0)],
