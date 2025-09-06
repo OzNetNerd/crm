@@ -1,5 +1,5 @@
 {% extends "base/layout.html" %}
-{% from "components/task_card.html" import render_task %}
+{% from "components/task_card.html" import render_task, render_task_hierarchy %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/icons.html" import clipboard_list_icon, bolt_icon, check_circle_icon_solid, fire_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, calendar_days_icon, calendar_icon, chart_bar_icon, question_mark_circle_icon, building_office_icon, user_icon, currency_dollar_icon, chevron_right_icon %}
 {% from "components/ui_elements.html" import expand_collapse_controls, dropdown_select, dropdown_multiselect %}
@@ -57,6 +57,12 @@
         'label': 'New Task',
         'onclick': 'openNewTaskModal()',
         'color': 'blue',
+        'icon': ''
+    },
+    {
+        'label': 'New Multi Task',
+        'onclick': 'window.location.href="/tasks/multi/new"',
+        'color': 'green',
         'icon': ''
     }
 ] %}
@@ -140,8 +146,12 @@
             {{ task_group_header('todo', 'To Do', clipboard_list_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue">' + (tasks|selectattr('status', 'equalto', 'todo')|list|length)|string + '</span>', 'blue', 'blue', 'blue', 'text-status-header') }}
             <div class="p-6" x-show="expandedSections['todo']" x-transition>
                 {% for task in tasks %}
-                    {% if task.status == 'todo' %}
-                        {{ render_task(task, 'todo') }}
+                    {% if task.status == 'todo' and task.task_type != 'child' %}
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'todo') }}
+                        {% else %}
+                            {{ render_task(task, 'todo') }}
+                        {% endif %}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -154,8 +164,12 @@
             {{ task_group_header('in-progress', 'In Progress', bolt_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-yellow">' + (tasks|selectattr('status', 'equalto', 'in-progress')|list|length)|string + '</span>', 'yellow', 'yellow', 'yellow', 'text-status-header') }}
             <div class="p-6" x-show="expandedSections['in-progress']" x-transition>
                 {% for task in tasks %}
-                    {% if task.status == 'in-progress' %}
-                        {{ render_task(task, 'in-progress') }}
+                    {% if task.status == 'in-progress' and task.task_type != 'child' %}
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'in-progress') }}
+                        {% else %}
+                            {{ render_task(task, 'in-progress') }}
+                        {% endif %}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -168,9 +182,13 @@
             {{ task_group_header('complete', 'Completed', check_circle_icon_solid("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-green">' + (tasks|selectattr('status', 'equalto', 'complete')|list|length)|string + '</span>', 'green', 'green', 'green', 'text-status-header') }}
             <div class="p-6" x-show="expandedSections['complete']" x-transition>
                 {% for task in tasks %}
-                    {% if task.status == 'complete' %}
+                    {% if task.status == 'complete' and task.task_type != 'child' %}
                         <div class="opacity-60">
-                            {{ render_task(task, 'complete') }}
+                            {% if task.task_type == 'parent' %}
+                                {{ render_task_hierarchy(task, 'complete') }}
+                            {% else %}
+                                {{ render_task(task, 'complete') }}
+                            {% endif %}
                         </div>
                     {% endif %}
                 {% else %}
