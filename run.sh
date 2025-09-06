@@ -23,4 +23,4 @@ echo "🚀 Starting CRM application on http://127.0.0.1:$PORT"
 echo "📝 Claude Code: Use this URL to access the application"
 
 # Start the Flask application
-python3 main.py --port $PORT
+python3 main.py --port "$PORT"

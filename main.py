@@ -34,7 +34,9 @@ def get_database_path():
                     main_repo_root = git_dir.parent.parent.parent  # /home/will/code/crm
                     print(f"DEBUG: main_repo_root = {main_repo_root}")
                     db_path = f"sqlite:///{main_repo_root}/instance/crm.db"
-                    print(f"DEBUG: Worktree detected, using main repo database: {db_path}")
+                    print(
+                        f"DEBUG: Worktree detected, using main repo database: {db_path}"
+                    )
                     return db_path
             else:
                 # Regular git repo
@@ -72,20 +74,20 @@ def create_app():
     return app
 
 
-
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Run the CRM Flask application')
-    parser.add_argument('--port', type=int, required=True, help='Port number to run the application on')
+    parser = argparse.ArgumentParser(description="Run the CRM Flask application")
+    parser.add_argument(
+        "--port", type=int, required=True, help="Port number to run the application on"
+    )
     args = parser.parse_args()
-    
+
     app = create_app()
-    
+
     try:
         app.run(debug=True, port=args.port)
     except OSError as e:
         if "Address already in use" in str(e):
             print(f"\n❌ Error: Port {args.port} is already in use!")
-            print(f"💡 Use ./run.sh to auto-detect a free port")
+            print("💡 Use ./run.sh to auto-detect a free port")
         else:
             raise
