@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Find the first available port starting from 5000
+# Find the first available port starting from 5050
 find_free_port() {
-    local start_port=5000
+    local start_port=5050
     local max_attempts=10
     
     for ((port=start_port; port<start_port+max_attempts; port++)); do
