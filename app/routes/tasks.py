@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, date
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from app.models import db, Task, Company, Contact, Opportunity
-# Forms handled directly in routes without WTForms for now
+from app.forms import TaskForm, MultiTaskForm
 
 tasks_bp = Blueprint('tasks', __name__)
 
@@ -58,9 +58,60 @@ def new():
 
 @tasks_bp.route('/multi/new', methods=['GET', 'POST'])
 def new_multi():
-    """Create a new Multi Task with child tasks"""
-    if request.method == 'POST':
-        data = request.get_json() if request.is_json else request.form
+    """Create a new Multi Task with child tasks using WTF form validation"""
+    form = MultiTaskForm()
+    
+    # Populate entity choices dynamically
+    companies = Company.query.order_by(Company.name).all()
+    contacts = Contact.query.order_by(Contact.name).all()
+    opportunities = Opportunity.query.order_by(Opportunity.name).all()
+    
+    if form.validate_on_submit():
+        try:
+            # Create parent task
+            parent_task = Task(
+                description=form.description.data,
+                due_date=form.due_date.data,
+                priority=form.priority.data,
+                status='todo',
+                entity_type=form.entity_type.data if form.entity_type.data else None,
+                entity_id=form.entity_id.data if form.entity_id.data else None,
+                task_type='parent',
+                dependency_type=form.dependency_type.data
+            )
+            
+            db.session.add(parent_task)
+            db.session.flush()  # Get the parent task ID
+            
+            # Create child tasks from form data
+            for i, child_form in enumerate(form.child_tasks.entries):
+                if child_form.description.data:  # Only create if description exists
+                    child_task = Task(
+                        description=child_form.description.data,
+                        due_date=child_form.due_date.data,
+                        priority=child_form.priority.data,
+                        status='todo',
+                        next_step_type=child_form.next_step_type.data if child_form.next_step_type.data else None,
+                        entity_type=form.entity_type.data if form.entity_type.data else None,
+                        entity_id=form.entity_id.data if form.entity_id.data else None,
+                        task_type='child',
+                        parent_task_id=parent_task.id,
+                        sequence_order=i,
+                        dependency_type=form.dependency_type.data
+                    )
+                    db.session.add(child_task)
+            
+            db.session.commit()
+            flash('Multi Task created successfully!', 'success')
+            return redirect(url_for('tasks.index'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error creating Multi Task: {str(e)}', 'error')
+    
+    # Handle JSON requests (from JavaScript)
+    elif request.is_json and request.method == 'POST':
+        data = request.get_json()
         
         # Create parent task
         parent_task = Task(
@@ -75,20 +126,20 @@ def new_multi():
         )
         
         db.session.add(parent_task)
-        db.session.flush()  # Get the parent task ID
+        db.session.flush()
         
         # Create child tasks
         child_tasks_data = data.get('child_tasks', [])
         for i, child_data in enumerate(child_tasks_data):
-            if child_data.get('description'):  # Only create if description exists
+            if child_data.get('description'):
                 child_task = Task(
                     description=child_data['description'],
                     due_date=datetime.strptime(child_data['due_date'], '%Y-%m-%d').date() if child_data.get('due_date') else None,
                     priority=child_data.get('priority', 'medium'),
                     status='todo',
                     next_step_type=child_data.get('next_step_type'),
-                    entity_type=data.get('entity_type'),  # Inherit from parent
-                    entity_id=data.get('entity_id'),      # Inherit from parent
+                    entity_type=data.get('entity_type'),
+                    entity_id=data.get('entity_id'),
                     task_type='child',
                     parent_task_id=parent_task.id,
                     sequence_order=i,
@@ -97,17 +148,10 @@ def new_multi():
                 db.session.add(child_task)
         
         db.session.commit()
-        
-        if request.is_json:
-            return jsonify({'status': 'success', 'task_id': parent_task.id})
-        else:
-            return redirect(url_for('tasks.detail', task_id=parent_task.id))
-    
-    companies = Company.query.order_by(Company.name).all()
-    contacts = Contact.query.order_by(Contact.name).all()
-    opportunities = Opportunity.query.order_by(Opportunity.name).all()
+        return jsonify({'status': 'success', 'task_id': parent_task.id})
     
     return render_template('tasks/multi_new.html', 
+                         form=form,
                          companies=companies, 
                          contacts=contacts, 
                          opportunities=opportunities)

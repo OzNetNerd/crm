@@ -7,7 +7,8 @@
 {% call page_layout("Create Multi Task", "Set up a parent task with multiple child tasks") %}
 
 <div class="max-w-4xl mx-auto">
-    <form id="multiTaskForm" class="space-y-8">
+    <form id="multiTaskForm" class="space-y-8" method="post">
+        {{ form.hidden_tag() if form }}
         <!-- Parent Task Section -->
         <div class="card-padded">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Parent Task Details</h3>
