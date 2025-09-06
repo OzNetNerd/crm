@@ -185,15 +185,76 @@ class TaskManager {
 
     static updateSectionCounters() {
         // Update badge counts in section headers after task completion
-        const sections = document.querySelectorAll('[data-section-count]');
-        sections.forEach(section => {
-            const sectionType = section.dataset.sectionCount;
-            const tasksInSection = document.querySelectorAll(`[data-task-section="${sectionType}"]`).length;
-            const badge = section.querySelector('.badge-standard');
-            if (badge) {
-                badge.textContent = tasksInSection;
+        // Find badges by their parent section headers to avoid affecting priority badges
+        
+        // Update section count badges by finding them within section headers
+        const sectionHeaderSelectors = [
+            // Status sections
+            { headerText: 'To Do', selector: '[x-show="expandedSections[\'todo\']"]' },
+            { headerText: 'In Progress', selector: '[x-show="expandedSections[\'in-progress\']"]' },
+            { headerText: 'Completed', selector: '[x-show="expandedSections[\'complete\']"]' },
+            // Priority sections  
+            { headerText: 'High Priority', selector: '[x-show="expandedSections[\'high\']"]' },
+            { headerText: 'Medium Priority', selector: '[x-show="expandedSections[\'medium\']"]' },
+            { headerText: 'Low Priority', selector: '[x-show="expandedSections[\'low\']"]' },
+            // Due date sections
+            { headerText: 'Overdue', selector: '[x-show="expandedSections[\'overdue\']"]' },
+            { headerText: 'Due Today', selector: '[x-show="expandedSections[\'today\']"]' },
+            { headerText: 'This Week', selector: '[x-show="expandedSections[\'this_week\']"]' },
+            { headerText: 'Later', selector: '[x-show="expandedSections[\'later\']"]' },
+            { headerText: 'No Due Date', selector: '[x-show="expandedSections[\'no_date\']"]' },
+            // Entity sections
+            { headerText: 'Company Tasks', selector: '[x-show="expandedSections[\'company\']"]' },
+            { headerText: 'Contact Tasks', selector: '[x-show="expandedSections[\'contact\']"]' },
+            { headerText: 'Opportunity Tasks', selector: '[x-show="expandedSections[\'opportunity\']"]' },
+            { headerText: 'General Tasks', selector: '[x-show="expandedSections[\'unrelated\']"]' }
+        ];
+        
+        // Update each section's count badge
+        sectionHeaderSelectors.forEach(({ headerText, selector }) => {
+            const section = document.querySelector(selector);
+            if (section) {
+                const taskCount = section.querySelectorAll('.task-card').length;
+                
+                // Find the header with the specific text and update its badge
+                const headers = document.querySelectorAll('h3');
+                for (const header of headers) {
+                    if (header.textContent && header.textContent.includes(headerText)) {
+                        const badge = header.querySelector('.badge-standard');
+                        if (badge) {
+                            badge.textContent = taskCount;
+                            break;
+                        }
+                    }
+                }
             }
         });
+        
+        // Also update the page summary statistics at the top
+        this.updatePageSummaryStats();
+    }
+    
+    static updatePageSummaryStats() {
+        // Update the summary statistics at the top of the page
+        // Count all tasks on the page by their current status
+        
+        const todoTasks = document.querySelectorAll('[x-show="expandedSections[\'todo\']"] .task-card').length;
+        const inProgressTasks = document.querySelectorAll('[x-show="expandedSections[\'in-progress\']"] .task-card').length;
+        const completeTasks = document.querySelectorAll('[x-show="expandedSections[\'complete\']"] .task-card').length;
+        
+        // Count overdue tasks (they can be in any status section but have overdue badges)
+        const overdueTasks = document.querySelectorAll('.text-badge-overdue').length;
+        
+        // Find summary stat elements - they're in a grid layout
+        const summaryStats = document.querySelectorAll('.grid .text-center');
+        
+        if (summaryStats.length >= 4) {
+            // Update the summary numbers (To Do, In Progress, Complete, Overdue)
+            summaryStats[0].querySelector('.text-2xl').textContent = todoTasks;
+            summaryStats[1].querySelector('.text-2xl').textContent = inProgressTasks;  
+            summaryStats[2].querySelector('.text-2xl').textContent = completeTasks;
+            summaryStats[3].querySelector('.text-2xl').textContent = overdueTasks;
+        }
     }
 
     static async updateParentTaskProgress(completedTaskId) {
