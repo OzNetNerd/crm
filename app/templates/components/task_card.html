@@ -234,19 +234,24 @@
 
     <!-- Progress bar for parent tasks -->
     {% if task.task_type == 'parent' %}
-    <div class="flex items-center justify-between mb-3 min-h-[32px]">
+    <div class="flex items-center justify-between mb-3 min-h-[48px]">
         <div class="flex items-center space-x-2 flex-grow">
             <div class="flex flex-col items-end space-y-1 text-right min-w-[80px]">
                 <span class="badge-standard badge-blue">{{ task.task_type_badge }}</span>
             </div>
             <div class="flex-grow text-left">
-                <p class="text-label-primary">Tasks: {{ task.child_tasks | selectattr('status', 'equalto', 'complete') | list | length }}/{{ task.child_tasks | length }}</p>
+                <div class="flex items-center space-x-3">
+                    <p class="text-label-primary">Tasks: {{ task.child_tasks | selectattr('status', 'equalto', 'complete') | list | length }}/{{ task.child_tasks | length }}</p>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-16 bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ task.completion_percentage }}%"></div>
+                        </div>
+                        <span class="text-label-primary">{{ task.completion_percentage }}%</span>
+                    </div>
+                </div>
             </div>
             <div class="flex items-center space-x-2 flex-shrink-0 text-left">
-                <div class="w-16 bg-gray-200 rounded-full h-2">
-                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ task.completion_percentage }}%"></div>
-                </div>
-                <span class="text-label-primary">{{ task.completion_percentage }}%</span>
+                <!-- Right side content for parent tasks if needed -->
             </div>
         </div>
     </div>
