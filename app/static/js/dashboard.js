@@ -243,48 +243,67 @@ class TaskManager {
         const completeTasks = document.querySelectorAll('[x-show="expandedSections[\'complete\']"] .task-card').length;
         
         // Count overdue tasks (they can be in any status section but have overdue badges)
-        const overdueTasks = document.querySelectorAll('.text-badge-overdue').length;
+        const overdueTasks = document.querySelectorAll('.text-badge-overdue, [class*="overdue"]').length;
         
-        // Find summary stat elements - they're in a grid layout
-        const summaryStats = document.querySelectorAll('.grid .text-center');
-        
-        if (summaryStats.length >= 4) {
-            // Update the summary numbers (To Do, In Progress, Complete, Overdue)
-            summaryStats[0].querySelector('.text-2xl').textContent = todoTasks;
-            summaryStats[1].querySelector('.text-2xl').textContent = inProgressTasks;  
-            summaryStats[2].querySelector('.text-2xl').textContent = completeTasks;
-            summaryStats[3].querySelector('.text-2xl').textContent = overdueTasks;
+        // Find summary stat elements - they're in the grid layout within the card
+        const summaryGrid = document.querySelector('.grid-cols-2.md\\:grid-cols-4');
+        if (summaryGrid) {
+            const summaryStats = summaryGrid.querySelectorAll('.text-center');
+            
+            if (summaryStats.length >= 4) {
+                // Update the summary numbers based on the order in the template:
+                // To Do, In Progress, Complete, Overdue
+                const todoValue = summaryStats[0].querySelector('.text-2xl');
+                const inProgressValue = summaryStats[1].querySelector('.text-2xl');
+                const completeValue = summaryStats[2].querySelector('.text-2xl');
+                const overdueValue = summaryStats[3].querySelector('.text-2xl');
+                
+                if (todoValue) todoValue.textContent = todoTasks;
+                if (inProgressValue) inProgressValue.textContent = inProgressTasks;
+                if (completeValue) completeValue.textContent = completeTasks;
+                if (overdueValue) overdueValue.textContent = overdueTasks;
+            }
         }
     }
 
     static async updateParentTaskProgress(completedTaskId) {
-        // Update parent task progress bar if the completed task was a child task
+        // Update parent task progress bars for all parent tasks on the page
         try {
-            // Find if this task was a child task by looking for parent tasks on the page
-            const parentTasks = document.querySelectorAll('[data-task-type="parent"]');
+            // Find all task cards and check which ones have progress bars (parent tasks)
+            const allTaskCards = document.querySelectorAll('.task-card');
             
-            for (const parentTask of parentTasks) {
-                const parentId = parentTask.dataset.taskId;
-                if (parentId) {
-                    // Fetch updated parent task data
-                    const response = await fetch(`/api/tasks/${parentId}`);
-                    if (response.ok) {
-                        const taskData = await response.json();
-                        
-                        // Update progress bar
-                        const progressBar = parentTask.querySelector('.bg-blue-600');
-                        const progressText = parentTask.querySelector('.font-medium:last-child');
-                        const tasksText = parentTask.querySelector('.font-medium:first-child');
-                        
-                        if (progressBar && progressText) {
+            for (const taskCard of allTaskCards) {
+                // Check if this task has a progress bar (indicating it's a parent task)
+                const progressBar = taskCard.querySelector('.bg-blue-600');
+                if (progressBar) {
+                    const parentId = taskCard.dataset.taskId;
+                    if (parentId) {
+                        // Fetch updated parent task data
+                        const response = await fetch(`/api/tasks/${parentId}`);
+                        if (response.ok) {
+                            const taskData = await response.json();
+                            
+                            // Update progress bar width
                             progressBar.style.width = `${taskData.completion_percentage}%`;
-                            progressText.textContent = `${taskData.completion_percentage}%`;
-                        }
-                        
-                        if (tasksText && taskData.child_tasks) {
-                            const completedCount = taskData.child_tasks.filter(t => t.status === 'complete').length;
-                            const totalCount = taskData.child_tasks.length;
-                            tasksText.textContent = `Tasks: ${completedCount}/${totalCount}`;
+                            
+                            // Find and update the "Tasks: X/Y" text - it's the first span in the progress container
+                            const progressContainer = taskCard.querySelector('.flex.items-center.space-x-4.text-secondary');
+                            if (progressContainer && taskData.child_tasks) {
+                                const completedCount = taskData.child_tasks.filter(t => t.status === 'complete').length;
+                                const totalCount = taskData.child_tasks.length;
+                                
+                                // Update the "Tasks: X/Y" text (first span)
+                                const tasksSpan = progressContainer.querySelector('span.font-medium');
+                                if (tasksSpan) {
+                                    tasksSpan.textContent = `Tasks: ${completedCount}/${totalCount}`;
+                                }
+                                
+                                // Update the percentage text (last span)
+                                const spans = progressContainer.querySelectorAll('span.font-medium');
+                                if (spans.length > 1) {
+                                    spans[1].textContent = `${taskData.completion_percentage}%`;
+                                }
+                            }
                         }
                     }
                 }

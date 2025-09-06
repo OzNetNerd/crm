@@ -9,22 +9,37 @@ def get_task(task_id):
     """Get a specific task as JSON"""
     task = Task.query.get_or_404(task_id)
 
-    return jsonify(
-        {
-            "id": task.id,
-            "description": task.description,
-            "due_date": task.due_date.isoformat() if task.due_date else None,
-            "priority": task.priority,
-            "status": task.status,
-            "next_step_type": task.next_step_type,
-            "entity_type": task.entity_type,
-            "entity_id": task.entity_id,
-            "company_name": task.company_name,
-            "opportunity_name": task.opportunity_name,
-            "entity_name": task.entity_name,
-            "is_overdue": task.is_overdue,
-        }
-    )
+    task_data = {
+        "id": task.id,
+        "description": task.description,
+        "due_date": task.due_date.isoformat() if task.due_date else None,
+        "priority": task.priority,
+        "status": task.status,
+        "next_step_type": task.next_step_type,
+        "entity_type": task.entity_type,
+        "entity_id": task.entity_id,
+        "company_name": task.company_name,
+        "opportunity_name": task.opportunity_name,
+        "entity_name": task.entity_name,
+        "is_overdue": task.is_overdue,
+        "task_type": task.task_type,
+    }
+
+    # Include child task information and completion percentage for parent tasks
+    if task.task_type == "parent":
+        child_tasks = [
+            {
+                "id": child.id,
+                "description": child.description,
+                "status": child.status,
+                "priority": child.priority,
+            }
+            for child in task.child_tasks
+        ]
+        task_data["child_tasks"] = child_tasks
+        task_data["completion_percentage"] = task.completion_percentage
+
+    return jsonify(task_data)
 
 
 @tasks_api_bp.route("/<int:task_id>/notes", methods=["GET"])
