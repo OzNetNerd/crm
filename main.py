@@ -1,3 +1,5 @@
+import argparse
+import socket
 from pathlib import Path
 from flask import Flask
 from app.models import db
@@ -71,6 +73,39 @@ def create_app():
     return app
 
 
+def find_free_port(start_port=5000, max_attempts=10):
+    """Find a free port starting from start_port."""
+    for port in range(start_port, start_port + max_attempts):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('localhost', port))
+                return port
+        except OSError:
+            continue
+    raise RuntimeError(f"No free port found in range {start_port}-{start_port + max_attempts - 1}")
+
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Run the CRM Flask application')
+    parser.add_argument('--port', type=int, help='Port number to run the application on (auto-detects if not specified)')
+    args = parser.parse_args()
+    
     app = create_app()
-    app.run(debug=True, port=5001)
+    
+    if args.port:
+        # Use specified port
+        port = args.port
+        try:
+            app.run(debug=True, port=port)
+        except OSError as e:
+            if "Address already in use" in str(e):
+                print(f"\n❌ Error: Port {port} is already in use!")
+                print(f"💡 Try running without --port to auto-detect a free port")
+            else:
+                raise
+    else:
+        # Auto-detect free port
+        port = find_free_port()
+        print(f"🚀 Starting CRM application on http://127.0.0.1:{port}")
+        print(f"📝 Claude Code: Use this URL to access the application")
+        app.run(debug=True, port=port)
