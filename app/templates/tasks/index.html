@@ -67,6 +67,7 @@
 <div x-data="{ 
     groupBy: 'status',
     sortBy: 'due_date',
+    sortDirection: 'asc',
     showCompleted: false,
     priorityFilter: [],
     entityFilter: [],
@@ -134,13 +135,18 @@
             const aVal = this.getSortValue(a, this.sortBy);
             const bVal = this.getSortValue(b, this.sortBy);
             
+            let comparison = 0;
+            
             // Handle string comparison for title
             if (this.sortBy === 'title') {
-                return aVal.localeCompare(bVal);
+                comparison = aVal.localeCompare(bVal);
+            } else {
+                // Numeric comparison for dates, priority, status
+                comparison = aVal - bVal;
             }
             
-            // Numeric comparison for dates, priority, status
-            return aVal - bVal;
+            // Apply sort direction
+            return this.sortDirection === 'desc' ? -comparison : comparison;
         });
     },
     
@@ -175,6 +181,17 @@
     
     collapseAllItemsInGroup(groupName) {
         this.$dispatch('collapse-all-tasks', { group: groupName });
+    },
+    
+    setSortBy(newSortBy) {
+        // If selecting the same field, toggle direction
+        if (this.sortBy === newSortBy) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            // Different field selected, change field and reset to ascending
+            this.sortBy = newSortBy;
+            this.sortDirection = 'asc';
+        }
     }
 }" class="space-y-6">
 
@@ -201,13 +218,71 @@
             </div>
             
             <div class="flex items-center space-x-3">
-                {{ dropdown_select('sortBy', [
-                    {'value': 'due_date', 'label': 'Due Date'},
-                    {'value': 'priority', 'label': 'Priority'},
-                    {'value': 'created', 'label': 'Created Date'},
-                    {'value': 'title', 'label': 'Task Title'},
-                    {'value': 'status', 'label': 'Status'}
-                ], 'Sort By') }}
+                <!-- Custom Sort Dropdown with Direction Arrows -->
+                <div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
+                    <button type="button" 
+                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm" 
+                            @click="open = !open">
+                        <span x-text="
+                            sortBy === 'due_date' ? 'Due Date ' + (sortDirection === 'asc' ? '↑' : '↓') :
+                            sortBy === 'priority' ? 'Priority ' + (sortDirection === 'asc' ? '↑' : '↓') :
+                            sortBy === 'created' ? 'Created Date ' + (sortDirection === 'asc' ? '↑' : '↓') :
+                            sortBy === 'title' ? 'Task Title ' + (sortDirection === 'asc' ? '↑' : '↓') :
+                            sortBy === 'status' ? 'Status ' + (sortDirection === 'asc' ? '↑' : '↓') :
+                            'Sort By'
+                        "></span>
+                        <svg class="w-4 h-4 ml-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    
+                    <div x-show="open" 
+                         x-transition 
+                         class="absolute z-10 mt-1 w-48 bg-white border border-gray-300 rounded-md shadow-lg">
+                        <ul class="py-1">
+                            <li>
+                                <button @click="setSortBy('due_date'); open = false" 
+                                        class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex justify-between items-center"
+                                        :class="{ 'bg-blue-50': sortBy === 'due_date' }">
+                                    <span>Due Date</span>
+                                    <span x-show="sortBy === 'due_date'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                                </button>
+                            </li>
+                            <li>
+                                <button @click="setSortBy('priority'); open = false" 
+                                        class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex justify-between items-center"
+                                        :class="{ 'bg-blue-50': sortBy === 'priority' }">
+                                    <span>Priority</span>
+                                    <span x-show="sortBy === 'priority'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                                </button>
+                            </li>
+                            <li>
+                                <button @click="setSortBy('created'); open = false" 
+                                        class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex justify-between items-center"
+                                        :class="{ 'bg-blue-50': sortBy === 'created' }">
+                                    <span>Created Date</span>
+                                    <span x-show="sortBy === 'created'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                                </button>
+                            </li>
+                            <li>
+                                <button @click="setSortBy('title'); open = false" 
+                                        class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex justify-between items-center"
+                                        :class="{ 'bg-blue-50': sortBy === 'title' }">
+                                    <span>Task Title</span>
+                                    <span x-show="sortBy === 'title'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                                </button>
+                            </li>
+                            <li>
+                                <button @click="setSortBy('status'); open = false" 
+                                        class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex justify-between items-center"
+                                        :class="{ 'bg-blue-50': sortBy === 'status' }">
+                                    <span>Status</span>
+                                    <span x-show="sortBy === 'status'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
                 
                 {{ dropdown_multiselect('priorityFilter', [
                     {'value': 'high', 'label': 'High'},
