@@ -49,7 +49,7 @@
 
 {% macro build_metadata_parts(parts_list) %}
     {% for part in parts_list %}
-        {% if part %}{{ part }}{% if not loop.last %} {{ metadata_separator() }} {% endif %}{% endif %}
+        {% if part %}{{ part | safe }}{% if not loop.last %} {{ metadata_separator() }} {% endif %}{% endif %}
     {% endfor %}
 {% endmacro %}
 
