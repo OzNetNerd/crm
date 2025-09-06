@@ -18,6 +18,15 @@ class Task(db.Model):
     entity_type = db.Column(db.String(50))  # 'company', 'contact', 'opportunity'
     entity_id = db.Column(db.Integer)
     
+    # Parent/child task relationships
+    task_type = db.Column(db.String(20), default='standalone')  # standalone/parent/child
+    parent_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'))
+    sequence_order = db.Column(db.Integer)
+    dependency_type = db.Column(db.String(20))  # sequential/parallel
+    
+    # Relationships
+    parent_task = db.relationship('Task', remote_side=[id], backref='child_tasks')
+    
     @property
     def is_overdue(self):
         if not self.due_date or self.status == 'complete':

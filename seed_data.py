@@ -67,10 +67,74 @@ TASK_TEMPLATES = [
     'Schedule stakeholder meeting with {}'
 ]
 
+PARENT_TASK_TEMPLATES = [
+    'Complete onboarding process for {}',
+    'Prepare contract proposal for {}',
+    'Conduct discovery session with {}',
+    'Plan product demo for {}',
+    'Execute sales process for {}',
+    'Deliver implementation for {}',
+    'Perform quarterly review with {}',
+    'Complete competitive analysis for {}'
+]
+
+SUBTASK_TEMPLATES = {
+    'Complete onboarding process for {}': [
+        'Schedule kickoff call with {}',
+        'Send welcome package to {}',
+        'Set up accounts for {}',
+        'Conduct orientation session with {}'
+    ],
+    'Prepare contract proposal for {}': [
+        'Gather requirements from {}',
+        'Draft initial proposal for {}',
+        'Review pricing with {}',
+        'Finalize contract terms for {}'
+    ],
+    'Conduct discovery session with {}': [
+        'Schedule discovery call with {}',
+        'Prepare discovery questions for {}',
+        'Conduct stakeholder interviews with {}',
+        'Document findings for {}'
+    ],
+    'Plan product demo for {}': [
+        'Schedule demo session with {}',
+        'Customize demo environment for {}',
+        'Prepare demo script for {}',
+        'Follow up after demo with {}'
+    ],
+    'Execute sales process for {}': [
+        'Qualify opportunity with {}',
+        'Present solution to {}',
+        'Handle objections from {}',
+        'Close deal with {}'
+    ],
+    'Deliver implementation for {}': [
+        'Plan implementation for {}',
+        'Configure system for {}',
+        'Train users at {}',
+        'Go live with {}'
+    ],
+    'Perform quarterly review with {}': [
+        'Prepare review materials for {}',
+        'Analyze metrics for {}',
+        'Schedule review meeting with {}',
+        'Create action plan for {}'
+    ],
+    'Complete competitive analysis for {}': [
+        'Research competitors for {}',
+        'Compare features for {}',
+        'Analyze pricing for {}',
+        'Prepare recommendation for {}'
+    ]
+}
+
 STAGES = ['prospect', 'qualified', 'proposal', 'negotiation', 'closed']
 PRIORITIES = ['high', 'medium', 'low']
 STATUSES = ['todo', 'in-progress', 'complete']
 NEXT_STEP_TYPES = ['meeting', 'demo', 'call', 'email']
+TASK_TYPES = ['standalone', 'parent', 'child']
+DEPENDENCY_TYPES = ['sequential', 'parallel']
 
 def create_companies():
     """Create sample companies"""
@@ -138,7 +202,7 @@ def create_opportunities(companies, contacts):
         for i in range(num_opps):
             opportunity = Opportunity(
                 name=f"{random.choice(OPPORTUNITY_TEMPLATES)} - {company.name}",
-                value=Decimal(random.randint(5000, 500000)),  # $5,000 to $500,000
+                value=random.randint(5000, 500000),  # $5,000 to $500,000 (as integer)
                 probability=random.randint(10, 90),
                 expected_close_date=date.today() + timedelta(days=random.randint(30, 180)),
                 stage=random.choice(STAGES),
@@ -159,7 +223,7 @@ def create_opportunities(companies, contacts):
     return opportunities
 
 def create_tasks(companies, contacts, opportunities):
-    """Create sample tasks"""
+    """Create sample tasks including parent/child relationships"""
     tasks = []
     entities = []
     
@@ -171,8 +235,8 @@ def create_tasks(companies, contacts, opportunities):
     for opportunity in opportunities:
         entities.append(('opportunity', opportunity.id, opportunity.name))
     
-    # Create tasks
-    for i in range(50):  # Create 50 tasks total
+    # Create standalone tasks (about 60% of total)
+    for i in range(30):
         entity_type, entity_id, entity_name = random.choice(entities)
         
         # Choose task template and format with entity name
@@ -211,6 +275,7 @@ def create_tasks(companies, contacts, opportunities):
             next_step_type=random.choice(NEXT_STEP_TYPES),
             entity_type=entity_type,
             entity_id=entity_id,
+            task_type='standalone',
             created_at=datetime.now() - timedelta(days=random.randint(1, 60))
         )
         
@@ -221,8 +286,86 @@ def create_tasks(companies, contacts, opportunities):
         tasks.append(task)
         db.session.add(task)
     
+    # Create parent tasks with children (about 40% of total - 8 parent tasks, each with 3-5 children)
+    for i in range(8):
+        entity_type, entity_id, entity_name = random.choice(entities)
+        
+        # Choose parent task template
+        parent_template = random.choice(PARENT_TASK_TEMPLATES)
+        parent_description = parent_template.format(entity_name)
+        
+        # Parent task due date (further out to accommodate children)
+        parent_days_offset = random.randint(7, 60)
+        parent_due_date = date.today() + timedelta(days=parent_days_offset)
+        
+        # Parent task status - usually todo or in-progress
+        parent_status = random.choice(['todo', 'todo', 'in-progress'])
+        
+        parent_task = Task(
+            description=parent_description,
+            due_date=parent_due_date,
+            priority=random.choice(PRIORITIES),
+            status=parent_status,
+            next_step_type=random.choice(NEXT_STEP_TYPES),
+            entity_type=entity_type,
+            entity_id=entity_id,
+            task_type='parent',
+            dependency_type=random.choice(DEPENDENCY_TYPES),
+            created_at=datetime.now() - timedelta(days=random.randint(1, 30))
+        )
+        
+        tasks.append(parent_task)
+        db.session.add(parent_task)
+        db.session.commit()  # Commit to get the parent task ID
+        
+        # Create child tasks for this parent
+        child_templates = SUBTASK_TEMPLATES[parent_template]
+        num_children = random.randint(3, len(child_templates))
+        selected_child_templates = random.sample(child_templates, num_children)
+        
+        for j, child_template in enumerate(selected_child_templates):
+            child_description = child_template.format(entity_name)
+            
+            # Child task due dates based on parent and sequence
+            if parent_task.dependency_type == 'sequential':
+                # Sequential: each child due before the next
+                child_days_offset = parent_days_offset - ((num_children - j) * 5)
+            else:
+                # Parallel: all children due around the same time, before parent
+                child_days_offset = random.randint(1, parent_days_offset - 2)
+            
+            child_due_date = date.today() + timedelta(days=max(1, child_days_offset))
+            
+            # Child status - more likely to be in progress or complete if parent is in progress
+            if parent_status == 'in-progress':
+                child_status = random.choice(['complete', 'in-progress', 'todo'])
+            else:
+                child_status = random.choice(['todo', 'todo', 'in-progress'])
+            
+            child_task = Task(
+                description=child_description,
+                due_date=child_due_date,
+                priority=parent_task.priority,  # Inherit parent priority
+                status=child_status,
+                next_step_type=random.choice(NEXT_STEP_TYPES),
+                entity_type=entity_type,
+                entity_id=entity_id,
+                task_type='child',
+                parent_task_id=parent_task.id,
+                sequence_order=j + 1,
+                dependency_type=parent_task.dependency_type,
+                created_at=datetime.now() - timedelta(days=random.randint(1, 30))
+            )
+            
+            # Set completed_at for completed tasks
+            if child_status == 'complete':
+                child_task.completed_at = datetime.now() - timedelta(days=random.randint(1, 15))
+            
+            tasks.append(child_task)
+            db.session.add(child_task)
+    
     db.session.commit()
-    print(f"Created {len(tasks)} tasks")
+    print(f"Created {len(tasks)} tasks (30 standalone + 8 parent tasks with children)")
     return tasks
 
 def create_notes(companies, contacts, opportunities, tasks):
