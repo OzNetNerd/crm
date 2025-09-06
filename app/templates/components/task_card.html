@@ -345,7 +345,9 @@
     <!-- Render child tasks if this is a parent -->
     {% if task.task_type == 'parent' and task.child_tasks %}
         {% for child in task.child_tasks %}
-            {{ render_task(child, group_key, current_group_value, 1) }}
+            {% if show_completed or child.status != 'complete' %}
+                {{ render_task(child, group_key, current_group_value, 1) }}
+            {% endif %}
         {% endfor %}
     {% endif %}
 {% endmacro %}
