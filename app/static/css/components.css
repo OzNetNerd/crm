@@ -10,6 +10,13 @@
     overflow: hidden;
     text-overflow: ellipsis; /* truncate */
 }
+
+/* Deal amount styling - matches heading size */
+.text-deal-amount {
+    font-size: 0.875rem; /* text-sm - matches text-label-primary */
+    font-weight: 600; /* font-semibold */
+    color: #059669; /* text-green-600 */
+}
 .text-label-dark { 
     font-size: 0.875rem; /* text-sm */
     font-weight: 500; /* font-medium */

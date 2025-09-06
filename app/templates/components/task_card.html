@@ -1,4 +1,4 @@
-{% from "components/icons.html" import check_icon, pencil_icon, document_icon %}
+{% from "components/icons.html" import check_icon, pencil_icon, document_icon, trash_icon %}
 {% from "components/list_section.html" import status_badge %}
 {% from "components/metadata_display.html" import standard_card_metadata, format_date_with_status %}
 {% macro render_task(task, group_key='', current_group_value='', indent_level=0) %}
@@ -141,23 +141,34 @@
     <!-- Task description with badges and reschedule buttons -->
     <div class="flex items-center justify-between mb-3">
         <div class="flex items-center space-x-2 flex-grow">
-            {% set priority_color = 'red' if task.priority == 'high' else
-                                  'yellow' if task.priority == 'medium' else
-                                  'green' %}
-            {{ status_badge(task.priority, priority_color) }}
-            <p class="text-label-primary">{{ task.description }}</p>
-            <div class="flex items-center space-x-2 flex-shrink-0">
-                <!-- Task type badge -->
-                {% if task.task_type != 'single' %}
-                    {% set badge_color = 'blue' if task.task_type == 'parent' else 'green' %}
-                    <span class="badge-standard badge-{{ badge_color }}">{{ task.task_type_badge }}</span>
+            <div class="flex flex-col items-center space-y-1">
+                {% set priority_color = 'red' if task.priority == 'high' else
+                                      'yellow' if task.priority == 'medium' else
+                                      'green' %}
+                {{ status_badge(task.priority, priority_color) }}
+                {% if task.next_step_type %}
+                    <span class="text-badge-tag">{{ task.next_step_type }}</span>
                 {% endif %}
-                
-                <!-- Progress badge for parent tasks -->
-                {% if task.task_type == 'parent' %}
-                    <span class="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
-                        {{ task.completion_percentage }}% complete
-                    </span>
+            </div>
+            <div class="flex-grow">
+                {% if task.entity_name %}
+                    <div class="flex items-center space-x-3">
+                        <p class="text-label-primary">{{ task.entity_name }}</p>
+                        {% if task.opportunity_value %}
+                            <div class="text-deal-amount">
+                                ${{ "{:,}".format(task.opportunity_value) }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <p class="text-sm text-gray-600">{{ task.description }}</p>
+                {% else %}
+                    <p class="text-label-primary">{{ task.description }}</p>
+                {% endif %}
+            </div>
+            <div class="flex items-center space-x-2 flex-shrink-0">
+                <!-- Task type badge (child tasks only) -->
+                {% if task.task_type == 'child' %}
+                    <span class="badge-standard badge-green">{{ task.task_type_badge }}</span>
                 {% endif %}
                 
                 <!-- Dependency indicator for child tasks -->
@@ -165,9 +176,6 @@
                     <span class="text-badge-warning">WAITING</span>
                 {% endif %}
                 
-                {% if task.next_step_type %}
-                    <span class="text-badge-tag">{{ task.next_step_type }}</span>
-                {% endif %}
                 {% if task.is_overdue %}
                     <span class="text-badge-overdue">OVERDUE</span>
                 {% endif %}
@@ -223,6 +231,22 @@
         </div>
     </div>
 
+    <!-- Progress bar for parent tasks -->
+    {% if task.task_type == 'parent' %}
+    <div class="flex items-center space-x-4 text-secondary mb-3">
+        <div class="flex items-center space-x-2">
+            <span class="badge-standard badge-blue">{{ task.task_type_badge }}</span>
+            <span class="font-medium">Tasks: {{ task.child_tasks | selectattr('status', 'equalto', 'complete') | list | length }}/{{ task.child_tasks | length }}</span>
+        </div>
+        <div class="flex items-center space-x-2">
+            <div class="w-16 bg-gray-200 rounded-full h-2">
+                <div class="bg-blue-600 h-2 rounded-full" style="width: {{ task.completion_percentage }}%"></div>
+            </div>
+            <span class="font-medium">{{ task.completion_percentage }}%</span>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Task metadata -->
     <div class="flex items-center justify-between">
         {# Standard metadata when not editing or no pending changes #}
@@ -258,7 +282,12 @@
             <button @click.stop="deleteTask({{ task.id }})" 
                     class="px-2 py-1 rounded text-danger-hover text-action-sm hover:bg-red-50 transition-colors duration-200" 
                     title="Delete task">
-                ×
+                {{ trash_icon("w-4 h-4") }}
+            </button>
+            <button @click.stop="editTask({{ task.id }})" 
+                    class="px-2 py-1 rounded text-info-hover text-action-sm hover:bg-blue-50 transition-colors duration-200" 
+                    title="Edit task">
+                {{ pencil_icon("w-4 h-4") }}
             </button>
             <button @click.stop="completeTask({{ task.id }})" 
                     class="px-2 py-1 rounded text-success-hover text-action-sm hover:bg-green-50 transition-colors duration-200" 
@@ -333,7 +362,9 @@
     <!-- Render child tasks if this is a parent -->
     {% if task.task_type == 'parent' and task.child_tasks %}
         {% for child in task.child_tasks %}
-            {{ render_task(child, group_key, current_group_value, 1) }}
+            {% if show_completed or child.status != 'complete' %}
+                {{ render_task(child, group_key, current_group_value, 1) }}
+            {% endif %}
         {% endfor %}
     {% endif %}
 {% endmacro %}

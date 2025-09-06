@@ -75,13 +75,21 @@ class TaskManager {
                 if (showNotification) {
                     this.showNotification('Task completed successfully', 'success');
                 }
-                // Smooth removal animation
+                // Smooth removal animation and dynamic DOM update
                 const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
                 if (taskCard) {
-                    taskCard.style.transition = 'opacity 0.3s ease-out';
+                    taskCard.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
                     taskCard.style.opacity = '0';
+                    taskCard.style.transform = 'translateY(-10px)';
                     setTimeout(() => {
-                        location.reload(); // TODO: Replace with dynamic update
+                        // Remove the task card from DOM
+                        taskCard.remove();
+                        
+                        // Update section counters dynamically
+                        this.updateSectionCounters();
+                        
+                        // Update parent task progress if needed
+                        this.updateParentTaskProgress(taskId);
                     }, 300);
                 }
             } else {
@@ -168,10 +176,140 @@ class TaskManager {
             const promises = taskIds.map(id => this.completeTask(id, false));
             await Promise.all(promises);
             this.showNotification(`${taskIds.length} tasks completed`, 'success');
-            location.reload();
+            // No need to reload - individual completeTask calls handle DOM updates
         } catch (error) {
             console.error('Error bulk completing tasks:', error);
             this.showNotification('Failed to complete some tasks', 'error');
+        }
+    }
+
+    static updateSectionCounters() {
+        // Update badge counts in section headers after task completion
+        // Find badges by their parent section headers to avoid affecting priority badges
+        
+        // Update section count badges by finding them within section headers
+        const sectionHeaderSelectors = [
+            // Status sections
+            { headerText: 'To Do', selector: '[x-show="expandedSections[\'todo\']"]' },
+            { headerText: 'In Progress', selector: '[x-show="expandedSections[\'in-progress\']"]' },
+            { headerText: 'Completed', selector: '[x-show="expandedSections[\'complete\']"]' },
+            // Priority sections  
+            { headerText: 'High Priority', selector: '[x-show="expandedSections[\'high\']"]' },
+            { headerText: 'Medium Priority', selector: '[x-show="expandedSections[\'medium\']"]' },
+            { headerText: 'Low Priority', selector: '[x-show="expandedSections[\'low\']"]' },
+            // Due date sections
+            { headerText: 'Overdue', selector: '[x-show="expandedSections[\'overdue\']"]' },
+            { headerText: 'Due Today', selector: '[x-show="expandedSections[\'today\']"]' },
+            { headerText: 'This Week', selector: '[x-show="expandedSections[\'this_week\']"]' },
+            { headerText: 'Later', selector: '[x-show="expandedSections[\'later\']"]' },
+            { headerText: 'No Due Date', selector: '[x-show="expandedSections[\'no_date\']"]' },
+            // Entity sections
+            { headerText: 'Company Tasks', selector: '[x-show="expandedSections[\'company\']"]' },
+            { headerText: 'Contact Tasks', selector: '[x-show="expandedSections[\'contact\']"]' },
+            { headerText: 'Opportunity Tasks', selector: '[x-show="expandedSections[\'opportunity\']"]' },
+            { headerText: 'General Tasks', selector: '[x-show="expandedSections[\'unrelated\']"]' }
+        ];
+        
+        // Update each section's count badge
+        sectionHeaderSelectors.forEach(({ headerText, selector }) => {
+            const section = document.querySelector(selector);
+            if (section) {
+                const taskCount = section.querySelectorAll('.task-card').length;
+                
+                // Find the header with the specific text and update its badge
+                const headers = document.querySelectorAll('h3');
+                for (const header of headers) {
+                    if (header.textContent && header.textContent.includes(headerText)) {
+                        const badge = header.querySelector('.badge-standard');
+                        if (badge) {
+                            badge.textContent = taskCount;
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Also update the page summary statistics at the top
+        this.updatePageSummaryStats();
+    }
+    
+    static updatePageSummaryStats() {
+        // Update the summary statistics at the top of the page
+        // Count all tasks on the page by their current status
+        
+        const todoTasks = document.querySelectorAll('[x-show="expandedSections[\'todo\']"] .task-card').length;
+        const inProgressTasks = document.querySelectorAll('[x-show="expandedSections[\'in-progress\']"] .task-card').length;
+        const completeTasks = document.querySelectorAll('[x-show="expandedSections[\'complete\']"] .task-card').length;
+        
+        // Count overdue tasks (they can be in any status section but have overdue badges)
+        const overdueTasks = document.querySelectorAll('.text-badge-overdue, [class*="overdue"]').length;
+        
+        // Find summary stat elements - they're in the grid layout within the card
+        const summaryGrid = document.querySelector('.grid-cols-2.md\\:grid-cols-4');
+        if (summaryGrid) {
+            const summaryStats = summaryGrid.querySelectorAll('.text-center');
+            
+            if (summaryStats.length >= 4) {
+                // Update the summary numbers based on the order in the template:
+                // To Do, In Progress, Complete, Overdue
+                const todoValue = summaryStats[0].querySelector('.text-2xl');
+                const inProgressValue = summaryStats[1].querySelector('.text-2xl');
+                const completeValue = summaryStats[2].querySelector('.text-2xl');
+                const overdueValue = summaryStats[3].querySelector('.text-2xl');
+                
+                if (todoValue) todoValue.textContent = todoTasks;
+                if (inProgressValue) inProgressValue.textContent = inProgressTasks;
+                if (completeValue) completeValue.textContent = completeTasks;
+                if (overdueValue) overdueValue.textContent = overdueTasks;
+            }
+        }
+    }
+
+    static async updateParentTaskProgress(completedTaskId) {
+        // Update parent task progress bars for all parent tasks on the page
+        try {
+            // Find all task cards and check which ones have progress bars (parent tasks)
+            const allTaskCards = document.querySelectorAll('.task-card');
+            
+            for (const taskCard of allTaskCards) {
+                // Check if this task has a progress bar (indicating it's a parent task)
+                const progressBar = taskCard.querySelector('.bg-blue-600');
+                if (progressBar) {
+                    const parentId = taskCard.dataset.taskId;
+                    if (parentId) {
+                        // Fetch updated parent task data
+                        const response = await fetch(`/api/tasks/${parentId}`);
+                        if (response.ok) {
+                            const taskData = await response.json();
+                            
+                            // Update progress bar width
+                            progressBar.style.width = `${taskData.completion_percentage}%`;
+                            
+                            // Find and update the "Tasks: X/Y" text - it's the first span in the progress container
+                            const progressContainer = taskCard.querySelector('.flex.items-center.space-x-4.text-secondary');
+                            if (progressContainer && taskData.child_tasks) {
+                                const completedCount = taskData.child_tasks.filter(t => t.status === 'complete').length;
+                                const totalCount = taskData.child_tasks.length;
+                                
+                                // Update the "Tasks: X/Y" text (first span)
+                                const tasksSpan = progressContainer.querySelector('span.font-medium');
+                                if (tasksSpan) {
+                                    tasksSpan.textContent = `Tasks: ${completedCount}/${totalCount}`;
+                                }
+                                
+                                // Update the percentage text (last span)
+                                const spans = progressContainer.querySelectorAll('span.font-medium');
+                                if (spans.length > 1) {
+                                    spans[1].textContent = `${taskData.completion_percentage}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error updating parent task progress:', error);
         }
     }
 
@@ -253,6 +391,11 @@ window.rescheduleTask = function(taskId, days) {
         confirmClass: 'bg-blue-600 hover:bg-blue-700',
         confirmAction: () => TaskManager.rescheduleTask(taskId, days)
     });
+};
+
+window.editTask = function(taskId) {
+    // Use the existing comprehensive task detail modal for editing
+    openTaskDetailModal(taskId);
 };
 
 window.deleteTask = function(taskId) {

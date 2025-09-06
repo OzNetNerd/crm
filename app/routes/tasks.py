@@ -8,7 +8,15 @@ tasks_bp = Blueprint("tasks", __name__)
 
 @tasks_bp.route("/")
 def index():
-    tasks = Task.query.order_by(Task.due_date.asc()).all()
+    # Check if user wants to show completed tasks
+    show_completed = request.args.get('show_completed', 'false').lower() == 'true'
+    
+    if show_completed:
+        tasks = Task.query.order_by(Task.due_date.asc()).all()
+    else:
+        # Filter out completed tasks by default
+        tasks = Task.query.filter(Task.status != 'complete').order_by(Task.due_date.asc()).all()
+    
     today = date.today()
 
     # Serialize objects for JSON use in templates
@@ -27,6 +35,7 @@ def index():
         "tasks/index.html",
         tasks=tasks,
         today=today,
+        show_completed=show_completed,
         companies=companies_data,
         contacts=contacts_data,
         opportunities=opportunities_data,
@@ -226,3 +235,16 @@ def get_parent_tasks():
             for task in parent_tasks
         ]
     )
+
+
+@tasks_bp.route("/<int:task_id>", methods=["DELETE"])
+def delete_task(task_id):
+    """Delete a task"""
+    try:
+        task = Task.query.get_or_404(task_id)
+        db.session.delete(task)
+        db.session.commit()
+        return jsonify({"status": "success", "message": "Task deleted successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
