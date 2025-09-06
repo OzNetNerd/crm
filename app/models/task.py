@@ -176,5 +176,33 @@ class Task(db.Model):
                 return child
         return None
 
+    def to_dict(self):
+        """Convert task to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'description': self.description,
+            'due_date': self.due_date.isoformat() if self.due_date else None,
+            'priority': self.priority,
+            'status': self.status,
+            'next_step_type': self.next_step_type,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'entity_type': self.entity_type,
+            'entity_id': self.entity_id,
+            'entity_name': self.entity_name,
+            'task_type': self.task_type,
+            'parent_task_id': self.parent_task_id,
+            'sequence_order': self.sequence_order,
+            'dependency_type': self.dependency_type,
+            'is_overdue': self.is_overdue,
+            'opportunity_value': self.opportunity_value,
+            'company_name': self.company_name,
+            'opportunity_name': self.opportunity_name,
+            'opportunity_stage': self.opportunity_stage,
+            'task_type_badge': self.task_type_badge,
+            'can_start': self.can_start,
+            'completion_percentage': self.completion_percentage
+        }
+
     def __repr__(self):
         return f"<Task {self.task_type}: {self.description[:50]}>"

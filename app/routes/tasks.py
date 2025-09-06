@@ -12,12 +12,15 @@ def index():
     show_completed = request.args.get('show_completed', 'false').lower() == 'true'
     
     if show_completed:
-        tasks = Task.query.order_by(Task.due_date.asc()).all()
+        tasks_query = Task.query.order_by(Task.due_date.asc()).all()
     else:
         # Filter out completed tasks by default
-        tasks = Task.query.filter(Task.status != 'complete').order_by(Task.due_date.asc()).all()
+        tasks_query = Task.query.filter(Task.status != 'complete').order_by(Task.due_date.asc()).all()
     
     today = date.today()
+
+    # Convert tasks to dictionaries for JSON serialization
+    tasks = [task.to_dict() for task in tasks_query]
 
     # Serialize objects for JSON use in templates
     companies_data = [
@@ -34,6 +37,7 @@ def index():
     return render_template(
         "tasks/index.html",
         tasks=tasks,
+        tasks_objects=tasks_query,  # Keep original objects for template logic
         today=today,
         show_completed=show_completed,
         companies=companies_data,

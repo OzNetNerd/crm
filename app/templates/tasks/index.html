@@ -4,6 +4,25 @@
 {% from "components/icons.html" import clipboard_list_icon, bolt_icon, check_circle_icon_solid, fire_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, calendar_days_icon, calendar_icon, chart_bar_icon, question_mark_circle_icon, building_office_icon, user_icon, currency_dollar_icon, chevron_right_icon %}
 {% from "components/ui_elements.html" import expand_collapse_controls, dropdown_select, dropdown_multiselect, section_group_header %}
 
+{# DRY macros for filtered task rendering - use tasks_objects for rendering #}
+{% macro render_filtered_task(task, group_key, additional_classes='') %}
+<div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})" {% if additional_classes %}class="{{ additional_classes }}"{% endif %}>
+    {% if task.task_type == 'parent' %}
+        {{ render_task_hierarchy(task, group_key) }}
+    {% else %}
+        {{ render_task(task, group_key) }}
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Simpler macro for single task rendering #}
+{% macro render_filtered_single_task(task, group_key) %}
+<div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+    {{ render_task(task, group_key) }}
+</div>
+{% endmacro %}
+
+
 
 {% block title %}Tasks - CRM{% endblock %}
 
@@ -12,22 +31,22 @@
     'title': 'Task Summary',
     'stats': [
         {
-            'value': tasks|selectattr('status', 'equalto', 'todo')|list|length,
+            'value': tasks_objects|selectattr('status', 'equalto', 'todo')|list|length,
             'label': 'To Do',
             'color_class': 'text-blue-600'
         },
         {
-            'value': tasks|selectattr('status', 'equalto', 'in-progress')|list|length,
+            'value': tasks_objects|selectattr('status', 'equalto', 'in-progress')|list|length,
             'label': 'In Progress',
             'color_class': 'text-yellow-600'
         },
         {
-            'value': tasks|selectattr('status', 'equalto', 'complete')|list|length,
+            'value': tasks_objects|selectattr('status', 'equalto', 'complete')|list|length,
             'label': 'Complete',
             'color_class': 'text-green-600'
         },
         {
-            'value': tasks|selectattr('is_overdue', 'equalto', True)|list|length,
+            'value': tasks_objects|selectattr('is_overdue', 'equalto', True)|list|length,
             'label': 'Overdue',
             'color_class': 'text-red-600'
         }
@@ -47,9 +66,12 @@
 
 <div x-data="{ 
     groupBy: 'status',
+    sortBy: 'due_date',
+    sortDirection: 'asc',
     showCompleted: {{ 'true' if show_completed else 'false' }},
     priorityFilter: [],
     entityFilter: [],
+    tasks: window.tasksData || [],
     expandedSections: {
         'todo': true,
         'in-progress': true,
@@ -68,12 +90,108 @@
         'unrelated': true
     },
     
+    shouldShowTask(taskData) {
+        // Priority filter logic: empty array means show all
+        const priorityMatch = this.priorityFilter.length === 0 || this.priorityFilter.includes(taskData.priority);
+        
+        // Entity filter logic: empty array means show all, null entity_type becomes 'unrelated'
+        const taskEntityType = taskData.entity_type || 'unrelated';
+        const entityMatch = this.entityFilter.length === 0 || this.entityFilter.includes(taskEntityType);
+        
+        // Completed task visibility based on showCompleted toggle
+        const completedMatch = taskData.status !== 'complete' || this.showCompleted;
+        
+        return priorityMatch && entityMatch && completedMatch;
+    },
+    
+    getSortValue(task, sortField) {
+        switch (sortField) {
+            case 'due_date':
+                // Handle null due dates by putting them last
+                return task.due_date ? new Date(task.due_date).getTime() : 999999999999;
+            case 'priority':
+                // Priority order: high=1, medium=2, low=3 for ascending sort
+                const priorityOrder = { 'high': 1, 'medium': 2, 'low': 3 };
+                return priorityOrder[task.priority] || 4;
+            case 'created':
+                return task.created_at ? new Date(task.created_at).getTime() : 0;
+            case 'title':
+                return (task.description || '').toLowerCase();
+            case 'status':
+                // Status order: todo=1, in-progress=2, complete=3
+                const statusOrder = { 'todo': 1, 'in-progress': 2, 'complete': 3 };
+                return statusOrder[task.status] || 4;
+            default:
+                return task.due_date ? new Date(task.due_date).getTime() : 999999999999;
+        }
+    },
+    
+    sortedFilteredTasks() {
+        // Filter tasks first
+        const filtered = this.tasks.filter(task => this.shouldShowTask(task));
+        
+        // Then sort the filtered tasks
+        return filtered.sort((a, b) => {
+            const aVal = this.getSortValue(a, this.sortBy);
+            const bVal = this.getSortValue(b, this.sortBy);
+            
+            let comparison = 0;
+            
+            // Handle string comparison for title
+            if (this.sortBy === 'title') {
+                comparison = aVal.localeCompare(bVal);
+            } else {
+                // Numeric comparison for dates, priority, status
+                comparison = aVal - bVal;
+            }
+            
+            // Apply sort direction
+            return this.sortDirection === 'desc' ? -comparison : comparison;
+        });
+    },
+    
+    // Temporarily commented out for testing
+    // isDueToday(task) {
+    //     if (!task.due_date) return false;
+    //     const today = new Date().toISOString().split('T')[0];
+    //     return task.due_date === today;
+    // },
+    
+    // isDueThisWeek(task) {
+    //     if (!task.due_date) return false;
+    //     const today = new Date();
+    //     const taskDate = new Date(task.due_date);
+    //     const diffTime = taskDate.getTime() - today.getTime();
+    //     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    //     return diffDays > 0 && diffDays <= 7;
+    // },
+    
+    // isDueLater(task) {
+    //     if (!task.due_date) return false;
+    //     const today = new Date();
+    //     const taskDate = new Date(task.due_date);
+    //     const diffTime = taskDate.getTime() - today.getTime();
+    //     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    //     return diffDays > 7;
+    // },
+    
     expandAllItemsInGroup(groupName) {
         this.$dispatch('expand-all-tasks', { group: groupName });
     },
     
     collapseAllItemsInGroup(groupName) {
         this.$dispatch('collapse-all-tasks', { group: groupName });
+    },
+    
+    setSortBy(newSortBy) {
+        // If selecting the same field, toggle direction
+        if (this.sortBy === newSortBy) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            // Different field selected, change field and reset to ascending
+            this.sortBy = newSortBy;
+            this.sortDirection = 'asc';
+        }
     }
 }" class="space-y-6">
 
@@ -103,6 +221,69 @@
             </div>
             
             <div class="flex items-center space-x-3">
+                <!-- Custom Sort Dropdown with Direction Arrows -->
+                <div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
+                    <button type="button" 
+                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm" 
+                            @click="open = !open">
+                        <span x-text="
+                            sortBy === 'due_date' ? 'Due Date ' + (sortDirection === 'asc' ? '↑' : '↓') :
+                            sortBy === 'priority' ? 'Priority ' + (sortDirection === 'asc' ? '↑' : '↓') :
+                            sortBy === 'created' ? 'Created Date ' + (sortDirection === 'asc' ? '↑' : '↓') :
+                            sortBy === 'title' ? 'Task Title ' + (sortDirection === 'asc' ? '↑' : '↓') :
+                            sortBy === 'status' ? 'Status ' + (sortDirection === 'asc' ? '↑' : '↓') :
+                            'Sort By'
+                        "></span>
+                    </button>
+                    
+                    <div x-show="open" 
+                         x-transition 
+                         class="absolute z-10 mt-1 w-48 bg-white border border-gray-300 rounded-md shadow-lg">
+                        <ul class="py-1">
+                            <li>
+                                <button @click="setSortBy('due_date'); open = false" 
+                                        class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex justify-between items-center"
+                                        :class="{ 'bg-blue-50': sortBy === 'due_date' }">
+                                    <span>Due Date</span>
+                                    <span x-show="sortBy === 'due_date'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                                </button>
+                            </li>
+                            <li>
+                                <button @click="setSortBy('priority'); open = false" 
+                                        class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex justify-between items-center"
+                                        :class="{ 'bg-blue-50': sortBy === 'priority' }">
+                                    <span>Priority</span>
+                                    <span x-show="sortBy === 'priority'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                                </button>
+                            </li>
+                            <li>
+                                <button @click="setSortBy('created'); open = false" 
+                                        class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex justify-between items-center"
+                                        :class="{ 'bg-blue-50': sortBy === 'created' }">
+                                    <span>Created Date</span>
+                                    <span x-show="sortBy === 'created'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                                </button>
+                            </li>
+                            <li>
+                                <button @click="setSortBy('title'); open = false" 
+                                        class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex justify-between items-center"
+                                        :class="{ 'bg-blue-50': sortBy === 'title' }">
+                                    <span>Task Title</span>
+                                    <span x-show="sortBy === 'title'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                                </button>
+                            </li>
+                            <li>
+                                <button @click="setSortBy('status'); open = false" 
+                                        class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex justify-between items-center"
+                                        :class="{ 'bg-blue-50': sortBy === 'status' }">
+                                    <span>Status</span>
+                                    <span x-show="sortBy === 'status'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
                 {{ dropdown_multiselect('priorityFilter', [
                     {'value': 'high', 'label': 'High'},
                     {'value': 'medium', 'label': 'Medium'},
@@ -112,7 +293,8 @@
                 {{ dropdown_multiselect('entityFilter', [
                     {'value': 'company', 'label': 'Companies'},
                     {'value': 'contact', 'label': 'Contacts'},
-                    {'value': 'opportunity', 'label': 'Opportunities'}
+                    {'value': 'opportunity', 'label': 'Opportunities'},
+                    {'value': 'unrelated', 'label': 'General Tasks'}
                 ], 'All Entities') }}
             </div>
         </div>
@@ -124,17 +306,42 @@
         <div class="card">
             {{ section_group_header('todo', 'To Do', clipboard_list_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue">' + (tasks|selectattr('status', 'equalto', 'todo')|list|length)|string + '</span>', 'blue', 'blue', 'blue', 'text-status-header') }}
             <div class="p-6" x-show="expandedSections['todo']" x-transition>
-                {% for task in tasks %}
-                    {% if task.status == 'todo' and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'todo') }}
-                        {% else %}
-                            {{ render_task(task, 'todo') }}
-                        {% endif %}
-                    {% endif %}
-                {% else %}
+                <template x-for="task in sortedFilteredTasks().filter(t => t.status === 'todo' && t.task_type !== 'child')" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().filter(t => t.status === 'todo' && t.task_type !== 'child').length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endfor %}
+                </div>
             </div>
         </div>
 
@@ -142,17 +349,42 @@
         <div class="card">
             {{ section_group_header('in-progress', 'In Progress', bolt_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-yellow">' + (tasks|selectattr('status', 'equalto', 'in-progress')|list|length)|string + '</span>', 'yellow', 'yellow', 'yellow', 'text-status-header') }}
             <div class="p-6" x-show="expandedSections['in-progress']" x-transition>
-                {% for task in tasks %}
-                    {% if task.status == 'in-progress' and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'in-progress') }}
-                        {% else %}
-                            {{ render_task(task, 'in-progress') }}
-                        {% endif %}
-                    {% endif %}
-                {% else %}
+                <template x-for="task in sortedFilteredTasks().filter(t => t.status === 'in-progress' && t.task_type !== 'child')" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().filter(t => t.status === 'in-progress' && t.task_type !== 'child').length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endfor %}
+                </div>
             </div>
         </div>
 
@@ -160,19 +392,42 @@
         <div x-show="showCompleted" class="card">
             {{ section_group_header('complete', 'Completed', check_circle_icon_solid("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-green">' + (tasks|selectattr('status', 'equalto', 'complete')|list|length)|string + '</span>', 'green', 'green', 'green', 'text-status-header') }}
             <div class="p-6" x-show="expandedSections['complete']" x-transition>
-                {% for task in tasks %}
-                    {% if task.status == 'complete' and task.task_type != 'child' %}
-                        <div class="opacity-60">
-                            {% if task.task_type == 'parent' %}
-                                {{ render_task_hierarchy(task, 'complete') }}
-                            {% else %}
-                                {{ render_task(task, 'complete') }}
-                            {% endif %}
+                <template x-for="task in sortedFilteredTasks().filter(t => t.status === 'complete' && t.task_type !== 'child')" :key="task.id">
+                    <div x-show="shouldShowTask(task)" class="opacity-60">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    {% endif %}
-                {% else %}
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().filter(t => t.status === 'complete' && t.task_type !== 'child').length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endfor %}
+                </div>
             </div>
         </div>
     </div>
@@ -183,13 +438,42 @@
         <div class="card-danger">
             {{ section_group_header('high', 'High Priority', fire_icon_solid("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-red">' + (tasks|selectattr('priority', 'equalto', 'high')|list|length)|string + '</span>', 'red', 'red', 'red', 'text-status-overdue') }}
             <div class="p-6" x-show="expandedSections['high']" x-transition>
-                {% for task in tasks %}
-                    {% if task.priority == 'high' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'high') }}
-                    {% endif %}
-                {% else %}
+                <template x-for="task in sortedFilteredTasks().filter(t => t.priority === 'high')" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().filter(t => t.priority === 'high').length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endfor %}
+                </div>
             </div>
         </div>
 
@@ -197,13 +481,42 @@
         <div class="card-warning">
             {{ section_group_header('medium', 'Medium Priority', exclamation_triangle_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-yellow">' + (tasks|selectattr('priority', 'equalto', 'medium')|list|length)|string + '</span>', 'yellow', 'yellow', 'yellow', 'text-status-warning') }}
             <div class="p-6" x-show="expandedSections['medium']" x-transition>
-                {% for task in tasks %}
-                    {% if task.priority == 'medium' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'medium') }}
-                    {% endif %}
-                {% else %}
+                <template x-for="task in sortedFilteredTasks().filter(t => t.priority === 'medium')" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().filter(t => t.priority === 'medium').length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endfor %}
+                </div>
             </div>
         </div>
 
@@ -211,13 +524,42 @@
         <div class="card-success">
             {{ section_group_header('low', 'Low Priority', clipboard_list_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-green">' + (tasks|selectattr('priority', 'equalto', 'low')|list|length)|string + '</span>', 'green', 'green', 'green', 'text-status-success') }}
             <div class="p-6" x-show="expandedSections['low']" x-transition>
-                {% for task in tasks %}
-                    {% if task.priority == 'low' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'low') }}
-                    {% endif %}
-                {% else %}
+                <template x-for="task in sortedFilteredTasks().filter(t => t.priority === 'low')" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().filter(t => t.priority === 'low').length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endfor %}
+                </div>
             </div>
         </div>
     </div>
@@ -228,16 +570,42 @@
         <div class="card-danger">
             {{ section_group_header('overdue', 'Overdue', exclamation_circle_icon_solid("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-red">' + (tasks|selectattr('is_overdue', 'equalto', True)|list|length)|string + '</span>', 'red', 'red', 'red', 'text-status-overdue') }}
             <div class="p-6" x-show="expandedSections['overdue']" x-transition>
-                {% set overdue_task_list = [] %}
-                {% for task in tasks %}
-                    {% if task.is_overdue and (task.status != 'complete' or showCompleted) %}
-                        {% set _ = overdue_task_list.append(task) %}
-                        {{ render_task(task, 'overdue') }}
-                    {% endif %}
-                {% endfor %}
-                {% if overdue_task_list|length == 0 %}
+                <template x-for="task in sortedFilteredTasks().filter(t => t.is_overdue)" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().filter(t => t.is_overdue).length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endif %}
+                </div>
             </div>
         </div>
 
@@ -245,50 +613,128 @@
         <div class="card-orange">
             {{ section_group_header('today', 'Due Today', calendar_days_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-orange">' + (tasks|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list|length)|string + '</span>', 'orange', 'orange', 'orange', 'text-status-warning') }}
             <div class="p-6" x-show="expandedSections['today']" x-transition>
-                {% set today_task_list = [] %}
-                {% for task in tasks %}
-                    {% if task.due_date == today and task.status != 'complete' %}
-                        {% set _ = today_task_list.append(task) %}
-                        {{ render_task(task, 'today') }}
-                    {% endif %}
-                {% endfor %}
-                {% if today_task_list|length == 0 %}
+                <template x-for="task in sortedFilteredTasks()" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endif %}
+                </div>
             </div>
         </div>
 
         <!-- This Week -->
         <div class="card-info">
-            {% set this_week_tasks = [] %}{% for task in tasks %}{% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}{% set _ = this_week_tasks.append(task) %}{% endif %}{% endfor %}{{ section_group_header('this_week', 'This Week', calendar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue">' + (this_week_tasks|length)|string + '</span>', 'blue', 'blue', 'blue', 'text-status-info') }}
+            {% set this_week_tasks = [] %}{% for task in tasks_objects %}{% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}{% set _ = this_week_tasks.append(task) %}{% endif %}{% endfor %}{{ section_group_header('this_week', 'This Week', calendar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue">' + (this_week_tasks|length)|string + '</span>', 'blue', 'blue', 'blue', 'text-status-info') }}
             <div class="p-6" x-show="expandedSections['this_week']" x-transition>
-                {% set this_week_task_list = [] %}
-                {% for task in tasks %}
-                    {% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}
-                        {% set _ = this_week_task_list.append(task) %}
-                        {{ render_task(task, 'this_week') }}
-                    {% endif %}
-                {% endfor %}
-                {% if this_week_task_list|length == 0 %}
+                <template x-for="task in sortedFilteredTasks()" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endif %}
+                </div>
             </div>
         </div>
 
         <!-- Later -->
         <div class="card-neutral">
-            {% set later_tasks = [] %}{% for task in tasks %}{% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}{% set _ = later_tasks.append(task) %}{% endif %}{% endfor %}{{ section_group_header('later', 'Later', chart_bar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray">' + (later_tasks|length)|string + '</span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
+            {% set later_tasks = [] %}{% for task in tasks_objects %}{% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}{% set _ = later_tasks.append(task) %}{% endif %}{% endfor %}{{ section_group_header('later', 'Later', chart_bar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray">' + (later_tasks|length)|string + '</span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
             <div class="p-6" x-show="expandedSections['later']" x-transition>
-                {% set later_task_list = [] %}
-                {% for task in tasks %}
-                    {% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}
-                        {% set _ = later_task_list.append(task) %}
-                        {{ render_task(task, 'later') }}
-                    {% endif %}
-                {% endfor %}
-                {% if later_task_list|length == 0 %}
+                <template x-for="task in sortedFilteredTasks()" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endif %}
+                </div>
             </div>
         </div>
 
@@ -296,16 +742,42 @@
         <div class="card-neutral">
             {{ section_group_header('no_date', 'No Due Date', question_mark_circle_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray">' + (tasks|selectattr('due_date', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('due_date', 'none')|list|length)|string + '</span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
             <div class="p-6" x-show="expandedSections['no_date']" x-transition>
-                {% set no_date_task_list = [] %}
-                {% for task in tasks %}
-                    {% if not task.due_date and (task.status != 'complete' or showCompleted) %}
-                        {% set _ = no_date_task_list.append(task) %}
-                        {{ render_task(task, 'no_date') }}
-                    {% endif %}
-                {% endfor %}
-                {% if no_date_task_list|length == 0 %}
+                <template x-for="task in sortedFilteredTasks().filter(t => !t.due_date)" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().filter(t => !t.due_date).length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -316,13 +788,42 @@
         <div class="card-info">
             {{ section_group_header('company', 'Company Tasks', building_office_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue">' + (tasks|selectattr('entity_type', 'equalto', 'company')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'company')|list|length)|string + '</span>', 'blue', 'blue', 'blue', 'text-status-info') }}
             <div class="p-6" x-show="expandedSections['company']" x-transition>
-                {% for task in tasks %}
-                    {% if task.entity_type == 'company' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'company') }}
-                    {% endif %}
-                {% else %}
+                <template x-for="task in sortedFilteredTasks().filter(t => t.entity_type === 'company')" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().filter(t => t.entity_type === 'company').length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endfor %}
+                </div>
             </div>
         </div>
 
@@ -330,13 +831,42 @@
         <div class="card-success">
             {{ section_group_header('contact', 'Contact Tasks', user_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-green">' + (tasks|selectattr('entity_type', 'equalto', 'contact')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'contact')|list|length)|string + '</span>', 'green', 'green', 'green', 'text-status-success') }}
             <div class="p-6" x-show="expandedSections['contact']" x-transition>
-                {% for task in tasks %}
-                    {% if task.entity_type == 'contact' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'contact') }}
-                    {% endif %}
-                {% else %}
+                <template x-for="task in sortedFilteredTasks().filter(t => t.entity_type === 'contact')" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().filter(t => t.entity_type === 'contact').length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endfor %}
+                </div>
             </div>
         </div>
 
@@ -344,13 +874,42 @@
         <div class="card-warning">
             {{ section_group_header('opportunity', 'Opportunity Tasks', currency_dollar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-yellow">' + (tasks|selectattr('entity_type', 'equalto', 'opportunity')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'opportunity')|list|length)|string + '</span>', 'yellow', 'yellow', 'yellow', 'text-status-warning') }}
             <div class="p-6" x-show="expandedSections['opportunity']" x-transition>
-                {% for task in tasks %}
-                    {% if task.entity_type == 'opportunity' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'opportunity') }}
-                    {% endif %}
-                {% else %}
+                <template x-for="task in sortedFilteredTasks().filter(t => t.entity_type === 'opportunity')" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().filter(t => t.entity_type === 'opportunity').length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endfor %}
+                </div>
             </div>
         </div>
 
@@ -358,13 +917,42 @@
         <div class="card-neutral">
             {{ section_group_header('unrelated', 'General Tasks', clipboard_list_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray">' + (tasks|selectattr('entity_type', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'none')|list|length)|string + '</span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
             <div class="p-6" x-show="expandedSections['unrelated']" x-transition>
-                {% for task in tasks %}
-                    {% if not task.entity_type and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'unrelated') }}
-                    {% endif %}
-                {% else %}
+                <template x-for="task in sortedFilteredTasks().filter(t => !t.entity_type)" :key="task.id">
+                    <div x-show="shouldShowTask(task)">
+                        <div class="task-card" x-data="{ task: task }">
+                            <!-- Basic task card template -->
+                            <div class="p-4 border border-gray-200 rounded-lg mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                                              :class="{
+                                                'bg-red-100 text-red-800': task.priority === 'high',
+                                                'bg-yellow-100 text-yellow-800': task.priority === 'medium', 
+                                                'bg-gray-100 text-gray-800': task.priority === 'low'
+                                              }"
+                                              x-text="task.priority.charAt(0).toUpperCase() + task.priority.slice(1)"></span>
+                                        <span x-show="task.is_overdue" class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">OVERDUE</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-900 font-medium mb-2" x-text="task.description"></p>
+                                <div class="text-sm text-gray-500 space-y-1">
+                                    <div x-show="task.due_date">
+                                        <span>Due: </span><span x-text="task.due_date"></span>
+                                    </div>
+                                    <div x-show="task.company_name">
+                                        <span>Company: </span><span x-text="task.company_name"></span>
+                                    </div>
+                                    <div x-show="task.entity_name">
+                                        <span>Contact: </span><span x-text="task.entity_name"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="sortedFilteredTasks().filter(t => !t.entity_type).length === 0">
                     <p class="text-empty-state">No matching tasks found</p>
-                {% endfor %}
+                </div>
             </div>
         </div>
     </div>
@@ -391,6 +979,8 @@
 window.companiesData = {{ companies | tojson }};
 window.contactsData = {{ contacts | tojson }};
 window.opportunitiesData = {{ opportunities | tojson }};
+// Make tasks data available for client-side sorting
+window.tasksData = {{ tasks | tojson }};
 
 function openNewTaskModal() {
     window.dispatchEvent(new CustomEvent('open-new-task-modal'));
