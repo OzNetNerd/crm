@@ -140,17 +140,22 @@
     
     <!-- Task description with badges and reschedule buttons -->
     <div class="flex items-center justify-between mb-3">
-        <div class="flex items-center space-x-2 flex-grow">
-            {% set priority_color = 'red' if task.priority == 'high' else
-                                  'yellow' if task.priority == 'medium' else
-                                  'green' %}
-            {{ status_badge(task.priority, priority_color) }}
+        <div class="flex items-start space-x-2 flex-grow">
+            <div class="flex flex-col items-center space-y-1">
+                {% set priority_color = 'red' if task.priority == 'high' else
+                                      'yellow' if task.priority == 'medium' else
+                                      'green' %}
+                {{ status_badge(task.priority, priority_color) }}
+                {% if task.next_step_type %}
+                    <span class="text-badge-tag">{{ task.next_step_type }}</span>
+                {% endif %}
+            </div>
             <div class="flex-grow">
                 {% if task.entity_name %}
                     <div class="flex items-center space-x-3">
                         <p class="text-label-primary">{{ task.entity_name }}</p>
                         {% if task.opportunity_value %}
-                            <div class="text-lg font-semibold text-green-600">
+                            <div class="text-deal-amount">
                                 ${{ "{:,}".format(task.opportunity_value) }}
                             </div>
                         {% endif %}
@@ -167,15 +172,11 @@
                     <span class="badge-standard badge-{{ badge_color }}">{{ task.task_type_badge }}</span>
                 {% endif %}
                 
-                
                 <!-- Dependency indicator for child tasks -->
                 {% if task.task_type == 'child' and not task.can_start %}
                     <span class="text-badge-warning">WAITING</span>
                 {% endif %}
                 
-                {% if task.next_step_type %}
-                    <span class="text-badge-tag">{{ task.next_step_type }}</span>
-                {% endif %}
                 {% if task.is_overdue %}
                     <span class="text-badge-overdue">OVERDUE</span>
                 {% endif %}
