@@ -17,6 +17,10 @@
     font-weight: 600; /* font-semibold */
     color: #059669; /* text-green-600 */
 }
+.text-deal-amount-lg {
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 600; /* font-semibold */
+}
 .text-label-dark { 
     font-size: 0.875rem; /* text-sm */
     font-weight: 500; /* font-medium */
@@ -115,7 +119,9 @@
 .text-nav-link { @apply text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium; }
 
 /* Status colors with semantic meaning */
-.text-success { @apply text-green-600; }
+.text-success { 
+    color: #059669; /* text-green-600 */
+}
 .text-success-hover { 
     color: #16a34a; /* text-green-600 */
 }

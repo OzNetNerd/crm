@@ -153,9 +153,10 @@
             <div class="flex-grow text-left">
                 {% if task.entity_name %}
                     <div class="flex items-center space-x-3">
-                        <p class="text-label-primary">{{ task.entity_name }}</p>
+                        <p class="text-title-primary">{{ task.entity_name }}</p>
                         {% if task.opportunity_value %}
-                            <div class="text-deal-amount">
+                            <span class="text-gray-400">•</span>
+                            <div class="text-deal-amount-lg text-success">
                                 ${{ "{:,}".format(task.opportunity_value) }}
                             </div>
                         {% endif %}
