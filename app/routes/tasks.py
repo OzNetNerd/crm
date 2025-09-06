@@ -8,8 +8,11 @@ tasks_bp = Blueprint("tasks", __name__)
 
 @tasks_bp.route("/")
 def index():
-    tasks = Task.query.order_by(Task.due_date.asc()).all()
+    tasks_query = Task.query.order_by(Task.due_date.asc()).all()
     today = date.today()
+
+    # Convert tasks to dictionaries for JSON serialization
+    tasks = [task.to_dict() for task in tasks_query]
 
     # Serialize objects for JSON use in templates
     companies_data = [
@@ -26,6 +29,7 @@ def index():
     return render_template(
         "tasks/index.html",
         tasks=tasks,
+        tasks_objects=tasks_query,  # Keep original objects for template logic
         today=today,
         companies=companies_data,
         contacts=contacts_data,
