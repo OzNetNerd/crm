@@ -203,8 +203,12 @@ class ModalManager {
     }
 
     static openNewTaskModal() {
-        // TODO: Implement new task creation modal
-        console.log('Opening new task modal');
+        // Reset modal state before opening
+        if (typeof resetTask === 'function') {
+            resetTask();
+        }
+        // Trigger the modal to open
+        window.dispatchEvent(new CustomEvent('open-new-task-modal'));
     }
 }
 
