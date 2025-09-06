@@ -510,8 +510,28 @@
     margin-bottom: 0.75rem; /* mb-3 */
     cursor: pointer;
     transition: box-shadow 0.15s ease-in-out; /* transition-shadow */
+    min-height: 120px; /* Consistent minimum height */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .task-card:hover {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* hover:shadow-md */
+}
+
+/* Task summary vertical centering */
+.task-summary-centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+}
+
+/* Improved task card balance */
+.task-card-balanced {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 120px;
 }

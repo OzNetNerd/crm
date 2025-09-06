@@ -139,9 +139,9 @@
      :class="{ 'ring-2 ring-blue-200 bg-blue-50': isEditing }">
     
     <!-- Task description with badges and reschedule buttons -->
-    <div class="flex items-center justify-between mb-3">
+    <div class="flex items-center justify-between mb-3 min-h-[48px]">
         <div class="flex items-center space-x-2 flex-grow">
-            <div class="flex flex-col items-center space-y-1">
+            <div class="flex flex-col items-end space-y-1 text-right min-w-[80px]">
                 {% set priority_color = 'red' if task.priority == 'high' else
                                       'yellow' if task.priority == 'medium' else
                                       'green' %}
@@ -150,7 +150,7 @@
                     <span class="text-badge-tag">{{ task.next_step_type }}</span>
                 {% endif %}
             </div>
-            <div class="flex-grow">
+            <div class="flex-grow text-left">
                 {% if task.entity_name %}
                     <div class="flex items-center space-x-3">
                         <p class="text-label-primary">{{ task.entity_name }}</p>
@@ -165,7 +165,7 @@
                     <p class="text-label-primary">{{ task.description }}</p>
                 {% endif %}
             </div>
-            <div class="flex items-center space-x-2 flex-shrink-0">
+            <div class="flex items-center space-x-2 flex-shrink-0 text-left">
                 <!-- Task type badge (child tasks only) -->
                 {% if task.task_type == 'child' %}
                     <span class="badge-standard badge-green">{{ task.task_type_badge }}</span>
@@ -233,12 +233,12 @@
 
     <!-- Progress bar for parent tasks -->
     {% if task.task_type == 'parent' %}
-    <div class="flex items-center space-x-4 text-secondary mb-3">
-        <div class="flex items-center space-x-2">
+    <div class="flex items-center justify-between text-secondary mb-3 min-h-[32px]">
+        <div class="flex items-center space-x-2 text-right">
             <span class="badge-standard badge-blue">{{ task.task_type_badge }}</span>
             <span class="font-medium">Tasks: {{ task.child_tasks | selectattr('status', 'equalto', 'complete') | list | length }}/{{ task.child_tasks | length }}</span>
         </div>
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-2 text-left">
             <div class="w-16 bg-gray-200 rounded-full h-2">
                 <div class="bg-blue-600 h-2 rounded-full" style="width: {{ task.completion_percentage }}%"></div>
             </div>
