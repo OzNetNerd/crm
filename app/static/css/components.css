@@ -227,13 +227,6 @@
     font-size: 0.75rem; /* text-xs */
     font-weight: 500; /* font-medium */
 }
-.text-badge-tag { 
-    background-color: #f3f4f6; /* bg-gray-100 */
-    color: #374151; /* text-gray-700 */
-    padding: 0.25rem 0.5rem; /* px-2 py-1 */
-    font-size: 0.75rem; /* text-xs */
-    border-radius: 0.25rem; /* rounded */
-}
 
 /* Standardized badges */
 .badge-standard { 

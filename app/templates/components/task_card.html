@@ -147,7 +147,7 @@
                                       'green' %}
                 {{ status_badge(task.priority, priority_color) }}
                 {% if task.next_step_type %}
-                    <span class="text-badge-tag">{{ task.next_step_type }}</span>
+                    <span class="badge-standard badge-gray">{{ task.next_step_type }}</span>
                 {% endif %}
             </div>
             <div class="flex-grow text-left">
@@ -234,16 +234,20 @@
 
     <!-- Progress bar for parent tasks -->
     {% if task.task_type == 'parent' %}
-    <div class="flex items-center justify-between text-secondary mb-3 min-h-[32px]">
-        <div class="flex items-center space-x-2 text-right">
-            <span class="badge-standard badge-blue">{{ task.task_type_badge }}</span>
-            <span class="font-medium">Tasks: {{ task.child_tasks | selectattr('status', 'equalto', 'complete') | list | length }}/{{ task.child_tasks | length }}</span>
-        </div>
-        <div class="flex items-center space-x-2 text-left">
-            <div class="w-16 bg-gray-200 rounded-full h-2">
-                <div class="bg-blue-600 h-2 rounded-full" style="width: {{ task.completion_percentage }}%"></div>
+    <div class="flex items-center justify-between mb-3 min-h-[32px]">
+        <div class="flex items-center space-x-2 flex-grow">
+            <div class="flex flex-col items-end space-y-1 text-right min-w-[80px]">
+                <span class="badge-standard badge-blue">{{ task.task_type_badge }}</span>
             </div>
-            <span class="font-medium">{{ task.completion_percentage }}%</span>
+            <div class="flex-grow text-left">
+                <p class="text-label-primary">Tasks: {{ task.child_tasks | selectattr('status', 'equalto', 'complete') | list | length }}/{{ task.child_tasks | length }}</p>
+            </div>
+            <div class="flex items-center space-x-2 flex-shrink-0 text-left">
+                <div class="w-16 bg-gray-200 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ task.completion_percentage }}%"></div>
+                </div>
+                <span class="text-label-primary">{{ task.completion_percentage }}%</span>
+            </div>
         </div>
     </div>
     {% endif %}
