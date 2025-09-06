@@ -4,7 +4,7 @@
 
 ### Auto Port Detection (Recommended)
 ```bash
-python main.py
+./run.sh
 ```
 - Automatically finds the first free port starting from 5000
 - Displays the URL Claude should use: `http://127.0.0.1:{port}`
@@ -12,7 +12,7 @@ python main.py
 
 ### Manual Port Selection
 ```bash
-python main.py --port 5002
+python3 main.py --port 5002
 ```
 - Use when you need a specific port
 - If port is busy, will show helpful error message
@@ -20,7 +20,7 @@ python main.py --port 5002
 ## For Claude Code
 
 When starting the CRM application:
-1. Run `python main.py` (no arguments needed)
+1. Run `./run.sh` (recommended - auto-detects port)
 2. Look for the output: `🚀 Starting CRM application on http://127.0.0.1:{port}`
 3. Use that URL to access the application
 
@@ -37,16 +37,16 @@ When starting the CRM application:
 Each worktree can run simultaneously:
 ```bash
 # Worktree 1
-python main.py  # Uses port 5000
+./run.sh  # Uses port 5000
 
 # Worktree 2  
-python main.py  # Uses port 5001 (auto-detected)
+./run.sh  # Uses port 5001 (auto-detected)
 
 # Worktree 3
-python main.py  # Uses port 5002 (auto-detected)
+./run.sh  # Uses port 5002 (auto-detected)
 ```
 
 ### Testing Specific Ports
 ```bash
-python main.py --port 8080  # Force specific port
+python3 main.py --port 8080  # Force specific port
 ```
