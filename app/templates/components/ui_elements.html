@@ -187,6 +187,44 @@
 {% endmacro %}
 
 {#
+  Section Group Header - DRY implementation for consistent expandable section headers
+  
+  Parameters:
+  - section_key (required): Unique key for expand/collapse state
+  - title (required): Display title for the section
+  - icon_html (required): HTML for the icon (use icon macros)
+  - badge_html (required): HTML for the count badge
+  - border_color (required): Border color class name (e.g., 'blue', 'red')
+  - bg_color (required): Background color class name
+  - hover_color (required): Hover background color class name
+  - text_class (required): Text styling class
+  - with_buttons (optional): Show expand/collapse all buttons (default: true)
+  
+  Usage:
+  {{ section_group_header('todo', 'To Do', clipboard_icon("w-5 h-5 mr-1"), '<span class="badge-blue">5</span>', 'blue', 'blue', 'blue', 'text-status-header') }}
+#}
+{% macro section_group_header(section_key, title, icon_html, badge_html, border_color, bg_color, hover_color, text_class, with_buttons=true) %}
+{% from "components/icons.html" import chevron_right_icon %}
+<div class="border-b border-{{ border_color }}-200 px-6 py-4 bg-{{ bg_color }}-50 cursor-pointer hover:bg-{{ hover_color }}-100" 
+     @click="expandedSections['{{ section_key }}'] = !expandedSections['{{ section_key }}']">
+    <div class="flex items-center justify-between">
+        <h3 class="{{ text_class }}">
+            <span class="mr-2 transition-transform duration-200" :class="expandedSections['{{ section_key }}'] ? 'rotate-90' : ''">
+                {{ chevron_right_icon("w-4 h-4") }}
+            </span>{{ icon_html|safe }} {{ title }}{{ badge_html|safe }}
+        </h3>
+        {% if with_buttons %}
+        <div class="flex items-center space-x-2 text-sm text-gray-500" x-show="expandedSections['{{ section_key }}']">
+            <button @click.stop="expandAllItemsInGroup('{{ section_key }}')" class="hover:text-blue-600 transition-colors">Expand All</button>
+            <span>|</span>
+            <button @click.stop="collapseAllItemsInGroup('{{ section_key }}')" class="hover:text-blue-600 transition-colors">Collapse All</button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{#
   Dropdown Multi-Select - Multi-select dropdown with search and Select All/Deselect All
   
   Parameters:
