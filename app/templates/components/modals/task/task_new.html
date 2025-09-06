@@ -1,0 +1,226 @@
+{% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
+
+<div x-data="{
+        show: false,
+        saving: false,
+        taskType: 'single',
+        task: {
+            description: '',
+            due_date: '',
+            priority: 'medium',
+            entity_type: '',
+            entity_id: '',
+            next_step_type: ''
+        },
+        childTasks: [
+            { description: '', due_date: '', priority: 'medium', next_step_type: '' },
+            { description: '', due_date: '', priority: 'medium', next_step_type: '' }
+        ],
+        dependencyType: 'parallel',
+        
+        async saveNewTask() {
+            if (!this.task.description.trim()) return;
+            this.saving = true;
+            
+            try {
+                const taskData = {
+                    ...this.task,
+                    task_type: this.taskType,
+                    child_tasks: this.taskType === 'multi' ? this.childTasks : [],
+                    dependency_type: this.taskType === 'multi' ? this.dependencyType : null
+                };
+                
+                const response = await fetch('/api/tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(taskData)
+                });
+                
+                if (response.ok) {
+                    this.resetForm();
+                    this.show = false;
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error('Error creating task:', error);
+            } finally {
+                this.saving = false;
+            }
+        },
+        
+        resetForm() {
+            this.task = {
+                description: '',
+                due_date: '',
+                priority: 'medium',
+                entity_type: '',
+                entity_id: '',
+                next_step_type: ''
+            };
+            this.childTasks = [
+                { description: '', due_date: '', priority: 'medium', next_step_type: '' },
+                { description: '', due_date: '', priority: 'medium', next_step_type: '' }
+            ];
+            this.taskType = 'single';
+            this.dependencyType = 'parallel';
+        },
+        
+        addChildTask() {
+            this.childTasks.push({ description: '', due_date: '', priority: 'medium', next_step_type: '' });
+        },
+        
+        removeChildTask(index) {
+            if (this.childTasks.length > 1) {
+                this.childTasks.splice(index, 1);
+            }
+        }
+     }" 
+     @open-new-task-modal.window="show = true; resetForm()"
+     @close-modal.window="show = false">
+
+    {% call base_modal('new-task-modal', backdrop_click_close=false) %}
+        {{ modal_header('Create New Task') }}
+        
+        <!-- Task Type Selection -->
+        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+            <label class="text-form-label mb-3 block">Task Type</label>
+            <div class="flex space-x-6">
+                <label class="flex items-center">
+                    <input type="radio" x-model="taskType" value="single" 
+                           class="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300">
+                    <span class="text-sm">Single Task</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="radio" x-model="taskType" value="multi" 
+                           class="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300">
+                    <span class="text-sm">Multi Task</span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Single Task Form -->
+        <div x-show="taskType === 'single'" class="space-y-4">
+            <div>
+                <label class="text-form-label">Description*</label>
+                <textarea x-model="task.description" 
+                          placeholder="What needs to be done?"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          rows="3" required></textarea>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-form-label">Due Date</label>
+                    <input type="date" x-model="task.due_date" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div>
+                    <label class="text-form-label">Priority</label>
+                    <select x-model="task.priority" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div>
+                <label class="text-form-label">Next Step Type</label>
+                <select x-model="task.next_step_type" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">None</option>
+                    <option value="call">Call</option>
+                    <option value="email">Email</option>
+                    <option value="meeting">Meeting</option>
+                    <option value="demo">Demo</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Multi Task Form -->
+        <div x-show="taskType === 'multi'" class="space-y-4">
+            <div>
+                <label class="text-form-label">Parent Task Description*</label>
+                <textarea x-model="task.description" 
+                          placeholder="Overall task description"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          rows="2" required></textarea>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-form-label">Due Date</label>
+                    <input type="date" x-model="task.due_date" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div>
+                    <label class="text-form-label">Dependency Type</label>
+                    <select x-model="dependencyType" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="parallel">Parallel (Any Order)</option>
+                        <option value="sequential">Sequential (In Order)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Child Tasks -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-form-label">Sub-tasks</label>
+                    <button @click="addChildTask()" 
+                            class="text-sm text-blue-600 hover:text-blue-800">
+                        + Add Sub-task
+                    </button>
+                </div>
+                
+                <div class="space-y-3">
+                    <template x-for="(childTask, index) in childTasks" :key="index">
+                        <div class="p-3 border border-gray-200 rounded-lg">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-sm font-medium text-gray-700" x-text="`Sub-task ${index + 1}`"></span>
+                                <button @click="removeChildTask(index)" 
+                                        x-show="childTasks.length > 1"
+                                        class="text-red-500 hover:text-red-700">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <textarea x-model="childTask.description" 
+                                      placeholder="Sub-task description"
+                                      class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                      rows="2"></textarea>
+                            
+                            <div class="grid grid-cols-3 gap-2 mt-2">
+                                <input type="date" x-model="childTask.due_date" 
+                                       class="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                
+                                <select x-model="childTask.priority" 
+                                        class="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                                
+                                <select x-model="childTask.next_step_type" 
+                                        class="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">None</option>
+                                    <option value="call">Call</option>
+                                    <option value="email">Email</option>
+                                    <option value="meeting">Meeting</option>
+                                    <option value="demo">Demo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+        
+        {{ modal_footer(save_action="saveNewTask()", save_text="Create Task") }}
+    {% endcall %}
+</div>
