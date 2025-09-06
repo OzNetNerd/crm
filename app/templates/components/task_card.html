@@ -145,7 +145,21 @@
                                   'yellow' if task.priority == 'medium' else
                                   'green' %}
             {{ status_badge(task.priority, priority_color) }}
-            <p class="text-label-primary">{{ task.description }}</p>
+            <div class="flex-grow">
+                {% if task.entity_name %}
+                    <div class="flex items-center space-x-3">
+                        <p class="text-label-primary">{{ task.entity_name }}</p>
+                        {% if task.opportunity_value %}
+                            <div class="text-lg font-semibold text-green-600">
+                                ${{ "{:,}".format(task.opportunity_value) }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <p class="text-sm text-gray-600">{{ task.description }}</p>
+                {% else %}
+                    <p class="text-label-primary">{{ task.description }}</p>
+                {% endif %}
+            </div>
             <div class="flex items-center space-x-2 flex-shrink-0">
                 <!-- Task type badge -->
                 {% if task.task_type != 'single' %}
