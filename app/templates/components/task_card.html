@@ -153,12 +153,6 @@
                     <span class="badge-standard badge-{{ badge_color }}">{{ task.task_type_badge }}</span>
                 {% endif %}
                 
-                <!-- Progress badge for parent tasks -->
-                {% if task.task_type == 'parent' %}
-                    <span class="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
-                        {{ task.completion_percentage }}% complete
-                    </span>
-                {% endif %}
                 
                 <!-- Dependency indicator for child tasks -->
                 {% if task.task_type == 'child' and not task.can_start %}
@@ -222,6 +216,19 @@
             </div>
         </div>
     </div>
+
+    <!-- Progress bar for parent tasks -->
+    {% if task.task_type == 'parent' %}
+    <div class="flex items-center space-x-4 text-secondary mb-3">
+        <span class="font-medium">Tasks: {{ task.child_tasks | selectattr('status', 'equalto', 'complete') | list | length }}/{{ task.child_tasks | length }}</span>
+        <div class="flex items-center space-x-2">
+            <div class="w-16 bg-gray-200 rounded-full h-2">
+                <div class="bg-blue-600 h-2 rounded-full" style="width: {{ task.completion_percentage }}%"></div>
+            </div>
+            <span class="font-medium">{{ task.completion_percentage }}%</span>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Task metadata -->
     <div class="flex items-center justify-between">

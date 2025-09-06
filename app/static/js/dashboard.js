@@ -75,13 +75,21 @@ class TaskManager {
                 if (showNotification) {
                     this.showNotification('Task completed successfully', 'success');
                 }
-                // Smooth removal animation
+                // Smooth removal animation and dynamic DOM update
                 const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
                 if (taskCard) {
-                    taskCard.style.transition = 'opacity 0.3s ease-out';
+                    taskCard.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
                     taskCard.style.opacity = '0';
+                    taskCard.style.transform = 'translateY(-10px)';
                     setTimeout(() => {
-                        location.reload(); // TODO: Replace with dynamic update
+                        // Remove the task card from DOM
+                        taskCard.remove();
+                        
+                        // Update section counters dynamically
+                        this.updateSectionCounters();
+                        
+                        // Update parent task progress if needed
+                        this.updateParentTaskProgress(taskId);
                     }, 300);
                 }
             } else {
@@ -168,10 +176,60 @@ class TaskManager {
             const promises = taskIds.map(id => this.completeTask(id, false));
             await Promise.all(promises);
             this.showNotification(`${taskIds.length} tasks completed`, 'success');
-            location.reload();
+            // No need to reload - individual completeTask calls handle DOM updates
         } catch (error) {
             console.error('Error bulk completing tasks:', error);
             this.showNotification('Failed to complete some tasks', 'error');
+        }
+    }
+
+    static updateSectionCounters() {
+        // Update badge counts in section headers after task completion
+        const sections = document.querySelectorAll('[data-section-count]');
+        sections.forEach(section => {
+            const sectionType = section.dataset.sectionCount;
+            const tasksInSection = document.querySelectorAll(`[data-task-section="${sectionType}"]`).length;
+            const badge = section.querySelector('.badge-standard');
+            if (badge) {
+                badge.textContent = tasksInSection;
+            }
+        });
+    }
+
+    static async updateParentTaskProgress(completedTaskId) {
+        // Update parent task progress bar if the completed task was a child task
+        try {
+            // Find if this task was a child task by looking for parent tasks on the page
+            const parentTasks = document.querySelectorAll('[data-task-type="parent"]');
+            
+            for (const parentTask of parentTasks) {
+                const parentId = parentTask.dataset.taskId;
+                if (parentId) {
+                    // Fetch updated parent task data
+                    const response = await fetch(`/api/tasks/${parentId}`);
+                    if (response.ok) {
+                        const taskData = await response.json();
+                        
+                        // Update progress bar
+                        const progressBar = parentTask.querySelector('.bg-blue-600');
+                        const progressText = parentTask.querySelector('.font-medium:last-child');
+                        const tasksText = parentTask.querySelector('.font-medium:first-child');
+                        
+                        if (progressBar && progressText) {
+                            progressBar.style.width = `${taskData.completion_percentage}%`;
+                            progressText.textContent = `${taskData.completion_percentage}%`;
+                        }
+                        
+                        if (tasksText && taskData.child_tasks) {
+                            const completedCount = taskData.child_tasks.filter(t => t.status === 'complete').length;
+                            const totalCount = taskData.child_tasks.length;
+                            tasksText.textContent = `Tasks: ${completedCount}/${totalCount}`;
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error updating parent task progress:', error);
         }
     }
 

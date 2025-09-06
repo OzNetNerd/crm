@@ -48,7 +48,7 @@ def index():
     }
 
     # Recent activity (last 5 items)
-    recent_tasks = Task.query.order_by(Task.created_at.desc()).limit(5).all()
+    recent_tasks = Task.query.filter(Task.status != "complete").order_by(Task.created_at.desc()).limit(5).all()
     recent_notes = Note.query.order_by(Note.created_at.desc()).limit(3).all()
     recent_opportunities = (
         Opportunity.query.order_by(Opportunity.created_at.desc()).limit(3).all()
