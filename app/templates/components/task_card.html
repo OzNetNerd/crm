@@ -140,7 +140,7 @@
     
     <!-- Task description with badges and reschedule buttons -->
     <div class="flex items-center justify-between mb-3">
-        <div class="flex items-start space-x-2 flex-grow">
+        <div class="flex items-center space-x-2 flex-grow">
             <div class="flex flex-col items-center space-y-1">
                 {% set priority_color = 'red' if task.priority == 'high' else
                                       'yellow' if task.priority == 'medium' else
@@ -166,10 +166,9 @@
                 {% endif %}
             </div>
             <div class="flex items-center space-x-2 flex-shrink-0">
-                <!-- Task type badge -->
-                {% if task.task_type != 'single' %}
-                    {% set badge_color = 'blue' if task.task_type == 'parent' else 'green' %}
-                    <span class="badge-standard badge-{{ badge_color }}">{{ task.task_type_badge }}</span>
+                <!-- Task type badge (child tasks only) -->
+                {% if task.task_type == 'child' %}
+                    <span class="badge-standard badge-green">{{ task.task_type_badge }}</span>
                 {% endif %}
                 
                 <!-- Dependency indicator for child tasks -->
@@ -235,7 +234,10 @@
     <!-- Progress bar for parent tasks -->
     {% if task.task_type == 'parent' %}
     <div class="flex items-center space-x-4 text-secondary mb-3">
-        <span class="font-medium">Tasks: {{ task.child_tasks | selectattr('status', 'equalto', 'complete') | list | length }}/{{ task.child_tasks | length }}</span>
+        <div class="flex items-center space-x-2">
+            <span class="badge-standard badge-blue">{{ task.task_type_badge }}</span>
+            <span class="font-medium">Tasks: {{ task.child_tasks | selectattr('status', 'equalto', 'complete') | list | length }}/{{ task.child_tasks | length }}</span>
+        </div>
         <div class="flex items-center space-x-2">
             <div class="w-16 bg-gray-200 rounded-full h-2">
                 <div class="bg-blue-600 h-2 rounded-full" style="width: {{ task.completion_percentage }}%"></div>
