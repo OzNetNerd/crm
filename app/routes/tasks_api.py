@@ -1,88 +1,100 @@
-from datetime import datetime, timedelta, date
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for
-from app.models import db, Task, Company, Contact, Opportunity, Note
+from flask import Blueprint, request, jsonify
+from app.models import db, Task, Note
 
-tasks_api_bp = Blueprint('tasks_api', __name__)
+tasks_api_bp = Blueprint("tasks_api", __name__)
 
 
-@tasks_api_bp.route('/<int:task_id>')
+@tasks_api_bp.route("/<int:task_id>")
 def get_task(task_id):
     """Get a specific task as JSON"""
     task = Task.query.get_or_404(task_id)
-    
-    return jsonify({
-        'id': task.id,
-        'description': task.description,
-        'due_date': task.due_date.isoformat() if task.due_date else None,
-        'priority': task.priority,
-        'status': task.status,
-        'next_step_type': task.next_step_type,
-        'entity_type': task.entity_type,
-        'entity_id': task.entity_id,
-        'company_name': task.company_name,
-        'opportunity_name': task.opportunity_name,
-        'entity_name': task.entity_name,
-        'is_overdue': task.is_overdue
-    })
+
+    return jsonify(
+        {
+            "id": task.id,
+            "description": task.description,
+            "due_date": task.due_date.isoformat() if task.due_date else None,
+            "priority": task.priority,
+            "status": task.status,
+            "next_step_type": task.next_step_type,
+            "entity_type": task.entity_type,
+            "entity_id": task.entity_id,
+            "company_name": task.company_name,
+            "opportunity_name": task.opportunity_name,
+            "entity_name": task.entity_name,
+            "is_overdue": task.is_overdue,
+        }
+    )
 
 
-@tasks_api_bp.route('/<int:task_id>/notes', methods=['GET'])
+@tasks_api_bp.route("/<int:task_id>/notes", methods=["GET"])
 def get_task_notes(task_id):
     """Get all notes for a specific task"""
     try:
         # Verify task exists
-        task = Task.query.get_or_404(task_id)
-        
-        notes = Note.query.filter_by(
-            entity_type='task',
-            entity_id=task_id
-        ).order_by(Note.created_at.desc()).all()
-        
-        return jsonify([{
-            'id': note.id,
-            'content': note.content,
-            'entity_type': note.entity_type,
-            'entity_id': note.entity_id,
-            'is_internal': note.is_internal,
-            'created_at': note.created_at.isoformat(),
-            'entity_name': note.entity_name
-        } for note in notes])
-        
+        _ = Task.query.get_or_404(task_id)  # Verify task exists
+
+        notes = (
+            Note.query.filter_by(entity_type="task", entity_id=task_id)
+            .order_by(Note.created_at.desc())
+            .all()
+        )
+
+        return jsonify(
+            [
+                {
+                    "id": note.id,
+                    "content": note.content,
+                    "entity_type": note.entity_type,
+                    "entity_id": note.entity_id,
+                    "is_internal": note.is_internal,
+                    "created_at": note.created_at.isoformat(),
+                    "entity_name": note.entity_name,
+                }
+                for note in notes
+            ]
+        )
+
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 
-@tasks_api_bp.route('/<int:task_id>/notes', methods=['POST'])
+@tasks_api_bp.route("/<int:task_id>/notes", methods=["POST"])
 def create_task_note(task_id):
     """Create a new note for a specific task"""
     try:
         # Verify task exists
-        task = Task.query.get_or_404(task_id)
-        
+        _ = Task.query.get_or_404(task_id)  # Verify task exists
+
         data = request.get_json()
-        if not data or not data.get('content'):
-            return jsonify({'error': 'Note content is required'}), 400
-        
+        if not data or not data.get("content"):
+            return jsonify({"error": "Note content is required"}), 400
+
         note = Note(
-            content=data['content'],
-            entity_type='task',
+            content=data["content"],
+            entity_type="task",
             entity_id=task_id,
-            is_internal=data.get('is_internal', True)
+            is_internal=data.get("is_internal", True),
         )
-        
+
         db.session.add(note)
         db.session.commit()
-        
-        return jsonify({
-            'id': note.id,
-            'content': note.content,
-            'entity_type': note.entity_type,
-            'entity_id': note.entity_id,
-            'is_internal': note.is_internal,
-            'created_at': note.created_at.isoformat(),
-            'entity_name': note.entity_name
-        }), 201
-        
+
+        return (
+            jsonify(
+                {
+                    "id": note.id,
+                    "content": note.content,
+                    "entity_type": note.entity_type,
+                    "entity_id": note.entity_id,
+                    "is_internal": note.is_internal,
+                    "created_at": note.created_at.isoformat(),
+                    "entity_name": note.entity_name,
+                }
+            ),
+            201,
+        )
+
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
