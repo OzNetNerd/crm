@@ -77,6 +77,20 @@ def get_contact_details(contact_id):
         return jsonify({'error': str(e)}), 500
 
 
+@api_bp.route('/companies')
+def get_companies():
+    """Get all companies for form dropdowns"""
+    try:
+        companies = Company.query.order_by(Company.name).all()
+        return jsonify([{
+            'id': company.id,
+            'name': company.name,
+            'industry': company.industry
+        } for company in companies])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @api_bp.route('/companies/<int:company_id>')
 def get_company_details(company_id):
     """Get company details with notes"""
