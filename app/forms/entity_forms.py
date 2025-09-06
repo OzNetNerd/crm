@@ -68,11 +68,10 @@ class OpportunityForm(FlaskForm):
         validators=[DataRequired(), NumberRange(min=1)]
     )
     
-    value = DecimalField(
+    value = IntegerField(
         'Value ($)',
         validators=[Optional(), NumberRange(min=0)],
-        places=2,
-        render_kw={'placeholder': '0.00', 'step': '0.01'}
+        render_kw={'placeholder': '0', 'step': '1'}
     )
     
     probability = IntegerField(
