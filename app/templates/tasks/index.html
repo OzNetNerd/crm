@@ -68,6 +68,20 @@
         'unrelated': true
     },
     
+    shouldShowTask(taskData) {
+        // Priority filter logic: empty array means show all
+        const priorityMatch = this.priorityFilter.length === 0 || this.priorityFilter.includes(taskData.priority);
+        
+        // Entity filter logic: empty array means show all, null entity_type becomes 'unrelated'
+        const taskEntityType = taskData.entity_type || 'unrelated';
+        const entityMatch = this.entityFilter.length === 0 || this.entityFilter.includes(taskEntityType);
+        
+        // Completed task visibility based on showCompleted toggle
+        const completedMatch = taskData.status !== 'complete' || this.showCompleted;
+        
+        return priorityMatch && entityMatch && completedMatch;
+    },
+    
     expandAllItemsInGroup(groupName) {
         this.$dispatch('expand-all-tasks', { group: groupName });
     },
@@ -109,7 +123,8 @@
                 {{ dropdown_multiselect('entityFilter', [
                     {'value': 'company', 'label': 'Companies'},
                     {'value': 'contact', 'label': 'Contacts'},
-                    {'value': 'opportunity', 'label': 'Opportunities'}
+                    {'value': 'opportunity', 'label': 'Opportunities'},
+                    {'value': 'unrelated', 'label': 'General Tasks'}
                 ], 'All Entities') }}
             </div>
         </div>
@@ -123,11 +138,13 @@
             <div class="p-6" x-show="expandedSections['todo']" x-transition>
                 {% for task in tasks %}
                     {% if task.status == 'todo' and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'todo') }}
-                        {% else %}
-                            {{ render_task(task, 'todo') }}
-                        {% endif %}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {% if task.task_type == 'parent' %}
+                                {{ render_task_hierarchy(task, 'todo') }}
+                            {% else %}
+                                {{ render_task(task, 'todo') }}
+                            {% endif %}
+                        </div>
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -141,11 +158,13 @@
             <div class="p-6" x-show="expandedSections['in-progress']" x-transition>
                 {% for task in tasks %}
                     {% if task.status == 'in-progress' and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'in-progress') }}
-                        {% else %}
-                            {{ render_task(task, 'in-progress') }}
-                        {% endif %}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {% if task.task_type == 'parent' %}
+                                {{ render_task_hierarchy(task, 'in-progress') }}
+                            {% else %}
+                                {{ render_task(task, 'in-progress') }}
+                            {% endif %}
+                        </div>
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -159,7 +178,7 @@
             <div class="p-6" x-show="expandedSections['complete']" x-transition>
                 {% for task in tasks %}
                     {% if task.status == 'complete' and task.task_type != 'child' %}
-                        <div class="opacity-60">
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})" class="opacity-60">
                             {% if task.task_type == 'parent' %}
                                 {{ render_task_hierarchy(task, 'complete') }}
                             {% else %}
@@ -181,8 +200,10 @@
             {{ section_group_header('high', 'High Priority', fire_icon_solid("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-red">' + (tasks|selectattr('priority', 'equalto', 'high')|list|length)|string + '</span>', 'red', 'red', 'red', 'text-status-overdue') }}
             <div class="p-6" x-show="expandedSections['high']" x-transition>
                 {% for task in tasks %}
-                    {% if task.priority == 'high' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'high') }}
+                    {% if task.priority == 'high' %}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {{ render_task(task, 'high') }}
+                        </div>
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -195,8 +216,10 @@
             {{ section_group_header('medium', 'Medium Priority', exclamation_triangle_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-yellow">' + (tasks|selectattr('priority', 'equalto', 'medium')|list|length)|string + '</span>', 'yellow', 'yellow', 'yellow', 'text-status-warning') }}
             <div class="p-6" x-show="expandedSections['medium']" x-transition>
                 {% for task in tasks %}
-                    {% if task.priority == 'medium' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'medium') }}
+                    {% if task.priority == 'medium' %}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {{ render_task(task, 'medium') }}
+                        </div>
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -209,8 +232,10 @@
             {{ section_group_header('low', 'Low Priority', clipboard_list_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-green">' + (tasks|selectattr('priority', 'equalto', 'low')|list|length)|string + '</span>', 'green', 'green', 'green', 'text-status-success') }}
             <div class="p-6" x-show="expandedSections['low']" x-transition>
                 {% for task in tasks %}
-                    {% if task.priority == 'low' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'low') }}
+                    {% if task.priority == 'low' %}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {{ render_task(task, 'low') }}
+                        </div>
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -227,9 +252,11 @@
             <div class="p-6" x-show="expandedSections['overdue']" x-transition>
                 {% set overdue_task_list = [] %}
                 {% for task in tasks %}
-                    {% if task.is_overdue and (task.status != 'complete' or showCompleted) %}
+                    {% if task.is_overdue %}
                         {% set _ = overdue_task_list.append(task) %}
-                        {{ render_task(task, 'overdue') }}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {{ render_task(task, 'overdue') }}
+                        </div>
                     {% endif %}
                 {% endfor %}
                 {% if overdue_task_list|length == 0 %}
@@ -244,9 +271,11 @@
             <div class="p-6" x-show="expandedSections['today']" x-transition>
                 {% set today_task_list = [] %}
                 {% for task in tasks %}
-                    {% if task.due_date == today and task.status != 'complete' %}
+                    {% if task.due_date == today %}
                         {% set _ = today_task_list.append(task) %}
-                        {{ render_task(task, 'today') }}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {{ render_task(task, 'today') }}
+                        </div>
                     {% endif %}
                 {% endfor %}
                 {% if today_task_list|length == 0 %}
@@ -261,9 +290,11 @@
             <div class="p-6" x-show="expandedSections['this_week']" x-transition>
                 {% set this_week_task_list = [] %}
                 {% for task in tasks %}
-                    {% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 and (task.status != 'complete' or showCompleted) %}
+                    {% if task.due_date and task.due_date > today and (task.due_date - today).days <= 7 %}
                         {% set _ = this_week_task_list.append(task) %}
-                        {{ render_task(task, 'this_week') }}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {{ render_task(task, 'this_week') }}
+                        </div>
                     {% endif %}
                 {% endfor %}
                 {% if this_week_task_list|length == 0 %}
@@ -278,9 +309,11 @@
             <div class="p-6" x-show="expandedSections['later']" x-transition>
                 {% set later_task_list = [] %}
                 {% for task in tasks %}
-                    {% if task.due_date and (task.due_date - today).days > 7 and (task.status != 'complete' or showCompleted) %}
+                    {% if task.due_date and (task.due_date - today).days > 7 %}
                         {% set _ = later_task_list.append(task) %}
-                        {{ render_task(task, 'later') }}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {{ render_task(task, 'later') }}
+                        </div>
                     {% endif %}
                 {% endfor %}
                 {% if later_task_list|length == 0 %}
@@ -295,9 +328,11 @@
             <div class="p-6" x-show="expandedSections['no_date']" x-transition>
                 {% set no_date_task_list = [] %}
                 {% for task in tasks %}
-                    {% if not task.due_date and (task.status != 'complete' or showCompleted) %}
+                    {% if not task.due_date %}
                         {% set _ = no_date_task_list.append(task) %}
-                        {{ render_task(task, 'no_date') }}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {{ render_task(task, 'no_date') }}
+                        </div>
                     {% endif %}
                 {% endfor %}
                 {% if no_date_task_list|length == 0 %}
@@ -314,8 +349,10 @@
             {{ section_group_header('company', 'Company Tasks', building_office_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue">' + (tasks|selectattr('entity_type', 'equalto', 'company')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'company')|list|length)|string + '</span>', 'blue', 'blue', 'blue', 'text-status-info') }}
             <div class="p-6" x-show="expandedSections['company']" x-transition>
                 {% for task in tasks %}
-                    {% if task.entity_type == 'company' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'company') }}
+                    {% if task.entity_type == 'company' %}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {{ render_task(task, 'company') }}
+                        </div>
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -328,8 +365,10 @@
             {{ section_group_header('contact', 'Contact Tasks', user_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-green">' + (tasks|selectattr('entity_type', 'equalto', 'contact')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'contact')|list|length)|string + '</span>', 'green', 'green', 'green', 'text-status-success') }}
             <div class="p-6" x-show="expandedSections['contact']" x-transition>
                 {% for task in tasks %}
-                    {% if task.entity_type == 'contact' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'contact') }}
+                    {% if task.entity_type == 'contact' %}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {{ render_task(task, 'contact') }}
+                        </div>
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -342,8 +381,10 @@
             {{ section_group_header('opportunity', 'Opportunity Tasks', currency_dollar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-yellow">' + (tasks|selectattr('entity_type', 'equalto', 'opportunity')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'equalto', 'opportunity')|list|length)|string + '</span>', 'yellow', 'yellow', 'yellow', 'text-status-warning') }}
             <div class="p-6" x-show="expandedSections['opportunity']" x-transition>
                 {% for task in tasks %}
-                    {% if task.entity_type == 'opportunity' and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'opportunity') }}
+                    {% if task.entity_type == 'opportunity' %}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {{ render_task(task, 'opportunity') }}
+                        </div>
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -356,8 +397,10 @@
             {{ section_group_header('unrelated', 'General Tasks', clipboard_list_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray">' + (tasks|selectattr('entity_type', 'none')|selectattr('status', 'ne', 'complete')|list|length if not showCompleted else tasks|selectattr('entity_type', 'none')|list|length)|string + '</span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
             <div class="p-6" x-show="expandedSections['unrelated']" x-transition>
                 {% for task in tasks %}
-                    {% if not task.entity_type and (task.status != 'complete' or showCompleted) %}
-                        {{ render_task(task, 'unrelated') }}
+                    {% if not task.entity_type %}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else 'null' }}, status: '{{ task.status }}'})">
+                            {{ render_task(task, 'unrelated') }}
+                        </div>
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
