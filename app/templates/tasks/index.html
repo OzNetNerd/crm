@@ -68,7 +68,7 @@
     groupBy: 'status',
     sortBy: 'due_date',
     sortDirection: 'asc',
-    showCompleted: false,
+    showCompleted: {{ 'true' if show_completed else 'false' }},
     priorityFilter: [],
     entityFilter: [],
     tasks: window.tasksData || [],
@@ -210,7 +210,10 @@
                 ]) }}
                 
                 <label class="flex items-center">
-                    <input type="checkbox" x-model="showCompleted" class="mr-2">
+                    <input type="checkbox" 
+                           {% if show_completed %}checked{% endif %}
+                           @change="window.location.href = showCompleted ? '/tasks/' : '/tasks/?show_completed=true'"
+                           class="mr-2">
                     <span class="text-secondary-dark">Show Completed</span>
                 </label>
 
@@ -960,7 +963,13 @@
 {% endblock %}
 
 {% block modals %}
-{% include "components/modals.html" %}
+{% include "components/modals/confirmation.html" %}
+{% include "components/modals/task/task_detail.html" %}
+{% include "components/modals/task/task_new.html" %}
+{% include "components/modals/contact/contact_detail.html" %}
+{% include "components/modals/company/company_detail.html" %}
+{% include "components/modals/opportunity/opportunity_detail.html" %}
+{% include "components/modals/opportunity/opportunity_new.html" %}
 {% endblock %}
 
 {% block scripts %}

@@ -1,0 +1,91 @@
+{% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
+{% from "components/modals/base/notes_section.html" import notes_section %}
+{% from "components/modals/base/crud_operations.html" import crud_operations_js, notes_operations_js %}
+
+<div x-data="{
+        show: false,
+        contactId: null,
+        loading: false,
+        saving: false,
+        contact: {
+            name: '',
+            role: '',
+            email: '',
+            phone: '',
+            company_id: '',
+            opportunities: []
+        },
+        notes: [],
+        newNote: '',
+        
+        {{ crud_operations_js('contact', '/api/contacts') }},
+        {{ notes_operations_js('contact') }},
+        
+        async loadContact(id) {
+            await this.loadContactDetails(id);
+            this.show = true;
+        }
+     }" 
+     @open-contact-detail-modal.window="loadContact($event.detail.contactId)"
+     @close-modal.window="show = false">
+
+    {% call base_modal('contact-detail-modal') %}
+        {{ modal_header('Contact Details') }}
+        
+        <div x-show="loading" class="text-center py-4">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+        
+        <div x-show="!loading && contact" class="space-y-4">
+            <div>
+                <label class="text-form-label">Name</label>
+                <input type="text" x-model="contact.name" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Contact name">
+            </div>
+            
+            <div>
+                <label class="text-form-label">Role/Title</label>
+                <input type="text" x-model="contact.role" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Job title or role">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-form-label">Email</label>
+                    <input type="email" x-model="contact.email" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="email@example.com">
+                </div>
+                
+                <div>
+                    <label class="text-form-label">Phone</label>
+                    <input type="tel" x-model="contact.phone" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Phone number">
+                </div>
+            </div>
+            
+            <!-- Related Opportunities -->
+            <div x-show="contact.opportunities && contact.opportunities.length > 0">
+                <label class="text-form-label mb-2 block">Related Opportunities</label>
+                <div class="space-y-2 max-h-32 overflow-y-auto">
+                    <template x-for="opportunity in contact.opportunities" :key="opportunity.id">
+                        <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900" x-text="opportunity.name"></p>
+                                <p class="text-xs text-gray-500" x-text="`$${opportunity.value?.toLocaleString()} • ${opportunity.stage}`"></p>
+                            </div>
+                            <span class="text-xs text-gray-400" x-text="new Date(opportunity.expected_close_date).toLocaleDateString()"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            
+            {{ notes_section('contact') }}
+        </div>
+        
+        {{ modal_footer(save_action="saveContactDetails()", save_text="Save Changes") }}
+    {% endcall %}
+</div>

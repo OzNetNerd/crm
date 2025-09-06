@@ -1,0 +1,128 @@
+{% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
+
+<div x-data="{
+        show: false,
+        loading: false,
+        saving: false,
+        opportunity: {
+            name: '',
+            company_id: '',
+            value: '',
+            probability: 0,
+            expected_close_date: '',
+            stage: 'prospect'
+        },
+        companies: [],
+        
+        async loadCompanies() {
+            if (this.companies.length === 0) {
+                try {
+                    const response = await fetch('/api/companies');
+                    if (response.ok) {
+                        this.companies = await response.json();
+                    }
+                } catch (error) {
+                    console.error('Error loading companies:', error);
+                }
+            }
+        },
+        
+        async saveNewOpportunity() {
+            if (!this.opportunity.name.trim() || !this.opportunity.company_id) return;
+            this.saving = true;
+            
+            try {
+                const response = await fetch('/api/opportunities', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.opportunity)
+                });
+                
+                if (response.ok) {
+                    this.resetForm();
+                    this.show = false;
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error('Error creating opportunity:', error);
+            } finally {
+                this.saving = false;
+            }
+        },
+        
+        resetForm() {
+            this.opportunity = {
+                name: '',
+                company_id: '',
+                value: '',
+                probability: 0,
+                expected_close_date: '',
+                stage: 'prospect'
+            };
+        }
+     }" 
+     @open-new-opportunity-modal.window="show = true; loadCompanies(); resetForm()"
+     @close-modal.window="show = false">
+
+    {% call base_modal('new-opportunity-modal') %}
+        {{ modal_header('Create New Opportunity') }}
+        
+        <div class="space-y-4">
+            <div>
+                <label class="text-form-label">Opportunity Name*</label>
+                <input type="text" x-model="opportunity.name" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Enter opportunity name" required>
+            </div>
+            
+            <div>
+                <label class="text-form-label">Company*</label>
+                <select x-model="opportunity.company_id" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required>
+                    <option value="">Select a company</option>
+                    <template x-for="company in companies" :key="company.id">
+                        <option :value="company.id" x-text="company.name"></option>
+                    </template>
+                </select>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-form-label">Value</label>
+                    <input type="number" x-model="opportunity.value" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="0" min="0" step="0.01">
+                </div>
+                
+                <div>
+                    <label class="text-form-label">Probability (%)</label>
+                    <input type="number" x-model="opportunity.probability" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="0" min="0" max="100">
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-form-label">Stage</label>
+                    <select x-model="opportunity.stage" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="prospect">Prospect</option>
+                        <option value="qualified">Qualified</option>
+                        <option value="proposal">Proposal</option>
+                        <option value="negotiation">Negotiation</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="text-form-label">Expected Close Date</label>
+                    <input type="date" x-model="opportunity.expected_close_date" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+        </div>
+        
+        {{ modal_footer(save_action="saveNewOpportunity()", save_text="Create Opportunity") }}
+    {% endcall %}
+</div>

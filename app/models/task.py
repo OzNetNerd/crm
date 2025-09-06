@@ -151,16 +151,19 @@ class Task(db.Model):
     @property
     def completion_percentage(self):
         """For parent tasks, calculate completion percentage based on child tasks"""
-        if self.task_type != "parent" or not self.child_tasks:
+        if self.task_type != "parent":
             return 100 if self.status == "complete" else 0
 
-        if not self.child_tasks:
+        # Force fresh query to avoid stale relationship data
+        child_tasks = Task.query.filter(Task.parent_task_id == self.id).all()
+        
+        if not child_tasks:
             return 0
 
         completed_count = sum(
-            1 for child in self.child_tasks if child.status == "complete"
+            1 for child in child_tasks if child.status == "complete"
         )
-        return int((completed_count / len(self.child_tasks)) * 100)
+        return int((completed_count / len(child_tasks)) * 100)
 
     @property
     def next_available_child(self):
