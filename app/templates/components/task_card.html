@@ -1,9 +1,11 @@
 {% from "components/icons.html" import check_icon, pencil_icon, document_icon %}
 {% from "components/list_section.html" import status_badge %}
 {% from "components/metadata_display.html" import standard_card_metadata, format_date_with_status %}
-{% macro render_task(task, group_key='', current_group_value='') %}
+{% macro render_task(task, group_key='', current_group_value='', indent_level=0) %}
 <div class="task-card card-padded" 
      data-task-id="{{ task.id }}"
+     style="margin-left: {{ indent_level * 20 }}px;"
+     {% if task.task_type == 'child' %}class="task-card card-padded border-l-4 border-l-blue-200"{% endif %}
      @click="expanded = !expanded; if (expanded) loadNotes()"
      @expand-all-tasks.window="if ($event.detail.group === '{{ group_key }}' && !expanded) { expanded = true; loadNotes(); }"
      @collapse-all-tasks.window="if ($event.detail.group === '{{ group_key }}' && expanded) { expanded = false; }"
@@ -145,6 +147,24 @@
             {{ status_badge(task.priority, priority_color) }}
             <p class="text-label-primary">{{ task.description }}</p>
             <div class="flex items-center space-x-2 flex-shrink-0">
+                <!-- Task type badge -->
+                {% if task.task_type != 'single' %}
+                    {% set badge_color = 'blue' if task.task_type == 'parent' else 'green' %}
+                    <span class="badge-standard badge-{{ badge_color }}">{{ task.task_type_badge }}</span>
+                {% endif %}
+                
+                <!-- Progress badge for parent tasks -->
+                {% if task.task_type == 'parent' %}
+                    <span class="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                        {{ task.completion_percentage }}% complete
+                    </span>
+                {% endif %}
+                
+                <!-- Dependency indicator for child tasks -->
+                {% if task.task_type == 'child' and not task.can_start %}
+                    <span class="text-badge-warning">WAITING</span>
+                {% endif %}
+                
                 {% if task.next_step_type %}
                     <span class="text-badge-tag">{{ task.next_step_type }}</span>
                 {% endif %}
@@ -304,4 +324,16 @@
         </div>
     </div>
 </div>
+{% endmacro %}
+
+{% macro render_task_hierarchy(task, group_key='', current_group_value='') %}
+    <!-- Render parent task -->
+    {{ render_task(task, group_key, current_group_value, 0) }}
+    
+    <!-- Render child tasks if this is a parent -->
+    {% if task.task_type == 'parent' and task.child_tasks %}
+        {% for child in task.child_tasks %}
+            {{ render_task(child, group_key, current_group_value, 1) }}
+        {% endfor %}
+    {% endif %}
 {% endmacro %}
