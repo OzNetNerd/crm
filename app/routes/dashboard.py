@@ -28,11 +28,11 @@ def index():
     # Pipeline overview
     opportunities = Opportunity.query.all()
     pipeline_stats = {
-        'prospect': sum(float(opp.value or 0) for opp in opportunities if opp.stage == 'prospect'),
-        'qualified': sum(float(opp.value or 0) for opp in opportunities if opp.stage == 'qualified'),
-        'proposal': sum(float(opp.value or 0) for opp in opportunities if opp.stage == 'proposal'),
-        'negotiation': sum(float(opp.value or 0) for opp in opportunities if opp.stage == 'negotiation'),
-        'total_value': sum(float(opp.value or 0) for opp in opportunities),
+        'prospect': sum(opp.value or 0 for opp in opportunities if opp.stage == 'prospect'),
+        'qualified': sum(opp.value or 0 for opp in opportunities if opp.stage == 'qualified'),
+        'proposal': sum(opp.value or 0 for opp in opportunities if opp.stage == 'proposal'),
+        'negotiation': sum(opp.value or 0 for opp in opportunities if opp.stage == 'negotiation'),
+        'total_value': sum(opp.value or 0 for opp in opportunities),
         'total_count': len(opportunities)
     }
     

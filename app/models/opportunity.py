@@ -8,7 +8,7 @@ class Opportunity(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
-    value = db.Column(db.Numeric(10, 2))  # Store monetary value in dollars
+    value = db.Column(db.Integer)  # Store monetary value in whole dollars
     probability = db.Column(db.Integer, default=0)  # 0-100 percentage
     expected_close_date = db.Column(db.Date)
     stage = db.Column(db.String(50), default='prospect')  # prospect/qualified/proposal/negotiation/closed

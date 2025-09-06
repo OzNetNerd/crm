@@ -62,7 +62,7 @@ def get_contact_details(contact_id):
             'opportunities': [{
                 'id': opp.id,
                 'name': opp.name,
-                'value': float(opp.value) if opp.value else None,
+                'value': opp.value,
                 'stage': opp.stage
             } for opp in contact.opportunities],
             'notes': [{
@@ -101,7 +101,7 @@ def get_company_details(company_id):
             'opportunities': [{
                 'id': opp.id,
                 'name': opp.name,
-                'value': float(opp.value) if opp.value else None,
+                'value': opp.value,
                 'stage': opp.stage,
                 'probability': opp.probability
             } for opp in company.opportunities],
