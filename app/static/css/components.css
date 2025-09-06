@@ -17,6 +17,10 @@
     font-weight: 600; /* font-semibold */
     color: #059669; /* text-green-600 */
 }
+.text-deal-amount-lg {
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 600; /* font-semibold */
+}
 .text-label-dark { 
     font-size: 0.875rem; /* text-sm */
     font-weight: 500; /* font-medium */
@@ -115,7 +119,9 @@
 .text-nav-link { @apply text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium; }
 
 /* Status colors with semantic meaning */
-.text-success { @apply text-green-600; }
+.text-success { 
+    color: #059669; /* text-green-600 */
+}
 .text-success-hover { 
     color: #16a34a; /* text-green-600 */
 }
@@ -220,13 +226,6 @@
     color: #dc2626; /* text-red-600 */
     font-size: 0.75rem; /* text-xs */
     font-weight: 500; /* font-medium */
-}
-.text-badge-tag { 
-    background-color: #f3f4f6; /* bg-gray-100 */
-    color: #374151; /* text-gray-700 */
-    padding: 0.25rem 0.5rem; /* px-2 py-1 */
-    font-size: 0.75rem; /* text-xs */
-    border-radius: 0.25rem; /* rounded */
 }
 
 /* Standardized badges */
