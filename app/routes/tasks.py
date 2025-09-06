@@ -157,11 +157,16 @@ def new_multi():
         db.session.commit()
         return jsonify({'status': 'success', 'task_id': parent_task.id})
     
+    # Convert objects to dictionaries for JSON serialization in template
+    companies_dict = [{'id': c.id, 'name': c.name} for c in companies]
+    contacts_dict = [{'id': c.id, 'name': c.name, 'company_id': c.company_id} for c in contacts]
+    opportunities_dict = [{'id': o.id, 'name': o.name, 'company_id': o.company_id} for o in opportunities]
+    
     return render_template('tasks/multi_new.html', 
                          form=form,
-                         companies=companies, 
-                         contacts=contacts, 
-                         opportunities=opportunities)
+                         companies=companies_dict, 
+                         contacts=contacts_dict, 
+                         opportunities=opportunities_dict)
 
 
 @tasks_bp.route('/parent-tasks', methods=['GET'])
