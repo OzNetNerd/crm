@@ -569,54 +569,53 @@ function formatDate(isoString) {
     <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-4 text-center">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="show = false"></div>
         
-        <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all max-w-4xl w-full mx-4">
+        <div class="inline-block bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-[90vw] h-[85vh] max-w-7xl mx-4 flex flex-col">
             <!-- Header -->
-            <div class="bg-white px-6 pt-6 pb-4 border-b border-gray-200">
-                <div class="flex items-start justify-between mb-4">
-                    <div>
-                        <h3 class="text-title-primary leading-6">Task Details</h3>
-                        <p class="text-metadata" x-show="task" x-text="task?.company_name ? `${task.company_name}${task.opportunity_name ? ' • ' + task.opportunity_name : ''}` : 'No related entity'"></p>
+            <div class="bg-white px-6 pt-6 pb-4">
+                <div class="flex items-start justify-between mb-6">
+                    <div class="flex-1">
+                        <h3 class="text-title-primary leading-6" x-show="task" x-text="task?.company_name ? `${task.company_name}${task.opportunity_name ? ' • ' + task.opportunity_name : ''}` : 'Task Details'"></h3>
+                        
+                        <!-- Tab Navigation -->
+                        <div class="mt-4">
+                            <nav class="flex space-x-8" aria-label="Tabs">
+                                <button @click="switchTab('task')" 
+                                        :class="activeTab === 'task' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                                    Task Details
+                                </button>
+                                <button @click="switchTab('company')" 
+                                        x-show="task?.company_name"
+                                        :class="activeTab === 'company' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                                    Company
+                                </button>
+                                <button @click="switchTab('opportunity')" 
+                                        x-show="task?.opportunity_name"
+                                        :class="activeTab === 'opportunity' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                                    Opportunity
+                                </button>
+                                <button @click="switchTab('stakeholders')" 
+                                        x-show="task?.company_name || task?.opportunity_name"
+                                        :class="activeTab === 'stakeholders' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                                    Stakeholders
+                                </button>
+                            </nav>
+                        </div>
                     </div>
-                    <button @click="show = false" class="text-gray-400 hover:text-gray-600">
+                    <button @click="show = false" class="text-gray-400 hover:text-gray-600 ml-4">
                         <span class="sr-only">Close</span>
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
-                
-                <!-- Tab Navigation -->
-                <div class="border-b border-gray-200">
-                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                        <button @click="switchTab('task')" 
-                                :class="activeTab === 'task' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-                            Task Details
-                        </button>
-                        <button @click="switchTab('company')" 
-                                x-show="task?.company_name"
-                                :class="activeTab === 'company' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-                            Company
-                        </button>
-                        <button @click="switchTab('opportunity')" 
-                                x-show="task?.opportunity_name"
-                                :class="activeTab === 'opportunity' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-                            Opportunity
-                        </button>
-                        <button @click="switchTab('stakeholders')" 
-                                x-show="task?.company_name || task?.opportunity_name"
-                                :class="activeTab === 'stakeholders' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-                            Stakeholders
-                        </button>
-                    </nav>
-                </div>
             </div>
             
             <!-- Content -->
-            <div class="bg-white px-6 py-4" x-show="!loading">
+            <div class="bg-white px-6 py-4 flex-1 overflow-y-auto" x-show="!loading">
                 <!-- Task Details Tab -->
                 <div x-show="activeTab === 'task' && task" class="space-y-6">
                     <!-- Task Information Section -->
@@ -783,11 +782,11 @@ function formatDate(isoString) {
             </div>
             
             <!-- Footer -->
-            <div class="bg-gray-50 px-6 py-3 sm:flex sm:flex-row-reverse">
+            <div class="bg-gray-50 px-6 py-3 sm:flex sm:flex-row-reverse flex-shrink-0">
                 <button @click="saveTaskDetails()"
                         :disabled="saving || !hasChanges"
                         class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium sm:ml-3 sm:w-auto sm:text-sm transition-all duration-200"
-                        :class="hasChanges ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                        :class="hasChanges ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
                     <span x-show="!saving">Save Changes</span>
                     <span x-show="saving">Saving...</span>
                 </button>

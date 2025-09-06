@@ -1,4 +1,5 @@
 from datetime import datetime
+from sqlalchemy import func
 from . import db
 
 
@@ -18,14 +19,11 @@ class Task(db.Model):
     entity_type = db.Column(db.String(50))  # 'company', 'contact', 'opportunity'
     entity_id = db.Column(db.Integer)
     
-    # Parent/child task relationships
-    task_type = db.Column(db.String(20), default='standalone')  # standalone/parent/child
+    # Multi Task support
+    task_type = db.Column(db.String(20), default='single')  # 'single', 'parent', 'child'
     parent_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'))
-    sequence_order = db.Column(db.Integer)
-    dependency_type = db.Column(db.String(20))  # sequential/parallel
-    
-    # Relationships
-    parent_task = db.relationship('Task', remote_side=[id], backref='child_tasks')
+    sequence_order = db.Column(db.Integer, default=0)  # For ordering child tasks
+    dependency_type = db.Column(db.String(20), default='parallel')  # 'sequential', 'parallel'
     
     @property
     def is_overdue(self):
@@ -51,6 +49,10 @@ class Task(db.Model):
             return None
         
         return entity.name if entity else None
+    
+    # Parent-child task relationships
+    parent_task = db.relationship('Task', remote_side='Task.id', back_populates='child_tasks')
+    child_tasks = db.relationship('Task', back_populates='parent_task', order_by='Task.sequence_order', lazy='select')
     
     @property
     def opportunity_value(self):
@@ -95,5 +97,56 @@ class Task(db.Model):
             return opportunity.stage if opportunity else None
         return None
     
+    @property
+    def task_type_badge(self):
+        """Get appropriate badge text for task type"""
+        if self.task_type == 'parent':
+            return 'Parent'
+        elif self.task_type == 'child':
+            return 'Child'
+        return 'Single'
+    
+    @property
+    def can_start(self):
+        """Check if task can be started based on dependencies"""
+        if self.task_type != 'child' or self.dependency_type != 'sequential':
+            return True
+        
+        # For sequential child tasks, check if previous tasks are complete
+        if not self.parent_task:
+            return True
+        
+        # Get all child tasks with lower sequence_order
+        previous_tasks = Task.query.filter(
+            Task.parent_task_id == self.parent_task_id,
+            Task.sequence_order < self.sequence_order
+        ).all()
+        
+        # All previous tasks must be complete
+        return all(task.status == 'complete' for task in previous_tasks)
+    
+    @property
+    def completion_percentage(self):
+        """For parent tasks, calculate completion percentage based on child tasks"""
+        if self.task_type != 'parent' or not self.child_tasks:
+            return 100 if self.status == 'complete' else 0
+        
+        if not self.child_tasks:
+            return 0
+        
+        completed_count = sum(1 for child in self.child_tasks if child.status == 'complete')
+        return int((completed_count / len(self.child_tasks)) * 100)
+    
+    @property
+    def next_available_child(self):
+        """For parent tasks, get the next child that can be started"""
+        if self.task_type != 'parent':
+            return None
+        
+        for child in self.child_tasks:
+            if child.status != 'complete' and child.can_start:
+                return child
+        return None
+    
     def __repr__(self):
-        return f'<Task {self.description[:50]}>'
+        return f'<Task {self.task_type}: {self.description[:50]}>'

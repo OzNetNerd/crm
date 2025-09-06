@@ -133,7 +133,7 @@ STAGES = ['prospect', 'qualified', 'proposal', 'negotiation', 'closed']
 PRIORITIES = ['high', 'medium', 'low']
 STATUSES = ['todo', 'in-progress', 'complete']
 NEXT_STEP_TYPES = ['meeting', 'demo', 'call', 'email']
-TASK_TYPES = ['standalone', 'parent', 'child']
+TASK_TYPES = ['single', 'parent', 'child']
 DEPENDENCY_TYPES = ['sequential', 'parallel']
 
 def create_companies():
@@ -235,7 +235,7 @@ def create_tasks(companies, contacts, opportunities):
     for opportunity in opportunities:
         entities.append(('opportunity', opportunity.id, opportunity.name))
     
-    # Create standalone tasks (about 60% of total)
+    # Create single tasks (about 60% of total)
     for i in range(30):
         entity_type, entity_id, entity_name = random.choice(entities)
         
@@ -275,7 +275,7 @@ def create_tasks(companies, contacts, opportunities):
             next_step_type=random.choice(NEXT_STEP_TYPES),
             entity_type=entity_type,
             entity_id=entity_id,
-            task_type='standalone',
+            task_type='single',
             created_at=datetime.now() - timedelta(days=random.randint(1, 60))
         )
         
@@ -365,7 +365,7 @@ def create_tasks(companies, contacts, opportunities):
             db.session.add(child_task)
     
     db.session.commit()
-    print(f"Created {len(tasks)} tasks (30 standalone + 8 parent tasks with children)")
+    print(f"Created {len(tasks)} tasks (30 single + 8 parent tasks with children)")
     return tasks
 
 def create_notes(companies, contacts, opportunities, tasks):
