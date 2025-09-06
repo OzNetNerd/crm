@@ -1,0 +1,142 @@
+{% extends "base/layout.html" %}
+{% from "components/page_template.html" import page_layout %}
+{% from "components/ui_elements.html" import action_button %}
+
+{% block title %}{{ task.description }} - Tasks - CRM{% endblock %}
+
+{% block content %}
+
+{% set task_buttons = [
+    {
+        'label': 'Edit Task',
+        'onclick': 'openTaskEditModal(' + task.id|string + ')',
+        'color': 'blue',
+        'icon': ''
+    },
+    {
+        'label': 'All Tasks',
+        'onclick': 'window.location.href="/tasks"',
+        'color': 'gray',
+        'icon': ''
+    }
+] %}
+
+{% call page_layout(task.description, "Task Details", buttons=task_buttons) %}
+
+<div class="max-w-4xl mx-auto">
+    <!-- Task Overview Card -->
+    <div class="card p-6 mb-6">
+        <div class="flex items-start justify-between mb-6">
+            <div>
+                <h2 class="text-title-primary mb-2">{{ task.description }}</h2>
+                <div class="flex items-center space-x-4 text-secondary">
+                    {% if task.due_date %}
+                        <span class="font-medium">Due: {{ task.due_date.strftime('%B %d, %Y') }}</span>
+                    {% endif %}
+                    {% if task.entity_type and task.entity_id %}
+                        <span>Related to: {{ task.entity_type|title }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                {% set priority_color = 'red' if task.priority == 'high' else
+                                      'yellow' if task.priority == 'medium' else
+                                      'green' %}
+                <span class="badge-standard badge-{{ priority_color }}">{{ task.priority|title }} Priority</span>
+                
+                {% set status_color = 'green' if task.status == 'completed' else
+                                    'blue' if task.status == 'in_progress' else
+                                    'gray' %}
+                <span class="badge-standard badge-{{ status_color }}">{{ task.status|title }}</span>
+            </div>
+        </div>
+
+        <!-- Task Details Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-lg font-semibold mb-3">Task Information</h3>
+                <dl class="space-y-2">
+                    <div>
+                        <dt class="text-label-secondary">Priority</dt>
+                        <dd class="text-label-primary">{{ task.priority|title }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-label-secondary">Status</dt>
+                        <dd class="text-label-primary">{{ task.status|title }}</dd>
+                    </div>
+                    {% if task.due_date %}
+                    <div>
+                        <dt class="text-label-secondary">Due Date</dt>
+                        <dd class="text-label-primary">{{ task.due_date.strftime('%B %d, %Y') }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if task.next_step_type %}
+                    <div>
+                        <dt class="text-label-secondary">Next Step Type</dt>
+                        <dd class="text-label-primary">{{ task.next_step_type }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-semibold mb-3">Task Type</h3>
+                <dl class="space-y-2">
+                    <div>
+                        <dt class="text-label-secondary">Type</dt>
+                        <dd class="text-label-primary">{{ task.task_type|title }}</dd>
+                    </div>
+                    {% if task.task_type == 'parent' %}
+                    <div>
+                        <dt class="text-label-secondary">Completion</dt>
+                        <dd class="text-label-primary">{{ task.completion_percentage }}%</dd>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <dt class="text-label-secondary">Created</dt>
+                        <dd class="text-label-primary">{{ task.created_at.strftime('%B %d, %Y at %I:%M %p') }}</dd>
+                    </div>
+                    {% if task.updated_at and task.updated_at != task.created_at %}
+                    <div>
+                        <dt class="text-label-secondary">Last Updated</dt>
+                        <dd class="text-label-primary">{{ task.updated_at.strftime('%B %d, %Y at %I:%M %p') }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card p-6">
+        <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+        <div class="flex space-x-3">
+            {% if task.status != 'completed' %}
+            <button onclick="completeTask({{ task.id }})" 
+                    class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors duration-200">
+                Mark Complete
+            </button>
+            {% endif %}
+            <button onclick="deleteTask({{ task.id }})" 
+                    class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors duration-200">
+                Delete Task
+            </button>
+            <button onclick="window.history.back()" 
+                    class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors duration-200">
+                Go Back
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endcall %}
+
+<script>
+function openTaskEditModal(taskId) {
+    // TODO: Implement task edit modal
+    alert('Task editing modal not yet implemented. Use dashboard for now.');
+}
+</script>
+
+{% endblock %}

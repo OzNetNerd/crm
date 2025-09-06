@@ -255,6 +255,12 @@ window.rescheduleTask = function(taskId, days) {
     });
 };
 
+window.editTask = function(taskId) {
+    // For now, redirect to the task detail page for editing
+    // TODO: Implement inline editing or modal editing
+    window.location.href = `/tasks/${taskId}`;
+};
+
 window.deleteTask = function(taskId) {
     window.showConfirmationModal({
         title: 'Delete Task',
