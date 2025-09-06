@@ -414,12 +414,7 @@
 /* Alpine.js Cloak */
 /* Hide elements with x-cloak until Alpine.js is initialized */
 [x-cloak] { 
-    display: none !important; 
-}
-
-/* Hide initial text once Alpine.js is ready */
-[x-data] .initial-text {
-    display: none;
+    display: none !important;
 }
 
 /* Card Components */
