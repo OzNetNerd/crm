@@ -137,17 +137,21 @@
     <button type="button" 
             class="select-custom {{ classes }}" 
             @click="open = !open"
-            x-init="if (!{{ model }} || {{ model }} === '') { {{ model }} = '{{ options[0].value if options[0] is mapping else options[0] }}' }">
-        {% for option in options %}
-        {% if option is mapping %}
-        <span x-show="{{ model }} === '{{ option.value }}'">{{ option.label }}</span>
-        {% else %}
-        <span x-show="{{ model }} === '{{ option }}'">{{ option|title }}</span>
-        {% endif %}
-        {% endfor %}
+            x-init="if (typeof {{ model }} === 'undefined' || {{ model }} === null) { {{ model }} = '{{ options[0].value if options[0] is mapping else options[0] }}' }">
+        <span x-text="
+                  {% for option in options %}
+                  {% if option is mapping %}
+                  {{ model }} === '{{ option.value }}' ? '{{ option.label }}' :
+                  {% else %}
+                  {{ model }} === '{{ option }}' ? '{{ option|title }}' :
+                  {% endif %}
+                  {% endfor %}
+                  '{{ options[0].label if options[0] is mapping else options[0]|title }}'
+              ">{{ options[0].label if options[0] is mapping else options[0]|title }}</span>
     </button>
     
     <div x-show="open" 
+         x-cloak
          x-transition:enter="transition ease-out duration-100"
          x-transition:enter-start="transform opacity-0 scale-95 -translate-x-1/2"
          x-transition:enter-end="transform opacity-100 scale-100 -translate-x-1/2"
@@ -183,22 +187,22 @@
   {{ dropdown_multiselect('companyFilter', companies, 'All Companies', with_search=true) }}
 #}
 {% macro dropdown_multiselect(model, options, placeholder='Select...', with_search=false, classes='px-3 py-2 border border-gray-300 rounded-md text-sm') %}
-<div class="multiselect-custom" x-data="{ open: false, searchTerm: '' }" @click.away="open = false">
+<div class="multiselect-custom" 
+     x-data="{ 
+         open: false, 
+         searchTerm: '',
+         init() {
+             // Ensure model is initialized as an array
+             if (!{{ model }}) {
+                 {{ model }} = [];
+             }
+         }
+     }" 
+     @click.away="open = false">
     <button type="button" 
             class="multiselect-button {{ classes }}" 
             @click="open = !open">
-        <!-- Initial fallback text that shows before Alpine.js initializes -->
-        <span class="initial-text">{{ placeholder }}</span>
-        <!-- Alpine.js controlled content -->
-        <span x-show="{{ model }}.length === 0" x-cloak>{{ placeholder }}</span>
-        <span x-show="{{ model }}.length === 1" x-cloak>
-            {% for option in options %}
-            <span x-show="{{ model }}.includes('{{ option.value if option is mapping else option }}')" x-cloak>
-                {{ option.label if option is mapping else option }}
-            </span>
-            {% endfor %}
-        </span>
-        <span x-show="{{ model }}.length > 1" x-text="{{ model }}.length + ' selected'" x-cloak></span>
+        <span x-text="{{ model }}.length === 0 ? '{{ placeholder }}' : {{ model }}.length + ' selected'">{{ placeholder }}</span>
     </button>
     
     <div x-show="open" 
@@ -209,8 +213,7 @@
          x-transition:leave="transition ease-in duration-75"
          x-transition:leave-start="transform opacity-100 scale-100 -translate-x-1/2"
          x-transition:leave-end="transform opacity-0 scale-95 -translate-x-1/2"
-         class="multiselect-dropdown"
-         style="display: none">
+         class="multiselect-dropdown">
         
         <div class="multiselect-header">
             {% if with_search %}
@@ -222,7 +225,7 @@
             {% endif %}
             <div class="multiselect-controls">
                 <span class="multiselect-control-btn" 
-                      @click="{{ model }} = ['high', 'medium', 'low']">Select All</span>
+                      @click="{{ model }} = [{% for option in options %}'{{ option.value if option is mapping else option }}'{% if not loop.last %}, {% endif %}{% endfor %}]">Select All</span>
                 <span class="multiselect-control-btn" 
                       @click="{{ model }} = []">Deselect All</span>
             </div>
