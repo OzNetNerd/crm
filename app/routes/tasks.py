@@ -10,7 +10,14 @@ tasks_bp = Blueprint('tasks', __name__)
 def index():
     tasks = Task.query.order_by(Task.due_date.asc()).all()
     today = date.today()
-    return render_template('tasks/index.html', tasks=tasks, today=today)
+    
+    # Serialize objects for JSON use in templates
+    companies_data = [{'id': c.id, 'name': c.name} for c in Company.query.order_by(Company.name).all()]
+    contacts_data = [{'id': c.id, 'name': c.name} for c in Contact.query.order_by(Contact.name).all()]
+    opportunities_data = [{'id': o.id, 'name': o.name} for o in Opportunity.query.order_by(Opportunity.name).all()]
+    
+    return render_template('tasks/index.html', tasks=tasks, today=today,
+                         companies=companies_data, contacts=contacts_data, opportunities=opportunities_data)
 
 
 @tasks_bp.route('/<int:task_id>')

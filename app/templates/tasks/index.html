@@ -40,12 +40,6 @@
         'onclick': 'openNewTaskModal()',
         'color': 'blue',
         'icon': ''
-    },
-    {
-        'label': 'New Multi Task',
-        'onclick': 'window.location.href="/tasks/multi/new"',
-        'color': 'green',
-        'icon': ''
     }
 ] %}
 
@@ -384,8 +378,13 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script>
+// Make entity data available globally for the modal
+window.companiesData = {{ companies | tojson }};
+window.contactsData = {{ contacts | tojson }};
+window.opportunitiesData = {{ opportunities | tojson }};
+
 function openNewTaskModal() {
-    console.log('Opening new task modal');
+    window.dispatchEvent(new CustomEvent('open-new-task-modal'));
 }
 </script>
 {% endblock %}
