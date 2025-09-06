@@ -6,7 +6,7 @@ find_free_port() {
     local max_attempts=10
     
     for ((port=start_port; port<start_port+max_attempts; port++)); do
-        if ! nc -z localhost $port 2>/dev/null; then
+        if ! timeout 1 nc -z localhost $port 2>/dev/null; then
             echo $port
             return 0
         fi
