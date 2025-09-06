@@ -414,14 +414,7 @@
 /* Alpine.js Cloak */
 /* Hide elements with x-cloak until Alpine.js is initialized */
 [x-cloak] { 
-    visibility: hidden !important;
-}
-
-/* Remove conflicting rule that causes flash - let Alpine.js handle x-cloak naturally */
-
-/* Ensure smooth transition for multiselect buttons */
-.multiselect-button [x-cloak] {
-    transition: none;
+    display: none !important;
 }
 
 /* Card Components */

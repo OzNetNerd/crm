@@ -137,6 +137,7 @@
     <button type="button" 
             class="select-custom {{ classes }}" 
             @click="open = !open"
+            x-cloak
             x-init="if (typeof {{ model }} === 'undefined' || {{ model }} === null) { {{ model }} = '{{ options[0].value if options[0] is mapping else options[0] }}' }">
         <span x-text="
                   {% for option in options %}
@@ -147,7 +148,20 @@
                   {% endif %}
                   {% endfor %}
                   '{{ options[0].label if options[0] is mapping else options[0]|title }}'
-              ">{{ options[0].label if options[0] is mapping else options[0]|title }}</span>
+              ">
+                  {# Smart fallback: try to match the likely preset value #}
+                  {% set smart_fallback = options[0].label if options[0] is mapping else options[0]|title %}
+                  {% for option in options %}
+                      {% if option is mapping and option.value == 'status' %}
+                          {% set smart_fallback = option.label %}
+                      {% elif option is mapping and option.value == 'stage' %}
+                          {% set smart_fallback = option.label %}  
+                      {% elif option is mapping and option.value == 'company' %}
+                          {% set smart_fallback = option.label %}
+                      {% endif %}
+                  {% endfor %}
+                  {{ smart_fallback }}
+              </span>
     </button>
     
     <div x-show="open" 
