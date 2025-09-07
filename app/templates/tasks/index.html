@@ -181,11 +181,7 @@
                     <button type="button" 
                             class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
                             @click="open = !open">
-                        <span x-text="
-                            priorityFilter === 'high' ? 'High' :
-                            priorityFilter === 'medium' ? 'Medium' :
-                            priorityFilter === 'low' ? 'Low' : 'All Priorities'
-                        "></span>
+                        <span x-text="getPriorityDisplayText()"></span>
                         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
@@ -201,16 +197,20 @@
                          x-transition:leave-end="transform opacity-0 scale-95"
                          class="multiselect-dropdown">
                         <div class="multiselect-options">
-                            <div class="multiselect-option" @click="priorityFilter = ''; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="priorityFilter = []; updateFilters()">
+                                <input type="checkbox" :checked="priorityFilter.length === 0" class="mr-2">
                                 <span>All Priorities</span>
                             </div>
-                            <div class="multiselect-option" @click="priorityFilter = 'high'; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="togglePriority('high')">
+                                <input type="checkbox" :checked="priorityFilter.includes('high')" class="mr-2">
                                 <span>High</span>
                             </div>
-                            <div class="multiselect-option" @click="priorityFilter = 'medium'; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="togglePriority('medium')">
+                                <input type="checkbox" :checked="priorityFilter.includes('medium')" class="mr-2">
                                 <span>Medium</span>
                             </div>
-                            <div class="multiselect-option" @click="priorityFilter = 'low'; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="togglePriority('low')">
+                                <input type="checkbox" :checked="priorityFilter.includes('low')" class="mr-2">
                                 <span>Low</span>
                             </div>
                         </div>
@@ -224,12 +224,7 @@
                     <button type="button" 
                             class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
                             @click="open = !open">
-                        <span x-text="
-                            entityFilter === 'company' ? 'Companies' :
-                            entityFilter === 'contact' ? 'Contacts' :
-                            entityFilter === 'opportunity' ? 'Opportunities' :
-                            entityFilter === 'unrelated' ? 'General Tasks' : 'All Entities'
-                        "></span>
+                        <span x-text="getEntityDisplayText()"></span>
                         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
@@ -245,19 +240,24 @@
                          x-transition:leave-end="transform opacity-0 scale-95"
                          class="multiselect-dropdown">
                         <div class="multiselect-options">
-                            <div class="multiselect-option" @click="entityFilter = ''; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="entityFilter = []; updateFilters()">
+                                <input type="checkbox" :checked="entityFilter.length === 0" class="mr-2">
                                 <span>All Entities</span>
                             </div>
-                            <div class="multiselect-option" @click="entityFilter = 'company'; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="toggleEntity('company')">
+                                <input type="checkbox" :checked="entityFilter.includes('company')" class="mr-2">
                                 <span>Companies</span>
                             </div>
-                            <div class="multiselect-option" @click="entityFilter = 'contact'; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="toggleEntity('contact')">
+                                <input type="checkbox" :checked="entityFilter.includes('contact')" class="mr-2">
                                 <span>Contacts</span>
                             </div>
-                            <div class="multiselect-option" @click="entityFilter = 'opportunity'; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="toggleEntity('opportunity')">
+                                <input type="checkbox" :checked="entityFilter.includes('opportunity')" class="mr-2">
                                 <span>Opportunities</span>
                             </div>
-                            <div class="multiselect-option" @click="entityFilter = 'unrelated'; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="toggleEntity('unrelated')">
+                                <input type="checkbox" :checked="entityFilter.includes('unrelated')" class="mr-2">
                                 <span>General Tasks</span>
                             </div>
                         </div>
@@ -327,8 +327,8 @@ function taskManager() {
         groupBy: '{{ group_by }}',
         sortBy: '{{ sort_by }}',
         sortDirection: '{{ sort_direction }}',
-        priorityFilter: '{{ priority_filter }}',
-        entityFilter: '{{ entity_filter }}',
+        priorityFilter: {{ priority_filter | tojson }},
+        entityFilter: {{ entity_filter | tojson }},
         
         // Today's date for calculations
         today: new Date('{{ today }}'),
@@ -365,18 +365,19 @@ function taskManager() {
                 tasks = tasks.filter(task => task.status !== 'complete');
             }
             
-            // Filter by priority
-            if (this.priorityFilter) {
-                tasks = tasks.filter(task => task.priority === this.priorityFilter);
+            // Filter by priority (array of values)
+            if (this.priorityFilter.length > 0) {
+                tasks = tasks.filter(task => this.priorityFilter.includes(task.priority));
             }
             
-            // Filter by entity
-            if (this.entityFilter) {
-                if (this.entityFilter === 'unrelated') {
-                    tasks = tasks.filter(task => !task.entity_type || task.entity_type === null);
-                } else {
-                    tasks = tasks.filter(task => task.entity_type === this.entityFilter);
-                }
+            // Filter by entity (array of values)
+            if (this.entityFilter.length > 0) {
+                tasks = tasks.filter(task => {
+                    if (this.entityFilter.includes('unrelated')) {
+                        if (!task.entity_type || task.entity_type === null) return true;
+                    }
+                    return this.entityFilter.includes(task.entity_type);
+                });
             }
             
             // Sort tasks
@@ -440,8 +441,8 @@ function taskManager() {
             params.set('sort_by', this.sortBy);
             params.set('sort_direction', this.sortDirection);
             params.set('show_completed', this.showCompleted.toString());
-            params.set('priority', this.priorityFilter);
-            params.set('entity', this.entityFilter);
+            params.set('priority', this.priorityFilter.join(','));
+            params.set('entity', this.entityFilter.join(','));
             
             const newUrl = window.location.pathname + '?' + params.toString();
             window.history.pushState({}, '', newUrl);
@@ -496,6 +497,45 @@ function taskManager() {
                 
                 return task.entity_type === entityType;
             });
+        },
+
+        // Helper functions for multiselect
+        togglePriority(priority) {
+            if (this.priorityFilter.includes(priority)) {
+                this.priorityFilter = this.priorityFilter.filter(p => p !== priority);
+            } else {
+                this.priorityFilter.push(priority);
+            }
+            this.updateFilters();
+        },
+
+        toggleEntity(entity) {
+            if (this.entityFilter.includes(entity)) {
+                this.entityFilter = this.entityFilter.filter(e => e !== entity);
+            } else {
+                this.entityFilter.push(entity);
+            }
+            this.updateFilters();
+        },
+
+        getPriorityDisplayText() {
+            if (this.priorityFilter.length === 0) return 'All Priorities';
+            if (this.priorityFilter.length === 1) {
+                return this.priorityFilter[0].charAt(0).toUpperCase() + this.priorityFilter[0].slice(1);
+            }
+            return `${this.priorityFilter.length} Selected`;
+        },
+
+        getEntityDisplayText() {
+            if (this.entityFilter.length === 0) return 'All Entities';
+            if (this.entityFilter.length === 1) {
+                const entity = this.entityFilter[0];
+                return entity === 'unrelated' ? 'General Tasks' : 
+                       entity === 'company' ? 'Companies' :
+                       entity === 'contact' ? 'Contacts' :
+                       entity === 'opportunity' ? 'Opportunities' : entity;
+            }
+            return `${this.entityFilter.length} Selected`;
         },
 
         // Render a task card (simplified HTML for Alpine.js)

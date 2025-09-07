@@ -15,8 +15,8 @@ def get_all_tasks_context():
     sort_by = request.args.get('sort_by', 'due_date')
     sort_direction = request.args.get('sort_direction', 'asc')
     group_by = request.args.get('group_by', 'status')
-    priority_filter = request.args.get('priority', '')
-    entity_filter = request.args.get('entity', '')
+    priority_filter = request.args.get('priority', '').split(',') if request.args.get('priority', '') else []
+    entity_filter = request.args.get('entity', '').split(',') if request.args.get('entity', '') else []
     
     # Get ALL tasks - filtering/sorting will be done in frontend
     all_tasks = Task.query.order_by(Task.created_at.desc()).all()
