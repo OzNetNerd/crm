@@ -566,8 +566,7 @@ window.opportunitiesData = {{ opportunities | tojson }};
 // Make tasks data available for client-side sorting
 window.tasksData = {{ tasks | tojson }};
 
-function openNewTaskModal() {
-    window.dispatchEvent(new CustomEvent('open-new-task-modal'));
-}
+// Tasks use the centralized modal system from modal-manager.js
+// The global openNewTaskModal function handles task modal opening
 </script>
 {% endblock %}
