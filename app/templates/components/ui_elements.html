@@ -354,3 +354,41 @@
     </div>
 </div>
 {% endmacro %}
+
+{#
+  Task Section - DRY macro for individual task sections
+  
+  Reduces repetitive card structure while maintaining flexibility for different filtering approaches.
+  
+  Parameters:
+  - section_key (required): Key for expandedSections 
+  - title (required): Section title
+  - icon_html (required): Icon HTML
+  - badge_count (required): Number for badge
+  - card_class (optional): Card CSS class (default: 'card')
+  - colors (required): Object with badge_color, border_color, bg_color, hover_color, text_class
+  - x_show_condition (optional): Additional x-show condition (like 'showCompleted')
+  - content (required): Task content via caller() 
+  
+  Usage:
+  {% call task_section('todo', 'To Do', clipboard_list_icon("w-5 h-5 mr-1"), todo_count, colors=todo_colors) %}
+    <!-- task iteration here -->
+  {% endcall %}
+#}
+{% macro task_section(section_key, title, icon_html, badge_count, card_class='card', colors=None, x_show_condition='') %}
+<div {% if x_show_condition %}x-show="{{ x_show_condition }}" x-cloak {% endif %}class="{{ card_class }}">
+    {{ section_group_header(
+        section_key,
+        title,
+        icon_html|safe, 
+        '<span class="ml-2 badge-standard badge-' + colors.badge_color + '">' + badge_count|string + '</span>',
+        colors.border_color,
+        colors.bg_color,
+        colors.hover_color, 
+        colors.text_class
+    ) }}
+    <div class="p-6" x-show="expandedSections['{{ section_key }}']" x-cloak x-transition>
+        {{ caller() }}
+    </div>
+</div>
+{% endmacro %}

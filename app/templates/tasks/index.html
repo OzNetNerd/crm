@@ -2,7 +2,7 @@
 {% from "components/task_card.html" import render_task, render_task_hierarchy %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/icons.html" import clipboard_list_icon, bolt_icon, check_circle_icon_solid, fire_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, calendar_days_icon, calendar_icon, chart_bar_icon, question_mark_circle_icon, building_office_icon, user_icon, currency_dollar_icon, chevron_right_icon %}
-{% from "components/ui_elements.html" import expand_collapse_controls, dropdown_select, dropdown_multiselect, section_group_header %}
+{% from "components/ui_elements.html" import expand_collapse_controls, dropdown_select, dropdown_multiselect, section_group_header, task_section %}
 
 {# DRY macros for filtered task rendering - use tasks_objects for rendering #}
 {% macro render_filtered_task(task, group_key, additional_classes='') %}
@@ -223,6 +223,7 @@
             <div class="flex items-center space-x-3">
                 <!-- Sort Dropdown using DRY macro with direction arrows -->
                 <div x-data="{ 
+                    open: false,
                     sortOptions: [
                         {value: 'due_date', label: 'Due Date'},
                         {value: 'priority', label: 'Priority'}, 
@@ -282,7 +283,7 @@
         </div>
     </div>
 
-    <!-- Tasks by Status -->
+    <!-- Tasks by Status - DRY approach -->
     <div x-show="groupBy === 'status'" x-cloak class="space-y-4">
         <!-- To Do Tasks -->
         <div class="card">
