@@ -1,0 +1,70 @@
+{# Due Date-based Task Grouping - Alpine.js Rendered #}
+{% from "components/ui_elements.html" import section_group_header %}
+{% from "components/icons.html" import exclamation_circle_icon_solid, calendar_days_icon, calendar_icon, chart_bar_icon, question_mark_circle_icon %}
+
+<div class="space-y-4">
+    <!-- Overdue -->
+    <div class="card-danger">
+        {{ section_group_header('overdue', 'Overdue', exclamation_circle_icon_solid("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-red" x-text="getTasksByDueDate(\'overdue\').length"></span>', 'red', 'red', 'red', 'text-status-overdue') }}
+        <div class="p-6" x-show="expandedSections['overdue']" x-cloak x-transition>
+            <template x-for="task in getTasksByDueDate('overdue')" :key="task.id">
+                <div x-html="renderTaskCard(task, 'overdue')"></div>
+            </template>
+            <div x-show="getTasksByDueDate('overdue').length === 0" class="text-empty-state">
+                No matching tasks found
+            </div>
+        </div>
+    </div>
+
+    <!-- Today -->
+    <div class="card-orange">
+        {{ section_group_header('today', 'Due Today', calendar_days_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-orange" x-text="getTasksByDueDate(\'today\').length"></span>', 'orange', 'orange', 'orange', 'text-status-warning') }}
+        <div class="p-6" x-show="expandedSections['today']" x-cloak x-transition>
+            <template x-for="task in getTasksByDueDate('today')" :key="task.id">
+                <div x-html="renderTaskCard(task, 'today')"></div>
+            </template>
+            <div x-show="getTasksByDueDate('today').length === 0" class="text-empty-state">
+                No matching tasks found
+            </div>
+        </div>
+    </div>
+
+    <!-- This Week -->
+    <div class="card-info">
+        {{ section_group_header('this_week', 'This Week', calendar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue" x-text="getTasksByDueDate(\'this_week\').length"></span>', 'blue', 'blue', 'blue', 'text-status-info') }}
+        <div class="p-6" x-show="expandedSections['this_week']" x-cloak x-transition>
+            <template x-for="task in getTasksByDueDate('this_week')" :key="task.id">
+                <div x-html="renderTaskCard(task, 'this_week')"></div>
+            </template>
+            <div x-show="getTasksByDueDate('this_week').length === 0" class="text-empty-state">
+                No matching tasks found
+            </div>
+        </div>
+    </div>
+
+    <!-- Later -->
+    <div class="card-neutral">
+        {{ section_group_header('later', 'Later', chart_bar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray" x-text="getTasksByDueDate(\'later\').length"></span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
+        <div class="p-6" x-show="expandedSections['later']" x-cloak x-transition>
+            <template x-for="task in getTasksByDueDate('later')" :key="task.id">
+                <div x-html="renderTaskCard(task, 'later')"></div>
+            </template>
+            <div x-show="getTasksByDueDate('later').length === 0" class="text-empty-state">
+                No matching tasks found
+            </div>
+        </div>
+    </div>
+
+    <!-- No Due Date -->
+    <div class="card-neutral">
+        {{ section_group_header('no_date', 'No Due Date', question_mark_circle_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray" x-text="getTasksByDueDate(\'no_date\').length"></span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
+        <div class="p-6" x-show="expandedSections['no_date']" x-cloak x-transition>
+            <template x-for="task in getTasksByDueDate('no_date')" :key="task.id">
+                <div x-html="renderTaskCard(task, 'no_date')"></div>
+            </template>
+            <div x-show="getTasksByDueDate('no_date').length === 0" class="text-empty-state">
+                No matching tasks found
+            </div>
+        </div>
+    </div>
+</div>

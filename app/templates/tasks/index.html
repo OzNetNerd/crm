@@ -48,10 +48,7 @@
 
 {% call page_layout("All Tasks", "Manage all your tasks in one place", buttons=task_buttons, summary_data=task_stats) %}
 
-<div x-data="{ 
-    priorityFilter: [],
-    entityFilter: []
-}" class="space-y-6">
+<div x-data="taskManager()" class="space-y-6">
 
     <!-- Task Summary now handled by page_layout template -->
 
@@ -61,17 +58,9 @@
             <div class="flex flex-wrap items-center gap-4">
                 <label class="text-label-dark">Group by:</label>
                 
-                <!-- Group By Dropdown with HTMX (Button Style) -->
+                <!-- Group By Dropdown (Alpine.js Only) -->
                 <div class="multiselect-custom" x-data="{ 
-                    open: false, 
-                    groupBy: '{{ group_by }}',
-                    updateGroupBy(value) {
-                        this.groupBy = value;
-                        htmx.ajax('GET', '/tasks/content?group_by=' + value + '&sort_by={{ sort_by }}&sort_direction={{ sort_direction }}&show_completed={{ show_completed }}&priority={{ priority_filter }}&entity={{ entity_filter }}', {
-                            target: '#tasks-content',
-                            pushUrl: true
-                        });
-                    }
+                    open: false
                 }" @click.away="open = false">
                     <button type="button" 
                             class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
@@ -97,16 +86,16 @@
                          x-transition:leave-end="transform opacity-0 scale-95"
                          class="multiselect-dropdown">
                         <div class="multiselect-options">
-                            <div class="multiselect-option" @click="updateGroupBy('status'); open = false">
+                            <div class="multiselect-option" @click="groupBy = 'status'; updateFilters(); open = false">
                                 <span>Status</span>
                             </div>
-                            <div class="multiselect-option" @click="updateGroupBy('due_date'); open = false">
+                            <div class="multiselect-option" @click="groupBy = 'due_date'; updateFilters(); open = false">
                                 <span>Due Date</span>
                             </div>
-                            <div class="multiselect-option" @click="updateGroupBy('priority'); open = false">
+                            <div class="multiselect-option" @click="groupBy = 'priority'; updateFilters(); open = false">
                                 <span>Priority</span>
                             </div>
-                            <div class="multiselect-option" @click="updateGroupBy('entity'); open = false">
+                            <div class="multiselect-option" @click="groupBy = 'entity'; updateFilters(); open = false">
                                 <span>Related To</span>
                             </div>
                         </div>
@@ -115,11 +104,8 @@
                 
                 <label class="flex items-center">
                     <input type="checkbox" 
-                           {% if show_completed %}checked{% endif %}
-                           hx-get="/tasks/content"
-                           hx-target="#tasks-content" 
-                           hx-push-url="true"
-                           hx-include="[name='group_by'], [name='sort_by'], [name='sort_direction'], [name='priority'], [name='entity']"
+                           x-model="showCompleted"
+                           @change="updateFilters()"
                            name="show_completed"
                            value="true"
                            class="mr-2">
@@ -132,17 +118,9 @@
             <div class="flex items-center space-x-3">
                 <label class="text-label-dark">Sort by:</label>
                 
-                <!-- Sort By Dropdown with HTMX (Button Style) -->
+                <!-- Sort By Dropdown (Alpine.js Only) -->
                 <div class="multiselect-custom" x-data="{ 
-                    open: false, 
-                    sortBy: '{{ sort_by }}',
-                    updateSortBy(value) {
-                        this.sortBy = value;
-                        htmx.ajax('GET', '/tasks/content?group_by={{ group_by }}&sort_by=' + value + '&sort_direction={{ sort_direction }}&show_completed={{ show_completed }}&priority={{ priority_filter }}&entity={{ entity_filter }}', {
-                            target: '#tasks-content',
-                            pushUrl: true
-                        });
-                    }
+                    open: false
                 }" @click.away="open = false">
                     <button type="button" 
                             class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
@@ -169,56 +147,44 @@
                          x-transition:leave-end="transform opacity-0 scale-95"
                          class="multiselect-dropdown">
                         <div class="multiselect-options">
-                            <div class="multiselect-option" @click="updateSortBy('due_date'); open = false">
+                            <div class="multiselect-option" @click="sortBy = 'due_date'; updateFilters(); open = false">
                                 <span>Due Date</span>
                             </div>
-                            <div class="multiselect-option" @click="updateSortBy('priority'); open = false">
+                            <div class="multiselect-option" @click="sortBy = 'priority'; updateFilters(); open = false">
                                 <span>Priority</span>
                             </div>
-                            <div class="multiselect-option" @click="updateSortBy('created'); open = false">
+                            <div class="multiselect-option" @click="sortBy = 'created'; updateFilters(); open = false">
                                 <span>Created Date</span>
                             </div>
-                            <div class="multiselect-option" @click="updateSortBy('title'); open = false">
+                            <div class="multiselect-option" @click="sortBy = 'title'; updateFilters(); open = false">
                                 <span>Task Title</span>
                             </div>
-                            <div class="multiselect-option" @click="updateSortBy('status'); open = false">
+                            <div class="multiselect-option" @click="sortBy = 'status'; updateFilters(); open = false">
                                 <span>Status</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Sort Direction Arrow with HTMX -->
+                <!-- Sort Direction Arrow (Alpine.js Only) -->
                 <button type="button" 
                         class="px-2 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
-                        hx-get="/tasks/content"
-                        hx-target="#tasks-content"
-                        hx-push-url="true" 
-                        hx-include="[name='group_by'], [name='sort_by'], [name='show_completed'], [name='priority'], [name='entity']"
-                        hx-vals='{"sort_direction": "{{ 'desc' if sort_direction == 'asc' else 'asc' }}"}'
-                        title="Sort {{ 'Descending' if sort_direction == 'asc' else 'Ascending' }}">
-                    <span class="text-gray-600">{{ '↑' if sort_direction == 'asc' else '↓' }}</span>
+                        @click="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; updateFilters()"
+                        :title="'Sort ' + (sortDirection === 'asc' ? 'Descending' : 'Ascending')">
+                    <span class="text-gray-600" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
                 </button>
                 
-                <!-- Priority Filter (Button Style) -->
+                <!-- Priority Filter (Alpine.js Only) -->
                 <div class="multiselect-custom" x-data="{ 
-                    open: false, 
-                    priority: '{{ priority_filter }}',
-                    updatePriority(value) {
-                        this.priority = value;
-                        htmx.ajax('GET', '/tasks/content?group_by={{ group_by }}&sort_by={{ sort_by }}&sort_direction={{ sort_direction }}&show_completed={{ show_completed }}&priority=' + value + '&entity={{ entity_filter }}', {
-                            target: '#tasks-content',
-                            pushUrl: true
-                        });
-                    }
+                    open: false
                 }" @click.away="open = false">
                     <button type="button" 
                             class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
                             @click="open = !open">
                         <span x-text="
-                            priority === 'high' ? 'High' :
-                            priority === 'medium' ? 'Medium' :
-                            priority === 'low' ? 'Low' : 'All Priorities'
+                            priorityFilter === 'high' ? 'High' :
+                            priorityFilter === 'medium' ? 'Medium' :
+                            priorityFilter === 'low' ? 'Low' : 'All Priorities'
                         "></span>
                         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -235,42 +201,34 @@
                          x-transition:leave-end="transform opacity-0 scale-95"
                          class="multiselect-dropdown">
                         <div class="multiselect-options">
-                            <div class="multiselect-option" @click="updatePriority(''); open = false">
+                            <div class="multiselect-option" @click="priorityFilter = ''; updateFilters(); open = false">
                                 <span>All Priorities</span>
                             </div>
-                            <div class="multiselect-option" @click="updatePriority('high'); open = false">
+                            <div class="multiselect-option" @click="priorityFilter = 'high'; updateFilters(); open = false">
                                 <span>High</span>
                             </div>
-                            <div class="multiselect-option" @click="updatePriority('medium'); open = false">
+                            <div class="multiselect-option" @click="priorityFilter = 'medium'; updateFilters(); open = false">
                                 <span>Medium</span>
                             </div>
-                            <div class="multiselect-option" @click="updatePriority('low'); open = false">
+                            <div class="multiselect-option" @click="priorityFilter = 'low'; updateFilters(); open = false">
                                 <span>Low</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Entity Filter (Button Style) -->
+                <!-- Entity Filter (Alpine.js Only) -->
                 <div class="multiselect-custom" x-data="{ 
-                    open: false, 
-                    entity: '{{ entity_filter }}',
-                    updateEntity(value) {
-                        this.entity = value;
-                        htmx.ajax('GET', '/tasks/content?group_by={{ group_by }}&sort_by={{ sort_by }}&sort_direction={{ sort_direction }}&show_completed={{ show_completed }}&priority={{ priority_filter }}&entity=' + value, {
-                            target: '#tasks-content',
-                            pushUrl: true
-                        });
-                    }
+                    open: false
                 }" @click.away="open = false">
                     <button type="button" 
                             class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
                             @click="open = !open">
                         <span x-text="
-                            entity === 'company' ? 'Companies' :
-                            entity === 'contact' ? 'Contacts' :
-                            entity === 'opportunity' ? 'Opportunities' :
-                            entity === 'unrelated' ? 'General Tasks' : 'All Entities'
+                            entityFilter === 'company' ? 'Companies' :
+                            entityFilter === 'contact' ? 'Contacts' :
+                            entityFilter === 'opportunity' ? 'Opportunities' :
+                            entityFilter === 'unrelated' ? 'General Tasks' : 'All Entities'
                         "></span>
                         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -287,19 +245,19 @@
                          x-transition:leave-end="transform opacity-0 scale-95"
                          class="multiselect-dropdown">
                         <div class="multiselect-options">
-                            <div class="multiselect-option" @click="updateEntity(''); open = false">
+                            <div class="multiselect-option" @click="entityFilter = ''; updateFilters(); open = false">
                                 <span>All Entities</span>
                             </div>
-                            <div class="multiselect-option" @click="updateEntity('company'); open = false">
+                            <div class="multiselect-option" @click="entityFilter = 'company'; updateFilters(); open = false">
                                 <span>Companies</span>
                             </div>
-                            <div class="multiselect-option" @click="updateEntity('contact'); open = false">
+                            <div class="multiselect-option" @click="entityFilter = 'contact'; updateFilters(); open = false">
                                 <span>Contacts</span>
                             </div>
-                            <div class="multiselect-option" @click="updateEntity('opportunity'); open = false">
+                            <div class="multiselect-option" @click="entityFilter = 'opportunity'; updateFilters(); open = false">
                                 <span>Opportunities</span>
                             </div>
-                            <div class="multiselect-option" @click="updateEntity('unrelated'); open = false">
+                            <div class="multiselect-option" @click="entityFilter = 'unrelated'; updateFilters(); open = false">
                                 <span>General Tasks</span>
                             </div>
                         </div>
@@ -309,9 +267,24 @@
         </div>
     </div>
 
-    <!-- HTMX Content Target - Dynamic task sections loaded here -->
+    <!-- Alpine.js Rendered Content - Dynamic task sections rendered here -->
     <div id="tasks-content">
-        {% include 'tasks/_content.html' %}
+        <!-- Render based on current groupBy selection -->
+        <div x-show="groupBy === 'status'">
+            {% include 'tasks/_content_status.html' %}
+        </div>
+        
+        <div x-show="groupBy === 'priority'">
+            {% include 'tasks/_content_priority.html' %}
+        </div>
+        
+        <div x-show="groupBy === 'due_date'">
+            {% include 'tasks/_content_due_date.html' %}
+        </div>
+        
+        <div x-show="groupBy === 'entity'">
+            {% include 'tasks/_content_entity.html' %}
+        </div>
     </div>
 
 </div>
@@ -341,5 +314,230 @@ window.tasksData = {{ tasks | tojson }};
 
 // Tasks use the centralized modal system from modal-manager.js
 // The global openNewTaskModal function handles task modal opening
+
+// Alpine.js Task Manager Component
+function taskManager() {
+    return {
+        // All tasks data
+        allTasks: window.tasksData || [],
+        filteredTasks: [],
+        
+        // Filter states (initialized from backend)
+        showCompleted: {{ show_completed | lower }},
+        groupBy: '{{ group_by }}',
+        sortBy: '{{ sort_by }}',
+        sortDirection: '{{ sort_direction }}',
+        priorityFilter: '{{ priority_filter }}',
+        entityFilter: '{{ entity_filter }}',
+        
+        // Today's date for calculations
+        today: new Date('{{ today }}'),
+        
+        // Expanded sections state
+        expandedSections: {
+            'todo': true,
+            'in-progress': true,
+            'complete': true,
+            'high': true,
+            'medium': true,
+            'low': true,
+            'overdue': true,
+            'today': true,
+            'this_week': true,
+            'later': true,
+            'no_date': true,
+            'company': true,
+            'contact': true,
+            'opportunity': true,
+            'unrelated': true
+        },
+
+        init() {
+            this.updateFilters();
+        },
+
+        updateFilters() {
+            // Apply all filters and sorting
+            let tasks = [...this.allTasks];
+            
+            // Filter by completed status
+            if (!this.showCompleted) {
+                tasks = tasks.filter(task => task.status !== 'complete');
+            }
+            
+            // Filter by priority
+            if (this.priorityFilter) {
+                tasks = tasks.filter(task => task.priority === this.priorityFilter);
+            }
+            
+            // Filter by entity
+            if (this.entityFilter) {
+                if (this.entityFilter === 'unrelated') {
+                    tasks = tasks.filter(task => !task.entity_type || task.entity_type === null);
+                } else {
+                    tasks = tasks.filter(task => task.entity_type === this.entityFilter);
+                }
+            }
+            
+            // Sort tasks
+            tasks = this.sortTasks(tasks);
+            
+            this.filteredTasks = tasks;
+            this.updateUrlState();
+        },
+
+        sortTasks(tasks) {
+            return tasks.sort((a, b) => {
+                let comparison = 0;
+                
+                switch(this.sortBy) {
+                    case 'priority':
+                        const priorityOrder = { 'high': 1, 'medium': 2, 'low': 3 };
+                        const priorityA = priorityOrder[a.priority] || 4;
+                        const priorityB = priorityOrder[b.priority] || 4;
+                        comparison = priorityA - priorityB;
+                        break;
+                        
+                    case 'status':
+                        const statusOrder = { 'todo': 1, 'in-progress': 2, 'complete': 3 };
+                        const statusA = statusOrder[a.status] || 4;
+                        const statusB = statusOrder[b.status] || 4;
+                        comparison = statusA - statusB;
+                        break;
+                        
+                    case 'created':
+                        const dateA = new Date(a.created_at);
+                        const dateB = new Date(b.created_at);
+                        comparison = dateA - dateB;
+                        break;
+                        
+                    case 'title':
+                        comparison = (a.description || '').localeCompare(b.description || '');
+                        break;
+                        
+                    case 'due_date':
+                    default:
+                        // Handle null dates - put them last
+                        if (!a.due_date && !b.due_date) comparison = 0;
+                        else if (!a.due_date) comparison = 1;
+                        else if (!b.due_date) comparison = -1;
+                        else {
+                            const dueDateA = new Date(a.due_date);
+                            const dueDateB = new Date(b.due_date);
+                            comparison = dueDateA - dueDateB;
+                        }
+                        break;
+                }
+                
+                return this.sortDirection === 'desc' ? -comparison : comparison;
+            });
+        },
+
+        updateUrlState() {
+            // Update URL parameters to maintain state on refresh
+            const params = new URLSearchParams(window.location.search);
+            params.set('group_by', this.groupBy);
+            params.set('sort_by', this.sortBy);
+            params.set('sort_direction', this.sortDirection);
+            params.set('show_completed', this.showCompleted.toString());
+            params.set('priority', this.priorityFilter);
+            params.set('entity', this.entityFilter);
+            
+            const newUrl = window.location.pathname + '?' + params.toString();
+            window.history.pushState({}, '', newUrl);
+        },
+
+        // Get tasks by status for rendering
+        getTasksByStatus(status) {
+            return this.filteredTasks.filter(task => 
+                task.status === status && task.task_type !== 'child'
+            );
+        },
+
+        // Get tasks by priority for rendering
+        getTasksByPriority(priority) {
+            return this.filteredTasks.filter(task => 
+                task.priority === priority && task.task_type !== 'child'
+            );
+        },
+
+        // Get tasks by due date category for rendering
+        getTasksByDueDate(category) {
+            return this.filteredTasks.filter(task => {
+                if (task.task_type === 'child') return false;
+                
+                if (category === 'no_date') {
+                    return !task.due_date;
+                }
+                
+                if (!task.due_date) return false;
+                
+                const dueDate = new Date(task.due_date);
+                const daysDiff = Math.ceil((dueDate - this.today) / (1000 * 60 * 60 * 24));
+                
+                switch(category) {
+                    case 'overdue': return daysDiff < 0;
+                    case 'today': return daysDiff === 0;
+                    case 'this_week': return daysDiff > 0 && daysDiff <= 7;
+                    case 'later': return daysDiff > 7;
+                    default: return false;
+                }
+            });
+        },
+
+        // Get tasks by entity type for rendering
+        getTasksByEntity(entityType) {
+            return this.filteredTasks.filter(task => {
+                if (task.task_type === 'child') return false;
+                
+                if (entityType === 'unrelated') {
+                    return !task.entity_type || task.entity_type === null;
+                }
+                
+                return task.entity_type === entityType;
+            });
+        },
+
+        // Render a task card (simplified HTML for Alpine.js)
+        renderTaskCard(task, context) {
+            // This is a simplified version - in production, you'd want to 
+            // include the full task card template or use a more sophisticated approach
+            const priorityClass = {
+                'high': 'border-l-red-500',
+                'medium': 'border-l-yellow-500',  
+                'low': 'border-l-green-500'
+            }[task.priority] || 'border-l-gray-300';
+            
+            const statusClass = {
+                'todo': 'bg-blue-50',
+                'in-progress': 'bg-yellow-50',
+                'complete': 'bg-green-50'
+            }[task.status] || 'bg-gray-50';
+            
+            const dueDateText = task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date';
+            
+            return `
+                <div class="task-card ${statusClass} ${priorityClass} border-l-4 p-4 mb-3 rounded-r-md">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-900">${task.description}</h4>
+                            <div class="mt-1 text-sm text-gray-500">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-${task.priority === 'high' ? 'red' : task.priority === 'medium' ? 'yellow' : 'green'}-100 text-${task.priority === 'high' ? 'red' : task.priority === 'medium' ? 'yellow' : 'green'}-800">
+                                    ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                </span>
+                                <span class="ml-2">${dueDateText}</span>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-${task.status === 'complete' ? 'green' : task.status === 'in-progress' ? 'yellow' : 'blue'}-100 text-${task.status === 'complete' ? 'green' : task.status === 'in-progress' ? 'yellow' : 'blue'}-800">
+                                ${task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    };
+}
 </script>
 {% endblock %}

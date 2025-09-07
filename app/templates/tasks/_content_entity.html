@@ -1,0 +1,57 @@
+{# Entity-based Task Grouping - Alpine.js Rendered #}
+{% from "components/ui_elements.html" import section_group_header %}
+{% from "components/icons.html" import building_office_icon, user_icon, currency_dollar_icon, clipboard_list_icon %}
+
+<div class="space-y-4">
+    <!-- Company Tasks -->
+    <div class="card-info">
+        {{ section_group_header('company', 'Company Tasks', building_office_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue" x-text="getTasksByEntity(\'company\').length"></span>', 'blue', 'blue', 'blue', 'text-status-info') }}
+        <div class="p-6" x-show="expandedSections['company']" x-cloak x-transition>
+            <template x-for="task in getTasksByEntity('company')" :key="task.id">
+                <div x-html="renderTaskCard(task, 'company')"></div>
+            </template>
+            <div x-show="getTasksByEntity('company').length === 0" class="text-empty-state">
+                No matching tasks found
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Tasks -->
+    <div class="card-success">
+        {{ section_group_header('contact', 'Contact Tasks', user_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-green" x-text="getTasksByEntity(\'contact\').length"></span>', 'green', 'green', 'green', 'text-status-success') }}
+        <div class="p-6" x-show="expandedSections['contact']" x-cloak x-transition>
+            <template x-for="task in getTasksByEntity('contact')" :key="task.id">
+                <div x-html="renderTaskCard(task, 'contact')"></div>
+            </template>
+            <div x-show="getTasksByEntity('contact').length === 0" class="text-empty-state">
+                No matching tasks found
+            </div>
+        </div>
+    </div>
+
+    <!-- Opportunity Tasks -->
+    <div class="card-warning">
+        {{ section_group_header('opportunity', 'Opportunity Tasks', currency_dollar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-yellow" x-text="getTasksByEntity(\'opportunity\').length"></span>', 'yellow', 'yellow', 'yellow', 'text-status-warning') }}
+        <div class="p-6" x-show="expandedSections['opportunity']" x-cloak x-transition>
+            <template x-for="task in getTasksByEntity('opportunity')" :key="task.id">
+                <div x-html="renderTaskCard(task, 'opportunity')"></div>
+            </template>
+            <div x-show="getTasksByEntity('opportunity').length === 0" class="text-empty-state">
+                No matching tasks found
+            </div>
+        </div>
+    </div>
+
+    <!-- Unrelated Tasks -->
+    <div class="card-neutral">
+        {{ section_group_header('unrelated', 'General Tasks', clipboard_list_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray" x-text="getTasksByEntity(\'unrelated\').length"></span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
+        <div class="p-6" x-show="expandedSections['unrelated']" x-cloak x-transition>
+            <template x-for="task in getTasksByEntity('unrelated')" :key="task.id">
+                <div x-html="renderTaskCard(task, 'unrelated')"></div>
+            </template>
+            <div x-show="getTasksByEntity('unrelated').length === 0" class="text-empty-state">
+                No matching tasks found
+            </div>
+        </div>
+    </div>
+</div>
