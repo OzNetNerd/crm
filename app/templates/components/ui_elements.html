@@ -502,3 +502,212 @@
     </div>
 </div>
 {% endmacro %}
+
+{#
+  View Mode Toggle - Switch between grid and list views
+  
+  Parameters:
+  - current_mode (optional): Current view mode ('grid' or 'list')
+  - grid_icon (optional): Custom grid view icon
+  - list_icon (optional): Custom list view icon
+  
+  Usage:
+  {{ view_mode_toggle() }}
+  {{ view_mode_toggle('grid', custom_grid_icon, custom_list_icon) }}
+#}
+{% macro view_mode_toggle(current_mode='grid', grid_icon=None, list_icon=None) %}
+<div class="flex items-center bg-gray-100 rounded-md p-1">
+    <button @click="viewMode = 'grid'" 
+            :class="viewMode === 'grid' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'"
+            class="p-2 rounded transition-colors">
+        {% if grid_icon %}
+        {{ grid_icon|safe }}
+        {% else %}
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+        </svg>
+        {% endif %}
+    </button>
+    <button @click="viewMode = 'list'" 
+            :class="viewMode === 'list' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'"
+            class="p-2 rounded transition-colors">
+        {% if list_icon %}
+        {{ list_icon|safe }}
+        {% else %}
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+        {% endif %}
+    </button>
+</div>
+{% endmacro %}
+
+{#
+  Bulk Selection Checkbox - Checkbox with consistent selection styling
+  
+  Parameters:
+  - item_id (required): Unique identifier for the item
+  - model (optional): Alpine.js model name (default: 'selectedItems')
+  - additional_classes (optional): Extra CSS classes
+  
+  Usage:
+  {{ bulk_selection_checkbox(company.id) }}
+  {{ bulk_selection_checkbox(contact.id, 'selectedContacts') }}
+#}
+{% macro bulk_selection_checkbox(item_id, model='selectedItems', additional_classes='') %}
+<input type="checkbox" 
+       x-model="{{ model }}" 
+       value="{{ item_id }}"
+       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded {{ additional_classes }}"
+       @click.stop>
+{% endmacro %}
+
+{#
+  Select All Checkbox - Master checkbox for bulk selection
+  
+  Parameters:
+  - total_items (required): Total number of items that can be selected
+  - model (optional): Alpine.js model name (default: 'selectedItems')
+  - label (optional): Label text for the checkbox
+  
+  Usage:
+  {{ select_all_checkbox(companies|length) }}
+  {{ select_all_checkbox(contacts|length, 'selectedContacts', 'Select all contacts') }}
+#}
+{% macro select_all_checkbox(total_items, model='selectedItems', label='Select all') %}
+<label class="flex items-center space-x-2">
+    <input type="checkbox"
+           :checked="{{ model }}.length === {{ total_items }} && {{ total_items }} > 0"
+           :indeterminate="{{ model }}.length > 0 && {{ model }}.length < {{ total_items }}"
+           @change="{{ model }} = $event.target.checked ? allItemIds : []"
+           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+    <span class="text-sm text-gray-700">{{ label }}</span>
+</label>
+{% endmacro %}
+
+{#
+  Search Input - Consistent search input with icon
+  
+  Parameters:
+  - placeholder (optional): Placeholder text
+  - model (optional): Alpine.js model binding
+  - additional_classes (optional): Extra CSS classes
+  
+  Usage:
+  {{ search_input('Search companies...', 'searchTerm') }}
+#}
+{% macro search_input(placeholder='Search...', model='searchTerm', additional_classes='') %}
+<div class="relative">
+    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+    </div>
+    <input type="text" 
+           x-model="{{ model }}"
+           class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm {{ additional_classes }}"
+           placeholder="{{ placeholder }}">
+    <div x-show="{{ model }}.length > 0" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+        <button @click="{{ model }} = ''" class="text-gray-400 hover:text-gray-600">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  Loading Spinner - Consistent loading indicator
+  
+  Parameters:
+  - size (optional): Size class ('sm', 'md', 'lg')
+  - text (optional): Loading text to display
+  
+  Usage:
+  {{ loading_spinner('md', 'Loading companies...') }}
+#}
+{% macro loading_spinner(size='md', text='') %}
+{%- set size_classes = {'sm': 'h-4 w-4', 'md': 'h-6 w-6', 'lg': 'h-8 w-8'} -%}
+<div class="flex items-center justify-center space-x-2">
+    <svg class="animate-spin {{ size_classes[size] or size_classes['md'] }} text-blue-600" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    {% if text %}
+    <span class="text-sm text-gray-600">{{ text }}</span>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{#
+  Empty State - Consistent empty state display
+  
+  Parameters:
+  - title (required): Empty state title
+  - description (optional): Empty state description
+  - action_button (optional): HTML for action button
+  - icon (optional): Custom icon HTML
+  
+  Usage:
+  {{ empty_state('No companies found', 'Get started by adding your first company', '<button>Add Company</button>') }}
+#}
+{% macro empty_state(title, description='', action_button='', icon='') %}
+<div class="text-center py-12">
+    {% if icon %}
+    <div class="mx-auto h-12 w-12 text-gray-400 mb-4">
+        {{ icon|safe }}
+    </div>
+    {% else %}
+    <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+    </svg>
+    {% endif %}
+    
+    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ title }}</h3>
+    
+    {% if description %}
+    <p class="text-gray-500 mb-6">{{ description }}</p>
+    {% endif %}
+    
+    {% if action_button %}
+    {{ action_button|safe }}
+    {% endif %}
+</div>
+{% endmacro %}
+
+{#
+  Status Badge - Consistent status indicator
+  
+  Parameters:
+  - status (required): Status value
+  - color_map (optional): Dict mapping status to colors
+  - size (optional): Badge size ('sm', 'md', 'lg')
+  
+  Usage:
+  {{ status_badge(task.status) }}
+  {{ status_badge(company.status, {'active': 'green', 'inactive': 'red'}) }}
+#}
+{% macro status_badge(status, color_map=None, size='md') %}
+{%- if color_map -%}
+    {%- set color = color_map.get(status, 'gray') -%}
+{%- else -%}
+    {%- if status in ['complete', 'completed', 'done', 'active', 'open'] -%}
+        {%- set color = 'green' -%}
+    {%- elif status in ['in-progress', 'in_progress', 'pending', 'working'] -%}
+        {%- set color = 'yellow' -%}
+    {%- elif status in ['overdue', 'late', 'failed', 'error'] -%}
+        {%- set color = 'red' -%}
+    {%- elif status in ['todo', 'new', 'draft'] -%}
+        {%- set color = 'blue' -%}
+    {%- else -%}
+        {%- set color = 'gray' -%}
+    {%- endif -%}
+{%- endif -%}
+
+{%- set size_classes = {'sm': 'px-2 py-1 text-xs', 'md': 'px-2.5 py-0.5 text-sm', 'lg': 'px-3 py-1 text-base'} -%}
+
+<span class="inline-flex items-center {{ size_classes[size] or size_classes['md'] }} font-medium rounded-full badge-{{ color }}">
+    {{ status|title }}
+</span>
+{% endmacro %}

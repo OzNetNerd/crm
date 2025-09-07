@@ -1,6 +1,8 @@
 {% extends "base/layout.html" %}
-{% from "components/page_template.html" import page_layout %}
-{% from "components/ui_elements.html" import action_button, pluralized_count, entity_link_button %}
+{% from "components/page_template.html" import entity_page_layout %}
+{% from "components/entity_filters.html" import entity_filter_controls, entity_filter_manager %}
+{% from "components/entity_display.html" import entity_display_container, entity_display_manager %}
+{% from "components/ui_elements.html" import action_button, pluralized_count, entity_link_button, view_mode_toggle, bulk_selection_checkbox, empty_state %}
 
 {% block title %}Companies - CRM{% endblock %}
 
@@ -40,52 +42,249 @@
     }
 ] %}
 
-{% call page_layout("Companies", "Manage your company relationships", buttons=company_buttons, summary_data=company_stats) %}
+<!-- Define group options for companies -->
+{% set group_options = [
+    {'value': 'industry', 'label': 'Industry'},
+    {'value': 'size', 'label': 'Company Size'},
+    {'value': 'status', 'label': 'Status'},
+    {'value': 'location', 'label': 'Location'}
+] %}
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+{% set sort_options = [
+    {'value': 'name', 'label': 'Company Name', 'type': 'string', 'field': 'name'},
+    {'value': 'industry', 'label': 'Industry', 'type': 'string', 'field': 'industry'},
+    {'value': 'contacts', 'label': 'Contact Count', 'type': 'number', 'field': 'contacts_count'},
+    {'value': 'opportunities', 'label': 'Opportunities', 'type': 'number', 'field': 'opportunities_count'},
+    {'value': 'created', 'label': 'Date Added', 'type': 'date', 'field': 'created_at'}
+] %}
+
+<!-- Define available industries for filtering -->
+{% set industries = companies|map(attribute='industry')|select|unique|list %}
+{% set industry_options = [] %}
+{% for industry in industries %}
+    {% set _ = industry_options.append({'value': industry, 'label': industry}) %}
+{% endfor %}
+
+{% set filter_options = {
+    'industry': industry_options
+} %}
+
+<!-- Group configurations for company display -->
+{% set group_configs = {
+    'industry': {
+        'groups': [
+            {% for industry in industries %}
+            {
+                'key': industry|lower|replace(' ', '_'),
+                'title': industry or 'Unknown Industry',
+                'container_class': 'card',
+                'header_class': 'text-status-header',
+                'header_bg_class': 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100',
+                'badge_class': 'badge-blue',
+                'icon': 'building-office',
+                'filter_field': 'industry',
+                'filter_value': industry
+            },
+            {% endfor %}
+        ]
+    },
+    'size': {
+        'groups': [
+            {
+                'key': 'large',
+                'title': 'Large (100+ employees)',
+                'container_class': 'card-success',
+                'header_class': 'text-status-success',
+                'header_bg_class': 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100',
+                'badge_class': 'badge-green',
+                'icon': 'building-office'
+            },
+            {
+                'key': 'medium',
+                'title': 'Medium (10-99 employees)',
+                'container_class': 'card-warning',
+                'header_class': 'text-status-warning',
+                'header_bg_class': 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100',
+                'badge_class': 'badge-yellow',
+                'icon': 'building-office'
+            },
+            {
+                'key': 'small',
+                'title': 'Small (1-9 employees)',
+                'container_class': 'card-info',
+                'header_class': 'text-status-info',
+                'header_bg_class': 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100',
+                'badge_class': 'badge-blue',
+                'icon': 'building-office'
+            }
+        ]
+    }
+} %}
+
+{% set icon_map = {
+    'building-office': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>',
+    'default': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>'
+} %}
+
+<!-- Render filter controls -->
+{% set filter_controls_html = entity_filter_controls('companies', group_options, sort_options, filter_options, show_view_toggle=true) %}
+
+{% set bulk_actions = '<button @click="bulkDelete()" class="bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700">Delete</button>' %}
+
+{% call entity_page_layout("Companies", "Manage your company relationships", "companies", 
+     buttons=company_buttons, summary_data=company_stats, filter_controls=filter_controls_html, bulk_actions=bulk_actions) %}
+
+<!-- Company Display Container -->
+{% call entity_display_container('companies', 'render_company_card', group_config=group_configs) %}
+    <!-- Pre-render all company cards for client-side filtering -->
     {% for company in companies %}
-        <div class="card-padded-lg hover:shadow-md transition-shadow">
-            <div class="flex items-start justify-between mb-4">
-                <h3 class="text-company-name text-lg font-semibold">{{ company.name }}</h3>
-                {{ action_button('openCompanyModal(' + company.id|string + ')', '⋯', 'text-link-subtle') }}
+        <div id="companies-card-{{ company.id }}">
+            {% if viewMode == 'list' %}
+            <!-- List View Card -->
+            <div class="p-4 flex items-center justify-between hover:bg-gray-50">
+                <div class="flex items-center space-x-3">
+                    {{ bulk_selection_checkbox(company.id) }}
+                    <div>
+                        <h3 class="text-company-name font-semibold">{{ company.name }}</h3>
+                        {% if company.industry %}
+                            <p class="text-secondary-dark text-sm">{{ company.industry }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4 text-secondary text-sm">
+                    <span>{{ pluralized_count(company.contacts|length, 'contact') }}</span>
+                    <span>{{ pluralized_count(company.opportunities|length, 'opportunity', plural='opportunities') }}</span>
+                    {{ action_button('openCompanyModal(' + company.id|string + ')', '⋯', 'text-link-subtle') }}
+                </div>
             </div>
-            
-            {% if company.industry %}
-                <p class="text-secondary-dark mb-2">{{ company.industry }}</p>
-            {% endif %}
-            
-            {% if company.website %}
-                <a href="{{ company.website }}" target="_blank" 
-                   class="text-link mb-3 block">
-                    {{ company.website }}
-                </a>
-            {% endif %}
-            
-            <div class="flex items-center justify-between text-secondary mt-4 pt-4 border-t">
-                <span>{{ pluralized_count(company.contacts|length, 'contact') }}</span>
-                <span>{{ pluralized_count(company.opportunities|length, 'opportunity', plural='opportunities') }}</span>
+            {% else %}
+            <!-- Grid View Card -->
+            <div class="card-padded-lg hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-4">
+                    {{ bulk_selection_checkbox(company.id, additional_classes='mr-3') }}
+                    <div class="flex-1">
+                        <h3 class="text-company-name text-lg font-semibold">{{ company.name }}</h3>
+                    </div>
+                    {{ action_button('openCompanyModal(' + company.id|string + ')', '⋯', 'text-link-subtle') }}
+                </div>
+                
+                {% if company.industry %}
+                    <p class="text-secondary-dark mb-2">{{ company.industry }}</p>
+                {% endif %}
+                
+                {% if company.website %}
+                    <a href="{{ company.website }}" target="_blank" 
+                       class="text-link mb-3 block">
+                        {{ company.website }}
+                    </a>
+                {% endif %}
+                
+                <div class="flex items-center justify-between text-secondary mt-4 pt-4 border-t">
+                    <span>{{ pluralized_count(company.contacts|length, 'contact') }}</span>
+                    <span>{{ pluralized_count(company.opportunities|length, 'opportunity', plural='opportunities') }}</span>
+                </div>
+                
+                {{ entity_link_button(url_for('companies.detail', company_id=company.id)) }}
             </div>
-            
-            {{ entity_link_button(url_for('companies.detail', company_id=company.id)) }}
-        </div>
-    {% else %}
-        <div class="col-span-full text-center py-12">
-            <p class="text-secondary mb-4">No companies found</p>
-            <button onclick="openNewCompanyModal()" 
-                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                Add Your First Company
-            </button>
+            {% endif %}
         </div>
     {% endfor %}
-</div>
+{% endcall %}
+
+<!-- Empty State -->
+{% if not companies %}
+    {{ empty_state('No companies found', 'Get started by adding your first company', 
+         '<button onclick="openNewCompanyModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Add Your First Company</button>') }}
+{% endif %}
 
 {% endcall %}
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Companies use the centralized modal system from modal-manager.js
-// All modal functions are now handled globally
+// Make companies data available globally
+window.companiesData = {{ companies | tojson }};
+
+// Enhanced entity filter manager for companies
+{{ entity_filter_manager('companies', group_options, sort_options, filter_options, {
+    'view_mode': 'grid',
+    'group_by': 'industry',
+    'sort_by': 'name',
+    'sort_direction': 'asc'
+}) }}
+
+// Enhanced display manager for companies
+function entityFilterManager() {
+    return {
+        ...baseEntityManager(), // This would contain the base functionality
+        
+        // Companies data management
+        allItems: window.companiesData || [],
+        filteredItems: [],
+        
+        // View and filter states
+        viewMode: 'grid',
+        groupBy: 'industry',
+        sortBy: 'name',
+        sortDirection: 'asc',
+        industryFilter: [],
+        selectedItems: [],
+        
+        // Expanded sections
+        expandedSections: {},
+
+        init() {
+            // Initialize all company IDs for bulk selection
+            this.allItemIds = this.allItems.map(item => item.id);
+            this.updateFilters();
+        },
+
+        {{ entity_display_manager('companies', group_configs, icon_map) }}
+
+        // Company-specific methods
+        bulkDelete() {
+            if (this.selectedItems.length === 0) return;
+            
+            const confirmed = confirm(`Are you sure you want to delete ${this.selectedItems.length} companies?`);
+            if (confirmed) {
+                // Implementation would call API to delete selected companies
+                console.log('Bulk deleting companies:', this.selectedItems);
+                this.selectedItems = [];
+            }
+        },
+
+        // Company size calculation (if needed for grouping)
+        getCompanySize(company) {
+            const employeeCount = company.employee_count || 0;
+            if (employeeCount >= 100) return 'large';
+            if (employeeCount >= 10) return 'medium';
+            return 'small';
+        },
+
+        itemMatchesGroup(item, group, config) {
+            // Custom matching for company size
+            if (config === this.getGroupConfig('size')) {
+                const size = this.getCompanySize(item);
+                return size === group.key;
+            }
+            
+            // Default matching logic for other group types
+            if (group.filterField && group.filterValue !== undefined) {
+                const itemValue = this.getNestedProperty(item, group.filterField);
+                
+                if (group.filterValue === null || group.filterValue === 'null') {
+                    return !itemValue;
+                }
+                
+                return itemValue === group.filterValue;
+            }
+            
+            return false;
+        }
+    };
+}
+
+// Companies use the centralized modal system
 </script>
 
 {% include "components/modals/confirmation.html" %}
