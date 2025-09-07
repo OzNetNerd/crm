@@ -1,0 +1,130 @@
+{% extends "base/layout.html" %}
+
+{% block title %}New Meeting - CRM{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <div class="flex items-center space-x-4 mb-4">
+        <a href="{{ url_for('meetings.index') }}" class="text-gray-600 hover:text-gray-800">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <h1 class="text-page-title">Upload Meeting</h1>
+    </div>
+    <p class="text-secondary-dark">Upload a meeting transcript for AI-powered analysis and insights extraction</p>
+</div>
+
+<div class="max-w-2xl">
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-900">Meeting Details</h2>
+        </div>
+        
+        <form method="POST" class="px-6 py-6 space-y-6">
+            <!-- Meeting Title -->
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                    Meeting Title *
+                </label>
+                <input type="text" 
+                       id="title" 
+                       name="title" 
+                       required
+                       placeholder="e.g., Weekly Team Standup - Sept 7, 2025"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <!-- Company Association -->
+            <div>
+                <label for="company_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Associated Company
+                    <span class="text-gray-400 text-sm">(optional)</span>
+                </label>
+                <select id="company_id" name="company_id" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">-- Select Company --</option>
+                    {% for company in companies %}
+                        <option value="{{ company.id }}">{{ company.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Meeting Transcript -->
+            <div>
+                <label for="transcript" class="block text-sm font-medium text-gray-700 mb-2">
+                    Meeting Transcript *
+                </label>
+                <textarea id="transcript" 
+                          name="transcript" 
+                          required
+                          rows="12"
+                          placeholder="Paste your meeting transcript here. The AI will analyze it to extract attendees, action items, key decisions, and other insights..."
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 resize-y"></textarea>
+                <p class="mt-1 text-sm text-gray-500">
+                    📝 Tip: Include speaker names, timestamps, and detailed discussions for better analysis results.
+                </p>
+            </div>
+
+            <!-- AI Analysis Info -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-blue-800">AI Analysis</h3>
+                        <div class="mt-2 text-sm text-blue-700">
+                            <p>Once uploaded, our AI will automatically analyze the transcript to extract:</p>
+                            <ul class="list-disc ml-4 mt-2 space-y-1">
+                                <li>Meeting attendees and their roles</li>
+                                <li>Action items with assignees and deadlines</li>
+                                <li>Key decisions and outcomes</li>
+                                <li>Technologies and topics discussed</li>
+                                <li>Overall sentiment and concerns</li>
+                                <li>Executive summary</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-end space-x-3">
+                <a href="{{ url_for('meetings.index') }}" 
+                   class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    Upload & Analyze
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Example Section -->
+    <div class="mt-8 bg-gray-50 border rounded-lg p-6">
+        <h3 class="text-sm font-medium text-gray-900 mb-3">💡 Example Transcript Format</h3>
+        <div class="text-sm text-gray-600 bg-white p-4 rounded border">
+            <pre class="whitespace-pre-wrap">Meeting: Weekly Project Review
+Date: September 7, 2025
+Attendees: John Smith (PM), Sarah Johnson (Dev Lead), Mike Chen (Designer)
+
+John Smith: Good morning everyone. Let's start with the sprint review...
+Sarah Johnson: We completed 8 out of 10 story points this week. The API integration is done...
+Mike Chen: The new UI designs are ready for review. I'll send them by Friday...
+
+Action Items:
+- Sarah: Deploy API changes by Wednesday
+- Mike: Share UI mockups with team by Friday
+- John: Schedule client demo for next week</pre>
+        </div>
+    </div>
+</div>
+{% endblock %}

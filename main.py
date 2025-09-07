@@ -12,6 +12,7 @@ from app.routes.search import search_bp
 from app.routes.api import api_bp
 from app.routes.api_notes import api_notes_bp
 from app.routes.notes import notes_bp
+from app.routes.meetings import meetings_bp
 
 
 def get_database_path():
@@ -67,6 +68,7 @@ def create_app():
     app.register_blueprint(api_bp)
     app.register_blueprint(api_notes_bp)
     app.register_blueprint(notes_bp)
+    app.register_blueprint(meetings_bp, url_prefix="/meetings")
 
     with app.app_context():
         db.create_all()

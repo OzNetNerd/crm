@@ -32,6 +32,7 @@
                         <a href="{{ url_for('contacts.index') }}" class="text-nav-link">Contacts</a>
                         <a href="{{ url_for('opportunities.index') }}" class="text-nav-link">Opportunities</a>
                         <a href="{{ url_for('tasks.index') }}" class="text-nav-link">Tasks</a>
+                        <a href="{{ url_for('meetings.index') }}" class="text-nav-link">Meetings</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -49,6 +50,9 @@
     </main>
 
     {% block modals %}{% endblock %}
+    
+    <!-- Chat Widget -->
+    {% include 'components/chat_widget.html' %}
     
     <script src="{{ url_for('static', filename='js/modal-manager.js') }}"></script>
     <script src="{{ url_for('static', filename='js/search.js') }}"></script>
