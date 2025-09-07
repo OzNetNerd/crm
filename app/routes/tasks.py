@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
-from crm.models import db, Task, Company, Contact, Opportunity
-from crm.forms import MultiTaskForm
+from app.models import db, Task, Company, Contact, Opportunity
+from app.forms import MultiTaskForm
 
 tasks_bp = Blueprint("tasks", __name__)
 

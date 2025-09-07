@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
-from crm.models import db, Meeting, Company, ExtractedInsight
+from app.models import db, Meeting, Company, ExtractedInsight
 from datetime import datetime
 
 meetings_bp = Blueprint("meetings", __name__)

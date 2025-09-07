@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 # Import CRM models (they share the same database tables)
-from crm.models import (
+from app.models import (
     db,
     Company,
     Contact, 

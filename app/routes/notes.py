@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from crm.models import db, Note
+from app.models import db, Note
 
 notes_bp = Blueprint("notes", __name__, url_prefix="/api/notes")
 

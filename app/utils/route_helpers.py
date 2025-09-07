@@ -1,5 +1,5 @@
 from flask import request, jsonify, redirect, url_for
-from crm.models import db
+from app.models import db
 
 
 class BaseRouteHandler:
@@ -87,7 +87,7 @@ def parse_int_field(data, field_name, default=None):
 
 def get_entity_data_for_forms():
     """Get entity data commonly needed for forms"""
-    from crm.models import Company, Contact, Opportunity
+    from app.models import Company, Contact, Opportunity
     
     return {
         'companies': [{"id": c.id, "name": c.name} for c in Company.query.order_by(Company.name).all()],
@@ -105,7 +105,7 @@ class GenericAPIHandler:
     
     def get_details(self, entity_id):
         """Generic get details handler with notes"""
-        from crm.models import Note
+        from app.models import Note
         
         try:
             entity = self.model_class.query.get_or_404(entity_id)

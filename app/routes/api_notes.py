@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from crm.models import db, Company, Contact, Opportunity, Note
+from app.models import db, Company, Contact, Opportunity, Note
 
 api_notes_bp = Blueprint("api_notes", __name__, url_prefix="/api")
 

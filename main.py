@@ -1,18 +1,18 @@
 import argparse
 from pathlib import Path
 from flask import Flask
-from crm.models import db
-from crm.routes.dashboard import dashboard_bp
-from crm.routes.companies import companies_bp
-from crm.routes.contacts import contacts_bp
-from crm.routes.opportunities import opportunities_bp
-from crm.routes.tasks import tasks_bp
-from crm.routes.tasks_api import tasks_api_bp
-from crm.routes.search import search_bp
-from crm.routes.api import api_bp
-from crm.routes.api_notes import api_notes_bp
-from crm.routes.notes import notes_bp
-from crm.routes.meetings import meetings_bp
+from app.models import db
+from app.routes.dashboard import dashboard_bp
+from app.routes.companies import companies_bp
+from app.routes.contacts import contacts_bp
+from app.routes.opportunities import opportunities_bp
+from app.routes.tasks import tasks_bp
+from app.routes.tasks_api import tasks_api_bp
+from app.routes.search import search_bp
+from app.routes.api import api_bp
+from app.routes.api_notes import api_notes_bp
+from app.routes.notes import notes_bp
+from app.routes.meetings import meetings_bp
 
 
 def get_database_path():
@@ -51,7 +51,7 @@ def get_database_path():
 
 
 def create_app():
-    app = Flask(__name__, template_folder="crm/templates", static_folder="crm/static")
+    app = Flask(__name__, template_folder="app/templates", static_folder="app/static")
     app.config["SECRET_KEY"] = "dev-secret-key"
     app.config["SQLALCHEMY_DATABASE_URI"] = get_database_path()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False

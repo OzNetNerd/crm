@@ -1,7 +1,7 @@
 from datetime import date
 from flask import Blueprint, render_template, request, jsonify
-from crm.models import Opportunity, Company, Note
-from crm.utils.route_helpers import BaseRouteHandler, parse_date_field, parse_int_field, get_entity_data_for_forms
+from app.models import Opportunity, Company, Note
+from app.utils.route_helpers import BaseRouteHandler, parse_date_field, parse_int_field, get_entity_data_for_forms
 
 opportunities_bp = Blueprint("opportunities", __name__)
 opportunity_handler = BaseRouteHandler(Opportunity, "opportunities")

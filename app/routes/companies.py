@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
-from crm.models import Company
-from crm.utils.route_helpers import BaseRouteHandler
+from app.models import Company
+from app.utils.route_helpers import BaseRouteHandler
 
 companies_bp = Blueprint("companies", __name__)
 company_handler = BaseRouteHandler(Company, "companies")

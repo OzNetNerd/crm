@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
-from crm.models import Contact, Company
-from crm.utils.route_helpers import BaseRouteHandler, get_entity_data_for_forms
+from app.models import Contact, Company
+from app.utils.route_helpers import BaseRouteHandler, get_entity_data_for_forms
 
 contacts_bp = Blueprint("contacts", __name__)
 contact_handler = BaseRouteHandler(Contact, "contacts")
