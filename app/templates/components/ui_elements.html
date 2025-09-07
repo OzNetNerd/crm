@@ -372,35 +372,35 @@
   {{ badge_count_helper('priority', 'high', 'red') }}
   {{ badge_count_helper('custom', color='gray', custom_count=custom_task_list|length) }}
 #}
-{% macro badge_count_helper(filter_type, filter_value=None, color='gray', tasks_list='tasks', show_completed=None, custom_count=None) %}
+{% macro badge_count_helper(filter_type, filter_value=None, color='gray', tasks_list='tasks_objects', show_completed=None, custom_count=None) %}
 {%- if custom_count is not none -%}
     {%- set count = custom_count -%}
 {%- elif filter_type == 'status' -%}
-    {%- set count = (tasks|selectattr('status', 'equalto', filter_value)|list|length) -%}
+    {%- set count = (tasks_objects|selectattr('status', 'equalto', filter_value)|list|length) -%}
 {%- elif filter_type == 'priority' -%}
-    {%- set count = (tasks|selectattr('priority', 'equalto', filter_value)|list|length) -%}
+    {%- set count = (tasks_objects|selectattr('priority', 'equalto', filter_value)|list|length) -%}
 {%- elif filter_type == 'overdue' -%}
-    {%- set count = (tasks|selectattr('is_overdue', 'equalto', True)|list|length) -%}
+    {%- set count = (tasks_objects|selectattr('is_overdue', 'equalto', True)|list|length) -%}
 {%- elif filter_type == 'due_today' -%}
-    {%- set count = (tasks|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list|length) -%}
+    {%- set count = (tasks_objects|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list|length) -%}
 {%- elif filter_type == 'no_date' -%}
     {%- if show_completed -%}
-        {%- set count = (tasks|selectattr('due_date', 'none')|list|length) -%}
+        {%- set count = (tasks_objects|selectattr('due_date', 'none')|list|length) -%}
     {%- else -%}
-        {%- set count = (tasks|selectattr('due_date', 'none')|selectattr('status', 'ne', 'complete')|list|length) -%}
+        {%- set count = (tasks_objects|selectattr('due_date', 'none')|selectattr('status', 'ne', 'complete')|list|length) -%}
     {%- endif -%}
 {%- elif filter_type == 'entity' -%}
     {%- if filter_value == 'unrelated' -%}
         {%- if show_completed -%}
-            {%- set count = (tasks|selectattr('entity_type', 'none')|list|length) -%}
+            {%- set count = (tasks_objects|selectattr('entity_type', 'none')|list|length) -%}
         {%- else -%}
-            {%- set count = (tasks|selectattr('entity_type', 'none')|selectattr('status', 'ne', 'complete')|list|length) -%}
+            {%- set count = (tasks_objects|selectattr('entity_type', 'none')|selectattr('status', 'ne', 'complete')|list|length) -%}
         {%- endif -%}
     {%- else -%}
         {%- if show_completed -%}
-            {%- set count = (tasks|selectattr('entity_type', 'equalto', filter_value)|list|length) -%}
+            {%- set count = (tasks_objects|selectattr('entity_type', 'equalto', filter_value)|list|length) -%}
         {%- else -%}
-            {%- set count = (tasks|selectattr('entity_type', 'equalto', filter_value)|selectattr('status', 'ne', 'complete')|list|length) -%}
+            {%- set count = (tasks_objects|selectattr('entity_type', 'equalto', filter_value)|selectattr('status', 'ne', 'complete')|list|length) -%}
         {%- endif -%}
     {%- endif -%}
 {%- else -%}
@@ -442,7 +442,7 @@
     {% set badge_html %}
         {%- if filter_config -%}
             {%- if filter_config.type == 'status' -%}
-                {{ badge_count_helper('status', filter_config.value, colors.badge_color) }}
+                <span class="ml-2 badge-standard badge-{{ colors.badge_color }}">{{ (tasks_objects|selectattr('status', 'equalto', filter_config.value)|list|length) }}</span>
             {%- elif filter_config.type == 'priority' -%}
                 {{ badge_count_helper('priority', filter_config.value, colors.badge_color) }}
             {%- elif filter_config.type == 'overdue' -%}
@@ -450,9 +450,9 @@
             {%- elif filter_config.type == 'due_today' -%}
                 {{ badge_count_helper('due_today', color=colors.badge_color) }}
             {%- elif filter_config.type == 'no_date' -%}
-                {{ badge_count_helper('no_date', show_completed=showCompleted if showCompleted is defined else false, color=colors.badge_color) }}
+                {{ badge_count_helper('no_date', show_completed=show_completed if show_completed is defined else false, color=colors.badge_color) }}
             {%- elif filter_config.type == 'entity' -%}
-                {{ badge_count_helper('entity', filter_config.value, colors.badge_color, show_completed=showCompleted if showCompleted is defined else false) }}
+                {{ badge_count_helper('entity', filter_config.value, colors.badge_color, show_completed=show_completed if show_completed is defined else false) }}
             {%- elif filter_config.type == 'custom' and filter_config.custom_count is defined -%}
                 {{ badge_count_helper('custom', color=colors.badge_color, custom_count=filter_config.custom_count) }}
             {%- else -%}
