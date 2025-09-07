@@ -365,6 +365,20 @@ function taskManager() {
             this.updateFilters();
         },
 
+        shouldShowTask(taskData) {
+            // Priority filter logic: empty array means show all
+            const priorityMatch = this.priorityFilter.length === 0 || this.priorityFilter.includes(taskData.priority);
+            
+            // Entity filter logic: empty array means show all, null entity_type becomes 'unrelated'
+            const taskEntityType = taskData.entity_type || 'unrelated';
+            const entityMatch = this.entityFilter.length === 0 || this.entityFilter.includes(taskEntityType);
+            
+            // Completed task visibility based on showCompleted toggle
+            const completedMatch = taskData.status !== 'complete' || this.showCompleted;
+            
+            return priorityMatch && entityMatch && completedMatch;
+        },
+
         updateFilters() {
             // Apply all filters and sorting
             let tasks = [...this.allTasks];
@@ -545,46 +559,6 @@ function taskManager() {
                        entity === 'opportunity' ? 'Opportunities' : entity;
             }
             return `${this.entityFilter.length} Selected`;
-        },
-
-        // Render a task card (simplified HTML for Alpine.js)
-        renderTaskCard(task, context) {
-            // This is a simplified version - in production, you'd want to 
-            // include the full task card template or use a more sophisticated approach
-            const priorityClass = {
-                'high': 'border-l-red-500',
-                'medium': 'border-l-yellow-500',  
-                'low': 'border-l-green-500'
-            }[task.priority] || 'border-l-gray-300';
-            
-            const statusClass = {
-                'todo': 'bg-blue-50',
-                'in-progress': 'bg-yellow-50',
-                'complete': 'bg-green-50'
-            }[task.status] || 'bg-gray-50';
-            
-            const dueDateText = task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date';
-            
-            return `
-                <div class="task-card ${statusClass} ${priorityClass} border-l-4 p-4 mb-3 rounded-r-md">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <h4 class="font-medium text-gray-900">${task.description}</h4>
-                            <div class="mt-1 text-sm text-gray-500">
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-${task.priority === 'high' ? 'red' : task.priority === 'medium' ? 'yellow' : 'green'}-100 text-${task.priority === 'high' ? 'red' : task.priority === 'medium' ? 'yellow' : 'green'}-800">
-                                    ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                                </span>
-                                <span class="ml-2">${dueDateText}</span>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-${task.status === 'complete' ? 'green' : task.status === 'in-progress' ? 'yellow' : 'blue'}-100 text-${task.status === 'complete' ? 'green' : task.status === 'in-progress' ? 'yellow' : 'blue'}-800">
-                                ${task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            `;
         }
     };
 }

@@ -1,18 +1,45 @@
-{# Due Date-based Task Grouping - Alpine.js Rendered #}
+{# Due Date-based Task Grouping - Server-side rendered with Alpine.js filtering #}
+{% from "components/task_card.html" import render_task, render_task_hierarchy %}
 {% from "components/ui_elements.html" import section_group_header %}
 {% from "components/icons.html" import exclamation_circle_icon_solid, calendar_days_icon, calendar_icon, chart_bar_icon, question_mark_circle_icon %}
 
 <div class="space-y-4">
+    <!-- Pre-calculate date-based task counts for badges -->
+    {% set overdue_count = [] %}
+    {% set today_count = [] %}
+    {% set this_week_count = [] %}
+    {% set later_count = [] %}
+    {% set no_date_count = [] %}
+    {% for task in tasks_objects %}
+        {% if task.due_date %}
+            {% set days_diff = (task.due_date - today).days %}
+            {% if days_diff < 0 %}{% set _ = overdue_count.append(task) %}
+            {% elif days_diff == 0 %}{% set _ = today_count.append(task) %}
+            {% elif days_diff <= 7 %}{% set _ = this_week_count.append(task) %}
+            {% else %}{% set _ = later_count.append(task) %}
+            {% endif %}
+        {% else %}
+            {% set _ = no_date_count.append(task) %}
+        {% endif %}
+    {% endfor %}
+
     <!-- Overdue -->
     <div class="card-danger">
         {{ section_group_header('overdue', 'Overdue', exclamation_circle_icon_solid("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-red" x-text="getTasksByDueDate(\'overdue\').length"></span>', 'red', 'red', 'red', 'text-status-overdue') }}
         <div class="p-6" x-show="expandedSections['overdue']" x-cloak x-transition>
-            <template x-for="task in getTasksByDueDate('overdue')" :key="task.id">
-                <div x-html="renderTaskCard(task, 'overdue')"></div>
-            </template>
-            <div x-show="getTasksByDueDate('overdue').length === 0" class="text-empty-state">
-                No matching tasks found
-            </div>
+            {% for task in tasks_objects %}
+                {% if task.due_date and (task.due_date - today).days < 0 and task.task_type != 'child' %}
+                    <div class="task-wrapper" x-show="shouldShowTask({{ task.to_dict() | tojson | safe }})">
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'overdue') }}
+                        {% else %}
+                            {{ render_task(task, 'overdue') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-empty-state">No matching tasks found</p>
+            {% endfor %}
         </div>
     </div>
 
@@ -20,12 +47,19 @@
     <div class="card-orange">
         {{ section_group_header('today', 'Due Today', calendar_days_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-orange" x-text="getTasksByDueDate(\'today\').length"></span>', 'orange', 'orange', 'orange', 'text-status-warning') }}
         <div class="p-6" x-show="expandedSections['today']" x-cloak x-transition>
-            <template x-for="task in getTasksByDueDate('today')" :key="task.id">
-                <div x-html="renderTaskCard(task, 'today')"></div>
-            </template>
-            <div x-show="getTasksByDueDate('today').length === 0" class="text-empty-state">
-                No matching tasks found
-            </div>
+            {% for task in tasks_objects %}
+                {% if task.due_date and (task.due_date - today).days == 0 and task.task_type != 'child' %}
+                    <div class="task-wrapper" x-show="shouldShowTask({{ task.to_dict() | tojson | safe }})">
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'today') }}
+                        {% else %}
+                            {{ render_task(task, 'today') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-empty-state">No matching tasks found</p>
+            {% endfor %}
         </div>
     </div>
 
@@ -33,12 +67,19 @@
     <div class="card-info">
         {{ section_group_header('this_week', 'This Week', calendar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue" x-text="getTasksByDueDate(\'this_week\').length"></span>', 'blue', 'blue', 'blue', 'text-status-info') }}
         <div class="p-6" x-show="expandedSections['this_week']" x-cloak x-transition>
-            <template x-for="task in getTasksByDueDate('this_week')" :key="task.id">
-                <div x-html="renderTaskCard(task, 'this_week')"></div>
-            </template>
-            <div x-show="getTasksByDueDate('this_week').length === 0" class="text-empty-state">
-                No matching tasks found
-            </div>
+            {% for task in tasks_objects %}
+                {% if task.due_date and (task.due_date - today).days > 0 and (task.due_date - today).days <= 7 and task.task_type != 'child' %}
+                    <div class="task-wrapper" x-show="shouldShowTask({{ task.to_dict() | tojson | safe }})">
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'this_week') }}
+                        {% else %}
+                            {{ render_task(task, 'this_week') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-empty-state">No matching tasks found</p>
+            {% endfor %}
         </div>
     </div>
 
@@ -46,12 +87,19 @@
     <div class="card-neutral">
         {{ section_group_header('later', 'Later', chart_bar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray" x-text="getTasksByDueDate(\'later\').length"></span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
         <div class="p-6" x-show="expandedSections['later']" x-cloak x-transition>
-            <template x-for="task in getTasksByDueDate('later')" :key="task.id">
-                <div x-html="renderTaskCard(task, 'later')"></div>
-            </template>
-            <div x-show="getTasksByDueDate('later').length === 0" class="text-empty-state">
-                No matching tasks found
-            </div>
+            {% for task in tasks_objects %}
+                {% if task.due_date and (task.due_date - today).days > 7 and task.task_type != 'child' %}
+                    <div class="task-wrapper" x-show="shouldShowTask({{ task.to_dict() | tojson | safe }})">
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'later') }}
+                        {% else %}
+                            {{ render_task(task, 'later') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-empty-state">No matching tasks found</p>
+            {% endfor %}
         </div>
     </div>
 
@@ -59,12 +107,19 @@
     <div class="card-neutral">
         {{ section_group_header('no_date', 'No Due Date', question_mark_circle_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray" x-text="getTasksByDueDate(\'no_date\').length"></span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
         <div class="p-6" x-show="expandedSections['no_date']" x-cloak x-transition>
-            <template x-for="task in getTasksByDueDate('no_date')" :key="task.id">
-                <div x-html="renderTaskCard(task, 'no_date')"></div>
-            </template>
-            <div x-show="getTasksByDueDate('no_date').length === 0" class="text-empty-state">
-                No matching tasks found
-            </div>
+            {% for task in tasks_objects %}
+                {% if not task.due_date and task.task_type != 'child' %}
+                    <div class="task-wrapper" x-show="shouldShowTask({{ task.to_dict() | tojson | safe }})">
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'no_date') }}
+                        {% else %}
+                            {{ render_task(task, 'no_date') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-empty-state">No matching tasks found</p>
+            {% endfor %}
         </div>
     </div>
 </div>

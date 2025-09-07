@@ -1,4 +1,5 @@
-{# Entity-based Task Grouping - Alpine.js Rendered #}
+{# Entity-based Task Grouping - Server-side rendered with Alpine.js filtering #}
+{% from "components/task_card.html" import render_task, render_task_hierarchy %}
 {% from "components/ui_elements.html" import section_group_header %}
 {% from "components/icons.html" import building_office_icon, user_icon, currency_dollar_icon, clipboard_list_icon %}
 
@@ -7,12 +8,19 @@
     <div class="card-info">
         {{ section_group_header('company', 'Company Tasks', building_office_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue" x-text="getTasksByEntity(\'company\').length"></span>', 'blue', 'blue', 'blue', 'text-status-info') }}
         <div class="p-6" x-show="expandedSections['company']" x-cloak x-transition>
-            <template x-for="task in getTasksByEntity('company')" :key="task.id">
-                <div x-html="renderTaskCard(task, 'company')"></div>
-            </template>
-            <div x-show="getTasksByEntity('company').length === 0" class="text-empty-state">
-                No matching tasks found
-            </div>
+            {% for task in tasks_objects %}
+                {% if task.entity_type == 'company' and task.task_type != 'child' %}
+                    <div class="task-wrapper" x-show="shouldShowTask({{ task.to_dict() | tojson | safe }})">
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'company') }}
+                        {% else %}
+                            {{ render_task(task, 'company') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-empty-state">No matching tasks found</p>
+            {% endfor %}
         </div>
     </div>
 
@@ -20,12 +28,19 @@
     <div class="card-success">
         {{ section_group_header('contact', 'Contact Tasks', user_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-green" x-text="getTasksByEntity(\'contact\').length"></span>', 'green', 'green', 'green', 'text-status-success') }}
         <div class="p-6" x-show="expandedSections['contact']" x-cloak x-transition>
-            <template x-for="task in getTasksByEntity('contact')" :key="task.id">
-                <div x-html="renderTaskCard(task, 'contact')"></div>
-            </template>
-            <div x-show="getTasksByEntity('contact').length === 0" class="text-empty-state">
-                No matching tasks found
-            </div>
+            {% for task in tasks_objects %}
+                {% if task.entity_type == 'contact' and task.task_type != 'child' %}
+                    <div class="task-wrapper" x-show="shouldShowTask({{ task.to_dict() | tojson | safe }})">
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'contact') }}
+                        {% else %}
+                            {{ render_task(task, 'contact') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-empty-state">No matching tasks found</p>
+            {% endfor %}
         </div>
     </div>
 
@@ -33,12 +48,19 @@
     <div class="card-warning">
         {{ section_group_header('opportunity', 'Opportunity Tasks', currency_dollar_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-yellow" x-text="getTasksByEntity(\'opportunity\').length"></span>', 'yellow', 'yellow', 'yellow', 'text-status-warning') }}
         <div class="p-6" x-show="expandedSections['opportunity']" x-cloak x-transition>
-            <template x-for="task in getTasksByEntity('opportunity')" :key="task.id">
-                <div x-html="renderTaskCard(task, 'opportunity')"></div>
-            </template>
-            <div x-show="getTasksByEntity('opportunity').length === 0" class="text-empty-state">
-                No matching tasks found
-            </div>
+            {% for task in tasks_objects %}
+                {% if task.entity_type == 'opportunity' and task.task_type != 'child' %}
+                    <div class="task-wrapper" x-show="shouldShowTask({{ task.to_dict() | tojson | safe }})">
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'opportunity') }}
+                        {% else %}
+                            {{ render_task(task, 'opportunity') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-empty-state">No matching tasks found</p>
+            {% endfor %}
         </div>
     </div>
 
@@ -46,12 +68,19 @@
     <div class="card-neutral">
         {{ section_group_header('unrelated', 'General Tasks', clipboard_list_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-gray" x-text="getTasksByEntity(\'unrelated\').length"></span>', 'gray', 'gray', 'gray', 'text-status-neutral') }}
         <div class="p-6" x-show="expandedSections['unrelated']" x-cloak x-transition>
-            <template x-for="task in getTasksByEntity('unrelated')" :key="task.id">
-                <div x-html="renderTaskCard(task, 'unrelated')"></div>
-            </template>
-            <div x-show="getTasksByEntity('unrelated').length === 0" class="text-empty-state">
-                No matching tasks found
-            </div>
+            {% for task in tasks_objects %}
+                {% if (not task.entity_type or task.entity_type == 'unrelated') and task.task_type != 'child' %}
+                    <div class="task-wrapper" x-show="shouldShowTask({{ task.to_dict() | tojson | safe }})">
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'unrelated') }}
+                        {% else %}
+                            {{ render_task(task, 'unrelated') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-empty-state">No matching tasks found</p>
+            {% endfor %}
         </div>
     </div>
 </div>

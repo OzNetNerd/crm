@@ -1,4 +1,4 @@
-{# Status-based Task Grouping - Alpine.js Rendered #}
+{# Status-based Task Grouping - Server-side rendered with Alpine.js filtering #}
 {% from "components/task_card.html" import render_task, render_task_hierarchy %}
 {% from "components/ui_elements.html" import section_group_header %}
 {% from "components/icons.html" import clipboard_list_icon, bolt_icon, check_circle_icon_solid %}
@@ -8,12 +8,19 @@
     <div class="card">
         {{ section_group_header('todo', 'To Do', clipboard_list_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue" x-text="getTasksByStatus(\'todo\').length"></span>', 'blue', 'blue', 'blue', 'text-status-header') }}
         <div class="p-6" x-show="expandedSections['todo']" x-cloak x-transition>
-            <template x-for="task in getTasksByStatus('todo')" :key="task.id">
-                <div x-html="renderTaskCard(task, 'todo')"></div>
-            </template>
-            <div x-show="getTasksByStatus('todo').length === 0" class="text-empty-state">
-                No matching tasks found
-            </div>
+            {% for task in tasks_objects %}
+                {% if task.status == 'todo' and task.task_type != 'child' %}
+                    <div class="task-wrapper" x-show="shouldShowTask({{ task.to_dict() | tojson | safe }})">
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'todo') }}
+                        {% else %}
+                            {{ render_task(task, 'todo') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-empty-state">No matching tasks found</p>
+            {% endfor %}
         </div>
     </div>
 
@@ -21,12 +28,19 @@
     <div class="card">
         {{ section_group_header('in-progress', 'In Progress', bolt_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-yellow" x-text="getTasksByStatus(\'in-progress\').length"></span>', 'yellow', 'yellow', 'yellow', 'text-status-header') }}
         <div class="p-6" x-show="expandedSections['in-progress']" x-cloak x-transition>
-            <template x-for="task in getTasksByStatus('in-progress')" :key="task.id">
-                <div x-html="renderTaskCard(task, 'in-progress')"></div>
-            </template>
-            <div x-show="getTasksByStatus('in-progress').length === 0" class="text-empty-state">
-                No matching tasks found
-            </div>
+            {% for task in tasks_objects %}
+                {% if task.status == 'in-progress' and task.task_type != 'child' %}
+                    <div class="task-wrapper" x-show="shouldShowTask({{ task.to_dict() | tojson | safe }})">
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'in-progress') }}
+                        {% else %}
+                            {{ render_task(task, 'in-progress') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-empty-state">No matching tasks found</p>
+            {% endfor %}
         </div>
     </div>
 
@@ -34,12 +48,19 @@
     <div x-show="showCompleted" class="card">
         {{ section_group_header('complete', 'Completed', check_circle_icon_solid("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-green" x-text="getTasksByStatus(\'complete\').length"></span>', 'green', 'green', 'green', 'text-status-header') }}
         <div class="p-6" x-show="expandedSections['complete']" x-cloak x-transition>
-            <template x-for="task in getTasksByStatus('complete')" :key="task.id">
-                <div class="opacity-60" x-html="renderTaskCard(task, 'complete')"></div>
-            </template>
-            <div x-show="getTasksByStatus('complete').length === 0" class="text-empty-state">
-                No matching tasks found
-            </div>
+            {% for task in tasks_objects %}
+                {% if task.status == 'complete' and task.task_type != 'child' %}
+                    <div class="task-wrapper opacity-60" x-show="shouldShowTask({{ task.to_dict() | tojson | safe }})">
+                        {% if task.task_type == 'parent' %}
+                            {{ render_task_hierarchy(task, 'complete') }}
+                        {% else %}
+                            {{ render_task(task, 'complete') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-empty-state">No matching tasks found</p>
+            {% endfor %}
         </div>
     </div>
 </div>
