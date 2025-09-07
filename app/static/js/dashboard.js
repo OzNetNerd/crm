@@ -298,12 +298,10 @@ class TaskManager {
                                 }
                                 
                                 // Update the percentage text - it's a <span> with class text-label-primary next to the progress bar
-                                const progressContainer = taskCard.querySelector('.flex.items-center.space-x-2');
-                                if (progressContainer) {
-                                    const percentageSpan = progressContainer.querySelector('span.text-label-primary');
-                                    if (percentageSpan) {
-                                        percentageSpan.textContent = `${taskData.completion_percentage}%`;
-                                    }
+                                // Look for the percentage span more specifically - it should contain a % sign
+                                const percentageSpan = taskCard.querySelector('span.text-label-primary');
+                                if (percentageSpan && percentageSpan.textContent.includes('%')) {
+                                    percentageSpan.textContent = `${taskData.completion_percentage}%`;
                                 }
                             }
                         }
