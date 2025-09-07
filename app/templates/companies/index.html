@@ -84,14 +84,8 @@
 
 {% block scripts %}
 <script>
-function openNewCompanyModal() {
-    // TODO: Implement new company modal
-    console.log('Opening new company modal');
-}
-
-function openCompanyModal(companyId) {
-    openCompanyDetailModal(companyId);
-}
+// Companies use the centralized modal system from modal-manager.js
+// All modal functions are now handled globally
 </script>
 
 {% include "components/modals/confirmation.html" %}
