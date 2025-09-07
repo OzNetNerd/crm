@@ -13,11 +13,45 @@ def index():
     # Check if user wants to show completed tasks
     show_completed = request.args.get('show_completed', 'false').lower() == 'true'
     
-    if show_completed:
-        tasks_query = Task.query.order_by(Task.due_date.asc()).all()
-    else:
-        # Filter out completed tasks by default
-        tasks_query = Task.query.filter(Task.status != 'complete').order_by(Task.due_date.asc()).all()
+    # Get sort parameter from URL 
+    sort_by = request.args.get('sort_by', 'due_date')
+    sort_direction = request.args.get('sort_direction', 'asc')
+    
+    # Build base query
+    query = Task.query
+    if not show_completed:
+        query = query.filter(Task.status != 'complete')
+    
+    # Apply sorting based on sort_by parameter
+    if sort_by == 'priority':
+        # Priority: high=1, medium=2, low=3
+        priority_order = {'high': 1, 'medium': 2, 'low': 3}
+        if sort_direction == 'desc':
+            query = query.order_by(Task.priority.desc())
+        else:
+            query = query.order_by(Task.priority.asc())
+    elif sort_by == 'created':
+        if sort_direction == 'desc':
+            query = query.order_by(Task.created_at.desc())
+        else:
+            query = query.order_by(Task.created_at.asc())
+    elif sort_by == 'title':
+        if sort_direction == 'desc':
+            query = query.order_by(Task.description.desc())
+        else:
+            query = query.order_by(Task.description.asc())
+    elif sort_by == 'status':
+        if sort_direction == 'desc':
+            query = query.order_by(Task.status.desc())
+        else:
+            query = query.order_by(Task.status.asc())
+    else:  # Default to due_date
+        if sort_direction == 'desc':
+            query = query.order_by(Task.due_date.desc())
+        else:
+            query = query.order_by(Task.due_date.asc())
+    
+    tasks_query = query.all()
     
     today = date.today()
 

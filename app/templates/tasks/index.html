@@ -50,8 +50,8 @@
 
 <div x-data="{ 
     groupBy: 'status',
-    sortBy: 'due_date',
-    sortDirection: 'asc',
+    sortBy: '{{ request.args.get("sort_by", "due_date") }}',
+    sortDirection: '{{ request.args.get("sort_direction", "asc") }}',
     showCompleted: {{ 'true' if show_completed else 'false' }},
     priorityFilter: [],
     entityFilter: [],
@@ -176,6 +176,12 @@
             this.sortBy = newSortBy;
             this.sortDirection = 'asc';
         }
+        
+        // Reload page with new sort parameters
+        const url = new URL(window.location);
+        url.searchParams.set('sort_by', this.sortBy);
+        url.searchParams.set('sort_direction', this.sortDirection);
+        window.location.href = url.toString();
     }
 }" class="space-y-6">
 
@@ -205,51 +211,23 @@
             </div>
             
             <div class="flex items-center space-x-3">
-                <!-- Sort Dropdown using DRY macro with direction arrows -->
-                <div x-data="{ 
-                    open: false,
-                    sortOptions: [
-                        {value: 'due_date', label: 'Due Date'},
-                        {value: 'priority', label: 'Priority'}, 
-                        {value: 'created', label: 'Created Date'},
-                        {value: 'title', label: 'Task Title'},
-                        {value: 'status', label: 'Status'}
-                    ],
-                    getSortLabel(value) {
-                        const option = this.sortOptions.find(opt => opt.value === value);
-                        const arrow = sortDirection === 'asc' ? ' ↑' : ' ↓';
-                        return option ? option.label + arrow : 'Sort By';
-                    },
-                    handleSortChange(value) {
-                        setSortBy(value);
-                    }
-                }" class="multiselect-custom" @click.away="open = false">
-                    <button type="button" 
-                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm"
-                            x-cloak 
-                            @click="open = !open">
-                        <span x-text="getSortLabel(sortBy)">Due Date ↑</span>
-                    </button>
-                    
-                    <div x-show="open" 
-                         x-cloak
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="transform opacity-0 scale-95"
-                         x-transition:enter-end="transform opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="transform opacity-100 scale-100"
-                         x-transition:leave-end="transform opacity-0 scale-95"
-                         class="multiselect-dropdown">
-                        <div class="multiselect-options">
-                            <template x-for="option in sortOptions" :key="option.value">
-                                <div class="multiselect-option" 
-                                     @click="handleSortChange(option.value); open = false">
-                                    <span x-text="option.label + (sortBy === option.value ? (sortDirection === 'asc' ? ' ↑' : ' ↓') : '')"></span>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-                </div>
+                <!-- Sort Dropdown using DRY macro -->
+                <label class="flex items-center text-label-dark">Sort by:</label>
+                {{ dropdown_select('sortBy', [
+                    {'value': 'due_date', 'label': 'Due Date'},
+                    {'value': 'priority', 'label': 'Priority'}, 
+                    {'value': 'created', 'label': 'Created Date'},
+                    {'value': 'title', 'label': 'Task Title'},
+                    {'value': 'status', 'label': 'Status'}
+                ]) }}
+                
+                <!-- Sort Direction Arrow -->
+                <button type="button" 
+                        class="px-2 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                        @click="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'"
+                        :title="'Sort ' + (sortDirection === 'asc' ? 'Descending' : 'Ascending')">
+                    <span x-text="sortDirection === 'asc' ? '↑' : '↓'" class="text-gray-600"></span>
+                </button>
                 
                 {{ dropdown_multiselect('priorityFilter', [
                     {'value': 'high', 'label': 'High'},
