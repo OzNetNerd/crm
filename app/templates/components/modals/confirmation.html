@@ -7,6 +7,7 @@
         confirmAction: null,
         confirmClass: 'bg-blue-600 hover:bg-blue-700'
      }" 
+     x-cloak 
      @open-confirmation-modal.window="
         show = true; 
         title = $event.detail.title || '{{ default_title }}';
