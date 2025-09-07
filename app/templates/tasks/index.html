@@ -55,22 +55,63 @@
 
     <!-- Task Summary now handled by page_layout template -->
 
-    <!-- Enhanced Filters and Controls with HTMX -->
+    <!-- Enhanced Filters and Controls with HTMX and Better Styling -->
     <div class="card-padded">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div class="flex flex-wrap items-center gap-4">
-                <label class="flex items-center text-label-dark">Group by:</label>
-                <select class="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                        hx-get="/tasks/content" 
-                        hx-target="#tasks-content"
-                        hx-push-url="true"
-                        hx-include="[name='sort_by'], [name='sort_direction'], [name='show_completed'], [name='priority'], [name='entity']"
-                        name="group_by">
-                    <option value="status" {% if group_by == 'status' %}selected{% endif %}>Status</option>
-                    <option value="due_date" {% if group_by == 'due_date' %}selected{% endif %}>Due Date</option>
-                    <option value="priority" {% if group_by == 'priority' %}selected{% endif %}>Priority</option>
-                    <option value="entity" {% if group_by == 'entity' %}selected{% endif %}>Related To</option>
-                </select>
+                <label class="text-label-dark">Group by:</label>
+                
+                <!-- Group By Dropdown with HTMX (Button Style) -->
+                <div class="multiselect-custom" x-data="{ 
+                    open: false, 
+                    groupBy: '{{ group_by }}',
+                    updateGroupBy(value) {
+                        this.groupBy = value;
+                        htmx.ajax('GET', '/tasks/content?group_by=' + value + '&sort_by={{ sort_by }}&sort_direction={{ sort_direction }}&show_completed={{ show_completed }}&priority={{ priority_filter }}&entity={{ entity_filter }}', {
+                            target: '#tasks-content',
+                            pushUrl: true
+                        });
+                    }
+                }" @click.away="open = false">
+                    <button type="button" 
+                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
+                            @click="open = !open">
+                        <span x-text="
+                            groupBy === 'status' ? 'Status' :
+                            groupBy === 'due_date' ? 'Due Date' :
+                            groupBy === 'priority' ? 'Priority' :
+                            groupBy === 'entity' ? 'Related To' : 'Status'
+                        "></span>
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    
+                    <div x-show="open" 
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="multiselect-dropdown">
+                        <div class="multiselect-options">
+                            <div class="multiselect-option" @click="updateGroupBy('status'); open = false">
+                                <span>Status</span>
+                            </div>
+                            <div class="multiselect-option" @click="updateGroupBy('due_date'); open = false">
+                                <span>Due Date</span>
+                            </div>
+                            <div class="multiselect-option" @click="updateGroupBy('priority'); open = false">
+                                <span>Priority</span>
+                            </div>
+                            <div class="multiselect-option" @click="updateGroupBy('entity'); open = false">
+                                <span>Related To</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <label class="flex items-center">
                     <input type="checkbox" 
@@ -89,20 +130,63 @@
             </div>
             
             <div class="flex items-center space-x-3">
-                <!-- Sort Dropdown with HTMX -->
-                <label class="flex items-center text-label-dark">Sort by:</label>
-                <select class="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                        hx-get="/tasks/content"
-                        hx-target="#tasks-content" 
-                        hx-push-url="true"
-                        hx-include="[name='group_by'], [name='sort_direction'], [name='show_completed'], [name='priority'], [name='entity']"
-                        name="sort_by">
-                    <option value="due_date" {% if sort_by == 'due_date' %}selected{% endif %}>Due Date</option>
-                    <option value="priority" {% if sort_by == 'priority' %}selected{% endif %}>Priority</option>
-                    <option value="created" {% if sort_by == 'created' %}selected{% endif %}>Created Date</option>
-                    <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Task Title</option>
-                    <option value="status" {% if sort_by == 'status' %}selected{% endif %}>Status</option>
-                </select>
+                <label class="text-label-dark">Sort by:</label>
+                
+                <!-- Sort By Dropdown with HTMX (Button Style) -->
+                <div class="multiselect-custom" x-data="{ 
+                    open: false, 
+                    sortBy: '{{ sort_by }}',
+                    updateSortBy(value) {
+                        this.sortBy = value;
+                        htmx.ajax('GET', '/tasks/content?group_by={{ group_by }}&sort_by=' + value + '&sort_direction={{ sort_direction }}&show_completed={{ show_completed }}&priority={{ priority_filter }}&entity={{ entity_filter }}', {
+                            target: '#tasks-content',
+                            pushUrl: true
+                        });
+                    }
+                }" @click.away="open = false">
+                    <button type="button" 
+                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
+                            @click="open = !open">
+                        <span x-text="
+                            sortBy === 'due_date' ? 'Due Date' :
+                            sortBy === 'priority' ? 'Priority' :
+                            sortBy === 'created' ? 'Created Date' :
+                            sortBy === 'title' ? 'Task Title' :
+                            sortBy === 'status' ? 'Status' : 'Due Date'
+                        "></span>
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    
+                    <div x-show="open" 
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="multiselect-dropdown">
+                        <div class="multiselect-options">
+                            <div class="multiselect-option" @click="updateSortBy('due_date'); open = false">
+                                <span>Due Date</span>
+                            </div>
+                            <div class="multiselect-option" @click="updateSortBy('priority'); open = false">
+                                <span>Priority</span>
+                            </div>
+                            <div class="multiselect-option" @click="updateSortBy('created'); open = false">
+                                <span>Created Date</span>
+                            </div>
+                            <div class="multiselect-option" @click="updateSortBy('title'); open = false">
+                                <span>Task Title</span>
+                            </div>
+                            <div class="multiselect-option" @click="updateSortBy('status'); open = false">
+                                <span>Status</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Sort Direction Arrow with HTMX -->
                 <button type="button" 
@@ -116,32 +200,111 @@
                     <span class="text-gray-600">{{ '↑' if sort_direction == 'asc' else '↓' }}</span>
                 </button>
                 
-                <!-- Priority filter - will implement multiselect later -->
-                <select class="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                        hx-get="/tasks/content"
-                        hx-target="#tasks-content"
-                        hx-push-url="true"
-                        hx-include="[name='group_by'], [name='sort_by'], [name='sort_direction'], [name='show_completed'], [name='entity']"
-                        name="priority">
-                    <option value="">All Priorities</option>
-                    <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
-                    <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
-                    <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
-                </select>
+                <!-- Priority Filter (Button Style) -->
+                <div class="multiselect-custom" x-data="{ 
+                    open: false, 
+                    priority: '{{ priority_filter }}',
+                    updatePriority(value) {
+                        this.priority = value;
+                        htmx.ajax('GET', '/tasks/content?group_by={{ group_by }}&sort_by={{ sort_by }}&sort_direction={{ sort_direction }}&show_completed={{ show_completed }}&priority=' + value + '&entity={{ entity_filter }}', {
+                            target: '#tasks-content',
+                            pushUrl: true
+                        });
+                    }
+                }" @click.away="open = false">
+                    <button type="button" 
+                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
+                            @click="open = !open">
+                        <span x-text="
+                            priority === 'high' ? 'High' :
+                            priority === 'medium' ? 'Medium' :
+                            priority === 'low' ? 'Low' : 'All Priorities'
+                        "></span>
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    
+                    <div x-show="open" 
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="multiselect-dropdown">
+                        <div class="multiselect-options">
+                            <div class="multiselect-option" @click="updatePriority(''); open = false">
+                                <span>All Priorities</span>
+                            </div>
+                            <div class="multiselect-option" @click="updatePriority('high'); open = false">
+                                <span>High</span>
+                            </div>
+                            <div class="multiselect-option" @click="updatePriority('medium'); open = false">
+                                <span>Medium</span>
+                            </div>
+                            <div class="multiselect-option" @click="updatePriority('low'); open = false">
+                                <span>Low</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
-                <!-- Entity filter - will implement multiselect later -->
-                <select class="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                        hx-get="/tasks/content"
-                        hx-target="#tasks-content"
-                        hx-push-url="true"
-                        hx-include="[name='group_by'], [name='sort_by'], [name='sort_direction'], [name='show_completed'], [name='priority']"
-                        name="entity">
-                    <option value="">All Entities</option>
-                    <option value="company" {% if entity_filter == 'company' %}selected{% endif %}>Companies</option>
-                    <option value="contact" {% if entity_filter == 'contact' %}selected{% endif %}>Contacts</option>
-                    <option value="opportunity" {% if entity_filter == 'opportunity' %}selected{% endif %}>Opportunities</option>
-                    <option value="unrelated" {% if entity_filter == 'unrelated' %}selected{% endif %}>General Tasks</option>
-                </select>
+                <!-- Entity Filter (Button Style) -->
+                <div class="multiselect-custom" x-data="{ 
+                    open: false, 
+                    entity: '{{ entity_filter }}',
+                    updateEntity(value) {
+                        this.entity = value;
+                        htmx.ajax('GET', '/tasks/content?group_by={{ group_by }}&sort_by={{ sort_by }}&sort_direction={{ sort_direction }}&show_completed={{ show_completed }}&priority={{ priority_filter }}&entity=' + value, {
+                            target: '#tasks-content',
+                            pushUrl: true
+                        });
+                    }
+                }" @click.away="open = false">
+                    <button type="button" 
+                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
+                            @click="open = !open">
+                        <span x-text="
+                            entity === 'company' ? 'Companies' :
+                            entity === 'contact' ? 'Contacts' :
+                            entity === 'opportunity' ? 'Opportunities' :
+                            entity === 'unrelated' ? 'General Tasks' : 'All Entities'
+                        "></span>
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    
+                    <div x-show="open" 
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="multiselect-dropdown">
+                        <div class="multiselect-options">
+                            <div class="multiselect-option" @click="updateEntity(''); open = false">
+                                <span>All Entities</span>
+                            </div>
+                            <div class="multiselect-option" @click="updateEntity('company'); open = false">
+                                <span>Companies</span>
+                            </div>
+                            <div class="multiselect-option" @click="updateEntity('contact'); open = false">
+                                <span>Contacts</span>
+                            </div>
+                            <div class="multiselect-option" @click="updateEntity('opportunity'); open = false">
+                                <span>Opportunities</span>
+                            </div>
+                            <div class="multiselect-option" @click="updateEntity('unrelated'); open = false">
+                                <span>General Tasks</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
