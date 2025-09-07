@@ -62,7 +62,7 @@ Always respond with valid JSON only. Extract key information including:
 Be precise and only extract information that is clearly stated."""
             ),
             'conversation': ModelConfig(
-                name="llama3.1:70b", 
+                name="llama3.1:8b", 
                 purpose="conversation",
                 temperature=0.7,  # Higher temperature for natural conversation
                 max_tokens=1024,
@@ -204,7 +204,8 @@ Respond with valid JSON only:
         self,
         user_message: str,
         context: Optional[Dict[str, Any]] = None,
-        conversation_history: Optional[List[Dict[str, str]]] = None
+        conversation_history: Optional[List[Dict[str, str]]] = None,
+        stream: bool = False
     ) -> Dict[str, Any]:
         """Generate conversational response using the larger model"""
         
@@ -232,13 +233,24 @@ Respond with valid JSON only:
 User: {user_message}        """
         
         try:
-            response_text = await self._generate(
-                model=model_config.name,
-                prompt=prompt,
-                system=model_config.system_prompt,
-                temperature=model_config.temperature,
-                max_tokens=model_config.max_tokens
-            )
+            if stream:
+                # For streaming, return an async generator
+                return self._generate_stream(
+                    model=model_config.name,
+                    prompt=prompt,
+                    system=model_config.system_prompt,
+                    temperature=model_config.temperature,
+                    max_tokens=model_config.max_tokens,
+                    start_time=start_time
+                )
+            else:
+                response_text = await self._generate(
+                    model=model_config.name,
+                    prompt=prompt,
+                    system=model_config.system_prompt,
+                    temperature=model_config.temperature,
+                    max_tokens=model_config.max_tokens
+                )
             
             processing_time = (datetime.now() - start_time).total_seconds()
             
@@ -299,6 +311,79 @@ User: {user_message}        """
         except Exception as e:
             logger.error(f"Error calling Ollama: {e}")
             raise Exception(f"Failed to generate response: {str(e)}")
+    
+    async def _generate_stream(
+        self,
+        model: str,
+        prompt: str,
+        system: str = "",
+        temperature: float = 0.7,
+        max_tokens: int = 1024,
+        start_time = None
+    ):
+        """Stream text generation using Ollama API"""
+        
+        payload = {
+            "model": model,
+            "prompt": prompt,
+            "system": system,
+            "stream": True,
+            "options": {
+                "temperature": temperature,
+                "num_predict": max_tokens,
+            }
+        }
+        
+        try:
+            async with self.client.stream(
+                "POST",
+                f"{self.base_url}/api/generate",
+                json=payload
+            ) as response:
+                response.raise_for_status()
+                
+                full_response = ""
+                async for line in response.aiter_lines():
+                    if line:
+                        try:
+                            chunk = json.loads(line)
+                            if "response" in chunk:
+                                text_chunk = chunk["response"]
+                                full_response += text_chunk
+                                
+                                # Yield streaming chunk
+                                yield {
+                                    "type": "chunk",
+                                    "text": text_chunk,
+                                    "full_text": full_response
+                                }
+                                
+                            if chunk.get("done", False):
+                                processing_time = (datetime.now() - start_time).total_seconds() if start_time else 0
+                                # Yield final response
+                                yield {
+                                    "type": "complete",
+                                    "success": True,
+                                    "response": full_response.strip(),
+                                    "processing_time": processing_time,
+                                    "model_used": model
+                                }
+                                return
+                                
+                        except json.JSONDecodeError:
+                            continue
+                            
+        except Exception as e:
+            logger.error(f"Streaming error: {e}")
+            processing_time = (datetime.now() - start_time).total_seconds() if start_time else 0
+            yield {
+                "type": "complete",
+                "success": False,
+                "response": "I'm sorry, I encountered an error processing your request.",
+                "error_message": str(e),
+                "processing_time": processing_time,
+                "model_used": model
+            }
     
     def _calculate_extraction_confidence(self, extracted_data: Dict[str, Any]) -> float:
         """Calculate confidence score based on extraction completeness"""

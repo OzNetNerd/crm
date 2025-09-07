@@ -5,15 +5,21 @@ This will be enhanced with LLM capabilities in later phases.
 
 from typing import Dict, Any, List
 from datetime import datetime
+import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 
 from chatbot.models import Company, Contact, Task, Opportunity, Meeting, ChatHistory
+from chatbot.services.ollama_client import get_ollama_client
+from chatbot.services.qdrant_service import get_qdrant_service
 
 
 class ChatHandler:
     def __init__(self):
         self.session_context: Dict[str, Dict] = {}
+        self.conversation_history: Dict[str, List[Dict[str, str]]] = {}
+        self.response_cache: Dict[str, Dict[str, Any]] = {}
+        self._setup_common_responses()
     
     async def process_message(
         self, 
@@ -33,10 +39,169 @@ class ChatHandler:
             Dictionary containing the response and metadata
         """
         
-        # Simple keyword-based routing (will be replaced with LLM routing)
-        response_data = await self._route_query(user_message, session_id, db_session)
+        try:
+            # Check cache first
+            cache_key = self._get_cache_key(user_message)
+            if cache_key in self.response_cache:
+                cached_response = self.response_cache[cache_key]
+                return {
+                    "response": cached_response["response"],
+                    "context_used": cached_response.get("context", {}),
+                    "response_metadata": {
+                        "query_type": "cached_response",
+                        "processing_time": 0.001,
+                        "cached": True
+                    }
+                }
+            
+            # Get Ollama client
+            ollama_client = await get_ollama_client()
+            
+            # Check if Ollama is available
+            health_status = await ollama_client.health_check()
+            
+            if health_status.get("status") != "healthy":
+                # Fallback to keyword-based routing
+                return await self._route_query(user_message, session_id, db_session)
+            
+            # Add to conversation history
+            if session_id not in self.conversation_history:
+                self.conversation_history[session_id] = []
+            
+            self.conversation_history[session_id].append({
+                "role": "user",
+                "content": user_message
+            })
+            
+            # Determine query intent and gather context
+            context = await self._gather_context(user_message, db_session)
+            
+            # Generate response using LLM with streaming
+            stream = await ollama_client.generate_chat_response(
+                user_message=user_message,
+                context=context,
+                conversation_history=self.conversation_history[session_id],
+                stream=True
+            )
+            
+            # Return the stream for the WebSocket to handle
+            return {
+                "type": "stream",
+                "stream": stream,
+                "session_id": session_id
+            }
+                
+        except Exception as e:
+            # On any error, fallback to keyword routing
+            return await self._route_query(user_message, session_id, db_session)
+    
+    async def _gather_context(self, user_message: str, db_session: AsyncSession) -> Dict[str, Any]:
+        """Gather relevant context using Qdrant semantic search"""
         
-        return response_data
+        context = {}
+        
+        try:
+            # Get Qdrant service
+            qdrant_service = get_qdrant_service()
+            
+            # Perform semantic search for similar content
+            similar_docs = qdrant_service.search_similar(
+                query_text=user_message,
+                limit=10,  # Get top 10 most relevant documents
+                score_threshold=0.3  # Lower threshold for broader matches
+            )
+            
+            # Organize results by entity type
+            companies = []
+            contacts = []
+            opportunities = []
+            tasks = []
+            meetings = []
+            notes = []
+            
+            for doc in similar_docs:
+                entity_type = doc.get("entity_type", "")
+                entity_data = {
+                    "id": doc.get("entity_id", 0),
+                    "similarity_score": doc.get("score", 0),
+                    "text_snippet": doc.get("text", "")[:200] + "..." if len(doc.get("text", "")) > 200 else doc.get("text", ""),
+                    **doc.get("metadata", {})
+                }
+                
+                if entity_type == "company":
+                    companies.append(entity_data)
+                elif entity_type == "contact":
+                    contacts.append(entity_data)
+                elif entity_type == "opportunity":
+                    opportunities.append(entity_data)
+                elif entity_type == "task":
+                    tasks.append(entity_data)
+                elif entity_type == "meeting":
+                    meetings.append(entity_data)
+                elif entity_type == "note":
+                    notes.append(entity_data)
+            
+            # Build context with most relevant entities
+            if companies:
+                context["companies"] = companies[:3]  # Limit to top 3
+            if contacts:
+                context["contacts"] = contacts[:3]
+            if opportunities:
+                context["opportunities"] = opportunities[:3]
+            if tasks:
+                context["tasks"] = tasks[:3]
+            if meetings:
+                context["meetings"] = meetings[:2]
+            if notes:
+                context["notes"] = notes[:2]
+                
+            # Add search metadata
+            context["search_metadata"] = {
+                "total_matches": len(similar_docs),
+                "search_method": "semantic_similarity",
+                "query": user_message
+            }
+                
+        except Exception as e:
+            # If context gathering fails, return empty context with error info
+            context = {"context_error": str(e), "fallback_used": True}
+            
+        return context
+    
+    def _setup_common_responses(self):
+        """Setup pre-cached responses for common queries"""
+        self.response_cache = {
+            "hello": {
+                "response": "Hello! I'm your CRM assistant. I can help you find information about companies, contacts, tasks, and meetings. What would you like to know?",
+                "context": {}
+            },
+            "help": {
+                "response": "I can help you with:\n• **Companies** - View your business clients and prospects\n• **Contacts** - Find people and their roles\n• **Tasks** - Check pending work and deadlines\n• **Meetings** - Review recent discussions\n\nJust ask me something like 'show me companies' or 'what tasks are pending?'",
+                "context": {}
+            },
+            "what can you do": {
+                "response": "I'm your CRM assistant! I can help you:\n• Find companies by industry or name\n• Look up contacts and their details\n• Show pending tasks and priorities\n• Review meeting history and analysis\n\nTry asking: 'What companies do we have?' or 'Show me high priority tasks'",
+                "context": {}
+            }
+        }
+    
+    def _get_cache_key(self, message: str) -> str:
+        """Generate cache key from user message"""
+        message_clean = message.lower().strip()
+        
+        # Check for exact matches first
+        if message_clean in self.response_cache:
+            return message_clean
+            
+        # Check for specific patterns that should be cached
+        if any(greeting in message_clean for greeting in ['hello', 'hi', 'hey']):
+            return 'hello'
+        elif any(help_word in message_clean for help_word in ['help', 'what can you do', 'what do you do']):
+            return 'help'
+        elif message_clean == 'what can you do':
+            return 'what can you do'
+                
+        return message_clean  # Return original if no match (will not be cached)
     
     async def _route_query(
         self, 
