@@ -8,21 +8,41 @@ tasks_bp = Blueprint("tasks", __name__)
 task_handler = BaseRouteHandler(Task, "tasks")
 
 
+def get_all_tasks_context():
+    """Simplified function to get all tasks for frontend-only filtering"""
+    # Get URL parameters for initial state (frontend will handle filtering/sorting)
+    show_completed = request.args.get('show_completed', 'false').lower() == 'true'
+    sort_by = request.args.get('sort_by', 'due_date')
+    sort_direction = request.args.get('sort_direction', 'asc')
+    group_by = request.args.get('group_by', 'status')
+    priority_filter = request.args.get('priority', '').split(',') if request.args.get('priority', '') else []
+    entity_filter = request.args.get('entity', '').split(',') if request.args.get('entity', '') else []
+    
+    # Get ALL tasks - filtering/sorting will be done in frontend
+    all_tasks = Task.query.order_by(Task.created_at.desc()).all()
+    
+    return {
+        'all_tasks': all_tasks,
+        'show_completed': show_completed,
+        'sort_by': sort_by,
+        'sort_direction': sort_direction,
+        'group_by': group_by,
+        'priority_filter': priority_filter,
+        'entity_filter': entity_filter,
+        'today': date.today()
+    }
+
+
+# Removed /content endpoint - using frontend-only filtering
+
+
 @tasks_bp.route("/")
 def index():
-    # Check if user wants to show completed tasks
-    show_completed = request.args.get('show_completed', 'false').lower() == 'true'
+    # Get all context data for frontend-only filtering
+    context = get_all_tasks_context()
     
-    if show_completed:
-        tasks_query = Task.query.order_by(Task.due_date.asc()).all()
-    else:
-        # Filter out completed tasks by default
-        tasks_query = Task.query.filter(Task.status != 'complete').order_by(Task.due_date.asc()).all()
-    
-    today = date.today()
-
-    # Convert tasks to dictionaries for JSON serialization
-    tasks = [task.to_dict() for task in tasks_query]
+    # Convert tasks to dictionaries for JSON serialization (for Alpine.js compatibility)
+    tasks = [task.to_dict() for task in context['all_tasks']]
 
     # Serialize objects for JSON use in templates
     companies_data = [
@@ -39,9 +59,14 @@ def index():
     return render_template(
         "tasks/index.html",
         tasks=tasks,
-        tasks_objects=tasks_query,  # Keep original objects for template logic
-        today=today,
-        show_completed=show_completed,
+        tasks_objects=context['all_tasks'],  # Keep original objects for template logic  
+        today=context['today'],
+        show_completed=context['show_completed'],
+        sort_by=context['sort_by'],
+        sort_direction=context['sort_direction'],
+        group_by=context['group_by'],
+        priority_filter=context['priority_filter'],
+        entity_filter=context['entity_filter'],
         companies=companies_data,
         contacts=contacts_data,
         opportunities=opportunities_data,
