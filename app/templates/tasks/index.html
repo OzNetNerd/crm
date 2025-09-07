@@ -346,7 +346,8 @@
 {% endblock %}
 
 {% block modals %}
-{% include "components/modals/confirmation.html" %}
+{% from "components/modals/confirmation.html" import confirmation_modal %}
+{{ confirmation_modal('task-confirmation-modal') }}
 {% include "components/modals/task/task_detail.html" %}
 {% include "components/modals/task/task_new.html" %}
 {% include "components/modals/contact/contact_detail.html" %}
@@ -409,6 +410,42 @@ function taskManager() {
 
         init() {
             this.updateFilters();
+            this.setupEventDelegation();
+        },
+
+        // Setup event delegation for dynamically rendered task cards
+        setupEventDelegation() {
+            const tasksContent = document.getElementById('tasks-content');
+            if (!tasksContent) return;
+
+            // Event delegation for all task card buttons
+            tasksContent.addEventListener('click', (e) => {
+                // Check if clicked element is a task action button
+                const button = e.target.closest('button[title]');
+                if (!button) return;
+
+                const taskCard = button.closest('[data-task-id]');
+                if (!taskCard) return;
+
+                const taskId = parseInt(taskCard.getAttribute('data-task-id'));
+                if (!taskId) return;
+
+                e.stopPropagation();
+
+                // Route to appropriate action based on button title
+                const title = button.getAttribute('title');
+                switch (title) {
+                    case 'Complete task':
+                        window.completeTask(taskId);
+                        break;
+                    case 'Edit task':
+                        window.editTask(taskId);
+                        break;
+                    case 'Delete task':
+                        window.deleteTask(taskId);
+                        break;
+                }
+            });
         },
 
         shouldShowTask(taskData) {

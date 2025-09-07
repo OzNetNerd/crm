@@ -371,6 +371,19 @@ document.addEventListener('keydown', function(e) {
 window.TaskManager = TaskManager;
 window.ModalManager = ModalManager;
 
+// Global confirmation modal function
+window.showConfirmationModal = function(options) {
+    window.dispatchEvent(new CustomEvent('open-confirmation-modal', {
+        detail: {
+            title: options.title || 'Confirm Action',
+            message: options.message || '',
+            confirmText: options.confirmText || 'Confirm',
+            confirmClass: options.confirmClass || 'bg-blue-600 hover:bg-blue-700',
+            confirmAction: options.confirmAction
+        }
+    }));
+};
+
 // Global function wrappers with confirmation dialogs
 window.completeTask = function(taskId) {
     window.showConfirmationModal({
