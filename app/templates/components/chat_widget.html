@@ -141,7 +141,7 @@ function chatWidget() {
             
             try {
                 // Try to connect to the chatbot service
-                this.websocket = new WebSocket(`ws://localhost:8001/ws/chat/${this.sessionId}`);
+                this.websocket = new WebSocket(`ws://localhost:8009/ws/chat/${this.sessionId}`);
                 
                 this.websocket.onopen = () => {
                     this.connectionStatus = 'connected';
@@ -178,7 +178,7 @@ function chatWidget() {
             } catch (error) {
                 console.error('Failed to connect:', error);
                 this.connectionStatus = 'disconnected';
-                this.addSystemMessage('Failed to connect to assistant. Make sure the chatbot service is running on port 8001.');
+                this.addSystemMessage('Failed to connect to assistant. Make sure the chatbot service is running on port 8009.');
             }
         },
         
