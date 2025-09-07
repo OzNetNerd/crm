@@ -1,8 +1,10 @@
 from datetime import date
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for
-from app.models import db, Opportunity, Company, Note
+from flask import Blueprint, render_template, request, jsonify
+from app.models import Opportunity, Company, Note
+from app.utils.route_helpers import BaseRouteHandler, parse_date_field, parse_int_field, get_entity_data_for_forms
 
 opportunities_bp = Blueprint("opportunities", __name__)
+opportunity_handler = BaseRouteHandler(Opportunity, "opportunities")
 
 
 @opportunities_bp.route("/")
@@ -27,65 +29,23 @@ def detail(opportunity_id):
 @opportunities_bp.route("/new", methods=["GET", "POST"])
 def new():
     if request.method == "POST":
-        data = request.get_json() if request.is_json else request.form
-        # Convert data types properly
-        value = data.get("value")
-        if value:
-            try:
-                value = int(value)
-            except (ValueError, TypeError):
-                value = None
-        else:
-            value = None
-
-        probability = data.get("probability", 0)
-        if isinstance(probability, str):
-            try:
-                probability = int(probability)
-            except (ValueError, TypeError):
-                probability = 0
-
-        expected_close_date = data.get("expected_close_date")
-        if not expected_close_date or expected_close_date == "":
-            expected_close_date = None
-        elif isinstance(expected_close_date, str):
-            try:
-                from datetime import datetime
-
-                expected_close_date = datetime.strptime(
-                    expected_close_date, "%Y-%m-%d"
-                ).date()
-            except (ValueError, TypeError):
-                expected_close_date = None
-
-        company_id = data.get("company_id")
-        if isinstance(company_id, str):
-            try:
-                company_id = int(company_id)
-            except (ValueError, TypeError):
+        def parse_company_id(data):
+            company_id = parse_int_field(data, "company_id")
+            if company_id is None:
                 return jsonify({"error": "Invalid company ID"}), 400
-
-        opportunity = Opportunity(
-            name=data["name"],
-            company_id=company_id,
-            value=value,
-            probability=probability,
-            expected_close_date=expected_close_date,
-            stage=data.get("stage", "prospect"),
+            return company_id
+        
+        return opportunity_handler.handle_create(
+            name="name",
+            company_id=parse_company_id,
+            value=lambda data: parse_int_field(data, "value"),
+            probability=lambda data: parse_int_field(data, "probability", 0),
+            expected_close_date=lambda data: parse_date_field(data, "expected_close_date"),
+            stage=lambda data: data.get("stage", "prospect")
         )
 
-        db.session.add(opportunity)
-        db.session.commit()
-
-        if request.is_json:
-            return jsonify({"status": "success", "opportunity_id": opportunity.id})
-        else:
-            return redirect(
-                url_for("opportunities.detail", opportunity_id=opportunity.id)
-            )
-
-    companies = Company.query.order_by(Company.name).all()
-    return render_template("opportunities/new.html", companies=companies)
+    entity_data = get_entity_data_for_forms()
+    return render_template("opportunities/new.html", companies=entity_data['companies'])
 
 
 @opportunities_bp.route("/<int:opportunity_id>", methods=["DELETE"])

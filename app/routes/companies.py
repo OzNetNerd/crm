@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for
-from app.models import db, Company
+from flask import Blueprint, render_template
+from app.models import Company
+from app.utils.route_helpers import BaseRouteHandler
 
 companies_bp = Blueprint("companies", __name__)
+company_handler = BaseRouteHandler(Company, "companies")
 
 
 @companies_bp.route("/")
@@ -19,20 +21,10 @@ def detail(company_id):
 @companies_bp.route("/new", methods=["GET", "POST"])
 def new():
     if request.method == "POST":
-        data = request.get_json() if request.is_json else request.form
-
-        company = Company(
-            name=data["name"],
-            industry=data.get("industry"),
-            website=data.get("website"),
+        return company_handler.handle_create(
+            name="name",
+            industry="industry",
+            website="website"
         )
-
-        db.session.add(company)
-        db.session.commit()
-
-        if request.is_json:
-            return jsonify({"status": "success", "company_id": company.id})
-        else:
-            return redirect(url_for("companies.detail", company_id=company.id))
 
     return render_template("companies/new.html")

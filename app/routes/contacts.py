@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for
-from app.models import db, Contact, Company
+from flask import Blueprint, render_template
+from app.models import Contact, Company
+from app.utils.route_helpers import BaseRouteHandler, get_entity_data_for_forms
 
 contacts_bp = Blueprint("contacts", __name__)
+contact_handler = BaseRouteHandler(Contact, "contacts")
 
 
 @contacts_bp.route("/")
@@ -19,23 +21,13 @@ def detail(contact_id):
 @contacts_bp.route("/new", methods=["GET", "POST"])
 def new():
     if request.method == "POST":
-        data = request.get_json() if request.is_json else request.form
-
-        contact = Contact(
-            name=data["name"],
-            role=data.get("role"),
-            email=data.get("email"),
-            phone=data.get("phone"),
-            company_id=data["company_id"],
+        return contact_handler.handle_create(
+            name="name",
+            role="role", 
+            email="email",
+            phone="phone",
+            company_id="company_id"
         )
 
-        db.session.add(contact)
-        db.session.commit()
-
-        if request.is_json:
-            return jsonify({"status": "success", "contact_id": contact.id})
-        else:
-            return redirect(url_for("contacts.detail", contact_id=contact.id))
-
-    companies = Company.query.order_by(Company.name).all()
-    return render_template("contacts/new.html", companies=companies)
+    entity_data = get_entity_data_for_forms()
+    return render_template("contacts/new.html", companies=entity_data['companies'])
