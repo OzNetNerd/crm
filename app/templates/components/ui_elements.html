@@ -307,3 +307,49 @@
     </div>
 </div>
 {% endmacro %}
+
+{#
+  Entity Section Group - DRY macro for entity index page sections
+  
+  Creates complete expandable sections with header, content area, and filtering.
+  Optimized for contacts, opportunities, and similar entity groupings.
+  
+  Parameters:
+  - section_key (required): Unique key for expand/collapse state
+  - title (required): Section display title
+  - icon_html (required): Icon HTML for section header
+  - items (required): List of items to render in section
+  - card_class (optional): CSS class for card wrapper (default: 'card')
+  - colors (required): Dict with badge_color, border_color, bg_color, hover_color, text_class
+  - x_show_condition (optional): Additional Alpine.js x-show condition
+  - empty_message (optional): Message when no items (default: 'No items found')
+  
+  Usage:
+  {% call entity_section_group('company', 'Companies', building_icon(...), companies, colors=company_colors) %}
+    <!-- render items here using caller() -->
+  {% endcall %}
+#}
+{% macro entity_section_group(section_key, title, icon_html, items, card_class='card', colors=None, x_show_condition='', empty_message='No items found') %}
+<div {% if x_show_condition %}x-show="{{ x_show_condition }}" x-cloak {% endif %}class="{{ card_class }}">
+    {{ section_group_header(
+        section_key,
+        title,
+        icon_html|safe, 
+        '<span class="ml-2 badge-standard badge-' + colors.badge_color + '">' + items|length|string + '</span>',
+        colors.border_color,
+        colors.bg_color,
+        colors.hover_color, 
+        colors.text_class,
+        with_buttons=false
+    ) }}
+    <div class="divide-y divide-gray-200" x-show="expandedSections['{{ section_key }}']" x-cloak x-transition>
+        {% if items %}
+            {{ caller() }}
+        {% else %}
+            <div class="p-6 text-center text-empty-state">
+                {{ empty_message }}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}

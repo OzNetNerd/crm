@@ -2,8 +2,10 @@ from datetime import datetime, date
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from app.models import db, Task, Company, Contact, Opportunity
 from app.forms import MultiTaskForm
+from app.utils.route_helpers import BaseRouteHandler, parse_date_field, parse_int_field, get_entity_data_for_forms
 
 tasks_bp = Blueprint("tasks", __name__)
+task_handler = BaseRouteHandler(Task, "tasks")
 
 
 @tasks_bp.route("/")
@@ -55,43 +57,26 @@ def detail(task_id):
 @tasks_bp.route("/new", methods=["GET", "POST"])
 def new():
     if request.method == "POST":
-        data = request.get_json() if request.is_json else request.form
-
-        task = Task(
-            description=data["description"],
-            due_date=(
-                datetime.strptime(data["due_date"], "%Y-%m-%d").date()
-                if data.get("due_date")
-                else None
-            ),
-            priority=data.get("priority", "medium"),
-            status=data.get("status", "todo"),
-            next_step_type=data.get("next_step_type"),
-            entity_type=data.get("entity_type"),
-            entity_id=data.get("entity_id"),
-            task_type=data.get("task_type", "single"),
-            parent_task_id=data.get("parent_task_id"),
-            sequence_order=data.get("sequence_order", 0),
-            dependency_type=data.get("dependency_type", "parallel"),
+        return task_handler.handle_create(
+            description="description",
+            due_date=lambda data: parse_date_field(data, "due_date"),
+            priority=lambda data: data.get("priority", "medium"),
+            status=lambda data: data.get("status", "todo"),
+            next_step_type=lambda data: data.get("next_step_type"),
+            entity_type=lambda data: data.get("entity_type"),
+            entity_id=lambda data: parse_int_field(data, "entity_id"),
+            task_type=lambda data: data.get("task_type", "single"),
+            parent_task_id=lambda data: parse_int_field(data, "parent_task_id"),
+            sequence_order=lambda data: parse_int_field(data, "sequence_order", 0),
+            dependency_type=lambda data: data.get("dependency_type", "parallel")
         )
 
-        db.session.add(task)
-        db.session.commit()
-
-        if request.is_json:
-            return jsonify({"status": "success", "task_id": task.id})
-        else:
-            return redirect(url_for("tasks.detail", task_id=task.id))
-
-    companies = Company.query.order_by(Company.name).all()
-    contacts = Contact.query.order_by(Contact.name).all()
-    opportunities = Opportunity.query.order_by(Opportunity.name).all()
-
+    entity_data = get_entity_data_for_forms()
     return render_template(
         "tasks/new.html",
-        companies=companies,
-        contacts=contacts,
-        opportunities=opportunities,
+        companies=entity_data['companies'],
+        contacts=entity_data['contacts'],
+        opportunities=entity_data['opportunities']
     )
 
 
@@ -100,10 +85,8 @@ def new_multi():
     """Create a new Multi Task with child tasks using WTF form validation"""
     form = MultiTaskForm()
 
-    # Populate entity choices dynamically
-    companies = Company.query.order_by(Company.name).all()
-    contacts = Contact.query.order_by(Contact.name).all()
-    opportunities = Opportunity.query.order_by(Opportunity.name).all()
+    # Get entity data for form population
+    entity_data = get_entity_data_for_forms()
 
     if form.validate_on_submit():
         try:
@@ -203,21 +186,12 @@ def new_multi():
         db.session.commit()
         return jsonify({"status": "success", "task_id": parent_task.id})
 
-    # Convert objects to dictionaries for JSON serialization in template
-    companies_dict = [{"id": c.id, "name": c.name} for c in companies]
-    contacts_dict = [
-        {"id": c.id, "name": c.name, "company_id": c.company_id} for c in contacts
-    ]
-    opportunities_dict = [
-        {"id": o.id, "name": o.name, "company_id": o.company_id} for o in opportunities
-    ]
-
     return render_template(
         "tasks/multi_new.html",
         form=form,
-        companies=companies_dict,
-        contacts=contacts_dict,
-        opportunities=opportunities_dict,
+        companies=entity_data['companies'],
+        contacts=entity_data['contacts'],
+        opportunities=entity_data['opportunities']
     )
 
 

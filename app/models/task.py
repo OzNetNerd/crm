@@ -121,6 +121,34 @@ class Task(db.Model):
         return None
 
     @property
+    def stakeholder_opportunity_name(self):
+        """Get primary opportunity name for contact tasks (first opportunity if multiple)"""
+        if self.entity_type == "contact" and self.entity_id:
+            from .contact import Contact
+
+            contact = Contact.query.get(self.entity_id)
+            if contact and contact.opportunities:
+                # Return the first (primary) opportunity name
+                return contact.opportunities[0].name
+        elif self.entity_type == "opportunity" and self.entity_id:
+            return self.opportunity_name
+        return None
+
+    @property
+    def stakeholder_opportunity_value(self):
+        """Get primary opportunity value for contact tasks (first opportunity if multiple)"""
+        if self.entity_type == "contact" and self.entity_id:
+            from .contact import Contact
+
+            contact = Contact.query.get(self.entity_id)
+            if contact and contact.opportunities:
+                # Return the first (primary) opportunity value
+                return contact.opportunities[0].value
+        elif self.entity_type == "opportunity" and self.entity_id:
+            return self.opportunity_value
+        return None
+
+    @property
     def task_type_badge(self):
         """Get appropriate badge text for task type"""
         if self.task_type == "parent":
@@ -199,6 +227,8 @@ class Task(db.Model):
             'company_name': self.company_name,
             'opportunity_name': self.opportunity_name,
             'opportunity_stage': self.opportunity_stage,
+            'stakeholder_opportunity_name': self.stakeholder_opportunity_name,
+            'stakeholder_opportunity_value': self.stakeholder_opportunity_value,
             'task_type_badge': self.task_type_badge,
             'can_start': self.can_start,
             'completion_percentage': self.completion_percentage
