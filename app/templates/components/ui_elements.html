@@ -310,6 +310,7 @@
 {% endmacro %}
 
 {#
+<<<<<<< HEAD
   Entity Section Group - DRY macro for entity index page sections
   
   Creates complete expandable sections with header, content area, and filtering.
@@ -356,39 +357,165 @@
 {% endmacro %}
 
 {#
-  Task Section - DRY macro for individual task sections
-  
-  Reduces repetitive card structure while maintaining flexibility for different filtering approaches.
+  Badge Count Helper - DRY macro for task count badges with consistent formatting
   
   Parameters:
-  - section_key (required): Key for expandedSections 
-  - title (required): Section title
-  - icon_html (required): Icon HTML
-  - badge_count (required): Number for badge
-  - card_class (optional): Card CSS class (default: 'card')
-  - colors (required): Object with badge_color, border_color, bg_color, hover_color, text_class
-  - x_show_condition (optional): Additional x-show condition (like 'showCompleted')
-  - content (required): Task content via caller() 
+  - filter_type (required): Type of filtering ('status', 'priority', 'due_date', 'entity', 'overdue', 'custom')
+  - filter_value (optional): Specific value to filter by (e.g., 'todo', 'high', 'company')
+  - color (required): Badge color class ('blue', 'red', 'green', etc.)
+  - tasks_list (optional): Tasks list to use (default: 'tasks')
+  - show_completed (optional): Whether to include completed tasks (default: varies by type)
+  - custom_count (optional): Pre-calculated count for complex filters
   
   Usage:
-  {% call task_section('todo', 'To Do', clipboard_list_icon("w-5 h-5 mr-1"), todo_count, colors=todo_colors) %}
-    <!-- task iteration here -->
-  {% endcall %}
+  {{ badge_count_helper('status', 'todo', 'blue') }}
+  {{ badge_count_helper('priority', 'high', 'red') }}
+  {{ badge_count_helper('custom', color='gray', custom_count=custom_task_list|length) }}
 #}
-{% macro task_section(section_key, title, icon_html, badge_count, card_class='card', colors=None, x_show_condition='') %}
+{% macro badge_count_helper(filter_type, filter_value=None, color='gray', tasks_list='tasks', show_completed=None, custom_count=None) %}
+{%- if custom_count is not none -%}
+    {%- set count = custom_count -%}
+{%- elif filter_type == 'status' -%}
+    {%- set count = (tasks|selectattr('status', 'equalto', filter_value)|list|length) -%}
+{%- elif filter_type == 'priority' -%}
+    {%- set count = (tasks|selectattr('priority', 'equalto', filter_value)|list|length) -%}
+{%- elif filter_type == 'overdue' -%}
+    {%- set count = (tasks|selectattr('is_overdue', 'equalto', True)|list|length) -%}
+{%- elif filter_type == 'due_today' -%}
+    {%- set count = (tasks|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list|length) -%}
+{%- elif filter_type == 'no_date' -%}
+    {%- if show_completed -%}
+        {%- set count = (tasks|selectattr('due_date', 'none')|list|length) -%}
+    {%- else -%}
+        {%- set count = (tasks|selectattr('due_date', 'none')|selectattr('status', 'ne', 'complete')|list|length) -%}
+    {%- endif -%}
+{%- elif filter_type == 'entity' -%}
+    {%- if filter_value == 'unrelated' -%}
+        {%- if show_completed -%}
+            {%- set count = (tasks|selectattr('entity_type', 'none')|list|length) -%}
+        {%- else -%}
+            {%- set count = (tasks|selectattr('entity_type', 'none')|selectattr('status', 'ne', 'complete')|list|length) -%}
+        {%- endif -%}
+    {%- else -%}
+        {%- if show_completed -%}
+            {%- set count = (tasks|selectattr('entity_type', 'equalto', filter_value)|list|length) -%}
+        {%- else -%}
+            {%- set count = (tasks|selectattr('entity_type', 'equalto', filter_value)|selectattr('status', 'ne', 'complete')|list|length) -%}
+        {%- endif -%}
+    {%- endif -%}
+{%- else -%}
+    {%- set count = 0 -%}
+{%- endif -%}
+<span class="ml-2 badge-standard badge-{{ color }}">{{ count }}</span>
+{%- endmacro %}
+
+{#
+  Task Section Group - DRY macro for complete task sections with filtering
+  
+  Comprehensive macro that handles all task grouping types and eliminates repetitive code.
+  
+  Parameters:
+  - section_key (required): Key for expandedSections and group identifier
+  - title (required): Section title
+  - icon_html (required): Icon HTML from icon macros
+  - card_class (optional): Card CSS class (default: 'card')
+  - colors (required): Object with {badge_color, border_color, bg_color, hover_color, text_class}
+  - x_show_condition (optional): Additional x-show condition (e.g., 'showCompleted')
+  - filter_config (required): Object with filtering configuration
+    - {type: 'status', value: 'todo'} - Filter by status
+    - {type: 'priority', value: 'high'} - Filter by priority  
+    - {type: 'entity', value: 'company'} - Filter by entity type
+    - {type: 'overdue'} - Filter overdue tasks
+    - {type: 'due_today'} - Filter tasks due today
+    - {type: 'no_date'} - Filter tasks with no due date
+    - {type: 'custom', filter_func: 'custom_filter_function'} - Custom filtering
+  - additional_classes (optional): Extra CSS classes for rendered tasks
+  
+  Usage:
+  {{ task_section_group('todo', 'To Do', clipboard_list_icon("w-5 h-5 mr-1"), 
+       colors={badge_color: 'blue', border_color: 'blue', bg_color: 'blue', hover_color: 'blue', text_class: 'text-status-header'}, 
+       filter_config={type: 'status', value: 'todo'}) }}
+#}
+{% macro task_section_group(section_key, title, icon_html, card_class='card', colors=None, x_show_condition='', filter_config=None, additional_classes='') %}
+{%- from "components/task_card.html" import render_task, render_task_hierarchy -%}
 <div {% if x_show_condition %}x-show="{{ x_show_condition }}" x-cloak {% endif %}class="{{ card_class }}">
+    {% set badge_html %}
+        {%- if filter_config -%}
+            {%- if filter_config.type == 'status' -%}
+                {{ badge_count_helper('status', filter_config.value, colors.badge_color) }}
+            {%- elif filter_config.type == 'priority' -%}
+                {{ badge_count_helper('priority', filter_config.value, colors.badge_color) }}
+            {%- elif filter_config.type == 'overdue' -%}
+                {{ badge_count_helper('overdue', color=colors.badge_color) }}
+            {%- elif filter_config.type == 'due_today' -%}
+                {{ badge_count_helper('due_today', color=colors.badge_color) }}
+            {%- elif filter_config.type == 'no_date' -%}
+                {{ badge_count_helper('no_date', show_completed=showCompleted if showCompleted is defined else false, color=colors.badge_color) }}
+            {%- elif filter_config.type == 'entity' -%}
+                {{ badge_count_helper('entity', filter_config.value, colors.badge_color, show_completed=showCompleted if showCompleted is defined else false) }}
+            {%- elif filter_config.type == 'custom' and filter_config.custom_count is defined -%}
+                {{ badge_count_helper('custom', color=colors.badge_color, custom_count=filter_config.custom_count) }}
+            {%- else -%}
+                <span class="ml-2 badge-standard badge-{{ colors.badge_color }}">0</span>
+            {%- endif -%}
+        {%- else -%}
+            <span class="ml-2 badge-standard badge-{{ colors.badge_color }}">0</span>
+        {%- endif -%}
+    {% endset %}
+    
     {{ section_group_header(
         section_key,
         title,
         icon_html|safe, 
-        '<span class="ml-2 badge-standard badge-' + colors.badge_color + '">' + badge_count|string + '</span>',
+        badge_html|trim,
         colors.border_color,
         colors.bg_color,
         colors.hover_color, 
         colors.text_class
     ) }}
     <div class="p-6" x-show="expandedSections['{{ section_key }}']" x-cloak x-transition>
-        {{ caller() }}
+        {% set has_tasks = [] %}
+        {% for task in tasks_objects %}
+            {% set show_task = false %}
+            {# Apply filtering logic based on filter_config #}
+            {%- if filter_config -%}
+                {%- if filter_config.type == 'status' and task.status == filter_config.value and task.task_type != 'child' -%}
+                    {% set show_task = true %}
+                {%- elif filter_config.type == 'priority' and task.priority == filter_config.value -%}
+                    {% set show_task = true %}
+                {%- elif filter_config.type == 'overdue' and task.is_overdue -%}
+                    {% set show_task = true %}
+                {%- elif filter_config.type == 'due_today' and task.due_date == today -%}
+                    {% set show_task = true %}
+                {%- elif filter_config.type == 'no_date' and not task.due_date -%}
+                    {% set show_task = true %}
+                {%- elif filter_config.type == 'entity' -%}
+                    {%- if filter_config.value == 'unrelated' and not task.entity_type -%}
+                        {% set show_task = true %}
+                    {%- elif task.entity_type == filter_config.value -%}
+                        {% set show_task = true %}
+                    {%- endif -%}
+                {%- elif filter_config.type == 'custom_due_week' and task.due_date and task.due_date > today and (task.due_date - today).days <= 7 -%}
+                    {% set show_task = true %}
+                {%- elif filter_config.type == 'custom_due_later' and task.due_date and (task.due_date - today).days > 7 -%}
+                    {% set show_task = true %}
+                {%- endif -%}
+            {%- endif -%}
+            
+            {% if show_task %}
+                {% set _ = has_tasks.append(task) %}
+                <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else "'unrelated'" }}, status: '{{ task.status }}'})" {% if additional_classes %}class="{{ additional_classes }}"{% endif %}>
+                    {% if task.task_type == 'parent' %}
+                        {{ render_task_hierarchy(task, section_key) }}
+                    {% else %}
+                        {{ render_task(task, section_key) }}
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+        {% if has_tasks|length == 0 %}
+            <p class="text-empty-state">No matching tasks found</p>
+        {% endif %}
     </div>
 </div>
 {% endmacro %}
