@@ -46,7 +46,7 @@
     {% for company in companies %}
         <div class="card-padded-lg hover:shadow-md transition-shadow">
             <div class="flex items-start justify-between mb-4">
-                <h3 class="text-section-title">{{ company.name }}</h3>
+                <h3 class="text-company-name text-lg font-semibold">{{ company.name }}</h3>
                 {{ action_button('openCompanyModal(' + company.id|string + ')', '⋯', 'text-link-subtle') }}
             </div>
             

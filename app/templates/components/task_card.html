@@ -154,17 +154,17 @@
                 {% if task.company_name or task.entity_name or task.stakeholder_opportunity_name or task.stakeholder_opportunity_value %}
                     <div class="flex items-center flex-wrap gap-x-2">
                         {% if task.company_name %}
-                            <span class="text-title-primary">{{ task.company_name }}</span>
+                            <span class="text-company-name">{{ task.company_name }}</span>
                         {% endif %}
                         
                         {% if task.entity_name and task.entity_name != task.company_name %}
                             {% if task.company_name %}<span class="text-title-primary">•</span>{% endif %}
-                            <span class="text-title-primary">{{ task.entity_name }}</span>
+                            <span class="text-stakeholder-name">{{ task.entity_name }}</span>
                         {% endif %}
                         
                         {% if task.stakeholder_opportunity_name %}
                             {% if task.company_name or task.entity_name %}<span class="text-title-primary">•</span>{% endif %}
-                            <span class="text-title-primary">{{ task.stakeholder_opportunity_name }}</span>
+                            <span class="text-opportunity-name">{{ task.stakeholder_opportunity_name }}</span>
                         {% endif %}
                         
                         {% if task.stakeholder_opportunity_value %}
