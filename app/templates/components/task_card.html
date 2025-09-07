@@ -151,14 +151,27 @@
                 {% endif %}
             </div>
             <div class="flex-grow text-left">
-                {% if task.entity_name %}
-                    <div class="flex items-center space-x-3">
-                        <p class="text-title-primary">{{ task.entity_name }}</p>
-                        {% if task.opportunity_value %}
-                            <span class="text-gray-400">•</span>
-                            <div class="text-deal-amount-lg text-success">
-                                ${{ "{:,}".format(task.opportunity_value) }}
-                            </div>
+                {% if task.company_name or task.entity_name or task.stakeholder_opportunity_name or task.stakeholder_opportunity_value %}
+                    <div class="flex items-center flex-wrap gap-x-2">
+                        {% if task.company_name %}
+                            <span class="text-title-primary">{{ task.company_name }}</span>
+                        {% endif %}
+                        
+                        {% if task.entity_name and task.entity_name != task.company_name %}
+                            {% if task.company_name %}<span class="text-title-primary">•</span>{% endif %}
+                            <span class="text-title-primary">{{ task.entity_name }}</span>
+                        {% endif %}
+                        
+                        {% if task.stakeholder_opportunity_name %}
+                            {% if task.company_name or task.entity_name %}<span class="text-title-primary">•</span>{% endif %}
+                            <span class="text-title-primary">{{ task.stakeholder_opportunity_name }}</span>
+                        {% endif %}
+                        
+                        {% if task.stakeholder_opportunity_value %}
+                            {% if task.company_name or task.entity_name or task.stakeholder_opportunity_name %}<span class="text-title-primary">•</span>{% endif %}
+                            <span class="text-deal-amount-lg text-success">
+                                ${{ "{:,}".format(task.stakeholder_opportunity_value) }}
+                            </span>
                         {% endif %}
                     </div>
                     <p class="text-sm text-gray-600">{{ task.description }}</p>
