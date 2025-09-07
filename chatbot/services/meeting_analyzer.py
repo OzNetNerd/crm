@@ -9,7 +9,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from .ollama_client import get_ollama_client, ExtractionResult
-from ..models import Meeting, ExtractedInsight, Company, Contact, Task
+from chatbot.models import Meeting, ExtractedInsight, Company, Contact, Task
 
 logger = logging.getLogger(__name__)
 

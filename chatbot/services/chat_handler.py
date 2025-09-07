@@ -8,7 +8,7 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 
-from ..models import Company, Contact, Task, Opportunity, Meeting, ChatHistory
+from chatbot.models import Company, Contact, Task, Opportunity, Meeting, ChatHistory
 
 
 class ChatHandler:

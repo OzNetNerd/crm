@@ -9,7 +9,7 @@ from typing import List, Optional
 from datetime import datetime
 
 from .meeting_analyzer import get_meeting_analyzer
-from ..models import Meeting
+from chatbot.models import Meeting
 
 logger = logging.getLogger(__name__)
 

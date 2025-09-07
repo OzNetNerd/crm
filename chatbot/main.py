@@ -17,10 +17,15 @@ from services.chat_handler import ChatHandler
 app = FastAPI(title="CRM Chatbot Service", version="1.0.0")
 
 # Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+import os
+current_dir = os.path.dirname(__file__)
+static_dir = os.path.join(current_dir, "static")
+templates_dir = os.path.join(current_dir, "templates")
+
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # Setup templates
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=templates_dir)
 
 # Initialize chat handler (will be created when we implement the service)
 # chat_handler = ChatHandler()

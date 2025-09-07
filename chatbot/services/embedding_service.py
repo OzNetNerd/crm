@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 # Note: sentence-transformers would be imported here when installed
 # from sentence_transformers import SentenceTransformer
 
-from ..models import Embedding
+from chatbot.models import Embedding
 
 logger = logging.getLogger(__name__)
 

@@ -10,7 +10,7 @@ from sqlalchemy import text, or_, and_
 
 from .embedding_service import get_embedding_service
 from .ollama_client import get_ollama_client
-from ..models import Company, Contact, Task, Opportunity, Meeting, ExtractedInsight, Embedding
+from chatbot.models import Company, Contact, Task, Opportunity, Meeting, ExtractedInsight, Embedding
 
 logger = logging.getLogger(__name__)
 
