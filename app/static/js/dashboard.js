@@ -274,7 +274,7 @@ class TaskManager {
             
             for (const taskCard of allTaskCards) {
                 // Check if this task has a progress bar (indicating it's a parent task)
-                const progressBar = taskCard.querySelector('.bg-blue-600');
+                const progressBar = taskCard.querySelector('.bg-blue-600.h-2.rounded-full');
                 if (progressBar) {
                     const parentId = taskCard.dataset.taskId;
                     if (parentId) {
@@ -286,22 +286,24 @@ class TaskManager {
                             // Update progress bar width
                             progressBar.style.width = `${taskData.completion_percentage}%`;
                             
-                            // Find and update the "Tasks: X/Y" text - it's the first span in the progress container
-                            const progressContainer = taskCard.querySelector('.flex.items-center.space-x-4.text-secondary');
-                            if (progressContainer && taskData.child_tasks) {
+                            // Find and update the "Tasks: X/Y" text and percentage
+                            if (taskData.child_tasks) {
                                 const completedCount = taskData.child_tasks.filter(t => t.status === 'complete').length;
                                 const totalCount = taskData.child_tasks.length;
                                 
-                                // Update the "Tasks: X/Y" text (first span)
-                                const tasksSpan = progressContainer.querySelector('span.font-medium');
-                                if (tasksSpan) {
-                                    tasksSpan.textContent = `Tasks: ${completedCount}/${totalCount}`;
+                                // Update the "Tasks: X/Y" text - it's a <p> with class text-label-primary
+                                const tasksText = taskCard.querySelector('p.text-label-primary');
+                                if (tasksText && tasksText.textContent.includes('Tasks:')) {
+                                    tasksText.textContent = `Tasks: ${completedCount}/${totalCount}`;
                                 }
                                 
-                                // Update the percentage text (last span)
-                                const spans = progressContainer.querySelectorAll('span.font-medium');
-                                if (spans.length > 1) {
-                                    spans[1].textContent = `${taskData.completion_percentage}%`;
+                                // Update the percentage text - it's a <span> with class text-label-primary next to the progress bar
+                                const progressContainer = taskCard.querySelector('.flex.items-center.space-x-2');
+                                if (progressContainer) {
+                                    const percentageSpan = progressContainer.querySelector('span.text-label-primary');
+                                    if (percentageSpan) {
+                                        percentageSpan.textContent = `${taskData.completion_percentage}%`;
+                                    }
                                 }
                             }
                         }
