@@ -27,8 +27,8 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 # Setup templates
 templates = Jinja2Templates(directory=templates_dir)
 
-# Initialize chat handler (will be created when we implement the service)
-# chat_handler = ChatHandler()
+# Initialize chat handler
+chat_handler = ChatHandler()
 
 
 class ConnectionManager:
@@ -100,30 +100,99 @@ async def websocket_endpoint(
             if not user_message.strip():
                 continue
                 
-            # For now, simple echo response (will be replaced with LLM processing)
-            bot_response = f"Echo: {user_message} (Session: {session_id})"
-            
-            # Save to chat history
-            chat_history = ChatHistory(
-                session_id=session_id,
-                user_message=user_message,
-                bot_response=bot_response,
-                context_used={"type": "echo", "timestamp": datetime.utcnow().isoformat()},
-                response_metadata={"model": "echo", "processing_time": 0.001}
-            )
-            
-            session.add(chat_history)
-            await session.commit()
-            
-            # Send response to client
-            response_data = {
-                "type": "bot_response",
-                "message": bot_response,
-                "timestamp": datetime.utcnow().isoformat(),
-                "session_id": session_id
-            }
-            
-            await manager.send_personal_message(response_data, websocket)
+            # Process message through ChatHandler
+            try:
+                response_data = await chat_handler.process_message(
+                    user_message=user_message,
+                    session_id=session_id,
+                    db_session=session
+                )
+                
+                if response_data.get("type") == "stream":
+                    # Handle streaming response
+                    stream = response_data["stream"]
+                    full_response = ""
+                    
+                    async for chunk in stream:
+                        if chunk["type"] == "chunk":
+                            # Send streaming chunk to client
+                            await manager.send_personal_message({
+                                "type": "streaming_chunk",
+                                "text": chunk["text"],
+                                "timestamp": datetime.utcnow().isoformat()
+                            }, websocket)
+                            
+                        elif chunk["type"] == "complete":
+                            full_response = chunk.get("response", "")
+                            
+                            # Add to conversation history
+                            if hasattr(chat_handler, 'conversation_history') and session_id in chat_handler.conversation_history:
+                                chat_handler.conversation_history[session_id].append({
+                                    "role": "assistant",
+                                    "content": full_response
+                                })
+                                # Keep only last 10 messages
+                                chat_handler.conversation_history[session_id] = chat_handler.conversation_history[session_id][-10:]
+                            
+                            # Send completion signal
+                            await manager.send_personal_message({
+                                "type": "streaming_complete",
+                                "timestamp": datetime.utcnow().isoformat(),
+                                "processing_time": chunk.get("processing_time", 0)
+                            }, websocket)
+                            
+                            # Save to chat history
+                            chat_history = ChatHistory(
+                                session_id=session_id,
+                                user_message=user_message,
+                                bot_response=full_response,
+                                context_used=response_data.get("context_used", {}),
+                                response_metadata={
+                                    "query_type": "llm_streaming",
+                                    "processing_time": chunk.get("processing_time", 0),
+                                    "model_used": chunk.get("model_used", "unknown")
+                                }
+                            )
+                            
+                            session.add(chat_history)
+                            await session.commit()
+                            break
+                            
+                else:
+                    # Handle regular response (fallback)
+                    bot_response = response_data.get("response", "I'm sorry, I couldn't process your request.")
+                    context_used = response_data.get("context_used", {})
+                    response_metadata = response_data.get("response_metadata", {})
+                    
+                    # Save to chat history
+                    chat_history = ChatHistory(
+                        session_id=session_id,
+                        user_message=user_message,
+                        bot_response=bot_response,
+                        context_used=context_used,
+                        response_metadata=response_metadata
+                    )
+                    
+                    session.add(chat_history)
+                    await session.commit()
+                    
+                    # Send response to client
+                    await manager.send_personal_message({
+                        "type": "bot_response",
+                        "message": bot_response,
+                        "timestamp": datetime.utcnow().isoformat(),
+                        "session_id": session_id
+                    }, websocket)
+                
+            except Exception as e:
+                # Fallback response on error
+                bot_response = f"I encountered an error: {str(e)}"
+                await manager.send_personal_message({
+                    "type": "bot_response",
+                    "message": bot_response,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "session_id": session_id
+                }, websocket)
             
     except WebSocketDisconnect:
         manager.disconnect(websocket)
@@ -150,6 +219,35 @@ async def get_chat_widget():
             .message { margin: 5px 0; padding: 8px; border-radius: 5px; }
             .user-message { background: #007bff; color: white; text-align: right; }
             .bot-message { background: white; border: 1px solid #ccc; }
+            
+            .typing-indicator {
+                display: flex;
+                align-items: center;
+            }
+            
+            .typing-indicator span:not(:last-child) {
+                height: 8px;
+                width: 8px;
+                background-color: #007bff;
+                border-radius: 50%;
+                display: inline-block;
+                margin-right: 3px;
+                animation: typing 1.4s infinite ease-in-out;
+            }
+            
+            .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+            .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+            .typing-indicator span:nth-child(3) { animation-delay: 0s; }
+            
+            @keyframes typing {
+                0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+                40% { transform: scale(1); opacity: 1; }
+            }
+            
+            input:disabled, button:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
         </style>
     </head>
     <body>
@@ -164,17 +262,37 @@ async def get_chat_widget():
 
         <script>
             const sessionId = 'test-' + Math.random().toString(36).substr(2, 9);
-            const ws = new WebSocket(`ws://localhost:8001/ws/chat/${sessionId}`);
+            const ws = new WebSocket(`ws://${window.location.host}/ws/chat/${sessionId}`);
             const messagesDiv = document.getElementById('messages');
             const messageInput = document.getElementById('message-input');
             const sendButton = document.getElementById('send-button');
 
-            function addMessage(content, isUser = false) {
+            function addMessage(content, isUser = false, isTyping = false) {
                 const messageDiv = document.createElement('div');
                 messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
-                messageDiv.textContent = content;
+                
+                if (isTyping) {
+                    messageDiv.innerHTML = `
+                        <div class="typing-indicator">
+                            <span></span><span></span><span></span>
+                            <span style="margin-left: 10px;">Assistant is thinking...</span>
+                        </div>
+                    `;
+                    messageDiv.id = 'typing-message';
+                } else {
+                    messageDiv.textContent = content;
+                }
+                
                 messagesDiv.appendChild(messageDiv);
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                return messageDiv;
+            }
+
+            function removeTypingIndicator() {
+                const typingMessage = document.getElementById('typing-message');
+                if (typingMessage) {
+                    typingMessage.remove();
+                }
             }
 
             function sendMessage() {
@@ -182,13 +300,49 @@ async def get_chat_widget():
                 if (!message) return;
 
                 addMessage(message, true);
+                addMessage('', false, true); // Add typing indicator
                 ws.send(JSON.stringify({ message: message }));
                 messageInput.value = '';
+                
+                // Disable input while waiting for response
+                messageInput.disabled = true;
+                sendButton.disabled = true;
             }
 
+            let currentStreamingMessage = null;
+            
             ws.onmessage = function(event) {
                 const data = JSON.parse(event.data);
-                addMessage(data.message);
+                
+                if (data.type === 'streaming_chunk') {
+                    // Handle streaming text chunks
+                    if (!currentStreamingMessage) {
+                        removeTypingIndicator();
+                        currentStreamingMessage = addMessage('', false, false); // Create empty message div
+                    }
+                    // Append text to the current streaming message
+                    currentStreamingMessage.textContent += data.text;
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                    
+                } else if (data.type === 'streaming_complete') {
+                    // Streaming finished
+                    currentStreamingMessage = null;
+                    
+                    // Re-enable input after response
+                    messageInput.disabled = false;
+                    sendButton.disabled = false;
+                    messageInput.focus();
+                    
+                } else if (data.type === 'bot_response') {
+                    // Handle regular (fallback) response
+                    removeTypingIndicator();
+                    addMessage(data.message);
+                    
+                    // Re-enable input after response
+                    messageInput.disabled = false;
+                    sendButton.disabled = false;
+                    messageInput.focus();
+                }
             };
 
             ws.onopen = function() {
