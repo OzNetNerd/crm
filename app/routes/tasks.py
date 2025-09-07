@@ -8,28 +8,45 @@ tasks_bp = Blueprint("tasks", __name__)
 task_handler = BaseRouteHandler(Task, "tasks")
 
 
-@tasks_bp.route("/")
-def index():
-    # Check if user wants to show completed tasks
+def get_filtered_sorted_tasks():
+    """Common function to get filtered and sorted tasks for both full page and HTMX requests"""
+    # Get parameters from request
     show_completed = request.args.get('show_completed', 'false').lower() == 'true'
-    
-    # Get sort parameter from URL 
     sort_by = request.args.get('sort_by', 'due_date')
     sort_direction = request.args.get('sort_direction', 'asc')
+    group_by = request.args.get('group_by', 'status')
+    priority_filter = request.args.get('priority', '')
+    entity_filter = request.args.get('entity', '')
     
     # Build base query
     query = Task.query
     if not show_completed:
         query = query.filter(Task.status != 'complete')
     
+    # Apply priority filter
+    if priority_filter:
+        query = query.filter(Task.priority == priority_filter)
+    
+    # Apply entity filter  
+    if entity_filter:
+        if entity_filter == 'unrelated':
+            query = query.filter(Task.entity_type.is_(None))
+        else:
+            query = query.filter(Task.entity_type == entity_filter)
+    
     # Apply sorting based on sort_by parameter
     if sort_by == 'priority':
-        # Priority: high=1, medium=2, low=3
-        priority_order = {'high': 1, 'medium': 2, 'low': 3}
+        # Priority: high=1, medium=2, low=3 for proper ordering
+        priority_case = db.case(
+            (Task.priority == 'high', 1),
+            (Task.priority == 'medium', 2), 
+            (Task.priority == 'low', 3),
+            else_=4
+        )
         if sort_direction == 'desc':
-            query = query.order_by(Task.priority.desc())
+            query = query.order_by(priority_case.desc())
         else:
-            query = query.order_by(Task.priority.asc())
+            query = query.order_by(priority_case.asc())
     elif sort_by == 'created':
         if sort_direction == 'desc':
             query = query.order_by(Task.created_at.desc())
@@ -41,22 +58,52 @@ def index():
         else:
             query = query.order_by(Task.description.asc())
     elif sort_by == 'status':
+        # Status: todo=1, in-progress=2, complete=3
+        status_case = db.case(
+            (Task.status == 'todo', 1),
+            (Task.status == 'in-progress', 2),
+            (Task.status == 'complete', 3),
+            else_=4
+        )
         if sort_direction == 'desc':
-            query = query.order_by(Task.status.desc())
+            query = query.order_by(status_case.desc())
         else:
-            query = query.order_by(Task.status.asc())
+            query = query.order_by(status_case.asc())
     else:  # Default to due_date
+        # Handle null due dates by putting them last for ascending, first for descending
         if sort_direction == 'desc':
-            query = query.order_by(Task.due_date.desc())
+            query = query.order_by(Task.due_date.desc().nullslast())
         else:
-            query = query.order_by(Task.due_date.asc())
+            query = query.order_by(Task.due_date.asc().nullslast())
     
-    tasks_query = query.all()
+    filtered_tasks = query.all()
     
-    today = date.today()
+    return {
+        'filtered_tasks': filtered_tasks,
+        'show_completed': show_completed,
+        'sort_by': sort_by,
+        'sort_direction': sort_direction,
+        'group_by': group_by,
+        'priority_filter': priority_filter,
+        'entity_filter': entity_filter,
+        'today': date.today()
+    }
 
-    # Convert tasks to dictionaries for JSON serialization
-    tasks = [task.to_dict() for task in tasks_query]
+
+@tasks_bp.route("/content")
+def content():
+    """HTMX endpoint for dynamic task content updates"""
+    context = get_filtered_sorted_tasks()
+    return render_template("tasks/_content.html", **context)
+
+
+@tasks_bp.route("/")
+def index():
+    # Get all context data using the common function
+    context = get_filtered_sorted_tasks()
+    
+    # Convert tasks to dictionaries for JSON serialization (for Alpine.js compatibility)
+    tasks = [task.to_dict() for task in context['filtered_tasks']]
 
     # Serialize objects for JSON use in templates
     companies_data = [
@@ -73,9 +120,15 @@ def index():
     return render_template(
         "tasks/index.html",
         tasks=tasks,
-        tasks_objects=tasks_query,  # Keep original objects for template logic
-        today=today,
-        show_completed=show_completed,
+        tasks_objects=context['filtered_tasks'],  # Keep original objects for template logic
+        filtered_tasks=context['filtered_tasks'],  # For HTMX content partial
+        today=context['today'],
+        show_completed=context['show_completed'],
+        sort_by=context['sort_by'],
+        sort_direction=context['sort_direction'],
+        group_by=context['group_by'],
+        priority_filter=context['priority_filter'],
+        entity_filter=context['entity_filter'],
         companies=companies_data,
         contacts=contacts_data,
         opportunities=opportunities_data,

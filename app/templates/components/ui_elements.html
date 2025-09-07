@@ -177,7 +177,7 @@
         <div class="multiselect-options">
             {% for option in options %}
             <div class="multiselect-option" 
-                 @click="setSortBy('{{ option.value if option is mapping else option }}'); open = false">
+                 @click="setSortBy ? setSortBy('{{ option.value if option is mapping else option }}') : ({{ model }} = '{{ option.value if option is mapping else option }}'); open = false">
                 <span>{{ option.label if option is mapping else option|title }}</span>
             </div>
             {% endfor %}
