@@ -253,6 +253,7 @@
      @click.away="open = false">
     <button type="button" 
             class="multiselect-button {{ classes }}" 
+            x-cloak
             @click="open = !open">
         <span x-text="{{ model }}.length === 0 ? '{{ placeholder }}' : {{ model }}.length + ' selected'">{{ placeholder }}</span>
     </button>
