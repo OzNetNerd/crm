@@ -147,32 +147,29 @@
                          x-transition:leave-end="transform opacity-0 scale-95"
                          class="multiselect-dropdown">
                         <div class="multiselect-options">
-                            <div class="multiselect-option" @click="sortBy = 'due_date'; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="if (sortBy === 'due_date') { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortBy = 'due_date'; } updateFilters(); open = false">
                                 <span>Due Date</span>
+                                <span x-show="sortBy === 'due_date'" x-text="sortDirection === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
                             </div>
-                            <div class="multiselect-option" @click="sortBy = 'priority'; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="if (sortBy === 'priority') { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortBy = 'priority'; } updateFilters(); open = false">
                                 <span>Priority</span>
+                                <span x-show="sortBy === 'priority'" x-text="sortDirection === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
                             </div>
-                            <div class="multiselect-option" @click="sortBy = 'created'; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="if (sortBy === 'created') { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortBy = 'created'; } updateFilters(); open = false">
                                 <span>Created Date</span>
+                                <span x-show="sortBy === 'created'" x-text="sortDirection === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
                             </div>
-                            <div class="multiselect-option" @click="sortBy = 'title'; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="if (sortBy === 'title') { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortBy = 'title'; } updateFilters(); open = false">
                                 <span>Task Title</span>
+                                <span x-show="sortBy === 'title'" x-text="sortDirection === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
                             </div>
-                            <div class="multiselect-option" @click="sortBy = 'status'; updateFilters(); open = false">
+                            <div class="multiselect-option" @click="if (sortBy === 'status') { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortBy = 'status'; } updateFilters(); open = false">
                                 <span>Status</span>
+                                <span x-show="sortBy === 'status'" x-text="sortDirection === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Sort Direction Arrow (Alpine.js Only) -->
-                <button type="button" 
-                        class="px-2 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
-                        @click="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; updateFilters()"
-                        :title="'Sort ' + (sortDirection === 'asc' ? 'Descending' : 'Ascending')">
-                    <span class="text-gray-600" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
-                </button>
                 
                 <!-- Priority Filter (Alpine.js Only) -->
                 <div class="multiselect-custom" x-data="{ 
