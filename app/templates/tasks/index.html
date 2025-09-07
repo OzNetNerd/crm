@@ -642,9 +642,9 @@ function taskManager() {
         // Group by status
         groupByStatus(tasks) {
             const statusGroups = [
-                { key: 'todo', title: 'To Do', containerClass: 'card-info', headerClass: 'text-status-header', badgeClass: 'badge-blue', icon: this.getIconHTML('clipboard') },
-                { key: 'in-progress', title: 'In Progress', containerClass: 'card-warning', headerClass: 'text-status-header', badgeClass: 'badge-yellow', icon: this.getIconHTML('bolt') },
-                { key: 'complete', title: 'Completed', containerClass: 'card-success', headerClass: 'text-status-header', badgeClass: 'badge-green', icon: this.getIconHTML('check-circle') }
+                { key: 'todo', title: 'To Do', containerClass: 'card', headerClass: 'text-status-header', badgeClass: 'badge-blue', icon: this.getIconHTML('clipboard') },
+                { key: 'in-progress', title: 'In Progress', containerClass: 'card', headerClass: 'text-status-header', badgeClass: 'badge-yellow', icon: this.getIconHTML('bolt') },
+                { key: 'complete', title: 'Completed', containerClass: 'card', headerClass: 'text-status-header', badgeClass: 'badge-green', icon: this.getIconHTML('check-circle') }
             ];
             
             return statusGroups.map(group => ({
