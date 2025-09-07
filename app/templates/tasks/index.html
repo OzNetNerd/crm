@@ -196,6 +196,12 @@
                          x-transition:leave-start="transform opacity-100 scale-100"
                          x-transition:leave-end="transform opacity-0 scale-95"
                          class="multiselect-dropdown">
+                        <div class="multiselect-header">
+                            <div class="multiselect-controls">
+                                <span class="multiselect-control-btn" @click="priorityFilter = ['high', 'medium', 'low']; updateFilters()">Select All</span>
+                                <span class="multiselect-control-btn" @click="priorityFilter = []; updateFilters()">Deselect All</span>
+                            </div>
+                        </div>
                         <div class="multiselect-options">
                             <div class="multiselect-option" @click="priorityFilter = []; updateFilters()">
                                 <input type="checkbox" :checked="priorityFilter.length === 0" class="mr-2">
@@ -239,6 +245,12 @@
                          x-transition:leave-start="transform opacity-100 scale-100"
                          x-transition:leave-end="transform opacity-0 scale-95"
                          class="multiselect-dropdown">
+                        <div class="multiselect-header">
+                            <div class="multiselect-controls">
+                                <span class="multiselect-control-btn" @click="entityFilter = ['company', 'contact', 'opportunity', 'unrelated']; updateFilters()">Select All</span>
+                                <span class="multiselect-control-btn" @click="entityFilter = []; updateFilters()">Deselect All</span>
+                            </div>
+                        </div>
                         <div class="multiselect-options">
                             <div class="multiselect-option" @click="entityFilter = []; updateFilters()">
                                 <input type="checkbox" :checked="entityFilter.length === 0" class="mr-2">
