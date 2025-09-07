@@ -520,13 +520,14 @@
 
 /* Task card specific styling */
 .task-card {
-    margin-bottom: 0.75rem; /* mb-3 */
+    margin-bottom: 1rem; /* mb-4 - increased spacing */
     cursor: pointer;
     transition: box-shadow 0.15s ease-in-out; /* transition-shadow */
-    min-height: 120px; /* Consistent minimum height */
+    min-height: 130px; /* Increased minimum height for better spacing */
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding: 1.25rem; /* p-5 - better internal padding */
 }
 
 .task-card:hover {
@@ -546,5 +547,35 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 120px;
+    min-height: 130px;
+}
+
+/* Task group section improvements */
+.task-group-header {
+    padding: 1.5rem; /* p-6 - increased header padding */
+    border-bottom: 1px solid #e5e7eb;
+    background: linear-gradient(to right, rgba(255,255,255,0.95), rgba(249,250,251,0.95));
+}
+
+.task-group-content {
+    background-color: #fafbfc; /* Subtle background for content areas */
+}
+
+/* Better spacing for task sections */
+.task-section-spacing {
+    margin-bottom: 2rem; /* mb-8 - increased section spacing */
+}
+
+/* Improved color contrast for task headers */
+.task-header-improved {
+    font-weight: 600;
+    font-size: 1.125rem;
+    line-height: 1.5;
+    letter-spacing: -0.025em;
+}
+
+/* Enhanced filter section spacing */
+.filter-section-enhanced {
+    padding: 1.5rem 2rem; /* px-8 py-6 - more generous padding */
+    margin-bottom: 2rem; /* mb-8 */
 }

@@ -53,9 +53,9 @@
     <!-- Task Summary now handled by page_layout template -->
 
     <!-- Enhanced Filters and Controls with HTMX and Better Styling -->
-    <div class="card-padded">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-            <div class="flex flex-wrap items-center gap-4">
+    <div class="card-padded-lg filter-section-enhanced">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:gap-6">
+            <div class="flex flex-wrap items-center gap-6">
                 <label class="text-label-dark">Group by:</label>
                 
                 <!-- Group By Dropdown (Alpine.js Only) -->
@@ -115,7 +115,7 @@
                 {{ expand_collapse_controls('expandedSections') }}
             </div>
             
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center gap-6">
                 <label class="text-label-dark">Sort by:</label>
                 
                 <!-- Sort By Dropdown (Alpine.js Only) -->
@@ -279,35 +279,37 @@
     <!-- Dynamic Client-Side Task Grouping -->
     <div id="tasks-content">
         <template x-for="group in getGroupedTasks()" :key="group.key">
-            <div class="space-y-4">
+            <div class="task-section-spacing">
                 <!-- Group Section -->
                 <div :class="group.containerClass">
                     <!-- Group Header -->
-                    <div class="flex items-center justify-between p-4 cursor-pointer" 
-                         @click="toggleSection(group.key)"
-                         :class="group.headerClass">
-                        <div class="flex items-center space-x-2">
-                            <span x-html="group.icon" class="flex-shrink-0"></span>
-                            <h3 class="font-medium" x-text="group.title"></h3>
-                            <span class="badge-standard" 
-                                  :class="group.badgeClass" 
-                                  x-text="group.tasks.length"></span>
-                        </div>
-                        <div class="transform transition-transform duration-200" 
-                             :class="{ 'rotate-90': expandedSections[group.key] }">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
+                    <div :class="group.headerBgClass" 
+                         class="cursor-pointer"
+                         @click="toggleSection(group.key)">
+                        <div class="flex items-center justify-between">
+                            <h3 :class="group.headerClass">
+                                <span class="mr-2 transition-transform duration-200" 
+                                      :class="expandedSections[group.key] ? 'rotate-90' : ''">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </span>
+                                <span x-html="group.icon" class="w-5 h-5 mr-1"></span>
+                                <span x-text="group.title"></span>
+                                <span class="ml-2 badge-standard" 
+                                      :class="group.badgeClass" 
+                                      x-text="group.tasks.length"></span>
+                            </h3>
                         </div>
                     </div>
                     
                     <!-- Group Content -->
-                    <div class="p-6" 
+                    <div class="task-group-content p-8" 
                          x-show="expandedSections[group.key]" 
                          x-cloak 
                          x-transition>
                         <template x-if="group.tasks.length > 0">
-                            <div class="space-y-3">
+                            <div class="space-y-4">
                                 <template x-for="task in group.tasks" :key="task.id">
                                     <div x-html="renderTaskCard(task, group.key)"></div>
                                 </template>
@@ -642,9 +644,9 @@ function taskManager() {
         // Group by status
         groupByStatus(tasks) {
             const statusGroups = [
-                { key: 'todo', title: 'To Do', containerClass: 'card', headerClass: 'text-status-header', badgeClass: 'badge-blue', icon: this.getIconHTML('clipboard') },
-                { key: 'in-progress', title: 'In Progress', containerClass: 'card', headerClass: 'text-status-header', badgeClass: 'badge-yellow', icon: this.getIconHTML('bolt') },
-                { key: 'complete', title: 'Completed', containerClass: 'card', headerClass: 'text-status-header', badgeClass: 'badge-green', icon: this.getIconHTML('check-circle') }
+                { key: 'todo', title: 'To Do', containerClass: 'card-info', headerClass: 'text-status-info', headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', badgeClass: 'badge-blue', icon: this.getIconHTML('clipboard') },
+                { key: 'in-progress', title: 'In Progress', containerClass: 'card-warning', headerClass: 'text-status-warning', headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', badgeClass: 'badge-yellow', icon: this.getIconHTML('bolt') },
+                { key: 'complete', title: 'Completed', containerClass: 'card-success', headerClass: 'text-status-success', headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', badgeClass: 'badge-green', icon: this.getIconHTML('check-circle') }
             ];
             
             return statusGroups.map(group => ({
@@ -660,9 +662,9 @@ function taskManager() {
         // Group by priority
         groupByPriority(tasks) {
             const priorityGroups = [
-                { key: 'high', title: 'High Priority', containerClass: 'card-danger', headerClass: 'text-status-overdue', badgeClass: 'badge-red', icon: this.getIconHTML('fire') },
-                { key: 'medium', title: 'Medium Priority', containerClass: 'card-warning', headerClass: 'text-status-warning', badgeClass: 'badge-yellow', icon: this.getIconHTML('exclamation-triangle') },
-                { key: 'low', title: 'Low Priority', containerClass: 'card-success', headerClass: 'text-status-success', badgeClass: 'badge-green', icon: this.getIconHTML('clipboard') }
+                { key: 'high', title: 'High Priority', containerClass: 'card-danger', headerClass: 'text-status-overdue', headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100', badgeClass: 'badge-red', icon: this.getIconHTML('fire') },
+                { key: 'medium', title: 'Medium Priority', containerClass: 'card-warning', headerClass: 'text-status-warning', headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', badgeClass: 'badge-yellow', icon: this.getIconHTML('exclamation-triangle') },
+                { key: 'low', title: 'Low Priority', containerClass: 'card-success', headerClass: 'text-status-success', headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', badgeClass: 'badge-green', icon: this.getIconHTML('clipboard') }
             ];
             
             return priorityGroups.map(group => ({
@@ -674,11 +676,11 @@ function taskManager() {
         // Group by due date
         groupByDueDate(tasks) {
             const dueDateGroups = [
-                { key: 'overdue', title: 'Overdue', containerClass: 'card-danger', headerClass: 'text-status-overdue', badgeClass: 'badge-red', icon: this.getIconHTML('exclamation-circle') },
-                { key: 'today', title: 'Due Today', containerClass: 'card-orange', headerClass: 'text-status-warning', badgeClass: 'badge-orange', icon: this.getIconHTML('calendar-days') },
-                { key: 'this_week', title: 'This Week', containerClass: 'card-info', headerClass: 'text-status-info', badgeClass: 'badge-blue', icon: this.getIconHTML('calendar') },
-                { key: 'later', title: 'Later', containerClass: 'card-neutral', headerClass: 'text-status-neutral', badgeClass: 'badge-gray', icon: this.getIconHTML('chart-bar') },
-                { key: 'no_date', title: 'No Due Date', containerClass: 'card-neutral', headerClass: 'text-status-neutral', badgeClass: 'badge-gray', icon: this.getIconHTML('question-mark-circle') }
+                { key: 'overdue', title: 'Overdue', containerClass: 'card-danger', headerClass: 'text-status-overdue', headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100', badgeClass: 'badge-red', icon: this.getIconHTML('exclamation-circle') },
+                { key: 'today', title: 'Due Today', containerClass: 'card-orange', headerClass: 'text-status-warning', headerBgClass: 'border-b border-orange-200 px-6 py-4 bg-orange-50 hover:bg-orange-100', badgeClass: 'badge-orange', icon: this.getIconHTML('calendar-days') },
+                { key: 'this_week', title: 'This Week', containerClass: 'card-info', headerClass: 'text-status-info', headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', badgeClass: 'badge-blue', icon: this.getIconHTML('calendar') },
+                { key: 'later', title: 'Later', containerClass: 'card-neutral', headerClass: 'text-status-neutral', headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', badgeClass: 'badge-gray', icon: this.getIconHTML('chart-bar') },
+                { key: 'no_date', title: 'No Due Date', containerClass: 'card-neutral', headerClass: 'text-status-neutral', headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', badgeClass: 'badge-gray', icon: this.getIconHTML('question-mark-circle') }
             ];
             
             return dueDateGroups.map(group => ({
@@ -690,10 +692,10 @@ function taskManager() {
         // Group by entity
         groupByEntity(tasks) {
             const entityGroups = [
-                { key: 'company', title: 'Company Tasks', containerClass: 'card-info', headerClass: 'text-status-info', badgeClass: 'badge-blue', icon: this.getIconHTML('building-office') },
-                { key: 'contact', title: 'Contact Tasks', containerClass: 'card-success', headerClass: 'text-status-success', badgeClass: 'badge-green', icon: this.getIconHTML('user') },
-                { key: 'opportunity', title: 'Opportunity Tasks', containerClass: 'card-warning', headerClass: 'text-status-warning', badgeClass: 'badge-yellow', icon: this.getIconHTML('currency-dollar') },
-                { key: 'unrelated', title: 'General Tasks', containerClass: 'card-neutral', headerClass: 'text-status-neutral', badgeClass: 'badge-gray', icon: this.getIconHTML('clipboard') }
+                { key: 'company', title: 'Company Tasks', containerClass: 'card-info', headerClass: 'text-status-info', headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', badgeClass: 'badge-blue', icon: this.getIconHTML('building-office') },
+                { key: 'contact', title: 'Contact Tasks', containerClass: 'card-success', headerClass: 'text-status-success', headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', badgeClass: 'badge-green', icon: this.getIconHTML('user') },
+                { key: 'opportunity', title: 'Opportunity Tasks', containerClass: 'card-warning', headerClass: 'text-status-warning', headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', badgeClass: 'badge-yellow', icon: this.getIconHTML('currency-dollar') },
+                { key: 'unrelated', title: 'General Tasks', containerClass: 'card-neutral', headerClass: 'text-status-neutral', headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', badgeClass: 'badge-gray', icon: this.getIconHTML('clipboard') }
             ];
             
             return entityGroups.map(group => ({
