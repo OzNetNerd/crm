@@ -1,0 +1,97 @@
+{% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
+
+<div x-data="{
+        show: false,
+        saving: false,
+        contact: {
+            name: '',
+            role: '',
+            email: '',
+            phone: '',
+            company_id: ''
+        },
+        
+        async saveNewContact() {
+            if (!this.contact.name.trim()) return;
+            this.saving = true;
+            
+            try {
+                const response = await fetch('/api/contacts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.contact)
+                });
+                
+                if (response.ok) {
+                    this.resetForm();
+                    this.show = false;
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error('Error creating contact:', error);
+            } finally {
+                this.saving = false;
+            }
+        },
+        
+        resetForm() {
+            this.contact = {
+                name: '',
+                role: '',
+                email: '',
+                phone: '',
+                company_id: ''
+            };
+        }
+     }" 
+     @open-new-contact-modal.window="show = true; resetForm()"
+     @close-modal.window="show = false">
+
+    {% call base_modal('new-contact-modal', backdrop_click_close=false) %}
+        {{ modal_header('Create New Contact') }}
+        
+        <div class="space-y-4">
+            <div>
+                <label class="text-form-label">Name*</label>
+                <input type="text" x-model="contact.name" 
+                       placeholder="Contact name"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       required>
+            </div>
+            
+            <div>
+                <label class="text-form-label">Role/Title</label>
+                <input type="text" x-model="contact.role" 
+                       placeholder="Job title or role"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-form-label">Email</label>
+                    <input type="email" x-model="contact.email" 
+                           placeholder="email@example.com"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div>
+                    <label class="text-form-label">Phone</label>
+                    <input type="tel" x-model="contact.phone" 
+                           placeholder="Phone number"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+            
+            <div>
+                <label class="text-form-label">Company</label>
+                <select x-model="contact.company_id" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Select a company (optional)</option>
+                    <!-- Company options would be populated by the backend -->
+                </select>
+            </div>
+        </div>
+        
+        {{ modal_footer(save_action="saveNewContact()", save_text="Create Contact") }}
+    {% endcall %}
+</div>
