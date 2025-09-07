@@ -16,10 +16,10 @@
                                 'orange' if opportunity.stage == 'negotiation' else
                                 'gray' %}
             {{ status_badge(opportunity.stage, stage_color) }}
-            <h3 class="text-title-primary">{{ opportunity.name }}</h3>
+            <h3 class="text-opportunity-name">{{ opportunity.name }}</h3>
             
             {% if opportunity.value %}
-                <div class="text-lg font-semibold text-green-600">
+                <div class="text-deal-amount-lg text-success">
                     ${{ "{:,.0f}".format(opportunity.value) }}
                 </div>
             {% endif %}
@@ -29,7 +29,7 @@
     <!-- Company and probability info -->
     <div class="mb-2">
         <div class="flex items-center space-x-4 text-secondary">
-            <span class="font-medium">{{ opportunity.company.name }}</span>
+            <span class="text-company-name">{{ opportunity.company.name }}</span>
             
             {% if opportunity.probability %}
                 <span class="flex items-center">

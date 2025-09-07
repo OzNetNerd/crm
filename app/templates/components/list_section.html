@@ -62,8 +62,8 @@
   
   <div class="flex items-center justify-between bg-white p-3 rounded border {{ additional_classes }}">
     <div>
-      <div class="text-label-primary">{{ title }}</div>
-      <div class="text-metadata">{{ subtitle }}</div>
+      <div class="text-label-primary">{{ title|safe }}</div>
+      <div class="text-metadata">{{ subtitle|safe }}</div>
     </div>
     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ badge_class }}">
       {{ badge_text }}
