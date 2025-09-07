@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.models import db, Task, Contact, Company, Opportunity, Note
-from app.utils.route_helpers import GenericAPIHandler
+from crm.models import db, Task, Contact, Company, Opportunity, Note
+from crm.utils.route_helpers import GenericAPIHandler
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 

@@ -1,6 +1,6 @@
 from datetime import datetime, date, timedelta
 from flask import Blueprint, render_template, request, jsonify
-from app.models import db, Task, Company, Contact, Opportunity, Note
+from crm.models import db, Task, Company, Contact, Opportunity, Note
 
 dashboard_bp = Blueprint("dashboard", __name__)
 

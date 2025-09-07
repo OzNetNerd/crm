@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy import or_
-from app.models import Task, Company, Contact, Opportunity
+from crm.models import Task, Company, Contact, Opportunity
 
 search_bp = Blueprint("search", __name__)
 

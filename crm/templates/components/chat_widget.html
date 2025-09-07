@@ -1,0 +1,250 @@
+<!-- Floating Chat Widget for CRM -->
+<div id="chat-widget" class="fixed bottom-4 right-4 z-50" x-data="chatWidget()">
+    <!-- Chat Toggle Button -->
+    <button 
+        @click="toggleChat()" 
+        class="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transition-all duration-200"
+        :class="{ 'scale-110': isOpen }"
+    >
+        <span x-show="!isOpen" class="text-2xl">💬</span>
+        <span x-show="isOpen" class="text-xl">✕</span>
+    </button>
+    
+    <!-- Chat Panel -->
+    <div 
+        x-show="isOpen" 
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="transform translate-y-2 opacity-0 scale-95"
+        x-transition:enter-end="transform translate-y-0 opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="transform translate-y-0 opacity-100 scale-100"
+        x-transition:leave-end="transform translate-y-2 opacity-0 scale-95"
+        class="absolute bottom-20 right-0 w-80 h-96 bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col"
+        style="display: none;"
+    >
+        <!-- Chat Header -->
+        <div class="bg-blue-500 text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
+            <h3 class="font-semibold">CRM Assistant</h3>
+            <div class="flex items-center space-x-2">
+                <span 
+                    class="w-2 h-2 rounded-full"
+                    :class="connectionStatus === 'connected' ? 'bg-green-400' : connectionStatus === 'connecting' ? 'bg-yellow-400' : 'bg-red-400'"
+                ></span>
+                <span class="text-xs" x-text="connectionStatus"></span>
+            </div>
+        </div>
+        
+        <!-- Messages Area -->
+        <div 
+            id="chat-messages" 
+            class="flex-1 overflow-y-auto p-4 space-y-3"
+            x-ref="messagesContainer"
+        >
+            <!-- Welcome Message -->
+            <div x-show="messages.length === 0" class="text-gray-500 text-sm text-center py-8">
+                <div class="text-2xl mb-2">🤖</div>
+                <p>Hello! I'm your CRM assistant.</p>
+                <p class="mt-1">Ask me about your companies, contacts, tasks, or meetings!</p>
+            </div>
+            
+            <!-- Messages -->
+            <template x-for="message in messages" :key="message.id">
+                <div class="flex" :class="message.type === 'user' ? 'justify-end' : 'justify-start'">
+                    <div 
+                        class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg text-sm"
+                        :class="message.type === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'"
+                    >
+                        <p x-text="message.content"></p>
+                        <div class="text-xs mt-1 opacity-70" x-text="formatTime(message.timestamp)"></div>
+                    </div>
+                </div>
+            </template>
+            
+            <!-- Typing Indicator -->
+            <div x-show="isTyping" class="flex justify-start">
+                <div class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg text-sm">
+                    <div class="flex space-x-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Input Area -->
+        <div class="border-t border-gray-200 p-4">
+            <form @submit.prevent="sendMessage()" class="flex space-x-2">
+                <input 
+                    type="text" 
+                    x-model="currentMessage"
+                    placeholder="Type your message..."
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    :disabled="connectionStatus !== 'connected'"
+                    @keydown.enter="sendMessage()"
+                >
+                <button 
+                    type="submit"
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 disabled:bg-gray-300"
+                    :disabled="!currentMessage.trim() || connectionStatus !== 'connected'"
+                >
+                    Send
+                </button>
+            </form>
+            
+            <!-- Connection Status Message -->
+            <div x-show="connectionStatus !== 'connected'" class="mt-2 text-xs text-center">
+                <span x-show="connectionStatus === 'connecting'" class="text-yellow-600">Connecting to assistant...</span>
+                <span x-show="connectionStatus === 'disconnected'" class="text-red-600">
+                    Connection lost. 
+                    <button @click="reconnect()" class="underline hover:no-underline">Reconnect</button>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function chatWidget() {
+    return {
+        isOpen: false,
+        connectionStatus: 'disconnected', // disconnected, connecting, connected
+        messages: [],
+        currentMessage: '',
+        isTyping: false,
+        websocket: null,
+        sessionId: null,
+        
+        init() {
+            this.sessionId = 'crm-' + Math.random().toString(36).substr(2, 9);
+            this.connect();
+        },
+        
+        toggleChat() {
+            this.isOpen = !this.isOpen;
+            if (this.isOpen && this.connectionStatus === 'disconnected') {
+                this.connect();
+            }
+            if (this.isOpen) {
+                this.$nextTick(() => {
+                    this.scrollToBottom();
+                });
+            }
+        },
+        
+        connect() {
+            if (this.websocket) {
+                this.websocket.close();
+            }
+            
+            this.connectionStatus = 'connecting';
+            
+            try {
+                // Try to connect to the chatbot service
+                this.websocket = new WebSocket(`ws://localhost:8001/ws/chat/${this.sessionId}`);
+                
+                this.websocket.onopen = () => {
+                    this.connectionStatus = 'connected';
+                    this.addSystemMessage('Connected to CRM Assistant!');
+                };
+                
+                this.websocket.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        this.isTyping = false;
+                        
+                        this.addMessage({
+                            type: 'bot',
+                            content: data.message || 'No response',
+                            timestamp: new Date()
+                        });
+                    } catch (e) {
+                        console.error('Failed to parse message:', e);
+                        this.addSystemMessage('Error parsing response');
+                    }
+                };
+                
+                this.websocket.onclose = () => {
+                    this.connectionStatus = 'disconnected';
+                    this.isTyping = false;
+                };
+                
+                this.websocket.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    this.connectionStatus = 'disconnected';
+                    this.isTyping = false;
+                };
+                
+            } catch (error) {
+                console.error('Failed to connect:', error);
+                this.connectionStatus = 'disconnected';
+                this.addSystemMessage('Failed to connect to assistant. Make sure the chatbot service is running on port 8001.');
+            }
+        },
+        
+        reconnect() {
+            this.connect();
+        },
+        
+        sendMessage() {
+            if (!this.currentMessage.trim() || this.connectionStatus !== 'connected') {
+                return;
+            }
+            
+            const message = this.currentMessage.trim();
+            this.currentMessage = '';
+            
+            // Add user message to chat
+            this.addMessage({
+                type: 'user',
+                content: message,
+                timestamp: new Date()
+            });
+            
+            // Show typing indicator
+            this.isTyping = true;
+            
+            // Send message to chatbot
+            try {
+                this.websocket.send(JSON.stringify({ 
+                    message: message,
+                    session_id: this.sessionId
+                }));
+            } catch (error) {
+                console.error('Failed to send message:', error);
+                this.isTyping = false;
+                this.addSystemMessage('Failed to send message');
+            }
+        },
+        
+        addMessage(message) {
+            message.id = Date.now() + Math.random();
+            this.messages.push(message);
+            this.$nextTick(() => {
+                this.scrollToBottom();
+            });
+        },
+        
+        addSystemMessage(content) {
+            this.addMessage({
+                type: 'system',
+                content: content,
+                timestamp: new Date()
+            });
+        },
+        
+        scrollToBottom() {
+            if (this.$refs.messagesContainer) {
+                this.$refs.messagesContainer.scrollTop = this.$refs.messagesContainer.scrollHeight;
+            }
+        },
+        
+        formatTime(timestamp) {
+            return new Date(timestamp).toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+    }
+}
+</script>
