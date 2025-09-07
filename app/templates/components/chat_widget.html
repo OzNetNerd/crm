@@ -114,6 +114,7 @@ function chatWidget() {
         isTyping: false,
         websocket: null,
         sessionId: null,
+        currentStreamingMessage: null,
         
         init() {
             this.sessionId = 'crm-' + Math.random().toString(36).substr(2, 9);
@@ -151,16 +152,44 @@ function chatWidget() {
                 this.websocket.onmessage = (event) => {
                     try {
                         const data = JSON.parse(event.data);
-                        this.isTyping = false;
                         
-                        this.addMessage({
-                            type: 'bot',
-                            content: data.message || 'No response',
-                            timestamp: new Date()
-                        });
+                        if (data.type === 'streaming_chunk') {
+                            // Handle streaming text chunks
+                            if (!this.currentStreamingMessage) {
+                                this.isTyping = false;
+                                this.currentStreamingMessage = this.addMessage({
+                                    type: 'bot',
+                                    content: '',
+                                    timestamp: new Date()
+                                });
+                            }
+                            // Append text to current streaming message
+                            this.currentStreamingMessage.content += data.text;
+                        } else if (data.type === 'streaming_complete') {
+                            // Streaming finished
+                            this.currentStreamingMessage = null;
+                            this.isTyping = false;
+                        } else if (data.type === 'bot_response') {
+                            // Handle regular response (fallback)
+                            this.isTyping = false;
+                            this.addMessage({
+                                type: 'bot',
+                                content: data.message || 'No response received',
+                                timestamp: new Date()
+                            });
+                        } else {
+                            // Handle other message types
+                            this.isTyping = false;
+                            this.addMessage({
+                                type: 'bot',
+                                content: data.message || data.text || 'No response received',
+                                timestamp: new Date()
+                            });
+                        }
                     } catch (e) {
                         console.error('Failed to parse message:', e);
                         this.addSystemMessage('Error parsing response');
+                        this.isTyping = false;
                     }
                 };
                 
@@ -223,6 +252,7 @@ function chatWidget() {
             this.$nextTick(() => {
                 this.scrollToBottom();
             });
+            return message;
         },
         
         addSystemMessage(content) {
