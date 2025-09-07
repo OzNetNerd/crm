@@ -439,35 +439,18 @@
 {% macro task_section_group(section_key, title, icon_html, card_class='card', colors=None, x_show_condition='', filter_config=None, additional_classes='') %}
 {%- from "components/task_card.html" import render_task, render_task_hierarchy -%}
 <div {% if x_show_condition %}x-show="{{ x_show_condition }}" x-cloak {% endif %}class="{{ card_class }}">
-    {% set badge_html %}
-        {%- if filter_config -%}
-            {%- if filter_config.type == 'status' -%}
-                <span class="ml-2 badge-standard badge-{{ colors.badge_color }}">{{ (tasks_objects|selectattr('status', 'equalto', filter_config.value)|list|length) }}</span>
-            {%- elif filter_config.type == 'priority' -%}
-                {{ badge_count_helper('priority', filter_config.value, colors.badge_color) }}
-            {%- elif filter_config.type == 'overdue' -%}
-                {{ badge_count_helper('overdue', color=colors.badge_color) }}
-            {%- elif filter_config.type == 'due_today' -%}
-                {{ badge_count_helper('due_today', color=colors.badge_color) }}
-            {%- elif filter_config.type == 'no_date' -%}
-                {{ badge_count_helper('no_date', show_completed=show_completed if show_completed is defined else false, color=colors.badge_color) }}
-            {%- elif filter_config.type == 'entity' -%}
-                {{ badge_count_helper('entity', filter_config.value, colors.badge_color, show_completed=show_completed if show_completed is defined else false) }}
-            {%- elif filter_config.type == 'custom' and filter_config.custom_count is defined -%}
-                {{ badge_count_helper('custom', color=colors.badge_color, custom_count=filter_config.custom_count) }}
-            {%- else -%}
-                <span class="ml-2 badge-standard badge-{{ colors.badge_color }}">0</span>
-            {%- endif -%}
-        {%- else -%}
-            <span class="ml-2 badge-standard badge-{{ colors.badge_color }}">0</span>
-        {%- endif -%}
-    {% endset %}
-    
     {{ section_group_header(
         section_key,
         title,
         icon_html|safe, 
-        badge_html|trim,
+        '<span class="ml-2 badge-standard badge-' + colors.badge_color + '">' + (
+            (tasks_objects|selectattr('status', 'equalto', filter_config.value)|list|length)|string if filter_config and filter_config.type == 'status' else
+            (tasks_objects|selectattr('priority', 'equalto', filter_config.value)|list|length)|string if filter_config and filter_config.type == 'priority' else
+            (tasks_objects|selectattr('is_overdue', 'equalto', True)|list|length)|string if filter_config and filter_config.type == 'overdue' else
+            (tasks_objects|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list|length)|string if filter_config and filter_config.type == 'due_today' else
+            (filter_config.custom_count|string if filter_config.custom_count is defined else '0') if filter_config and (filter_config.type == 'custom_due_week' or filter_config.type == 'custom_due_later') else
+            '0'
+        ) + '</span>',
         colors.border_color,
         colors.bg_color,
         colors.hover_color, 

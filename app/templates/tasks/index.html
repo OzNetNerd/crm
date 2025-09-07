@@ -267,24 +267,77 @@
         </div>
     </div>
 
+    <!-- DEBUG: Check available variables -->
+    <div class="bg-red-100 p-4 mb-4 text-sm">
+        DEBUG: tasks count = {{ tasks|length if tasks else 'UNDEFINED' }}, 
+        tasks_objects count = {{ tasks_objects|length if tasks_objects else 'UNDEFINED' }},
+        first task status = {{ tasks_objects[0].status if tasks_objects and tasks_objects|length > 0 else 'NO TASKS' }},
+        todo count = {{ (tasks_objects|selectattr('status', 'equalto', 'todo')|list|length) }},
+        in-progress count = {{ (tasks_objects|selectattr('status', 'equalto', 'in-progress')|list|length) }},
+        statuses = {% for task in tasks_objects[:5] %}{{ task.status }},{% endfor %}
+    </div>
+    
     <!-- Tasks by Status - DRY approach -->
     <div x-show="groupBy === 'status'" x-cloak class="space-y-4">
         <!-- To Do Tasks -->
-        {{ task_section_group('todo', 'To Do', clipboard_list_icon("w-5 h-5 mr-1"), 
-           colors={'badge_color': 'blue', 'border_color': 'blue', 'bg_color': 'blue', 'hover_color': 'blue', 'text_class': 'text-status-header'}, 
-           filter_config={'type': 'status', 'value': 'todo'}) }}
+        <div class="card">
+            {{ section_group_header('todo', 'To Do', clipboard_list_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-blue">' + (tasks_objects|selectattr('status', 'equalto', 'todo')|list|length)|string + '</span>', 'blue', 'blue', 'blue', 'text-status-header') }}
+            <div class="p-6" x-show="expandedSections['todo']" x-cloak x-transition>
+                {% for task in tasks_objects %}
+                    {% if task.status == 'todo' and task.task_type != 'child' %}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else "'unrelated'" }}, status: '{{ task.status }}'})">
+                            {% if task.task_type == 'parent' %}
+                                {{ render_task_hierarchy(task, 'todo') }}
+                            {% else %}
+                                {{ render_task(task, 'todo') }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <p class="text-empty-state">No matching tasks found</p>
+                {% endfor %}
+            </div>
+        </div>
 
         <!-- In Progress Tasks -->
-        {{ task_section_group('in-progress', 'In Progress', bolt_icon("w-5 h-5 mr-1"), 
-           colors={'badge_color': 'yellow', 'border_color': 'yellow', 'bg_color': 'yellow', 'hover_color': 'yellow', 'text_class': 'text-status-header'}, 
-           filter_config={'type': 'status', 'value': 'in-progress'}) }}
+        <div class="card">
+            {{ section_group_header('in-progress', 'In Progress', bolt_icon("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-yellow">' + (tasks_objects|selectattr('status', 'equalto', 'in-progress')|list|length)|string + '</span>', 'yellow', 'yellow', 'yellow', 'text-status-header') }}
+            <div class="p-6" x-show="expandedSections['in-progress']" x-cloak x-transition>
+                {% for task in tasks_objects %}
+                    {% if task.status == 'in-progress' and task.task_type != 'child' %}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else "'unrelated'" }}, status: '{{ task.status }}'})">
+                            {% if task.task_type == 'parent' %}
+                                {{ render_task_hierarchy(task, 'in-progress') }}
+                            {% else %}
+                                {{ render_task(task, 'in-progress') }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <p class="text-empty-state">No matching tasks found</p>
+                {% endfor %}
+            </div>
+        </div>
 
         <!-- Completed Tasks (conditional) -->
-        {{ task_section_group('complete', 'Completed', check_circle_icon_solid("w-5 h-5 mr-1"), 
-           colors={'badge_color': 'green', 'border_color': 'green', 'bg_color': 'green', 'hover_color': 'green', 'text_class': 'text-status-header'}, 
-           filter_config={'type': 'status', 'value': 'complete'}, 
-           x_show_condition='showCompleted', 
-           additional_classes='opacity-60') }}
+        <div x-show="showCompleted" x-cloak class="card">
+            {{ section_group_header('complete', 'Completed', check_circle_icon_solid("w-5 h-5 mr-1"), '<span class="ml-2 badge-standard badge-green">' + (tasks_objects|selectattr('status', 'equalto', 'complete')|list|length)|string + '</span>', 'green', 'green', 'green', 'text-status-header') }}
+            <div class="p-6" x-show="expandedSections['complete']" x-cloak x-transition>
+                {% for task in tasks_objects %}
+                    {% if task.status == 'complete' and task.task_type != 'child' %}
+                        <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else "'unrelated'" }}, status: '{{ task.status }}'}" class="opacity-60">
+                            {% if task.task_type == 'parent' %}
+                                {{ render_task_hierarchy(task, 'complete') }}
+                            {% else %}
+                                {{ render_task(task, 'complete') }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <p class="text-empty-state">No matching tasks found</p>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 
     <!-- Tasks by Priority -->
