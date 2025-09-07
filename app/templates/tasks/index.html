@@ -276,24 +276,66 @@
         </div>
     </div>
 
-    <!-- Alpine.js Rendered Content - Dynamic task sections rendered here -->
+    <!-- Dynamic Client-Side Task Grouping -->
     <div id="tasks-content">
-        <!-- Render based on current groupBy selection -->
-        <div x-show="groupBy === 'status'">
-            {% include 'tasks/_content_status.html' %}
-        </div>
-        
-        <div x-show="groupBy === 'priority'">
-            {% include 'tasks/_content_priority.html' %}
-        </div>
-        
-        <div x-show="groupBy === 'due_date'">
-            {% include 'tasks/_content_due_date.html' %}
-        </div>
-        
-        <div x-show="groupBy === 'entity'">
-            {% include 'tasks/_content_entity.html' %}
-        </div>
+        <template x-for="group in getGroupedTasks()" :key="group.key">
+            <div class="space-y-4">
+                <!-- Group Section -->
+                <div :class="group.containerClass">
+                    <!-- Group Header -->
+                    <div class="flex items-center justify-between p-4 cursor-pointer" 
+                         @click="toggleSection(group.key)"
+                         :class="group.headerClass">
+                        <div class="flex items-center space-x-2">
+                            <span x-html="group.icon" class="flex-shrink-0"></span>
+                            <h3 class="font-medium" x-text="group.title"></h3>
+                            <span class="badge-standard" 
+                                  :class="group.badgeClass" 
+                                  x-text="group.tasks.length"></span>
+                        </div>
+                        <div class="transform transition-transform duration-200" 
+                             :class="{ 'rotate-90': expandedSections[group.key] }">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <!-- Group Content -->
+                    <div class="p-6" 
+                         x-show="expandedSections[group.key]" 
+                         x-cloak 
+                         x-transition>
+                        <template x-if="group.tasks.length > 0">
+                            <div class="space-y-3">
+                                <template x-for="task in group.tasks" :key="task.id">
+                                    <div x-html="renderTaskCard(task, group.key)"></div>
+                                </template>
+                            </div>
+                        </template>
+                        <template x-if="group.tasks.length === 0">
+                            <p class="text-empty-state">No matching tasks found</p>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- Hidden pre-rendered task cards for client-side use -->
+    <div style="display: none;" id="task-cards-cache">
+        {% from "components/task_card.html" import render_task, render_task_hierarchy %}
+        {% for task in tasks_objects %}
+            {% if task.task_type != 'child' %}
+                <div id="task-card-{{ task.id }}">
+                    {% if task.task_type == 'parent' %}
+                        {{ render_task_hierarchy(task) }}
+                    {% else %}
+                        {{ render_task(task) }}
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
     </div>
 
 </div>
@@ -559,6 +601,166 @@ function taskManager() {
                        entity === 'opportunity' ? 'Opportunities' : entity;
             }
             return `${this.entityFilter.length} Selected`;
+        },
+
+        // Main grouping function - returns grouped and filtered tasks
+        getGroupedTasks() {
+            // 1. Filter tasks first
+            let filteredTasks = this.allTasks.filter(task => this.shouldShowTask(task));
+            
+            // 2. Sort tasks
+            let sortedTasks = this.sortTasks(filteredTasks);
+            
+            // 3. Group by current groupBy setting
+            return this.groupTasksByType(sortedTasks, this.groupBy);
+        },
+
+        // Group tasks by the specified type
+        groupTasksByType(tasks, groupType) {
+            let groups = [];
+            
+            switch(groupType) {
+                case 'status':
+                    groups = this.groupByStatus(tasks);
+                    break;
+                case 'priority':
+                    groups = this.groupByPriority(tasks);
+                    break;
+                case 'due_date':
+                    groups = this.groupByDueDate(tasks);
+                    break;
+                case 'entity':
+                    groups = this.groupByEntity(tasks);
+                    break;
+                default:
+                    groups = this.groupByStatus(tasks);
+            }
+            
+            return groups;
+        },
+
+        // Group by status
+        groupByStatus(tasks) {
+            const statusGroups = [
+                { key: 'todo', title: 'To Do', containerClass: 'card-info', headerClass: 'text-status-header', badgeClass: 'badge-blue', icon: this.getIconHTML('clipboard') },
+                { key: 'in-progress', title: 'In Progress', containerClass: 'card-warning', headerClass: 'text-status-header', badgeClass: 'badge-yellow', icon: this.getIconHTML('bolt') },
+                { key: 'complete', title: 'Completed', containerClass: 'card-success', headerClass: 'text-status-header', badgeClass: 'badge-green', icon: this.getIconHTML('check-circle') }
+            ];
+            
+            return statusGroups.map(group => ({
+                ...group,
+                tasks: tasks.filter(task => 
+                    task.status === group.key && 
+                    task.task_type !== 'child' &&
+                    (group.key !== 'complete' || this.showCompleted)
+                )
+            })).filter(group => group.key !== 'complete' || this.showCompleted);
+        },
+
+        // Group by priority
+        groupByPriority(tasks) {
+            const priorityGroups = [
+                { key: 'high', title: 'High Priority', containerClass: 'card-danger', headerClass: 'text-status-overdue', badgeClass: 'badge-red', icon: this.getIconHTML('fire') },
+                { key: 'medium', title: 'Medium Priority', containerClass: 'card-warning', headerClass: 'text-status-warning', badgeClass: 'badge-yellow', icon: this.getIconHTML('exclamation-triangle') },
+                { key: 'low', title: 'Low Priority', containerClass: 'card-success', headerClass: 'text-status-success', badgeClass: 'badge-green', icon: this.getIconHTML('clipboard') }
+            ];
+            
+            return priorityGroups.map(group => ({
+                ...group,
+                tasks: tasks.filter(task => task.priority === group.key && task.task_type !== 'child')
+            }));
+        },
+
+        // Group by due date
+        groupByDueDate(tasks) {
+            const dueDateGroups = [
+                { key: 'overdue', title: 'Overdue', containerClass: 'card-danger', headerClass: 'text-status-overdue', badgeClass: 'badge-red', icon: this.getIconHTML('exclamation-circle') },
+                { key: 'today', title: 'Due Today', containerClass: 'card-orange', headerClass: 'text-status-warning', badgeClass: 'badge-orange', icon: this.getIconHTML('calendar-days') },
+                { key: 'this_week', title: 'This Week', containerClass: 'card-info', headerClass: 'text-status-info', badgeClass: 'badge-blue', icon: this.getIconHTML('calendar') },
+                { key: 'later', title: 'Later', containerClass: 'card-neutral', headerClass: 'text-status-neutral', badgeClass: 'badge-gray', icon: this.getIconHTML('chart-bar') },
+                { key: 'no_date', title: 'No Due Date', containerClass: 'card-neutral', headerClass: 'text-status-neutral', badgeClass: 'badge-gray', icon: this.getIconHTML('question-mark-circle') }
+            ];
+            
+            return dueDateGroups.map(group => ({
+                ...group,
+                tasks: this.getTasksByDueDateCategory(tasks, group.key)
+            }));
+        },
+
+        // Group by entity
+        groupByEntity(tasks) {
+            const entityGroups = [
+                { key: 'company', title: 'Company Tasks', containerClass: 'card-info', headerClass: 'text-status-info', badgeClass: 'badge-blue', icon: this.getIconHTML('building-office') },
+                { key: 'contact', title: 'Contact Tasks', containerClass: 'card-success', headerClass: 'text-status-success', badgeClass: 'badge-green', icon: this.getIconHTML('user') },
+                { key: 'opportunity', title: 'Opportunity Tasks', containerClass: 'card-warning', headerClass: 'text-status-warning', badgeClass: 'badge-yellow', icon: this.getIconHTML('currency-dollar') },
+                { key: 'unrelated', title: 'General Tasks', containerClass: 'card-neutral', headerClass: 'text-status-neutral', badgeClass: 'badge-gray', icon: this.getIconHTML('clipboard') }
+            ];
+            
+            return entityGroups.map(group => ({
+                ...group,
+                tasks: tasks.filter(task => {
+                    if (task.task_type === 'child') return false;
+                    if (group.key === 'unrelated') {
+                        return !task.entity_type || task.entity_type === null;
+                    }
+                    return task.entity_type === group.key;
+                })
+            }));
+        },
+
+        // Helper to get tasks by due date category
+        getTasksByDueDateCategory(tasks, category) {
+            return tasks.filter(task => {
+                if (task.task_type === 'child') return false;
+                
+                if (category === 'no_date') {
+                    return !task.due_date;
+                }
+                
+                if (!task.due_date) return false;
+                
+                const dueDate = new Date(task.due_date);
+                const daysDiff = Math.ceil((dueDate - this.today) / (1000 * 60 * 60 * 24));
+                
+                switch(category) {
+                    case 'overdue': return daysDiff < 0;
+                    case 'today': return daysDiff === 0;
+                    case 'this_week': return daysDiff > 0 && daysDiff <= 7;
+                    case 'later': return daysDiff > 7;
+                    default: return false;
+                }
+            });
+        },
+
+        // Toggle section expansion
+        toggleSection(sectionKey) {
+            this.expandedSections[sectionKey] = !this.expandedSections[sectionKey];
+        },
+
+        // Helper to get icon HTML
+        getIconHTML(iconType) {
+            const icons = {
+                'clipboard': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>',
+                'bolt': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>',
+                'check-circle': '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"></path></svg>',
+                'fire': '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177A7.547 7.547 0 016.648 6.61a.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 011.925-3.545 3.75 3.75 0 013.255 3.717z" clip-rule="evenodd"></path></svg>',
+                'exclamation-triangle': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>',
+                'exclamation-circle': '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"></path></svg>',
+                'calendar-days': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5a2.25 2.25 0 002.25-2.25m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5a2.25 2.25 0 012.25 2.25v7.5M8.25 21h7.5"></path></svg>',
+                'calendar': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>',
+                'chart-bar': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>',
+                'question-mark-circle': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+                'building-office': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>',
+                'user': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>',
+                'currency-dollar': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path></svg>'
+            };
+            return icons[iconType] || icons['clipboard'];
+        },
+
+        // Get pre-rendered task card HTML for a task
+        renderTaskCard(task, groupContext) {
+            const cachedElement = document.getElementById(`task-card-${task.id}`);
+            return cachedElement ? cachedElement.innerHTML : '';
         }
     };
 }
