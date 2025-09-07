@@ -33,5 +33,26 @@ class Contact(db.Model):
         backref=db.backref("contacts", lazy=True),
     )
 
+    def to_dict(self):
+        """Convert contact to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'role': self.role,
+            'email': self.email,
+            'phone': self.phone,
+            'company_id': self.company_id,
+            'company_name': self.company.name if self.company else None,
+            'opportunities': [
+                {
+                    'id': opp.id,
+                    'name': opp.name,
+                    'value': opp.value,
+                    'stage': opp.stage,
+                }
+                for opp in self.opportunities
+            ]
+        }
+
     def __repr__(self):
         return f"<Contact {self.name}>"
