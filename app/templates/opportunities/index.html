@@ -2,7 +2,7 @@
 {% from "components/opportunity_card.html" import render_opportunity %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/quick_actions.html" import opportunities_page_actions %}
-{% from "components/ui_elements.html" import action_button, expand_collapse_controls, dropdown_select, dropdown_multiselect, entity_section_group %}
+{% from "components/ui_elements.html" import action_button, expand_collapse_controls, dropdown_select, dropdown_multiselect, entity_section_group, bulk_selection_checkbox, view_mode_toggle %}
 {% from "components/icons.html" import chevron_right_icon, building_office_icon, currency_dollar_icon, chart_bar_icon, clock_icon %}
 
 {% block title %}Opportunities - CRM{% endblock %}
@@ -44,6 +44,29 @@
 ] %}
 
 {% call page_layout("Opportunities", "Track your sales pipeline", buttons=opportunity_buttons, summary_data=pipeline_stats) %}
+
+<div x-data="opportunityManager()" class="space-y-6">
+
+    <!-- Bulk Actions Bar -->
+    <div x-show="selectedItems.length > 0" 
+         x-cloak 
+         x-transition
+         class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <span class="text-blue-800 font-medium" x-text="`${selectedItems.length} opportunities selected`"></span>
+            <button @click="bulkUpdateStage()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-700">
+                Update Stage
+            </button>
+            <button @click="bulkDelete()" class="bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700">
+                Delete Selected
+            </button>
+        </div>
+        <button @click="selectedItems = []" class="text-blue-600 hover:text-blue-800">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
 
 <div x-data="{ 
     groupBy: 'stage',
