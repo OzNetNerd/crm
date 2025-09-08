@@ -7,8 +7,9 @@ import logging
 from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
 import uuid
+import threading
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue
+from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue, OptimizersConfigDiff
 from sentence_transformers import SentenceTransformer
 
 logger = logging.getLogger(__name__)
@@ -31,26 +32,38 @@ class QdrantService:
         self.client = None
         self.model = None
         self.embedding_dimension = 768  # Dimension for all-mpnet-base-v2
+        self._model_lock = threading.Lock()  # Thread-safe model loading
+        self._embedding_cache = {}  # Cache for embeddings
         
     def _connect(self):
-        """Connect to Qdrant"""
+        """Connect to Qdrant with connection pooling"""
         if self.client is None:
             try:
-                self.client = QdrantClient(host=self.host, port=self.port)
-                logger.info(f"Connected to Qdrant at {self.host}:{self.port}")
+                # Configure client with connection pooling and timeout settings
+                self.client = QdrantClient(
+                    host=self.host, 
+                    port=self.port,
+                    timeout=30,  # 30 second timeout
+                    prefer_grpc=False  # Use HTTP for better reliability in this setup
+                )
+                logger.info(f"Connected to Qdrant at {self.host}:{self.port} with optimized settings")
             except Exception as e:
                 logger.error(f"Failed to connect to Qdrant: {e}")
                 raise
     
     def _load_model(self):
-        """Load the sentence transformer model"""
+        """Load the sentence transformer model with thread safety"""
         if self.model is None:
-            try:
-                self.model = SentenceTransformer(self.model_name)
-                logger.info(f"Loaded embedding model: {self.model_name}")
-            except Exception as e:
-                logger.error(f"Failed to load embedding model: {e}")
-                raise
+            with self._model_lock:
+                # Double-check locking pattern
+                if self.model is None:
+                    try:
+                        logger.info(f"Loading embedding model: {self.model_name}")
+                        self.model = SentenceTransformer(self.model_name)
+                        logger.info(f"Successfully loaded embedding model: {self.model_name}")
+                    except Exception as e:
+                        logger.error(f"Failed to load embedding model: {e}")
+                        raise
     
     def ensure_collection(self):
         """Create collection if it doesn't exist"""
@@ -65,29 +78,58 @@ class QdrantService:
             )
             
             if not collection_exists:
-                # Create collection
+                # Create collection with optimized settings
                 self.client.create_collection(
                     collection_name=self.collection_name,
                     vectors_config=VectorParams(
                         size=self.embedding_dimension,
                         distance=Distance.COSINE
                     ),
+                    optimizers_config=OptimizersConfigDiff(
+                        indexing_threshold=100,  # Build index after 100 vectors (was 10000)
+                        max_segment_size=50000,  # Optimize for smaller datasets
+                        memmap_threshold=10000   # Use memory mapping for larger segments
+                    )
                 )
-                logger.info(f"Created collection: {self.collection_name}")
+                logger.info(f"Created optimized collection: {self.collection_name}")
             else:
                 logger.info(f"Collection already exists: {self.collection_name}")
+                # Update existing collection with optimized settings
+                try:
+                    self.client.update_collection(
+                        collection_name=self.collection_name,
+                        optimizers_config=OptimizersConfigDiff(
+                            indexing_threshold=100,
+                            max_segment_size=50000,
+                            memmap_threshold=10000
+                        )
+                    )
+                    logger.info(f"Updated collection optimizer settings")
+                except Exception as e:
+                    logger.warning(f"Could not update collection settings: {e}")
                 
         except Exception as e:
             logger.error(f"Failed to ensure collection: {e}")
             raise
     
     def generate_embedding(self, text: str) -> List[float]:
-        """Generate embedding for text"""
+        """Generate embedding for text with caching"""
+        # Check cache first
+        text_hash = hash(text)
+        if text_hash in self._embedding_cache:
+            return self._embedding_cache[text_hash]
+            
         self._load_model()
         
         try:
             embedding = self.model.encode(text)
-            return embedding.tolist()
+            embedding_list = embedding.tolist()
+            
+            # Cache the result (limit cache size)
+            if len(self._embedding_cache) < 1000:
+                self._embedding_cache[text_hash] = embedding_list
+                
+            return embedding_list
         except Exception as e:
             logger.error(f"Failed to generate embedding: {e}")
             raise
