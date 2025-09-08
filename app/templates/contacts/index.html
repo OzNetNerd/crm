@@ -243,8 +243,18 @@
 
 {% block scripts %}
 <script>
-// Make contacts data available globally
-window.contactsData = {{ contacts | tojson }};
+// Make contacts data available globally (basic info only)
+window.contactsData = [
+    {% for contact in contacts %}
+    {
+        id: {{ contact.id }},
+        name: "{{ contact.name|replace('"', '\\"') }}",
+        email: "{{ contact.email or '' }}",
+        phone: "{{ contact.phone or '' }}",
+        company: "{{ contact.company.name|replace('"', '\\"') if contact.company else '' }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
 
 // Contact manager Alpine.js component
 function contactManager() {

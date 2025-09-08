@@ -106,8 +106,17 @@
 
 {% block scripts %}
 <script>
-// Make companies data available globally
-window.companiesData = {{ companies | tojson }};
+// Make companies data available globally (basic info only)
+window.companiesData = [
+    {% for company in companies %}
+    {
+        id: {{ company.id }},
+        name: "{{ company.name|replace('"', '\\"') }}",
+        industry: "{{ company.industry or '' }}",
+        website: "{{ company.website or '' }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
 
 // Company manager Alpine.js component
 function companyManager() {
