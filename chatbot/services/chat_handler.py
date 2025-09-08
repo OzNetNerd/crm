@@ -104,11 +104,11 @@ class ChatHandler:
             # Get Qdrant service
             qdrant_service = get_qdrant_service()
             
-            # Perform semantic search for similar content
+            # Perform semantic search for similar content (optimized parameters)
             similar_docs = qdrant_service.search_similar(
                 query_text=user_message,
-                limit=10,  # Get top 10 most relevant documents
-                score_threshold=0.3  # Lower threshold for broader matches
+                limit=5,   # Reduced from 10 - fewer but higher quality results
+                score_threshold=0.6  # Increased from 0.3 - only high-confidence matches
             )
             
             # Organize results by entity type
@@ -141,19 +141,19 @@ class ChatHandler:
                 elif entity_type == "note":
                     notes.append(entity_data)
             
-            # Build context with most relevant entities
+            # Build context with most relevant entities (reduced limits for efficiency)
             if companies:
-                context["companies"] = companies[:3]  # Limit to top 3
+                context["companies"] = companies[:2]  # Reduced from 3 to 2
             if contacts:
-                context["contacts"] = contacts[:3]
+                context["contacts"] = contacts[:2]    # Reduced from 3 to 2
             if opportunities:
-                context["opportunities"] = opportunities[:3]
+                context["opportunities"] = opportunities[:2]  # Reduced from 3 to 2
             if tasks:
-                context["tasks"] = tasks[:3]
+                context["tasks"] = tasks[:2]          # Reduced from 3 to 2
             if meetings:
-                context["meetings"] = meetings[:2]
+                context["meetings"] = meetings[:1]    # Reduced from 2 to 1
             if notes:
-                context["notes"] = notes[:2]
+                context["notes"] = notes[:1]          # Reduced from 2 to 1
                 
             # Add search metadata
             context["search_metadata"] = {
