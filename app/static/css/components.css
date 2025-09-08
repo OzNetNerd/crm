@@ -530,6 +530,59 @@
     padding: 1.25rem; /* p-5 - better internal padding */
 }
 
+/* Task card content row vertical centering */
+.task-card-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 0.75rem; /* mb-3 */
+    min-height: 48px; /* Ensures consistent row height */
+}
+
+.task-card-row:last-child {
+    margin-bottom: 0; /* Remove bottom margin from last row */
+}
+
+.task-card-row-content {
+    display: flex;
+    align-items: flex-start;
+    flex-grow: 1;
+}
+
+/* Grid-based task card content layout */
+.task-content-grid {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 0.75rem;
+    align-items: start;
+    margin-bottom: 0.75rem; /* mb-3 */
+}
+
+.task-content-grid:last-child {
+    margin-bottom: 0;
+}
+
+/* Grid cell styling */
+.task-badge-cell {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    text-align: right;
+}
+
+.task-content-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.task-action-cell {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
 .task-card:hover {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* hover:shadow-md */
 }
