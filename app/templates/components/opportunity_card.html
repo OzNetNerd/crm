@@ -1,14 +1,19 @@
 {% from "components/icons.html" import check_icon %}
 {% from "components/list_section.html" import status_badge %}
-{% from "components/ui_elements.html" import action_button %}
+{% from "components/ui_elements.html" import action_button, bulk_selection_checkbox %}
 {% from "components/metadata_display.html" import standard_card_metadata, format_date_with_status, contact_count_display, age_display %}
 
 {% macro render_opportunity(opportunity, today) %}
-<div class="opportunity-card card-padded mb-3" 
+<div class="opportunity-card card-padded mb-3 relative" 
      data-opportunity-id="{{ opportunity.id }}">
     
+    <!-- Bulk selection checkbox -->
+    <div class="absolute top-2 left-2">
+        {{ bulk_selection_checkbox(opportunity.id) }}
+    </div>
+    
     <!-- Opportunity header with value and stage -->
-    <div class="flex items-center justify-between mb-3">
+    <div class="flex items-center justify-between mb-3 ml-6">
         <div class="flex items-center space-x-2 flex-grow">
             {% set stage_color = 'green' if opportunity.stage == 'prospect' else
                                 'blue' if opportunity.stage == 'qualified' else
@@ -27,7 +32,7 @@
     </div>
 
     <!-- Company and probability info -->
-    <div class="mb-2">
+    <div class="mb-2 ml-6">
         <div class="flex items-center space-x-4 text-secondary">
             <span class="text-company-name">{{ opportunity.company.name }}</span>
             
@@ -44,7 +49,7 @@
     </div>
 
     <!-- Opportunity metadata -->
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between ml-6">
         <div class="text-metadata">
             {# Close date with status #}
             {% if opportunity.expected_close_date %}

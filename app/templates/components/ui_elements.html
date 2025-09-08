@@ -711,3 +711,230 @@
     {{ status|title }}
 </span>
 {% endmacro %}
+
+{#
+  GENERIC ENTITY MANAGER COMPONENTS - DRY multiselect system for all entity types
+#}
+
+{#
+  Generic Group Dropdown - Reusable group by selector
+  
+  Parameters:
+  - model (required): Alpine.js model binding for groupBy value
+  - options (required): List of group options as [{'value': 'key', 'label': 'Display Name'}]
+  - on_change (optional): JavaScript function to call on change (default: 'updateFilters()')
+  
+  Usage:
+  {{ generic_group_dropdown('groupBy', [{'value': 'stage', 'label': 'Pipeline Stage'}]) }}
+#}
+{% macro generic_group_dropdown(model, options, on_change='updateFilters()') %}
+<div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
+    <button type="button" 
+            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
+            @click="open = !open">
+        <span x-text="
+            {% for option in options %}
+            {{ model }} === '{{ option.value }}' ? '{{ option.label }}' :
+            {% endfor %}
+            '{{ options[0].label }}'
+        "></span>
+        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+    
+    <div x-show="open" 
+         x-cloak
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="transform opacity-0 scale-95"
+         x-transition:enter-end="transform opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-75"
+         x-transition:leave-start="transform opacity-100 scale-100"
+         x-transition:leave-end="transform opacity-0 scale-95"
+         class="multiselect-dropdown">
+        <div class="multiselect-options">
+            {% for option in options %}
+            <div class="multiselect-option" @click="{{ model }} = '{{ option.value }}'; {{ on_change }}; open = false">
+                <span>{{ option.label }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  Generic Sort Dropdown - Reusable sort selector with direction indicators
+  
+  Parameters:
+  - sort_model (required): Alpine.js model binding for sortBy value
+  - direction_model (required): Alpine.js model binding for sortDirection value
+  - options (required): List of sort options as [{'value': 'key', 'label': 'Display Name'}]
+  - on_change (optional): JavaScript function to call on change (default: 'updateFilters()')
+  
+  Usage:
+  {{ generic_sort_dropdown('sortBy', 'sortDirection', [{'value': 'name', 'label': 'Name'}]) }}
+#}
+{% macro generic_sort_dropdown(sort_model, direction_model, options, on_change='updateFilters()') %}
+<div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
+    <button type="button" 
+            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
+            @click="open = !open">
+        <span x-text="
+            {% for option in options %}
+            {{ sort_model }} === '{{ option.value }}' ? '{{ option.label }}' :
+            {% endfor %}
+            '{{ options[0].label }}'
+        "></span>
+        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+    
+    <div x-show="open" 
+         x-cloak
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="transform opacity-0 scale-95"
+         x-transition:enter-end="transform opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-75"
+         x-transition:leave-start="transform opacity-100 scale-100"
+         x-transition:leave-end="transform opacity-0 scale-95"
+         class="multiselect-dropdown">
+        <div class="multiselect-options">
+            {% for option in options %}
+            <div class="multiselect-option" @click="if ({{ sort_model }} === '{{ option.value }}') { {{ direction_model }} = {{ direction_model }} === 'asc' ? 'desc' : 'asc'; } else { {{ sort_model }} = '{{ option.value }}'; } {{ on_change }}; open = false">
+                <span>{{ option.label }}</span>
+                <span x-show="{{ sort_model }} === '{{ option.value }}'" x-text="{{ direction_model }} === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  Generic Filter Multiselect - Reusable multiselect filter with search and controls
+  
+  Parameters:
+  - model (required): Alpine.js model binding for filter array
+  - options (required): List of filter options as [{'value': 'key', 'label': 'Display Name'}]
+  - placeholder (required): Button text when nothing selected
+  - toggle_function (required): JavaScript function name to toggle values
+  - display_function (required): JavaScript function name to get display text
+  - with_search (optional): Include search functionality (default: false)
+  - select_all_values (optional): Array of all values for Select All (default: auto-generated)
+  - on_change (optional): JavaScript function to call on change (default: 'updateFilters()')
+  
+  Usage:
+  {{ generic_filter_multiselect('priorityFilter', priority_options, 'All Priorities', 'togglePriority', 'getPriorityDisplayText') }}
+#}
+{% macro generic_filter_multiselect(model, options, placeholder, toggle_function, display_function, with_search=false, select_all_values=none, on_change='updateFilters()') %}
+{%- set all_values = select_all_values or options|map(attribute='value')|list -%}
+<div class="multiselect-custom" x-data="{ 
+    open: false{% if with_search %},
+    search: ''{% endif %}
+}" @click.away="open = false">
+    <button type="button" 
+            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
+            @click="open = !open">
+        <span x-text="{{ display_function }}()">{{ placeholder }}</span>
+        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+    
+    <div x-show="open" 
+         x-cloak
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="transform opacity-0 scale-95"
+         x-transition:enter-end="transform opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-75"
+         x-transition:leave-start="transform opacity-100 scale-100"
+         x-transition:leave-end="transform opacity-0 scale-95"
+         class="multiselect-dropdown">
+        <div class="multiselect-header">
+            {% if with_search %}
+            <input type="text" 
+                   x-model="search" 
+                   placeholder="Search..."
+                   class="w-full px-2 py-1 text-sm border border-gray-300 rounded">
+            {% endif %}
+            <div class="multiselect-controls">
+                <span class="multiselect-control-btn" @click="{{ model }} = [{% for value in all_values %}'{{ value }}'{% if not loop.last %}, {% endif %}{% endfor %}]; {{ on_change }}">Select All</span>
+                <span class="multiselect-control-btn" @click="{{ model }} = []; {{ on_change }}">Deselect All</span>
+            </div>
+        </div>
+        <div class="multiselect-options">
+            <div class="multiselect-option" @click="{{ model }} = []; {{ on_change }}">
+                <input type="checkbox" :checked="{{ model }}.length === 0" class="mr-2">
+                <span>{{ placeholder }}</span>
+            </div>
+            {% for option in options %}
+            <div class="multiselect-option" 
+                 {% if with_search %}x-show="!search || '{{ option.label }}'.toLowerCase().includes(search.toLowerCase())"{% endif %}
+                 @click="{{ toggle_function }}('{{ option.value }}')">
+                <input type="checkbox" :checked="{{ model }}.includes('{{ option.value }}')" class="mr-2">
+                <span>{{ option.label }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  Dynamic Entity Section - Generic expandable section for entity grouping
+  
+  Parameters:
+  - Uses Alpine.js template with x-for to render dynamic sections
+  
+  Usage:
+  <!-- Used with Alpine.js x-for in the entity manager templates -->
+  {{ dynamic_entity_section() }}
+#}
+{% macro dynamic_entity_section() %}
+<template x-for="group in getGroupedEntities()" :key="group.key">
+    <div class="entity-section-spacing">
+        <!-- Group Section -->
+        <div :class="group.containerClass">
+            <!-- Group Header -->
+            <div :class="group.headerBgClass" 
+                 class="cursor-pointer"
+                 @click="toggleSection(group.key)">
+                <div class="flex items-center justify-between">
+                    <h3 :class="group.headerClass">
+                        <span class="mr-2 transition-transform duration-200" 
+                              :class="expandedSections[group.key] ? 'rotate-90' : ''">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </span>
+                        <span x-html="group.icon" class="w-5 h-5 mr-1"></span>
+                        <span x-text="group.title"></span>
+                        <span class="ml-2 badge-standard" 
+                              :class="group.badgeClass" 
+                              x-text="group.entities.length"></span>
+                    </h3>
+                </div>
+            </div>
+            
+            <!-- Group Content -->
+            <div class="entity-group-content p-8" 
+                 x-show="expandedSections[group.key]" 
+                 x-cloak 
+                 x-transition>
+                <template x-if="group.entities.length > 0">
+                    <div class="space-y-4">
+                        <template x-for="entity in group.entities" :key="entity.id">
+                            <div x-html="renderEntityCard(entity, group.key)"></div>
+                        </template>
+                    </div>
+                </template>
+                <template x-if="group.entities.length === 0">
+                    <p class="text-empty-state">No matching items found</p>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>
+{% endmacro %}
