@@ -898,8 +898,7 @@
         <!-- Group Section -->
         <div :class="group.containerClass">
             <!-- Group Header -->
-            <div :class="group.headerBgClass" 
-                 class="cursor-pointer"
+            <div :class="group.headerBgClass + ' cursor-pointer'"
                  @click="toggleSection(group.key)">
                 <div class="flex items-center justify-between">
                     <h3 :class="group.headerClass">
@@ -911,8 +910,8 @@
                         </span>
                         <span x-html="group.icon" class="w-5 h-5 mr-1"></span>
                         <span x-text="group.title"></span>
-                        <span class="ml-2 badge-standard" 
-                              :class="group.badgeClass" 
+                        <span class="ml-2" 
+                              :class="'badge-standard ' + group.badgeClass" 
                               x-text="group.entities.length"></span>
                     </h3>
                 </div>

@@ -305,3 +305,19 @@
     </div>
 </div>
 {% endmacro %}
+
+{% macro render_task_hierarchy(parent_task) %}
+<div class="parent-task-container">
+    {{ render_task(parent_task) }}
+    
+    {% if parent_task.child_tasks %}
+    <div class="child-tasks-container ml-6 mt-4 space-y-2">
+        {% for child_task in parent_task.child_tasks %}
+        <div class="child-task-item">
+            {{ render_task(child_task) }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}

@@ -648,15 +648,67 @@ function getContactConfig(today) {
                         }
                     });
                     
-                    return Array.from(companies).sort().map(companyName => ({
-                        key: companyName,
-                        title: companyName,
-                        containerClass: 'card-info',
-                        headerClass: 'text-status-info',
-                        headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100',
-                        badgeClass: 'badge-blue',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>'
-                    }));
+                    const sortedCompanies = Array.from(companies).sort();
+                    
+                    // Use the color scheme manager for consistent, varied colors
+                    return sortedCompanies.map((companyName, index) => {
+                        const colorScheme = window.colorSchemeManager ? 
+                            window.colorSchemeManager.getColorScheme(companyName, 'company') :
+                            // Fallback to rotating colors if colorSchemeManager not available
+                            this.getFallbackColorScheme(index);
+                            
+                        return {
+                            key: companyName,
+                            title: companyName,
+                            containerClass: colorScheme.containerClass,
+                            headerClass: colorScheme.headerClass,
+                            headerBgClass: colorScheme.headerBgClass,
+                            badgeClass: colorScheme.badgeClass,
+                            icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>'
+                        };
+                    });
+                },
+                // Fallback color scheme rotation if colorSchemeManager is not available
+                getFallbackColorScheme: function(index) {
+                    const schemes = [
+                        {
+                            containerClass: 'card-info',
+                            headerClass: 'text-status-info',
+                            headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100',
+                            badgeClass: 'badge-blue'
+                        },
+                        {
+                            containerClass: 'card-success',
+                            headerClass: 'text-status-success',
+                            headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100',
+                            badgeClass: 'badge-green'
+                        },
+                        {
+                            containerClass: 'card-warning',
+                            headerClass: 'text-status-warning',
+                            headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100',
+                            badgeClass: 'badge-yellow'
+                        },
+                        {
+                            containerClass: 'card-orange',
+                            headerClass: 'text-status-warning',
+                            headerBgClass: 'border-b border-orange-200 px-6 py-4 bg-orange-50 hover:bg-orange-100',
+                            badgeClass: 'badge-orange'
+                        },
+                        {
+                            containerClass: 'card-danger',
+                            headerClass: 'text-status-overdue',
+                            headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100',
+                            badgeClass: 'badge-red'
+                        },
+                        {
+                            containerClass: 'card-neutral',
+                            headerClass: 'text-status-neutral',
+                            headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100',
+                            badgeClass: 'badge-gray'
+                        }
+                    ];
+                    return schemes[index % schemes.length];
                 },
                 filterFn: (contact, groupKey) => {
                     return contact.company?.name === groupKey;
