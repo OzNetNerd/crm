@@ -142,7 +142,7 @@ function chatWidget() {
             
             try {
                 // Try to connect to the chatbot service
-                this.websocket = new WebSocket(`ws://localhost:8015/ws/chat/${this.sessionId}`);
+                this.websocket = new WebSocket(`ws://localhost:8009/ws/chat/${this.sessionId}`);
                 
                 this.websocket.onopen = () => {
                     this.connectionStatus = 'connected';
