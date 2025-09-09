@@ -1,0 +1,75 @@
+{% extends "base/layout.html" %}
+{% from "components/page_template.html" import page_layout %}
+
+{% block title %}Tasks - CRM{% endblock %}
+
+{% block content %}
+{% set task_stats = {
+    'title': 'Task Summary',
+    'stats': [
+        {
+            'value': tasks_objects|selectattr('status', 'equalto', 'todo')|list|length,
+            'label': 'To Do',
+            'color_class': 'text-blue-600'
+        },
+        {
+            'value': tasks_objects|selectattr('status', 'equalto', 'in-progress')|list|length,
+            'label': 'In Progress',
+            'color_class': 'text-yellow-600'
+        },
+        {
+            'value': tasks_objects|selectattr('status', 'equalto', 'complete')|list|length,
+            'label': 'Complete',
+            'color_class': 'text-green-600'
+        },
+        {
+            'value': tasks_objects|selectattr('is_overdue', 'equalto', True)|list|length,
+            'label': 'Overdue',
+            'color_class': 'text-red-600'
+        }
+    ]
+} %}
+
+{% set task_buttons = [
+    {
+        'label': 'New Task',
+        'onclick': 'openNewTaskModal()',
+        'color': 'blue',
+        'icon': ''
+    }
+] %}
+
+{% call page_layout("All Tasks", "Manage all your tasks in one place", buttons=task_buttons, summary_data=task_stats) %}
+
+<!-- REVOLUTIONARY DRY APPROACH: One line replaces 200+ lines of duplicate code -->
+{% set entity_type = 'tasks' %}
+{% set entities = tasks_objects %}
+{% include "components/generic_index.html" %}
+
+{% endcall %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/entity-manager.js') }}"></script>
+<script src="{{ url_for('static', filename='js/entity-configs.js') }}"></script>
+<script>
+// Make entity data available globally for the entity manager
+window.companiesData = {{ companies | tojson }};
+window.contactsData = {{ contacts | tojson }};
+window.tasksData = {{ tasks_data | tojson }};
+
+// Tasks use the centralized modal system from modal-manager.js
+// All modal functions including deleteTask are now handled globally
+</script>
+
+{% include "components/modals/confirmation.html" %}
+{% include "components/modals/task/task_detail.html" %}
+{% include "components/modals/task/task_new.html" %}
+{% include "components/modals/contact/contact_detail.html" %}
+{% include "components/modals/contact/contact_new.html" %}
+{% include "components/modals/company/company_detail.html" %}
+{% include "components/modals/company/company_new.html" %}
+{% include "components/modals/opportunity/opportunity_detail.html" %}
+{% include "components/modals/opportunity/opportunity_new.html" %}
+{% endblock %}

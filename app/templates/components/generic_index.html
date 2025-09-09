@@ -1,0 +1,134 @@
+{#
+  Generic Entity Index Template - DRY solution for index pages
+  
+  Eliminates 90% duplication across opportunities/contacts/tasks index pages.
+  Single template handles all entity types through include-based configuration.
+  
+  Parameters:
+  - entity_type (required): 'tasks'|'contacts'|'opportunities'
+  - entities (required): List of entity objects to display  
+  - today (optional): Today's date for date-based filtering
+  
+  Usage:
+  {% set entity_type = 'tasks' %}
+  {% include "components/generic_index.html" %}
+#}
+{% from "components/ui_elements.html" import expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar %}
+
+{# Load entity-specific configuration #}
+{% include "components/index_configs.html" %}
+
+{# Render generic index structure #}
+<!-- Generic Index Page for {{ entity_config.entity_type|title }} -->
+<div x-data="createEntityManager(get{{ entity_config.entity_type|title|replace('s', '') }}Config('{{ today }}'))" class="space-y-6">
+
+    <!-- Bulk Actions Bar -->
+    {{ bulk_actions_bar(
+        entity_config.entity_type|replace('s', ''), 
+        entity_config.entity_type,
+        entity_config.bulk_actions.primary if entity_config.bulk_actions.primary is defined else none,
+        entity_config.bulk_actions.secondary if entity_config.bulk_actions.secondary is defined else none
+    ) }}
+
+    <!-- Enhanced Filters and Controls -->
+    <div class="card-padded-lg filter-section-enhanced">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:gap-6">
+            <div class="flex flex-wrap items-center gap-6">
+                <label class="text-label-dark">Group by:</label>
+                
+                {{ generic_group_dropdown('groupBy', entity_config.filter_options.group_options) }}
+                
+                {% if entity_config.filter_options.show_completed is defined %}
+                <label class="flex items-center">
+                    <input type="checkbox" 
+                           x-model="{{ entity_config.filter_options.show_completed.model }}"
+                           @change="updateFilters()"
+                           name="{{ entity_config.filter_options.show_completed.name }}"
+                           value="true"
+                           class="mr-2">
+                    <span class="text-secondary-dark">{{ entity_config.filter_options.show_completed.label }}</span>
+                </label>
+                {% endif %}
+
+                {{ expand_collapse_controls('expandedSections') }}
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <label class="text-label-dark">Sort by:</label>
+                
+                {{ generic_sort_dropdown('sortBy', 'sortDirection', entity_config.filter_options.sort_options) }}
+                
+                {{ generic_filter_multiselect('primaryFilter', 
+                    entity_config.filter_options.primary_filter.options,
+                    entity_config.filter_options.primary_filter.placeholder,
+                    'togglePrimaryFilter', 
+                    'getPrimaryFilterDisplayText') }}
+                
+                {{ generic_filter_multiselect('secondaryFilter',
+                    entity_config.filter_options.secondary_filter.options,
+                    entity_config.filter_options.secondary_filter.placeholder,
+                    'toggleSecondaryFilter',
+                    'getSecondaryFilterDisplayText') }}
+                
+                {% if entity_config.filter_options.entity_filter is defined %}
+                {{ generic_filter_multiselect('entityFilter',
+                    entity_config.filter_options.entity_filter.options,
+                    entity_config.filter_options.entity_filter.placeholder,
+                    'toggleEntityFilter',
+                    'getEntityFilterDisplayText') }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Entity Sections -->
+    <div id="{{ entity_config.entity_type }}-content">
+        {{ dynamic_entity_section() }}
+    </div>
+
+    <!-- Empty State -->
+    {% if not entities %}
+        <div class="card p-12 text-center">
+            <p class="text-gray-500 mb-4">{{ entity_config.empty_state.message }}</p>
+            <button onclick="{{ entity_config.empty_state.action_onclick }}" 
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                {{ entity_config.empty_state.action_text }}
+            </button>
+        </div>
+    {% endif %}
+
+    <!-- Hidden Pre-rendered Cards Cache -->
+    <div style="display: none;" id="{{ entity_config.entity_type }}-cards-cache">
+        {% if entity_config.entity_type == 'tasks' %}
+            {% from "components/expandable_card.html" import expandable_card, task_header_content, task_title_content, task_metadata_content, action_buttons_row %}
+            {% for task in entities %}
+                {% if task.task_type != 'child' %}
+                    <div id="task-card-{{ task.id }}">
+                        {{ expandable_card('task', task, task.id,
+                            expansion_enabled=true,
+                            badge_content=task_header_content(task),
+                            title_content=task_title_content(task),
+                            metadata_content=task_metadata_content(task),
+                            action_buttons=action_buttons_row('task', task.id)) }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% elif entity_config.entity_type == 'opportunities' %}
+            {% from "components/opportunity_card.html" import render_opportunity %}
+            {% for opportunity in entities %}
+                <div id="opportunity-card-{{ opportunity.id }}">
+                    {{ render_opportunity(opportunity, today) }}
+                </div>
+            {% endfor %}
+        {% elif entity_config.entity_type == 'contacts' %}
+            {% from "components/contact_card.html" import render_contact %}
+            {% for contact in entities %}
+                <div id="contact-card-{{ contact.id }}">
+                    {{ render_contact(contact) }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+</div>
+

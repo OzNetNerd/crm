@@ -1,81 +1,36 @@
 {% from "components/ui_elements.html" import action_button, pluralized_count, contact_info_badge %}
 {% from "components/metadata_display.html" import standard_card_metadata %}
 {% from "components/icons.html" import envelope_icon, phone_icon, pencil_icon, trash_icon, user_plus_icon %}
-{% from "components/expandable_card.html" import expandable_card %}
+{% from "components/expandable_card.html" import expandable_card, action_buttons_row %}
+
+{# Helper macro for contact header badge - matches opportunity pattern #}
+{% macro contact_header_content(contact) %}
+{{ contact_info_badge(contact) }}
+{% endmacro %}
+
+{# Helper macro for contact metadata - matches opportunity pattern #}
+{% macro contact_metadata_content(contact) %}
+{{ standard_card_metadata(contact, {'entity_type': 'contact', 'include_opportunities': true}) }}
+{% endmacro %}
+
+{# Helper macro for contact secondary info - company and role #}
+{% macro contact_secondary_info(contact) %}
+{% if contact.role %}{{ contact.role }} • {% endif %}
+<span class="text-link-interactive" 
+      onclick="event.stopPropagation(); openCompanyDetailModal({{ contact.company.id }})">
+    <span class="text-company-name">{{ contact.company.name }}</span>
+</span>
+{% endmacro %}
 
 {% macro render_contact(contact) %}
-{% call expandable_card('contact', contact, contact.id,
-                        expansion_enabled=true,
-                        card_classes='px-6 py-4 hover:bg-gray-50 cursor-pointer',
-                        expanded_content=contact_expanded_content(contact)) %}
-    
-    <!-- Main contact info row -->
-    <div class="flex items-center justify-between">
-        <div class="flex items-center flex-grow">
-            <div class="flex-shrink-0 mr-3">
-                {% set avatar_color = 'blue' if contact.email and contact.phone 
-                                      else 'green' if contact.email 
-                                      else 'yellow' if contact.phone 
-                                      else 'red' %}
-                <div class="h-10 w-10 bg-{{ avatar_color }}-500 rounded-full flex items-center justify-center text-white font-medium">
-                    {{ contact.name[:2].upper() }}
-                </div>
-            </div>
-            <div class="ml-4 flex-grow">
-                <div class="flex items-center space-x-2">
-                    <div class="text-stakeholder-name">{{ contact.name }}</div>
-                    {{ contact_info_badge(contact, 'ml-2') }}
-                </div>
-                <div class="text-secondary">
-                    {% if contact.role %}{{ contact.role }} • {% endif %}
-                    <span class="text-link-interactive" 
-                          onclick="event.stopPropagation(); openCompanyDetailModal({{ contact.company.id }})">
-                        <span class="text-company-name">{{ contact.company.name }}</span>
-                    </span>
-                </div>
-                {{ standard_card_metadata(contact, {'entity_type': 'contact', 'include_opportunities': true}) }}
-            </div>
-        </div>
-        
-        <!-- Contact actions and info on the right -->
-        <div class="flex items-center space-x-3 flex-shrink-0">
-            <!-- Contact methods -->
-            <div class="flex items-center space-x-2">
-                {% if contact.email %}
-                    <a href="mailto:{{ contact.email }}" 
-                       class="text-blue-600 hover:text-blue-800 p-1"
-                       title="{{ contact.email }}"
-                       onclick="event.stopPropagation()">
-                        {{ envelope_icon("w-4 h-4") }}
-                    </a>
-                {% endif %}
-                {% if contact.phone %}
-                    <a href="tel:{{ contact.phone }}" 
-                       class="text-green-600 hover:text-green-800 p-1"
-                       title="{{ contact.phone }}"
-                       onclick="event.stopPropagation()">
-                        {{ phone_icon("w-4 h-4") }}
-                    </a>
-                {% endif %}
-            </div>
-            
-            <!-- Action buttons -->
-            <div class="flex items-center space-x-1">
-                <button @click.stop="openContactModal({{ contact.id }})" 
-                        class="px-2 py-1 rounded text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors duration-200" 
-                        title="Edit contact">
-                    {{ pencil_icon("w-4 h-4") }}
-                </button>
-                <button @click.stop="deleteContact({{ contact.id }})" 
-                        class="px-2 py-1 rounded text-red-600 hover:text-red-800 hover:bg-red-50 transition-colors duration-200" 
-                        title="Delete contact">
-                    {{ trash_icon("w-4 h-4") }}
-                </button>
-            </div>
-        </div>
-    </div>
-
-{% endcall %}
+{{ expandable_card('contact', contact, contact.id,
+    expansion_enabled=true,
+    badge_content=contact_header_content(contact),
+    title_content=contact.name,
+    secondary_info=contact_secondary_info(contact),
+    metadata_content=contact_metadata_content(contact),
+    action_buttons=action_buttons_row('contact', contact.id),
+    expanded_content=contact_expanded_content(contact)) }}
 {% endmacro %}
 
 {% macro contact_expanded_content(contact) %}

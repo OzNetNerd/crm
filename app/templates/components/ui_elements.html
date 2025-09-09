@@ -437,7 +437,7 @@
        filter_config={type: 'status', value: 'todo'}) }}
 #}
 {% macro task_section_group(section_key, title, icon_html, card_class='card', colors=None, x_show_condition='', filter_config=None, additional_classes='') %}
-{%- from "components/task_card.html" import render_task, render_task_hierarchy -%}
+{%- from "components/expandable_card.html" import expandable_card, task_header_content, task_reschedule_buttons, action_buttons_row -%}
 <div {% if x_show_condition %}x-show="{{ x_show_condition }}" x-cloak {% endif %}class="{{ card_class }}">
     {{ section_group_header(
         section_key,
@@ -489,9 +489,19 @@
                 {% set _ = has_tasks.append(task) %}
                 <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else "'unrelated'" }}, status: '{{ task.status }}'})" {% if additional_classes %}class="{{ additional_classes }}"{% endif %}>
                     {% if task.task_type == 'parent' %}
-                        {{ render_task_hierarchy(task, section_key) }}
+                        {% call expandable_card('task', task, task.id,
+                                               expansion_enabled=true,
+                                               group_key=section_key,
+                                               action_content=task_reschedule_buttons(task.id)) %}
+                            {{ task_header_content(task) }}
+                        {% endcall %}
                     {% else %}
-                        {{ render_task(task, section_key) }}
+                        {% call expandable_card('task', task, task.id,
+                                               expansion_enabled=true,
+                                               group_key=section_key,
+                                               action_content=task_reschedule_buttons(task.id)) %}
+                            {{ task_header_content(task) }}
+                        {% endcall %}
                     {% endif %}
                 </div>
             {% endif %}

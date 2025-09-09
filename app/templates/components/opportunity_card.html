@@ -1,7 +1,5 @@
 {% from "components/icons.html" import check_icon %}
-{% from "components/list_section.html" import status_badge %}
-{% from "components/expandable_card.html" import expandable_card, card_content_row, action_buttons_row %}
-{% from "components/metadata_display.html" import standard_card_metadata, format_date_with_status %}
+{% from "components/expandable_card.html" import expandable_card, action_buttons_row, opportunity_header_content, opportunity_metadata_content %}
 
 {% macro render_opportunity(opportunity, today) %}
 {% set progress_config = {
@@ -12,58 +10,16 @@
     'size': 'md'
 } %}
 
-{% call expandable_card('opportunity', opportunity, opportunity.id, 
-                        expansion_enabled=true,
-                        progress_config=progress_config,
-                        card_classes='mb-3',
-                        expanded_content=opportunity_expanded_content(opportunity, today)) %}
-    
-    <!-- Opportunity header with value and stage -->
-    <div class="flex items-center justify-between mb-3">
-        <div class="flex items-center space-x-2 flex-grow">
-            {% set stage_color = 'green' if opportunity.stage == 'prospect' else
-                                'blue' if opportunity.stage == 'qualified' else
-                                'yellow' if opportunity.stage == 'proposal' else
-                                'orange' if opportunity.stage == 'negotiation' else
-                                'gray' %}
-            {{ status_badge(opportunity.stage, stage_color) }}
-            <h3 class="text-opportunity-name">{{ opportunity.name }}</h3>
-            
-            {% if opportunity.value %}
-                <div class="text-deal-amount-lg text-success">
-                    ${{ "{:,.0f}".format(opportunity.value) }}
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Company info -->
-    <div class="mb-2">
-        <div class="text-secondary">
-            <span class="text-company-name">{{ opportunity.company.name }}</span>
-        </div>
-    </div>
-
-    <!-- Opportunity metadata and actions -->
-    <div class="flex items-center justify-between">
-        <div class="text-metadata">
-            {# Close date with status #}
-            {% if opportunity.expected_close_date %}
-                <span class="{{ 'text-red-600' if opportunity.expected_close_date < today else 'text-gray-500' }}">
-                    {{ format_date_with_status(opportunity.expected_close_date, "Close", today) }}
-                </span>
-            {% endif %}
-            
-            {# Standard metadata #}
-            {% if opportunity.expected_close_date %} • {% endif %}
-            {{ standard_card_metadata(opportunity, {'entity_type': 'opportunity', 'include_contact_count': true, 'include_age': true}) }}
-        </div>
-        
-        <!-- Action buttons -->
-        {{ action_buttons_row('opportunity', opportunity.id) }}
-    </div>
-    
-{% endcall %}
+{{ expandable_card('opportunity', opportunity, opportunity.id,
+    expansion_enabled=true,
+    progress_config=progress_config,
+    badge_content=opportunity_header_content(opportunity),
+    title_content=opportunity.name,
+    value_content='$' + "{:,.0f}".format(opportunity.value) if opportunity.value else '',
+    secondary_info='<span class="text-company-name">' + opportunity.company.name + '</span>',
+    metadata_content=opportunity_metadata_content(opportunity),
+    action_buttons=action_buttons_row('opportunity', opportunity.id),
+    expanded_content=opportunity_expanded_content(opportunity, today)) }}
 {% endmacro %}
 
 {% macro opportunity_expanded_content(opportunity, today) %}
