@@ -1,4 +1,68 @@
-INFO:     Started server process [934303]
+INFO:     Started server process [1037412]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     Uvicorn running on http://127.0.0.1:8014 (Press CTRL+C to quit)
+INFO:     Uvicorn running on http://127.0.0.1:8010 (Press CTRL+C to quit)
+INFO:     127.0.0.1:57665 - "WebSocket /ws/chat/crm-1gwvxlmfl" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:60781 - "WebSocket /ws/chat/crm-6f0oql555" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:65354 - "WebSocket /ws/chat/crm-dwzgqi8db" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:45062 - "WebSocket /ws/chat/crm-i02nm8fv1" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:52524 - "WebSocket /ws/chat/crm-j01ze5p16" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:58529 - "WebSocket /ws/chat/crm-gbqpuz15h" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:59772 - "WebSocket /ws/chat/crm-pz6ktyuxh" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:62251 - "WebSocket /ws/chat/crm-10shob61k" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:44634 - "WebSocket /ws/chat/crm-9kwtti7rq" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:46800 - "WebSocket /ws/chat/crm-p3dsz28jz" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:64456 - "WebSocket /ws/chat/crm-zytcd9ozn" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:46166 - "WebSocket /ws/chat/crm-byoxqigr3" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:58795 - "WebSocket /ws/chat/crm-enr8p9qrh" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:47294 - "WebSocket /ws/chat/crm-e64zesdlu" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:44790 - "WebSocket /ws/chat/crm-1su2w08gn" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:62064 - "WebSocket /ws/chat/crm-6ltcjtmns" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:58222 - "WebSocket /ws/chat/crm-qmr15it72" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:53472 - "WebSocket /ws/chat/crm-qrxdowbtq" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:46760 - "WebSocket /ws/chat/crm-pd6uxaxk6" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:45210 - "WebSocket /ws/chat/crm-2a51kbtrj" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50375 - "WebSocket /ws/chat/crm-9hncof11k" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:64923 - "WebSocket /ws/chat/crm-81i1udu1e" [accepted]
+INFO:     connection open
