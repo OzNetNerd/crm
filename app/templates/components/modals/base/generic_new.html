@@ -2,10 +2,10 @@
 {% from "components/modals/base/form_fields.html" import text_input, select_input, url_input, tel_input, textarea_input, date_input, email_input %}
 
 {% macro generic_new_modal(entity_type, config) %}
-<div x-data="createCRUDMixin('{{ entity_type }}', {{ config.default_values | tojson }}, {
+<div x-data="createCRUDMixin('{{ entity_type }}', {{ config.default_values | safe_tojson }}, {
             {% if config.required_fields %}
             getRequiredFields() {
-                return {{ config.required_fields | tojson }};
+                return {{ config.required_fields | safe_tojson }};
             },
             {% endif %}
             

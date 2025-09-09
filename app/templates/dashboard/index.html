@@ -180,9 +180,5 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-<script>
-function openNewTaskModal() {
-    window.dispatchEvent(new CustomEvent('open-new-task-modal'));
-}
-</script>
+<script src="{{ url_for('static', filename='js/dashboard-index.js') }}"></script>
 {% endblock %}

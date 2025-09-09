@@ -151,9 +151,9 @@
 <script src="{{ url_for('static', filename='js/companies.js') }}"></script>
 <script>
 // Make entity data available globally for the entity manager
-window.companiesData = {{ companies_data | tojson }};
-window.contactsData = {{ contacts | tojson }};
-window.opportunitiesData = {{ opportunities | tojson }};
+window.companiesData = {{ companies_data | safe_tojson }};
+window.contactsData = {{ contacts | safe_tojson }};
+window.opportunitiesData = {{ opportunities | safe_tojson }};
 </script>
 
 {% include "components/modals/confirmation.html" %}

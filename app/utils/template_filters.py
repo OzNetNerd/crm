@@ -1,5 +1,7 @@
 import re
+import json
 from markupsafe import Markup
+from jinja2 import Undefined
 
 
 def style_task_description(description):
@@ -62,6 +64,24 @@ def style_task_description(description):
     return description
 
 
+def safe_tojson(value):
+    """Safely convert value to JSON, handling Undefined objects."""
+    def clean_undefined(obj):
+        """Recursively clean undefined values from object."""
+        if isinstance(obj, Undefined):
+            return None
+        elif isinstance(obj, dict):
+            return {k: clean_undefined(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [clean_undefined(item) for item in obj]
+        else:
+            return obj
+    
+    cleaned_value = clean_undefined(value)
+    return Markup(json.dumps(cleaned_value, separators=(',', ':')))
+
+
 def register_template_filters(app):
     """Register all custom template filters with the Flask app."""
     app.jinja_env.filters['style_task_description'] = style_task_description
+    app.jinja_env.filters['safe_tojson'] = safe_tojson

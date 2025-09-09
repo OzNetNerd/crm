@@ -211,7 +211,7 @@ function entityFilterManager() {
         {% if filter_options %}
         // Entity-specific filters
         {% for filter_key, _ in filter_options.items() %}
-        {{ filter_key }}Filter: {{ initial_values[filter_key + '_filter'] | tojson if initial_values and initial_values.get(filter_key + '_filter') else '[]' }},
+        {{ filter_key }}Filter: {{ initial_values[filter_key + '_filter'] | safe_tojson if initial_values and initial_values.get(filter_key + '_filter') else '[]' }},
         {% endfor %}
         {% endif %}
         

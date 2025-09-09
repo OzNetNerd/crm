@@ -53,13 +53,10 @@
 <script src="{{ url_for('static', filename='js/entity-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/entity-configs.js') }}"></script>
 <script>
-// Make entity data available globally for the entity manager
-window.companiesData = {{ companies | tojson }};
-window.contactsData = {{ contacts | tojson }};
-window.tasksData = {{ tasks_data | tojson }};
-
-// Tasks use the centralized modal system from modal-manager.js
-// All modal functions including deleteTask are now handled globally
+// Initialize entity data from server
+window.companiesData = {{ companies | safe_tojson }};
+window.contactsData = {{ contacts | safe_tojson }};
+window.tasksData = {{ tasks_data | safe_tojson }};
 </script>
 
 {% include "components/modals/confirmation.html" %}
