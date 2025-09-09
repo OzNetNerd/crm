@@ -143,21 +143,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-function createTaskForOpportunity(opportunityId) {
-    // TODO: Implement task creation for opportunity
-    console.log('Creating task for opportunity:', opportunityId);
-    alert('Task creation feature coming soon!');
-}
-
-function openOpportunityDetailModal(opportunityId) {
-    window.dispatchEvent(new CustomEvent('open-opportunity-detail-modal', { detail: { opportunityId } }));
-}
-
-function openCompanyDetailModal(companyId) {
-    window.dispatchEvent(new CustomEvent('open-company-detail-modal', { detail: { companyId } }));
-}
-</script>
+<script src="{{ url_for('static', filename='js/opportunity-detail.js') }}"></script>
 
 {% include "components/modals/confirmation.html" %}
 {% include "components/modals/task/task_detail.html" %}

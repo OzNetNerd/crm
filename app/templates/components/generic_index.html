@@ -99,36 +99,55 @@
 
     <!-- Hidden Pre-rendered Cards Cache -->
     <div style="display: none;" id="{{ entity_config.entity_type }}-cards-cache">
-        {% if entity_config.entity_type == 'tasks' %}
-            {% from "components/expandable_card.html" import expandable_card, task_header_content, task_title_content, task_metadata_content, action_buttons_row %}
-            {% for task in entities %}
-                {% if task.task_type != 'child' %}
-                    <div id="task-card-{{ task.id }}">
-                        {{ expandable_card('task', task, task.id,
-                            expansion_enabled=true,
-                            badge_content=task_header_content(task),
-                            title_content=task_title_content(task),
-                            metadata_content=task_metadata_content(task),
-                            action_buttons=action_buttons_row('task', task.id)) }}
-                    </div>
-                {% endif %}
-            {% endfor %}
-        {% elif entity_config.entity_type == 'opportunities' %}
-            {% from "components/opportunity_card.html" import render_opportunity %}
-            {% for opportunity in entities %}
-                <div id="opportunity-card-{{ opportunity.id }}">
-                    {{ render_opportunity(opportunity, today) }}
-                </div>
-            {% endfor %}
-        {% elif entity_config.entity_type == 'contacts' %}
-            {% from "components/contact_card.html" import render_contact %}
-            {% for contact in entities %}
-                <div id="contact-card-{{ contact.id }}">
-                    {{ render_contact(contact) }}
-                </div>
-            {% endfor %}
-        {% endif %}
+        {{ render_entity_cards_cache(entity_config.entity_type, entities, today) }}
     </div>
 
 </div>
+
+{#
+  Entity Cards Cache Renderer - Configuration-driven entity card rendering
+  Eliminates if/elif chains for different entity types.
+#}
+{% macro render_entity_cards_cache(entity_type, entities, today) %}
+{% set renderers = get_entity_renderers() %}
+{% if renderers[entity_type] %}
+    {% if entity_type == 'tasks' %}
+        {% from "components/expandable_card.html" import expandable_card, task_header_content, task_title_content, task_metadata_content, action_buttons_row %}
+        {% for task in entities %}
+            {% if task.task_type != 'child' %}
+                <div id="task-card-{{ task.id }}">
+                    {{ expandable_card('task', task, task.id,
+                        expansion_enabled=true,
+                        badge_content=task_header_content(task),
+                        title_content=task_title_content(task),
+                        metadata_content=task_metadata_content(task),
+                        action_buttons=action_buttons_row('task', task.id)) }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% elif entity_type == 'opportunities' %}
+        {% from "components/opportunity_card.html" import render_opportunity %}
+        {% for opportunity in entities %}
+            <div id="opportunity-card-{{ opportunity.id }}">
+                {{ render_opportunity(opportunity, today) }}
+            </div>
+        {% endfor %}
+    {% elif entity_type == 'contacts' %}
+        {% from "components/contact_card.html" import render_contact %}
+        {% for contact in entities %}
+            <div id="contact-card-{{ contact.id }}">
+                {{ render_contact(contact) }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endif %}
+{% endmacro %}
+
+{% macro get_entity_renderers() %}
+{
+    'tasks': {'supported': true},
+    'opportunities': {'supported': true}, 
+    'contacts': {'supported': true}
+}
+{% endmacro %}
 

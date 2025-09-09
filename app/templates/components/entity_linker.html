@@ -2,7 +2,7 @@
 <div x-data="{
         search: '',
         suggestions: [],
-        selectedEntities: {{ selected_entities | tojson }},
+        selectedEntities: {{ selected_entities | safe_tojson }},
         isSearching: false,
         showDropdown: false,
         

@@ -1,19 +1,18 @@
-{% from "components/ui_elements.html" import action_button, pluralized_count, contact_info_badge %}
-{% from "components/metadata_display.html" import standard_card_metadata %}
-{% from "components/icons.html" import envelope_icon, phone_icon, pencil_icon, trash_icon, user_plus_icon %}
 {% from "components/expandable_card.html" import expandable_card, action_buttons_row %}
+{% from "components/ui_elements.html" import pluralized_count %}
 
-{# Helper macro for contact header badge - matches opportunity pattern #}
-{% macro contact_header_content(contact) %}
-{{ contact_info_badge(contact) }}
-{% endmacro %}
+{# Contact field configuration - clean, declarative setup #}
+{% set contact_field_config = {
+    'title_field': 'name',
+    'secondary_fields': [
+        {'field': 'role', 'type': 'text'}
+    ],
+    'metadata_fields': [
+        {'field': 'created_at', 'type': 'date', 'format': '%m/%d/%y'}
+    ]
+} %}
 
-{# Helper macro for contact metadata - matches opportunity pattern #}
-{% macro contact_metadata_content(contact) %}
-{{ standard_card_metadata(contact, {'entity_type': 'contact', 'include_opportunities': true}) }}
-{% endmacro %}
-
-{# Helper macro for contact secondary info - company and role #}
+{# Custom secondary info handler for contact company link #}
 {% macro contact_secondary_info(contact) %}
 {% if contact.role %}{{ contact.role }} • {% endif %}
 <span class="text-link-interactive" 
@@ -25,12 +24,9 @@
 {% macro render_contact(contact) %}
 {{ expandable_card('contact', contact, contact.id,
     expansion_enabled=true,
-    badge_content=contact_header_content(contact),
-    title_content=contact.name,
+    field_config=contact_field_config,
     secondary_info=contact_secondary_info(contact),
-    metadata_content=contact_metadata_content(contact),
-    action_buttons=action_buttons_row('contact', contact.id),
-    expanded_content=contact_expanded_content(contact)) }}
+    action_buttons=action_buttons_row('contact', contact.id)) }}
 {% endmacro %}
 
 {% macro contact_expanded_content(contact) %}

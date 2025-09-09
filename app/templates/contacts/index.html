@@ -147,61 +147,7 @@
 <script src="{{ url_for('static', filename='js/colorSchemeManager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/entity-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/entity-configs.js') }}"></script>
-<script>
-// Make entity data available globally for the entity manager
-window.companiesData = {{ companies | tojson }};
-window.opportunitiesData = {{ opportunities | tojson }};
-window.contactsData = {{ contacts_data | tojson }};
-
-// Contact-specific bulk action functions
-window.bulkDelete = function(selectedIds) {
-    if (selectedIds.length === 0) return;
-    
-    if (!confirm(`Are you sure you want to delete ${selectedIds.length} selected contacts?`)) {
-        return;
-    }
-    
-    // Delete each selected contact
-    selectedIds.forEach(async (contactId) => {
-        try {
-            const response = await fetch(`/api/contacts/${contactId}`, {
-                method: 'DELETE'
-            });
-            
-            if (response.ok) {
-                // Remove contact from local data
-                window.contactsData = window.contactsData.filter(c => c.id.toString() !== contactId.toString());
-            }
-        } catch (error) {
-            console.error('Error deleting contact:', error);
-        }
-    });
-    
-    // Refresh the page to show changes
-    setTimeout(() => location.reload(), 1000);
-};
-
-window.bulkCreateTasks = function(selectedIds) {
-    if (selectedIds.length === 0) return;
-    
-    console.log('Creating tasks for contacts:', selectedIds);
-    // Here you would open a modal to create tasks for selected contacts
-    // For now, just redirect to task creation page
-    window.location.href = `/tasks/multi_new?contact_ids=${selectedIds.join(',')}`;
-};
-
-// Contact-specific functions that extend the centralized modal system
-function createTaskForContact(contactId) {
-    createTask('contact', contactId);
-}
-
-function createOpportunityForContact(contactId) {
-    createOpportunity('contact', contactId);
-}
-
-// Contacts use the centralized entity manager system
-// All modal functions including deleteContact are now handled globally
-</script>
+<script src="{{ url_for('static', filename='js/contacts.js') }}"></script>
 
 {% include "components/modals/confirmation.html" %}
 {% include "components/modals/task/task_detail.html" %}
@@ -212,4 +158,10 @@ function createOpportunityForContact(contactId) {
 {% include "components/modals/company/company_new.html" %}
 {% include "components/modals/opportunity/opportunity_detail.html" %}
 {% include "components/modals/opportunity/opportunity_new.html" %}
+{% endblock %}
+
+{% block data_attributes %}
+data-companies="{{ companies | safe_tojson }}"
+data-opportunities="{{ opportunities | safe_tojson }}"
+data-contacts="{{ contacts_data | safe_tojson }}"
 {% endblock %}

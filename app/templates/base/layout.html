@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/modals.css') }}">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="{{ url_for('static', filename='js/modal-mixins.js') }}"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
         tailwind.config = {
@@ -56,14 +57,23 @@
     <!-- Chat Widget -->
     {% include 'components/chat_widget.html' %}
     
+    <!-- Data container for clean server-to-client data passing -->
+    <div id="app-data" style="display: none;"
+         {% block data_attributes %}{% endblock %}>
+    </div>
+    
     <script src="{{ url_for('static', filename='js/api-client.js') }}"></script>
     <script src="{{ url_for('static', filename='js/alpine-entity-mixins.js') }}"></script>
     <script src="{{ url_for('static', filename='js/icon-utility.js') }}"></script>
     <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
     <script src="{{ url_for('static', filename='js/modal-utils.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/modal-mixins.js') }}"></script>
     <script src="{{ url_for('static', filename='js/modal-manager.js') }}"></script>
     <script src="{{ url_for('static', filename='js/search.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/data-initializer.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/crud-operations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/entity-filter-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/entity-linker.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/card-state-manager.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -168,21 +168,17 @@
 
 {% block modals %}
 {% include "components/modals/confirmation.html" %}
-{% include "components/modals/task/task_detail.html" %}
+{# {% include "components/modals/task/task_detail.html" %} #}
 {% include "components/modals/task/task_new.html" %}
-{% include "components/modals/contact/contact_detail.html" %}
+{# {% include "components/modals/contact/contact_detail.html" %} #}
 {% include "components/modals/contact/contact_new.html" %}
-{% include "components/modals/company/company_detail.html" %}
+{# {% include "components/modals/company/company_detail.html" %} #}
 {% include "components/modals/company/company_new.html" %}
-{% include "components/modals/opportunity/opportunity_detail.html" %}
+{# {% include "components/modals/opportunity/opportunity_detail.html" %} #}
 {% include "components/modals/opportunity/opportunity_new.html" %}
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-<script>
-function openNewTaskModal() {
-    window.dispatchEvent(new CustomEvent('open-new-task-modal'));
-}
-</script>
+<script src="{{ url_for('static', filename='js/dashboard-index.js') }}"></script>
 {% endblock %}
