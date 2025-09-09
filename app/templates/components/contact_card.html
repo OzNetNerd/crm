@@ -1,4 +1,5 @@
 {% from "components/expandable_card.html" import expandable_card, action_buttons_row %}
+{% from "components/ui_elements.html" import pluralized_count %}
 
 {# Contact field configuration - clean, declarative setup #}
 {% set contact_field_config = {
@@ -25,8 +26,7 @@
     expansion_enabled=true,
     field_config=contact_field_config,
     secondary_info=contact_secondary_info(contact),
-    action_buttons=action_buttons_row('contact', contact.id),
-    expanded_content=contact_expanded_content(contact)) }}
+    action_buttons=action_buttons_row('contact', contact.id)) }}
 {% endmacro %}
 
 {% macro contact_expanded_content(contact) %}
