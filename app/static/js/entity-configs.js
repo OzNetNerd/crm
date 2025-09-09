@@ -625,7 +625,7 @@ function getContactConfig(today) {
 
         // Override secondary filter value getter for industry
         getSecondaryFilterValue: function(contact) {
-            return contact.company?.industry || 'unknown';
+            return (contact.company?.industry || 'unknown').toLowerCase();
         },
 
         // Override entity filter value getter for roles
@@ -1012,7 +1012,7 @@ function getCompanyConfig(today) {
 
         // Override secondary filter value getter for industry
         getSecondaryFilterValue: function(company) {
-            return company.industry || 'unknown';
+            return (company.industry || 'unknown').toLowerCase();
         },
 
         // Override entity filter value getter for company size
