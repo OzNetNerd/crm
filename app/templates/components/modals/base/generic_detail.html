@@ -3,7 +3,7 @@
 
 {% macro generic_detail_modal(entity_type, config) %}
 <div x-data="{
-        ...createCRUDMixin('{{ entity_type }}', {{ config.default_values | tojson }}, {}),
+        ...createCRUDMixin('{{ entity_type }}', {}, {}),
         ...createNotesMixin('{{ entity_type }}'),
         
         {% if config.tabs %}
