@@ -1,6 +1,4 @@
-{% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
-
-<!-- Contact New Modal - DRY Implementation -->
+<!-- Contact New Modal - Direct Alpine.js Implementation -->
 <div x-cloak x-data="{
     show: false,
     saving: false,
@@ -59,48 +57,105 @@
 @open-new-contact-modal.window="openModal()"
 @close-modal.window="closeModal()">
 
-    {% call base_modal('contact-new-modal', show_var='show') %}
-        {{ modal_header('Create New Contact', show_var='show') }}
+    <!-- Modal Overlay -->
+    <div x-show="show" 
+         x-transition:enter="modal-fade-enter"
+         x-transition:enter-end="modal-fade-enter-to"
+         x-transition:leave="modal-fade-leave"
+         x-transition:leave-end="modal-fade-leave-to"
+         class="modal-overlay"
+         aria-labelledby="contact-new-modal-title" 
+         role="dialog" 
+         aria-modal="true">
         
-        <div class="modal-body modal-content-spacing">
-            <!-- Name -->
-            <div class="form-group">
-                <label class="form-label required">Full Name</label>
-                <input x-model="contact.name" 
-                       type="text" 
-                       class="form-input" 
-                       placeholder="Contact name"
-                       required>
-            </div>
+        <div class="modal-container">
+            <!-- Modal Backdrop -->
+            <div x-show="show" 
+                 x-transition:enter="modal-fade-enter"
+                 x-transition:enter-end="modal-fade-enter-to"
+                 x-transition:leave="modal-fade-leave"
+                 x-transition:leave-end="modal-fade-leave-to"
+                 class="modal-backdrop"
+                 @click="closeModal()"></div>
 
-            <!-- Email and Phone -->
-            <div class="modal-grid-2">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input x-model="contact.email" 
-                           type="email" 
-                           class="form-input"
-                           placeholder="contact@company.com">
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            
+            <!-- Modal Content -->
+            <div x-show="show"
+                 x-transition:enter="modal-scale-enter"
+                 x-transition:enter-end="modal-scale-enter-to"
+                 x-transition:leave="modal-scale-leave"
+                 x-transition:leave-end="modal-scale-leave-to"
+                 class="modal-content"
+                 @click.stop>
+                <div class="modal-header">
+                    <h3 class="modal-title">Create New Contact</h3>
+                    <button @click="closeModal()" class="modal-close-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Phone</label>
-                    <input x-model="contact.phone" 
-                           type="tel" 
-                           class="form-input"
-                           placeholder="Phone number">
-                </div>
-            </div>
 
-            <!-- Role -->
-            <div class="form-group">
-                <label class="form-label">Role</label>
-                <input x-model="contact.role" 
-                       type="text" 
-                       class="form-input" 
-                       placeholder="Job title or role">
+                <div class="modal-body modal-content-spacing">
+                    <!-- Name -->
+                    <div class="form-group">
+                        <label class="form-label required">Full Name</label>
+                        <input x-model="contact.name" 
+                               type="text" 
+                               class="form-input" 
+                               placeholder="Contact name"
+                               required>
+                    </div>
+
+                    <!-- Email and Phone -->
+                    <div class="modal-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input x-model="contact.email" 
+                                   type="email" 
+                                   class="form-input"
+                                   placeholder="contact@company.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone</label>
+                            <input x-model="contact.phone" 
+                                   type="tel" 
+                                   class="form-input"
+                                   placeholder="Phone number">
+                        </div>
+                    </div>
+
+                    <!-- Role -->
+                    <div class="form-group">
+                        <label class="form-label">Role</label>
+                        <input x-model="contact.role" 
+                               type="text" 
+                               class="form-input" 
+                               placeholder="Job title or role">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button @click="closeModal()" 
+                            :disabled="saving"
+                            class="modal-cancel-button">
+                        Cancel
+                    </button>
+                    <button @click="saveNewContact()" 
+                            :disabled="saving"
+                            class="modal-save-button">
+                        <span x-show="!saving">Create Contact</span>
+                        <span x-show="saving" class="flex items-center">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Creating...
+                        </span>
+                    </button>
+                </div>
             </div>
         </div>
-
-        {{ modal_footer(show_var='show', save_action='saveNewContact()', save_text='Create Contact', save_loading_var='saving') }}
-    {% endcall %}
+    </div>
 </div>
