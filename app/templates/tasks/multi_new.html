@@ -100,15 +100,13 @@
 {% endcall %}
 {% endblock %}
 
+{% block data_attributes %}
+data-page-type="multi-task"
+data-companies="{{ companies | safe_tojson }}"
+data-contacts="{{ contacts | safe_tojson }}"
+data-opportunities="{{ opportunities | safe_tojson }}"
+{% endblock %}
+
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/multi-task.js') }}"></script>
-<script>
-// Initialize multi task functionality with data from the server
-initMultiTaskData(
-    {{ companies | safe_tojson }}, 
-    {{ contacts | safe_tojson }}, 
-    {{ opportunities | safe_tojson }}
-);
-initMultiTaskForm();
-</script>
 {% endblock %}
