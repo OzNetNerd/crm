@@ -8,19 +8,70 @@
 /* ========== Base Modal Structure ========== */
 
 .modal-overlay {
-    @apply fixed inset-0 z-50 overflow-y-auto;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 50;
+    overflow-y: auto;
 }
 
 .modal-backdrop {
-    @apply fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgb(107 114 128 / 0.75);
+    transition-property: opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
 }
 
 .modal-container {
-    @apply flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: 100vh;
+    padding-top: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 5rem;
+    text-align: center;
+}
+
+@media (min-width: 640px) {
+    .modal-container {
+        display: block;
+        padding: 0;
+    }
 }
 
 .modal-content {
-    @apply inline-block align-bottom bg-white rounded-xl px-6 pt-6 pb-6 text-left overflow-visible shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-100;
+    display: inline-block;
+    vertical-align: bottom;
+    background-color: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    text-align: left;
+    overflow: visible;
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    transform: translateZ(0);
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+    border: 1px solid rgb(243 244 246);
+    max-width: 42rem;
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .modal-content {
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        vertical-align: middle;
+    }
 }
 
 .modal-content-large {
