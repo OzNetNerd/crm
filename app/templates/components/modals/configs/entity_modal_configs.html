@@ -65,6 +65,49 @@
             "name": "description",
             "label": "Description",
             "rows": 3
+        },
+        {
+            "type": "grid",
+            "columns": 2,
+            "fields": [
+                {
+                    "type": "select",
+                    "name": "priority",
+                    "label": "Priority",
+                    "options": [
+                        {"value": "low", "label": "Low"},
+                        {"value": "medium", "label": "Medium"},
+                        {"value": "high", "label": "High"}
+                    ]
+                },
+                {
+                    "type": "select",
+                    "name": "status",
+                    "label": "Status",
+                    "options": [
+                        {"value": "pending", "label": "Pending"},
+                        {"value": "in_progress", "label": "In Progress"},
+                        {"value": "complete", "label": "Complete"}
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "grid",
+            "columns": 2,
+            "fields": [
+                {
+                    "type": "date",
+                    "name": "due_date",
+                    "label": "Due Date"
+                },
+                {
+                    "type": "text",
+                    "name": "next_step_type",
+                    "label": "Next Step Type",
+                    "placeholder": "e.g., call, email, meeting"
+                }
+            ]
         }
     ]
 } %}
