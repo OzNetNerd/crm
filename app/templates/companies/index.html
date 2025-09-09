@@ -162,7 +162,7 @@
 {% endblock %}
 
 {% block data_attributes %}
-data-companies="{{ companies_data | tojson }}"
-data-contacts="{{ contacts | tojson }}"
-data-opportunities="{{ opportunities | tojson }}"
+data-companies="{{ companies_data | tojson | forceescape }}"
+data-contacts="{{ contacts | tojson | forceescape }}"
+data-opportunities="{{ opportunities | tojson | forceescape }}"
 {% endblock %}

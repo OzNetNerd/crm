@@ -171,10 +171,10 @@ data-page-type="tasks-index"
 {% block scripts %}
 <script>
 // Initialize data for the tasks page
-window.companiesData = {{ companies | tojson }};
-window.contactsData = {{ contacts | tojson }};
-window.opportunitiesData = {{ opportunities | tojson }};
-window.tasksData = {{ tasks | tojson }};
+window.companiesData = {{ companies | tojson | safe }};
+window.contactsData = {{ contacts | tojson | safe }};
+window.opportunitiesData = {{ opportunities | tojson | safe }};
+window.tasksData = {{ tasks | tojson | safe }};
 </script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script src="{{ url_for('static', filename='js/entity-manager.js') }}"></script>
