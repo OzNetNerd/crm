@@ -106,6 +106,49 @@
     {% if card_type == 'task' %}
     // Task-specific reschedule state
     pendingDays: 0,
+    
+    getNewDueDate() {
+        if (this.pendingDays === 0) return '{{ entity.due_date.strftime('%m/%d/%y') if entity.due_date else '' }}';
+        const date = new Date('{{ entity.due_date.isoformat() if entity.due_date else '' }}');
+        date.setDate(date.getDate() + this.pendingDays);
+        return date.toLocaleDateString('en-US');
+    },
+    
+    adjustDays(days) {
+        this.pendingDays += days;
+        this.isEditing = true;
+        this.showSaveButtons = true;
+    },
+    
+    cancelChanges() {
+        this.pendingDays = 0;
+        this.isEditing = false;
+        this.showSaveButtons = false;
+    },
+    
+    async saveReschedule(taskId, days) {
+        if (this.pendingDays === 0) return;
+        
+        try {
+            const response = await fetch(`/api/tasks/${taskId}/reschedule`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    days_adjustment: this.pendingDays
+                })
+            });
+            
+            if (response.ok) {
+                this.cancelChanges();
+                location.reload(); // Simple refresh to show updated date
+            } else {
+                alert('Failed to reschedule task');
+            }
+        } catch (error) {
+            console.error('Error rescheduling task:', error);
+            alert('Failed to reschedule task');
+        }
+    },
     {% endif %}
     
     // Notes functionality (always define to prevent errors)
@@ -458,7 +501,7 @@
     {{ task.next_step_type }}
     {% endif %}
     {% if task.due_date %}
-    • Due: {{ task.due_date.strftime('%m/%d/%y') }}
+    • Due: <span x-text="getNewDueDate ? getNewDueDate() : '{{ task.due_date.strftime('%m/%d/%y') }}'">{{ task.due_date.strftime('%m/%d/%y') }}</span>
     {% endif %}
     {% if task.is_overdue %}
     • <span class="text-badge-overdue">OVERDUE</span>
@@ -511,22 +554,22 @@
 {% macro task_reschedule_buttons(task_id) %}
 <div class="relative flex-shrink-0">
     <div class="flex items-center space-x-1">
-        <button @click.stop="console.log('Reschedule -1w for task {{ task_id }}')" 
+        <button @click.stop="adjustDays(-7)" 
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule -1 week">
             -1w
         </button>
-        <button @click.stop="console.log('Reschedule -1d for task {{ task_id }}')" 
+        <button @click.stop="adjustDays(-1)" 
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule -1 day">
             -1d
         </button>
-        <button @click.stop="console.log('Reschedule +1d for task {{ task_id }}')" 
+        <button @click.stop="adjustDays(1)" 
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule +1 day">
             +1d
         </button>
-        <button @click.stop="console.log('Reschedule +1w for task {{ task_id }}')" 
+        <button @click.stop="adjustDays(7)" 
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule +1 week">
             +1w
