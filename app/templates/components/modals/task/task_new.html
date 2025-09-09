@@ -1,5 +1,6 @@
 {% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
 {% from "components/modals/base/form_fields.html" import text_input, select_input, date_input, textarea_input, radio_group, form_section %}
+{% from "components/entity_linker.html" import entity_linker %}
 
 <div x-data="{
         show: false,
@@ -11,50 +12,30 @@
             priority: 'medium',
             entity_type: '',
             entity_id: '',
-            next_step_type: ''
+            next_step_type: '',
+            linked_entities: []
         },
-        selectedCompanies: [],
-        selectedContacts: [],
-        selectedOpportunities: [],
-        companies: [],
-        contacts: [],
-        opportunities: [],
         childTasks: [
             { description: '', due_date: '', priority: 'medium', next_step_type: '' },
             { description: '', due_date: '', priority: 'medium', next_step_type: '' }
         ],
         dependencyType: 'parallel',
         
-        async init() {
-            // Load companies, contacts, and opportunities for multi-select
-            try {
-                const [companiesRes, contactsRes, opportunitiesRes] = await Promise.all([
-                    fetch('/api/companies'),
-                    fetch('/api/contacts'), 
-                    fetch('/api/opportunities')
-                ]);
-                
-                this.companies = await companiesRes.json();
-                this.contacts = await contactsRes.json();
-                this.opportunities = await opportunitiesRes.json();
-            } catch (error) {
-                console.error('Error loading entities:', error);
-            }
-        },
-        
         async saveNewTask() {
             if (!this.task.description.trim()) return;
             this.saving = true;
             
             try {
+                // Get linked entities from the hidden field
+                const linkedEntitiesField = document.querySelector('input[name="linked_entities"]');
+                const linkedEntities = linkedEntitiesField ? JSON.parse(linkedEntitiesField.value || '[]') : [];
+                
                 const taskData = {
                     ...this.task,
                     task_type: this.taskType,
                     child_tasks: this.taskType === 'multi' ? this.childTasks : [],
                     dependency_type: this.taskType === 'multi' ? this.dependencyType : null,
-                    related_company_ids: this.selectedCompanies,
-                    related_contact_ids: this.selectedContacts, 
-                    related_opportunity_ids: this.selectedOpportunities
+                    linked_entities: linkedEntities
                 };
                 
                 const response = await fetch('/api/tasks', {
@@ -82,7 +63,8 @@
                 priority: 'medium',
                 entity_type: '',
                 entity_id: '',
-                next_step_type: ''
+                next_step_type: '',
+                linked_entities: []
             };
             this.childTasks = [
                 { description: '', due_date: '', priority: 'medium', next_step_type: '' },
@@ -90,9 +72,6 @@
             ];
             this.taskType = 'single';
             this.dependencyType = 'parallel';
-            this.selectedCompanies = [];
-            this.selectedContacts = [];
-            this.selectedOpportunities = [];
         },
         
         addChildTask() {
@@ -105,7 +84,6 @@
             }
         }
      }" 
-     x-init="init()"
      @open-new-task-modal.window="show = true; resetForm()"
      @close-modal.window="show = false">
 
@@ -137,57 +115,9 @@
                 {"value": "demo", "label": "Demo"}
             ]) }}
             
-            <!-- Related Entities Section -->
-            <div class="space-y-5 p-5 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-                <h4 class="text-md font-semibold text-gray-900 pb-2 border-b border-gray-200">Related Entities (Optional)</h4>
-                
-                <!-- Companies -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Related Companies</label>
-                    <div class="max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-white shadow-sm">
-                        <template x-for="company in companies" :key="company.id">
-                            <label class="flex items-center py-2 hover:bg-gray-50 rounded px-2 cursor-pointer transition-colors duration-200">
-                                <input type="checkbox" 
-                                       :value="company.id"
-                                       x-model="selectedCompanies"
-                                       class="mr-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                <span class="text-sm text-gray-700" x-text="company.name"></span>
-                            </label>
-                        </template>
-                    </div>
-                </div>
-                
-                <!-- Contacts -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Related Contacts</label>
-                    <div class="max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-white shadow-sm">
-                        <template x-for="contact in contacts" :key="contact.id">
-                            <label class="flex items-center py-2 hover:bg-gray-50 rounded px-2 cursor-pointer transition-colors duration-200">
-                                <input type="checkbox" 
-                                       :value="contact.id"
-                                       x-model="selectedContacts"
-                                       class="mr-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                <span class="text-sm text-gray-700" x-text="contact.name + ' (' + (contact.company_name || 'No Company') + ')'"></span>
-                            </label>
-                        </template>
-                    </div>
-                </div>
-                
-                <!-- Opportunities -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Related Opportunities</label>
-                    <div class="max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-white shadow-sm">
-                        <template x-for="opportunity in opportunities" :key="opportunity.id">
-                            <label class="flex items-center py-2 hover:bg-gray-50 rounded px-2 cursor-pointer transition-colors duration-200">
-                                <input type="checkbox" 
-                                       :value="opportunity.id"
-                                       x-model="selectedOpportunities"
-                                       class="mr-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                <span class="text-sm text-gray-700" x-text="opportunity.name + ' (' + (opportunity.company_name || 'No Company') + ')'"></span>
-                            </label>
-                        </template>
-                    </div>
-                </div>
+            <div>
+                <label class="text-form-label">Linked Entities</label>
+                {{ entity_linker('linked_entities', 'Search companies, contacts, opportunities...') }}
             </div>
         </div>
         
@@ -216,6 +146,11 @@
                         <option value="sequential">Sequential (In Order)</option>
                     </select>
                 </div>
+            </div>
+            
+            <div>
+                <label class="text-form-label">Linked Entities</label>
+                {{ entity_linker('linked_entities', 'Search companies, contacts, opportunities...') }}
             </div>
             
             <!-- Child Tasks -->
