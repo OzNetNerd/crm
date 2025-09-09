@@ -53,12 +53,7 @@ class SearchManager {
     handleInput(e) {
         const query = e.target.value.trim();
         
-        if (query.length < 1) {
-            this.hideResults();
-            return;
-        }
-        
-        // Debounce search requests
+        // Always search, even with empty query (will show all results)
         clearTimeout(this.debounceTimer);
         this.debounceTimer = setTimeout(() => {
             this.performSearch(query);
@@ -67,11 +62,8 @@ class SearchManager {
     
     handleFocus(e) {
         const query = e.target.value.trim();
-        if (query.length >= 1) {
-            this.performSearch(query);
-        } else if (this.currentQuery && this.searchResults.children.length > 0) {
-            this.showResults();
-        }
+        // Always perform search on focus, even with empty query
+        this.performSearch(query);
     }
     
     handleKeydown(e) {
@@ -305,11 +297,7 @@ class AutocompleteManager {
     handleInput(e) {
         const query = e.target.value.trim();
         
-        if (query.length < 1) {
-            this.hideResults();
-            return;
-        }
-        
+        // Always search, even with empty query
         clearTimeout(this.debounceTimer);
         this.debounceTimer = setTimeout(() => {
             this.fetchSuggestions(query);
@@ -318,9 +306,8 @@ class AutocompleteManager {
     
     handleFocus(e) {
         const query = e.target.value.trim();
-        if (query.length >= 1) {
-            this.fetchSuggestions(query);
-        }
+        // Always fetch suggestions on focus, even with empty query
+        this.fetchSuggestions(query);
     }
     
     async fetchSuggestions(query) {
