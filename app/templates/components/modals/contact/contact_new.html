@@ -1,95 +1,46 @@
 {% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
+{% from "components/modals/base/form_fields.html" import text_input, email_input, tel_input, select_input %}
 
-<div x-data="{
-        show: false,
-        saving: false,
-        contact: {
+<div x-data="createCRUDMixin('contact', {
             name: '',
             role: '',
             email: '',
             phone: '',
             company_id: ''
-        },
-        
-        async saveNewContact() {
-            if (!this.contact.name.trim()) return;
-            this.saving = true;
+        }, {
+            // Custom validation for contacts
+            getRequiredFields() {
+                return ['name'];
+            },
             
-            try {
-                const response = await fetch('/api/contacts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(this.contact)
-                });
-                
-                if (response.ok) {
-                    this.resetForm();
-                    this.show = false;
-                    window.location.reload();
-                }
-            } catch (error) {
-                console.error('Error creating contact:', error);
-            } finally {
-                this.saving = false;
+            // Custom save action that uses the mixin's saveEntity
+            async saveNewContact() {
+                return await this.saveEntity();
             }
-        },
-        
-        resetForm() {
-            this.contact = {
-                name: '',
-                role: '',
-                email: '',
-                phone: '',
-                company_id: ''
-            };
-        }
-     }" 
-     @open-new-contact-modal.window="show = true; resetForm()"
-     @close-modal.window="show = false">
+        })" 
+     @open-new-contact-modal.window="openModal(); resetForm()"
+     @close-modal.window="closeModal()"
 
     {% call base_modal('new-contact-modal', backdrop_click_close=false) %}
         {{ modal_header('Create New Contact') }}
         
         <div class="space-y-4">
-            <div>
-                <label class="text-form-label">Name*</label>
-                <input type="text" x-model="contact.name" 
-                       placeholder="Contact name"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                       required>
-            </div>
+            {{ text_input("name", "Name", "contact.name", "Contact name", required=true) }}
             
-            <div>
-                <label class="text-form-label">Role/Title</label>
-                <input type="text" x-model="contact.role" 
-                       placeholder="Job title or role"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            </div>
+            {{ text_input("role", "Role/Title", "contact.role", "Job title or role") }}
             
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="text-form-label">Email</label>
-                    <input type="email" x-model="contact.email" 
-                           placeholder="email@example.com"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    {{ email_input("email", "Email", "contact.email") }}
                 </div>
                 
                 <div>
-                    <label class="text-form-label">Phone</label>
-                    <input type="tel" x-model="contact.phone" 
-                           placeholder="Phone number"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    {{ tel_input("phone", "Phone", "contact.phone") }}
                 </div>
             </div>
             
-            <div>
-                <label class="text-form-label">Company</label>
-                <select x-model="contact.company_id" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">Select a company (optional)</option>
-                    <!-- Company options would be populated by the backend -->
-                </select>
-            </div>
+            {{ select_input("company_id", "Company", "contact.company_id", [], empty_option="Select a company (optional)") }}
+            <!-- Note: Company options should be populated by the backend -->
         </div>
         
         {{ modal_footer(save_action="saveNewContact()", save_text="Create Contact") }}

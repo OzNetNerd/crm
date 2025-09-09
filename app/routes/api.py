@@ -71,3 +71,53 @@ def update_company(company_id):
 def update_opportunity(opportunity_id):
     """Update opportunity details"""
     return opportunity_api.update_entity(opportunity_id, ["name", "value", "probability", "expected_close_date", "stage"])
+
+
+# POST endpoints for entity creation
+@api_bp.route("/tasks", methods=["POST"])
+def create_task():
+    """Create new task"""
+    return task_api.create_entity(["description", "due_date", "priority", "status", "next_step_type", "entity_type", "entity_id"])
+
+
+@api_bp.route("/contacts", methods=["POST"])
+def create_contact():
+    """Create new contact"""
+    return contact_api.create_entity(["name", "role", "email", "phone", "company_id"])
+
+
+@api_bp.route("/companies", methods=["POST"])
+def create_company():
+    """Create new company"""
+    return company_api.create_entity(["name", "industry", "size", "website", "phone", "address"])
+
+
+@api_bp.route("/opportunities", methods=["POST"])
+def create_opportunity():
+    """Create new opportunity"""
+    return opportunity_api.create_entity(["name", "value", "probability", "expected_close_date", "stage", "company_id", "contact_id"])
+
+
+# DELETE endpoints for entity deletion
+@api_bp.route("/tasks/<int:task_id>", methods=["DELETE"])
+def delete_task(task_id):
+    """Delete task"""
+    return task_api.delete_entity(task_id)
+
+
+@api_bp.route("/contacts/<int:contact_id>", methods=["DELETE"])
+def delete_contact(contact_id):
+    """Delete contact"""
+    return contact_api.delete_entity(contact_id)
+
+
+@api_bp.route("/companies/<int:company_id>", methods=["DELETE"])
+def delete_company(company_id):
+    """Delete company"""
+    return company_api.delete_entity(company_id)
+
+
+@api_bp.route("/opportunities/<int:opportunity_id>", methods=["DELETE"])
+def delete_opportunity(opportunity_id):
+    """Delete opportunity"""
+    return opportunity_api.delete_entity(opportunity_id)
