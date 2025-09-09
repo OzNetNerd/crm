@@ -2,7 +2,10 @@
 {% from "components/modals/base/form_fields.html" import text_input, select_input, date_input, textarea_input, radio_group, form_section %}
 {% from "components/entity_linker.html" import entity_linker %}
 
-<div x-data="{
+<script>
+// Register the task modal component data
+document.addEventListener('alpine:init', () => {
+    Alpine.data('taskModal', () => ({
         show: false,
         saving: false,
         taskType: 'single',
@@ -83,8 +86,12 @@
                 this.childTasks.splice(index, 1);
             }
         }
-    }" 
-    @open-new-task-modal.window="show = true; this.resetForm()"
+    }));
+});
+</script>
+
+<div x-data="taskModal()" 
+    @open-new-task-modal.window="show = true; resetForm()"
     @close-modal.window="show = false">
 
     {% call base_modal('new-task-modal', backdrop_click_close=false) %}
