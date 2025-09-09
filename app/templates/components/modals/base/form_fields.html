@@ -1,0 +1,83 @@
+{% macro text_input(name, label, model_var, placeholder="", required=false, type="text") %}
+<div>
+    <label class="text-form-label">{{ label }}{% if required %}*{% endif %}</label>
+    <input type="{{ type }}" 
+           x-model="{{ model_var }}" 
+           placeholder="{{ placeholder }}"
+           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+           {% if required %}required{% endif %}>
+</div>
+{% endmacro %}
+
+{% macro textarea_input(name, label, model_var, placeholder="", rows=2, required=false) %}
+<div>
+    <label class="text-form-label">{{ label }}{% if required %}*{% endif %}</label>
+    <textarea x-model="{{ model_var }}" 
+              placeholder="{{ placeholder }}"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              rows="{{ rows }}"
+              {% if required %}required{% endif %}></textarea>
+</div>
+{% endmacro %}
+
+{% macro select_input(name, label, model_var, options, required=false, empty_option="") %}
+<div>
+    <label class="text-form-label">{{ label }}{% if required %}*{% endif %}</label>
+    <select x-model="{{ model_var }}" 
+            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            {% if required %}required{% endif %}>
+        {% if empty_option %}
+        <option value="">{{ empty_option }}</option>
+        {% endif %}
+        {% for option in options %}
+            {% if option is mapping %}
+                <option value="{{ option.value }}">{{ option.label }}</option>
+            {% else %}
+                <option value="{{ option }}">{{ option|title }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+</div>
+{% endmacro %}
+
+{% macro date_input(name, label, model_var, required=false) %}
+<div>
+    <label class="text-form-label">{{ label }}{% if required %}*{% endif %}</label>
+    <input type="date" 
+           x-model="{{ model_var }}" 
+           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+           {% if required %}required{% endif %}>
+</div>
+{% endmacro %}
+
+{% macro email_input(name, label, model_var, placeholder="email@example.com", required=false) %}
+{{ text_input(name, label, model_var, placeholder, required, "email") }}
+{% endmacro %}
+
+{% macro tel_input(name, label, model_var, placeholder="Phone number", required=false) %}
+{{ text_input(name, label, model_var, placeholder, required, "tel") }}
+{% endmacro %}
+
+{% macro url_input(name, label, model_var, placeholder="https://example.com", required=false) %}
+{{ text_input(name, label, model_var, placeholder, required, "url") }}
+{% endmacro %}
+
+{% macro grid_2_columns(left_content, right_content) %}
+<div class="grid grid-cols-2 gap-4">
+    <div>{{ left_content }}</div>
+    <div>{{ right_content }}</div>
+</div>
+{% endmacro %}
+
+{% macro form_section(title, content) %}
+{% if title %}
+<div class="space-y-4">
+    <h4 class="text-md font-medium text-gray-900">{{ title }}</h4>
+    {{ content }}
+</div>
+{% else %}
+<div class="space-y-4">
+    {{ content }}
+</div>
+{% endif %}
+{% endmacro %}

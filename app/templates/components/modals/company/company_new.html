@@ -1,120 +1,59 @@
 {% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
+{% from "components/modals/base/form_fields.html" import text_input, select_input, url_input, tel_input, textarea_input %}
 
-<div x-data="{
-        show: false,
-        saving: false,
-        company: {
+<div x-data="createCRUDMixin('company', {
             name: '',
             industry: '',
             size: '',
             website: '',
             phone: '',
             address: ''
-        },
-        
-        async saveNewCompany() {
-            if (!this.company.name.trim()) return;
-            this.saving = true;
+        }, {
+            getRequiredFields() {
+                return ['name'];
+            },
             
-            try {
-                const response = await fetch('/api/companies', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(this.company)
-                });
-                
-                if (response.ok) {
-                    this.resetForm();
-                    this.show = false;
-                    window.location.reload();
-                }
-            } catch (error) {
-                console.error('Error creating company:', error);
-            } finally {
-                this.saving = false;
+            async saveNewCompany() {
+                return await this.saveEntity();
             }
-        },
-        
-        resetForm() {
-            this.company = {
-                name: '',
-                industry: '',
-                size: '',
-                website: '',
-                phone: '',
-                address: ''
-            };
-        }
-     }" 
-     @open-new-company-modal.window="show = true; resetForm()"
-     @close-modal.window="show = false">
+        })" 
+     @open-new-company-modal.window="openModal(); resetForm()"
+     @close-modal.window="closeModal()"
 
     {% call base_modal('new-company-modal', backdrop_click_close=false) %}
         {{ modal_header('Create New Company') }}
         
         <div class="space-y-4">
-            <div>
-                <label class="text-form-label">Company Name*</label>
-                <input type="text" x-model="company.name" 
-                       placeholder="Company name"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                       required>
-            </div>
+            {{ text_input("name", "Company Name", "company.name", "Company name", required=true) }}
             
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="text-form-label">Industry</label>
-                    <select x-model="company.industry" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Select industry</option>
-                        <option value="technology">Technology</option>
-                        <option value="finance">Finance</option>
-                        <option value="healthcare">Healthcare</option>
-                        <option value="manufacturing">Manufacturing</option>
-                        <option value="retail">Retail</option>
-                        <option value="education">Education</option>
-                        <option value="consulting">Consulting</option>
-                        <option value="other">Other</option>
-                    </select>
+                    {{ select_input("industry", "Industry", "company.industry", ["technology", "finance", "healthcare", "manufacturing", "retail", "education", "consulting", "other"], empty_option="Select industry") }}
                 </div>
                 
                 <div>
-                    <label class="text-form-label">Company Size</label>
-                    <select x-model="company.size" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Select size</option>
-                        <option value="startup">Startup (1-10)</option>
-                        <option value="small">Small (11-50)</option>
-                        <option value="medium">Medium (51-200)</option>
-                        <option value="large">Large (201-1000)</option>
-                        <option value="enterprise">Enterprise (1000+)</option>
-                    </select>
+                    {% set size_options = [
+                        {"value": "startup", "label": "Startup (1-10)"},
+                        {"value": "small", "label": "Small (11-50)"},
+                        {"value": "medium", "label": "Medium (51-200)"},
+                        {"value": "large", "label": "Large (201-1000)"},
+                        {"value": "enterprise", "label": "Enterprise (1000+)"}
+                    ] %}
+                    {{ select_input("size", "Company Size", "company.size", size_options, empty_option="Select size") }}
                 </div>
             </div>
             
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="text-form-label">Website</label>
-                    <input type="url" x-model="company.website" 
-                           placeholder="https://company.com"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    {{ url_input("website", "Website", "company.website", "https://company.com") }}
                 </div>
                 
                 <div>
-                    <label class="text-form-label">Phone</label>
-                    <input type="tel" x-model="company.phone" 
-                           placeholder="Company phone number"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    {{ tel_input("phone", "Phone", "company.phone", "Company phone number") }}
                 </div>
             </div>
             
-            <div>
-                <label class="text-form-label">Address</label>
-                <textarea x-model="company.address" 
-                          placeholder="Company address"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          rows="2"></textarea>
-            </div>
+            {{ textarea_input("address", "Address", "company.address", "Company address") }}
         </div>
         
         {{ modal_footer(save_action="saveNewCompany()", save_text="Create Company") }}

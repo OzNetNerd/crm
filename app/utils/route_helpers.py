@@ -130,6 +130,31 @@ class GenericAPIHandler:
         except Exception as e:
             return jsonify({"error": str(e)}), 500
     
+    def create_entity(self, allowed_fields):
+        """Generic create handler"""
+        try:
+            data = request.get_json()
+            
+            # Create entity with allowed fields
+            entity_data = {}
+            for field in allowed_fields:
+                if field in data:
+                    entity_data[field] = data[field]
+            
+            entity = self.model_class(**entity_data)
+            db.session.add(entity)
+            db.session.commit()
+            
+            # Return created entity
+            if hasattr(entity, 'to_dict'):
+                return jsonify(entity.to_dict()), 201
+            else:
+                return jsonify({"status": "success", "id": entity.id}), 201
+                
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error": str(e)}), 400
+    
     def update_entity(self, entity_id, allowed_fields):
         """Generic update handler"""
         try:
@@ -149,6 +174,19 @@ class GenericAPIHandler:
             else:
                 return jsonify({"status": "success"})
 
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error": str(e)}), 500
+    
+    def delete_entity(self, entity_id):
+        """Generic delete handler"""
+        try:
+            entity = self.model_class.query.get_or_404(entity_id)
+            db.session.delete(entity)
+            db.session.commit()
+            
+            return jsonify({"status": "success", "message": f"{self.entity_name.title()} deleted successfully"})
+            
         except Exception as e:
             db.session.rollback()
             return jsonify({"error": str(e)}), 500
