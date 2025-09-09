@@ -106,11 +106,13 @@
     {% if card_type == 'task' %}
     // Task-specific reschedule state
     pendingDays: 0,
+    originalDueDate: '{{ entity.due_date.strftime('%d/%m/%y') if entity.due_date else '' }}',
+    currentDueDateISO: '{{ entity.due_date.isoformat() if entity.due_date else '' }}',
     
     getNewDueDate() {
-        if (!{{ 'true' if entity.due_date else 'false' }}) return '';
+        if (!this.currentDueDateISO) return '';
         
-        const originalDate = new Date('{{ entity.due_date.isoformat() if entity.due_date else '' }}');
+        const originalDate = new Date(this.currentDueDateISO);
         const adjustedDate = new Date(originalDate);
         adjustedDate.setDate(adjustedDate.getDate() + this.pendingDays);
         
@@ -170,8 +172,20 @@
             });
             
             if (response.ok) {
-                this.cancelChanges();
-                location.reload(); // Simple refresh to show updated date
+                const result = await response.json();
+                console.log('DEBUG: Reschedule response:', result);
+                
+                // Update the stored due date so future calculations use the new date
+                if (result.due_date) {
+                    // Update the current due date to the new saved date
+                    this.currentDueDateISO = result.due_date;
+                    console.log('DEBUG: Updated currentDueDateISO to:', result.due_date);
+                }
+                
+                // Reset editing state - this will trigger the display to update
+                this.pendingDays = 0;
+                this.isEditing = false;
+                this.showSaveButtons = false;
             } else {
                 const errorText = await response.text();
                 console.error('Failed to reschedule task:', errorText);
