@@ -44,7 +44,7 @@
             }
         }
      }" 
-     @open-task-detail-modal.window="loadTask($event.detail.taskId)"
+     @open-task-modal.window="loadTask($event.detail.taskId)"
      @close-modal.window="show = false">
 
     {% call base_modal('task-detail-modal', backdrop_click_close=false) %}
