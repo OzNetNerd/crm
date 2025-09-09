@@ -24,7 +24,7 @@
     <div x-show="viewMode === 'grid'" class="space-y-6">
         <!-- Dynamic Client-Side Grouping -->
         <template x-for="group in getGroupedItems()" :key="group.key">
-            <div class="entity-group-section">
+            <div class="entity-group-section mb-6">
                 <!-- Group Section -->
                 <div :class="group.containerClass">
                     <!-- Group Header -->
@@ -74,7 +74,7 @@
     <div x-show="viewMode === 'list'" class="space-y-6">
         <!-- Dynamic Client-Side Grouping for List View -->
         <template x-for="group in getGroupedItems()" :key="group.key">
-            <div class="entity-group-section">
+            <div class="entity-group-section mb-6">
                 <!-- Group Section -->
                 <div :class="group.containerClass">
                     <!-- Group Header (same as grid) -->
