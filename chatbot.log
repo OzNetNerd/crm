@@ -66,3 +66,12 @@ INFO:     connection open
 INFO:     connection closed
 INFO:     127.0.0.1:64923 - "WebSocket /ws/chat/crm-81i1udu1e" [accepted]
 INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:49287 - "WebSocket /ws/chat/crm-kh9iwrnws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:58351 - "WebSocket /ws/chat/crm-glxjtfj2x" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:52342 - "WebSocket /ws/chat/crm-0kx3zzyve" [accepted]
+INFO:     connection open

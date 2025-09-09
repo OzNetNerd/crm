@@ -53,7 +53,7 @@ class SearchManager {
     handleInput(e) {
         const query = e.target.value.trim();
         
-        if (query.length < 2) {
+        if (query.length < 1) {
             this.hideResults();
             return;
         }
@@ -66,7 +66,10 @@ class SearchManager {
     }
     
     handleFocus(e) {
-        if (this.currentQuery && this.searchResults.children.length > 0) {
+        const query = e.target.value.trim();
+        if (query.length >= 1) {
+            this.performSearch(query);
+        } else if (this.currentQuery && this.searchResults.children.length > 0) {
             this.showResults();
         }
     }
@@ -302,7 +305,7 @@ class AutocompleteManager {
     handleInput(e) {
         const query = e.target.value.trim();
         
-        if (query.length < 2) {
+        if (query.length < 1) {
             this.hideResults();
             return;
         }
@@ -314,8 +317,9 @@ class AutocompleteManager {
     }
     
     handleFocus(e) {
-        if (e.target.value.length >= 2) {
-            this.fetchSuggestions(e.target.value.trim());
+        const query = e.target.value.trim();
+        if (query.length >= 1) {
+            this.fetchSuggestions(query);
         }
     }
     

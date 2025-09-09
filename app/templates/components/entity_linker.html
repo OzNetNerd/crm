@@ -6,8 +6,8 @@
         isSearching: false,
         showDropdown: false,
         
-        async searchEntities() {
-            if (this.search.length < 2) {
+        async searchEntities(force = false) {
+            if (!force && this.search.length < 2) {
                 this.suggestions = [];
                 this.showDropdown = false;
                 return;
@@ -103,7 +103,7 @@
         <input type="text" 
                x-model="search"
                @input.debounce.300ms="searchEntities()"
-               @focus="search.length >= 2 && searchEntities()"
+               @focus="searchEntities(true)"
                placeholder="{{ placeholder }}"
                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                autocomplete="off">
