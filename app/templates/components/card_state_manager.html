@@ -230,11 +230,11 @@ x-data="{
         <template x-for="note in notes" :key="note.id">
             <div class="bg-gray-50 p-2 rounded text-sm">
                 <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs text-gray-500" x-text="new Date(note.created_at).toLocaleString()"></span>
+                    <span class="text-xs-gray-500" x-text="new Date(note.created_at).toLocaleString()"></span>
                     <div class="flex items-center space-x-1">
-                        <button @click.stop="startEditComment(note.id, note.content)" class="text-xs text-gray-400 hover:text-gray-600">Edit</button>
-                        <span class="text-xs text-gray-300">|</span>
-                        <button @click.stop="deleteComment(note.id)" class="text-xs text-red-400 hover:text-red-600">Delete</button>
+                        <button @click.stop="startEditComment(note.id, note.content)" class="text-xs-gray-400 hover:text-gray-600">Edit</button>
+                        <span class="text-xs-gray-300">|</span>
+                        <button @click.stop="deleteComment(note.id)" class="text-xs-red-400 hover:text-red-600">Delete</button>
                     </div>
                 </div>
                 <div x-show="editingCommentId === note.id" @click.stop>

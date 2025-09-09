@@ -1,0 +1,140 @@
+{% from "components/ui_elements.html" import action_button, pluralized_count %}
+{% from "components/metadata_display.html" import standard_card_metadata %}
+{% from "components/icons.html" import building_office_icon, envelope_icon, phone_icon, pencil_icon, trash_icon, user_icon %}
+{% from "components/expandable_card.html" import expandable_card %}
+
+{% macro render_company(company) %}
+{% call expandable_card('company', company, company.id,
+                        expansion_enabled=true,
+                        card_classes='px-6 py-4 hover:bg-gray-50 cursor-pointer',
+                        expanded_content=company_expanded_content(company)) %}
+    
+    <!-- Main company info row -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center flex-grow">
+            <div class="flex-shrink-0 mr-3">
+                {% set avatar_color = 'blue' if company.industry 
+                                      else 'gray' %}
+                <div class="h-10 w-10 bg-{{ avatar_color }}-500 rounded-full flex items-center justify-center text-white font-medium">
+                    {{ building_office_icon("w-5 h-5") }}
+                </div>
+            </div>
+            <div class="ml-4 flex-grow">
+                <div class="flex items-center space-x-2">
+                    <div class="text-company-name text-lg font-semibold">{{ company.name }}</div>
+                    {% if company.industry %}
+                        <span class="badge-standard badge-blue">{{ company.industry }}</span>
+                    {% endif %}
+                </div>
+                <div class="text-secondary">
+                    {% if company.website %}
+                        <a href="{{ company.website }}" target="_blank" 
+                           class="text-link hover:text-link-hover"
+                           onclick="event.stopPropagation()">
+                            {{ company.website }}
+                        </a>
+                    {% else %}
+                        <span class="text-gray-500">No website</span>
+                    {% endif %}
+                </div>
+                {{ standard_card_metadata(company, {'entity_type': 'company', 'include_contacts': true, 'include_opportunities': true}) }}
+            </div>
+        </div>
+        
+        <!-- Company stats and actions on the right -->
+        <div class="flex items-center space-x-3 flex-shrink-0">
+            <!-- Contact and opportunity counts -->
+            <div class="flex items-center space-x-4 text-secondary">
+                <span class="flex items-center">
+                    {{ user_icon("w-4 h-4 mr-1") }}
+                    {{ pluralized_count(company.contacts|length, 'contact') }}
+                </span>
+                <span class="flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                    {{ pluralized_count(company.opportunities|length, 'opportunity', plural='opportunities') }}
+                </span>
+            </div>
+            
+            <!-- Action buttons -->
+            <div class="flex items-center space-x-1">
+                <button @click.stop="openCompanyModal({{ company.id }})" 
+                        class="px-2 py-1 rounded text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors duration-200" 
+                        title="Edit company">
+                    {{ pencil_icon("w-4 h-4") }}
+                </button>
+                <button @click.stop="deleteCompany({{ company.id }})" 
+                        class="px-2 py-1 rounded text-red-600 hover:text-red-800 hover:bg-red-50 transition-colors duration-200" 
+                        title="Delete company">
+                    {{ trash_icon("w-4 h-4") }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+{% endcall %}
+{% endmacro %}
+
+{% macro company_expanded_content(company) %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Company Details -->
+    <div>
+        <h4 class="text-sm font-medium text-gray-900 mb-2">Company Details</h4>
+        <div class="space-y-2 text-sm">
+            {% if company.industry %}
+                <div class="flex items-center">
+                    <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    <span>{{ company.industry }}</span>
+                </div>
+            {% endif %}
+            {% if company.website %}
+                <div class="flex items-center">
+                    <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                    </svg>
+                    <a href="{{ company.website }}" target="_blank" class="text-blue-600 hover:text-blue-800">
+                        {{ company.website }}
+                    </a>
+                </div>
+            {% endif %}
+            {% if not company.industry and not company.website %}
+                <p class="text-gray-500 italic">No additional company information available</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div>
+        <h4 class="text-sm font-medium text-gray-900 mb-2">Quick Actions</h4>
+        <div class="flex flex-wrap gap-2">
+            <button @click.stop="createTask('company', {{ company.id }})" 
+                    class="px-3 py-1 bg-blue-100 text-blue-800 rounded-md text-sm hover:bg-blue-200 transition-colors">
+                Add Task
+            </button>
+            <button @click.stop="createContact('company', {{ company.id }})" 
+                    class="px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm hover:bg-green-200 transition-colors">
+                New Contact
+            </button>
+            <button @click.stop="createOpportunity('company', {{ company.id }})" 
+                    class="px-3 py-1 bg-purple-100 text-purple-800 rounded-md text-sm hover:bg-purple-200 transition-colors">
+                New Opportunity
+            </button>
+        </div>
+        <div class="mt-2 flex flex-wrap gap-2">
+            {% if company.contacts %}
+                <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm">
+                    {{ pluralized_count(company.contacts|length, 'contact') }}
+                </span>
+            {% endif %}
+            {% if company.opportunities %}
+                <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm">
+                    {{ pluralized_count(company.opportunities|length, 'opportunity', plural='opportunities') }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}

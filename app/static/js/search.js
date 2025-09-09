@@ -192,14 +192,16 @@ class SearchManager {
             <a href="${result.url}" 
                role="option"
                aria-selected="false"
-               class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center space-x-2 border-b border-gray-100 last:border-b-0">
-                <span class="text-sm">${getEntityTypeIcon(result.type)}</span>
-                <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-gray-900 truncate">
-                        ${this.highlightQuery(result.title)}
-                    </div>
-                    <div class="text-xs text-gray-500 truncate">
-                        ${result.subtitle || ''}
+               class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
+                <div class="flex items-center space-x-3">
+                    <span class="text-lg">${iconMap[result.type] || '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'}</span>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-label-primary truncate">
+                            ${this.highlightQuery(result.title)}
+                        </div>
+                        <div class="text-xs-gray-500 truncate">
+                            ${result.subtitle || ''}
+                        </div>
                     </div>
                 </div>
                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getEntityTypeBadgeClass(result.type)}">

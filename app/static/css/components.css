@@ -87,6 +87,9 @@
 .text-xs-gray-300 { @apply text-xs text-gray-300; }
 .text-xs-red-400 { @apply text-xs text-red-400; }
 
+/* Common text patterns for small text with alignment */
+.text-xs-center { @apply text-xs text-center; }
+
 /* Metadata and small secondary text */
 .text-metadata { 
     font-size: 0.75rem; /* text-xs */
@@ -279,6 +282,10 @@
     background-color: #f3f4f6; /* bg-gray-100 */
     color: #1f2937; /* text-gray-800 */
 }
+.badge-purple { 
+    background-color: #faf5ff; /* bg-purple-100 */
+    color: #7c3aed; /* text-purple-700 */
+}
 
 /* Action buttons with text */
 .text-action-sm { 
@@ -354,8 +361,9 @@
 .multiselect-dropdown {
     position: absolute;
     top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    right: 0;
+    margin: 0 auto;
     z-index: 50;
     background-color: white;
     border: 1px solid #d1d5db;
@@ -522,6 +530,13 @@
     border-radius: 0.5rem; /* rounded-lg */
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
     border: 1px solid #e5e7eb; /* border border-gray-200 */
+}
+
+.card-purple {
+    background-color: #ffffff; /* bg-white */
+    border-radius: 0.5rem; /* rounded-lg */
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+    border: 1px solid #ddd6fe; /* border border-purple-200 */
 }
 
 /* Shared card base styling for all entity cards */
