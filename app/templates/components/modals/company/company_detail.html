@@ -25,7 +25,7 @@
             this.show = true;
         }
      }" 
-     @open-company-modal.window="loadCompany($event.detail.companyId)"
+     @open-detail-company-modal.window="loadCompany($event.detail.id)"
      @close-modal.window="show = false">
 
     {% call base_modal('company-detail-modal') %}

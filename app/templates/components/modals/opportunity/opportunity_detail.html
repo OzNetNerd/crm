@@ -27,7 +27,7 @@
             this.show = true;
         }
      }" 
-     @open-opportunity-modal.window="loadOpportunity($event.detail.opportunityId)"
+     @open-detail-opportunity-modal.window="loadOpportunity($event.detail.id)"
      @close-modal.window="show = false">
 
     {% call base_modal('opportunity-detail-modal') %}

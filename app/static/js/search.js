@@ -151,75 +151,60 @@ class SearchManager {
                 </div>
             `;
         } else {
-            const groupedResults = this.groupResultsByType(results);
-            this.searchResults.innerHTML = this.renderGroupedResults(groupedResults);
+            this.searchResults.innerHTML = this.renderBadgeResults(results);
         }
         
         this.showResults();
     }
     
-    groupResultsByType(results) {
-        const groups = {};
-        
-        results.forEach(result => {
-            if (!groups[result.type]) {
-                groups[result.type] = [];
-            }
-            groups[result.type].push(result);
-        });
-        
-        return groups;
-    }
-    
-    renderGroupedResults(groups) {
-        const typeLabels = {
-            company: 'Companies',
-            contact: 'Contacts', 
-            opportunity: 'Opportunities',
-            task: 'Tasks'
-        };
-        
+    renderBadgeResults(results) {
         let html = '';
         
-        Object.keys(groups).forEach(type => {
-            html += `
-                <div class="border-b border-gray-100 last:border-b-0">
-                    <div class="px-4 py-2 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        ${typeLabels[type] || type}
-                    </div>
-            `;
-            
-            groups[type].forEach(result => {
-                html += this.renderSearchItem(result);
-            });
-            
-            html += '</div>';
+        results.forEach(result => {
+            html += this.renderBadgeSearchItem(result);
         });
         
         return html;
     }
     
-    renderSearchItem(result) {
-        const getIcon = (type) => {
-            return window.iconUtility?.getIconSync(type, 'w-5 h-5');
+    renderBadgeSearchItem(result) {
+        const getEntityTypeIcon = (type) => {
+            switch(type) {
+                case 'company': return '🏢';
+                case 'contact': return '👤';
+                case 'opportunity': return '💼';
+                case 'task': return '✅';
+                default: return '📄';
+            }
+        };
+        
+        const getEntityTypeBadgeClass = (type) => {
+            switch(type) {
+                case 'company': return 'bg-blue-100 text-blue-800';
+                case 'contact': return 'bg-green-100 text-green-800';
+                case 'opportunity': return 'bg-purple-100 text-purple-800';
+                case 'task': return 'bg-orange-100 text-orange-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
         };
         
         return `
             <a href="${result.url}" 
                role="option"
                aria-selected="false"
-               class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
-                <div class="flex items-center space-x-3">
-                    <span class="text-lg">${getIcon(result.type)}</span>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-label-primary truncate">
-                            ${this.highlightQuery(result.title)}
-                        </div>
-                        <div class="text-xs-gray-500 truncate">
-                            ${result.subtitle || ''}
-                        </div>
+               class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center space-x-2 border-b border-gray-100 last:border-b-0">
+                <span class="text-sm">${getEntityTypeIcon(result.type)}</span>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-gray-900 truncate">
+                        ${this.highlightQuery(result.title)}
+                    </div>
+                    <div class="text-xs text-gray-500 truncate">
+                        ${result.subtitle || ''}
                     </div>
                 </div>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getEntityTypeBadgeClass(result.type)}">
+                    ${result.type}
+                </span>
             </a>
         `;
     }
