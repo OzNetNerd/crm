@@ -1,6 +1,25 @@
 from datetime import datetime
 from . import db
 
+# Many-to-many relationship tables for tasks and entities
+task_companies = db.Table(
+    "task_companies",
+    db.Column("task_id", db.Integer, db.ForeignKey("tasks.id"), primary_key=True),
+    db.Column("company_id", db.Integer, db.ForeignKey("companies.id"), primary_key=True),
+)
+
+task_contacts = db.Table(
+    "task_contacts", 
+    db.Column("task_id", db.Integer, db.ForeignKey("tasks.id"), primary_key=True),
+    db.Column("contact_id", db.Integer, db.ForeignKey("contacts.id"), primary_key=True),
+)
+
+task_opportunities = db.Table(
+    "task_opportunities",
+    db.Column("task_id", db.Integer, db.ForeignKey("tasks.id"), primary_key=True), 
+    db.Column("opportunity_id", db.Integer, db.ForeignKey("opportunities.id"), primary_key=True),
+)
+
 
 class Task(db.Model):
     __tablename__ = "tasks"
@@ -67,6 +86,26 @@ class Task(db.Model):
         lazy="select",
     )
 
+    # Many-to-many relationships with entities
+    related_companies = db.relationship(
+        "Company",
+        secondary=task_companies,
+        lazy="subquery",
+        backref=db.backref("related_tasks", lazy=True),
+    )
+    related_contacts = db.relationship(
+        "Contact", 
+        secondary=task_contacts,
+        lazy="subquery",
+        backref=db.backref("related_tasks", lazy=True),
+    )
+    related_opportunities = db.relationship(
+        "Opportunity",
+        secondary=task_opportunities, 
+        lazy="subquery",
+        backref=db.backref("related_tasks", lazy=True),
+    )
+
     @property
     def opportunity_value(self):
         if self.entity_type == "opportunity" and self.entity_id:
@@ -99,6 +138,81 @@ class Task(db.Model):
                 else None
             )
         return None
+
+    @property
+    def all_company_names(self):
+        """Get all related company names including primary and related"""
+        names = []
+        
+        # Add primary company name
+        primary_name = self.company_name
+        if primary_name:
+            names.append(primary_name)
+            
+        # Add related companies
+        for company in self.related_companies:
+            if company.name not in names:
+                names.append(company.name)
+                
+        # Add companies from related contacts
+        for contact in self.related_contacts:
+            if contact.company and contact.company.name not in names:
+                names.append(contact.company.name)
+                
+        # Add companies from related opportunities  
+        for opportunity in self.related_opportunities:
+            if opportunity.company and opportunity.company.name not in names:
+                names.append(opportunity.company.name)
+                
+        return names
+
+    @property
+    def all_opportunity_names(self):
+        """Get all related opportunity names including primary and related"""
+        names = []
+        
+        # Add primary opportunity name
+        primary_name = self.opportunity_name
+        if primary_name:
+            names.append(primary_name)
+            
+        # Add related opportunities
+        for opportunity in self.related_opportunities:
+            if opportunity.name not in names:
+                names.append(opportunity.name)
+                
+        # Add opportunities from related contacts
+        for contact in self.related_contacts:
+            for opportunity in contact.opportunities:
+                if opportunity.name not in names:
+                    names.append(opportunity.name)
+                    
+        return names
+
+    @property
+    def all_contact_names(self):
+        """Get all related contact names"""
+        names = []
+        
+        # Add primary contact name if entity is contact
+        if self.entity_type == "contact" and self.entity_id:
+            from .contact import Contact
+            contact = Contact.query.get(self.entity_id)
+            if contact:
+                names.append(contact.name)
+        
+        # Add related contacts
+        for contact in self.related_contacts:
+            if contact.name not in names:
+                names.append(contact.name)
+                
+        # Add contacts from related opportunities
+        for opportunity in self.related_opportunities:
+            for contact in opportunity.contacts:
+                if contact.name not in names:
+                    names.append(contact.name)
+                    
+        return names
 
     @property
     def opportunity_name(self):
@@ -231,7 +345,14 @@ class Task(db.Model):
             'stakeholder_opportunity_value': self.stakeholder_opportunity_value,
             'task_type_badge': self.task_type_badge,
             'can_start': self.can_start,
-            'completion_percentage': self.completion_percentage
+            'completion_percentage': self.completion_percentage,
+            # New multi-entity properties
+            'all_company_names': self.all_company_names,
+            'all_opportunity_names': self.all_opportunity_names,
+            'all_contact_names': self.all_contact_names,
+            'related_companies': [{'id': c.id, 'name': c.name} for c in self.related_companies],
+            'related_contacts': [{'id': c.id, 'name': c.name} for c in self.related_contacts], 
+            'related_opportunities': [{'id': o.id, 'name': o.name} for o in self.related_opportunities],
         }
 
     def __repr__(self):
