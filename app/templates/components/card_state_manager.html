@@ -17,6 +17,9 @@
 #}
 {% macro card_state_manager(card_type, entity, entity_id, expansion_enabled=true, notes_enabled=false, group_key='') %}
 x-data="{ 
+    // Entity data
+    {{ card_type }}: {{ entity | tojson if entity else '{}' }},
+    
     // Core expansion state
     expanded: false,
     
@@ -27,6 +30,14 @@ x-data="{
     editingCommentText: '',
     notes: [],
     notesLoaded: false,
+    {% else %}
+    // Provide defaults for non-notes-enabled cards to prevent undefined errors
+    newComment: '',
+    editingCommentId: null,
+    editingCommentText: '',
+    notes: [],
+    saving: false,
+    show: false,
     {% endif %}
     
     // Generic editing state
