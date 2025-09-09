@@ -12,11 +12,34 @@
             entity_id: '',
             next_step_type: ''
         },
+        selectedCompanies: [],
+        selectedContacts: [],
+        selectedOpportunities: [],
+        companies: [],
+        contacts: [],
+        opportunities: [],
         childTasks: [
             { description: '', due_date: '', priority: 'medium', next_step_type: '' },
             { description: '', due_date: '', priority: 'medium', next_step_type: '' }
         ],
         dependencyType: 'parallel',
+        
+        async init() {
+            // Load companies, contacts, and opportunities for multi-select
+            try {
+                const [companiesRes, contactsRes, opportunitiesRes] = await Promise.all([
+                    fetch('/api/companies'),
+                    fetch('/api/contacts'), 
+                    fetch('/api/opportunities')
+                ]);
+                
+                this.companies = await companiesRes.json();
+                this.contacts = await contactsRes.json();
+                this.opportunities = await opportunitiesRes.json();
+            } catch (error) {
+                console.error('Error loading entities:', error);
+            }
+        },
         
         async saveNewTask() {
             if (!this.task.description.trim()) return;
@@ -27,7 +50,10 @@
                     ...this.task,
                     task_type: this.taskType,
                     child_tasks: this.taskType === 'multi' ? this.childTasks : [],
-                    dependency_type: this.taskType === 'multi' ? this.dependencyType : null
+                    dependency_type: this.taskType === 'multi' ? this.dependencyType : null,
+                    related_company_ids: this.selectedCompanies,
+                    related_contact_ids: this.selectedContacts, 
+                    related_opportunity_ids: this.selectedOpportunities
                 };
                 
                 const response = await fetch('/api/tasks', {
@@ -63,6 +89,9 @@
             ];
             this.taskType = 'single';
             this.dependencyType = 'parallel';
+            this.selectedCompanies = [];
+            this.selectedContacts = [];
+            this.selectedOpportunities = [];
         },
         
         addChildTask() {
@@ -75,6 +104,7 @@
             }
         }
      }" 
+     x-init="init()"
      @open-new-task-modal.window="show = true; resetForm()"
      @close-modal.window="show = false">
 
@@ -136,6 +166,59 @@
                     <option value="meeting">Meeting</option>
                     <option value="demo">Demo</option>
                 </select>
+            </div>
+            
+            <!-- Related Entities Section -->
+            <div class="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h4 class="text-sm font-medium text-gray-700">Related Entities (Optional)</h4>
+                
+                <!-- Companies -->
+                <div>
+                    <label class="text-form-label">Related Companies</label>
+                    <div class="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2 bg-white">
+                        <template x-for="company in companies" :key="company.id">
+                            <label class="flex items-center py-1">
+                                <input type="checkbox" 
+                                       :value="company.id"
+                                       x-model="selectedCompanies"
+                                       class="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="text-sm" x-text="company.name"></span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Contacts -->
+                <div>
+                    <label class="text-form-label">Related Contacts</label>
+                    <div class="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2 bg-white">
+                        <template x-for="contact in contacts" :key="contact.id">
+                            <label class="flex items-center py-1">
+                                <input type="checkbox" 
+                                       :value="contact.id"
+                                       x-model="selectedContacts"
+                                       class="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="text-sm" x-text="contact.name + ' (' + (contact.company_name || 'No Company') + ')'"></span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Opportunities -->
+                <div>
+                    <label class="text-form-label">Related Opportunities</label>
+                    <div class="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2 bg-white">
+                        <template x-for="opportunity in opportunities" :key="opportunity.id">
+                            <label class="flex items-center py-1">
+                                <input type="checkbox" 
+                                       :value="opportunity.id"
+                                       x-model="selectedOpportunities"
+                                       class="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="text-sm" x-text="opportunity.name + ' (' + (opportunity.company_name || 'No Company') + ')'"></span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
             </div>
         </div>
         

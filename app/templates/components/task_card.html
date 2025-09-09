@@ -147,8 +147,9 @@
             {{ status_badge(task.priority, priority_color) }}
         </div>
         <div class="task-content-cell">
-            {% if task.company_name or task.entity_name or task.stakeholder_opportunity_name or task.stakeholder_opportunity_value %}
+            {% if task.company_name or task.entity_name or task.stakeholder_opportunity_name or task.stakeholder_opportunity_value or task.all_company_names or task.all_contact_names or task.all_opportunity_names %}
                 <div class="flex items-center flex-wrap gap-x-2">
+                    {# Primary entity display (backward compatibility) #}
                     {% if task.company_name %}
                         <span class="text-company-name">{{ task.company_name }}</span>
                     {% endif %}
@@ -168,6 +169,22 @@
                         <span class="text-deal-amount-lg text-success">
                             ${{ "{:,}".format(task.stakeholder_opportunity_value) }}
                         </span>
+                    {% endif %}
+                    
+                    {# Related entities badges #}
+                    {% if task.all_company_names and task.all_company_names|length > 1 %}
+                        <span class="badge-standard badge-purple">+{{ task.all_company_names|length - 1 }} company</span>
+                    {% endif %}
+                    
+                    {% if task.all_contact_names %}
+                        {% set contact_count = task.all_contact_names|length %}
+                        {% if contact_count > 0 %}
+                            <span class="badge-standard badge-blue">{{ contact_count }} contact{{ 's' if contact_count > 1 }}</span>
+                        {% endif %}
+                    {% endif %}
+                    
+                    {% if task.all_opportunity_names and task.all_opportunity_names|length > 1 %}
+                        <span class="badge-standard badge-green">+{{ task.all_opportunity_names|length - 1 }} opp</span>
                     {% endif %}
                     
                     <!-- Task type badges and status indicators -->
