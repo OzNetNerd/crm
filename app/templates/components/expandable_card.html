@@ -511,22 +511,22 @@
 {% macro task_reschedule_buttons(task_id) %}
 <div class="relative flex-shrink-0">
     <div class="flex items-center space-x-1">
-        <button @click.stop="adjustDays(-7)" 
+        <button @click.stop="console.log('Reschedule -1w for task {{ task_id }}')" 
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule -1 week">
             -1w
         </button>
-        <button @click.stop="adjustDays(-1)" 
+        <button @click.stop="console.log('Reschedule -1d for task {{ task_id }}')" 
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule -1 day">
             -1d
         </button>
-        <button @click.stop="adjustDays(1)" 
+        <button @click.stop="console.log('Reschedule +1d for task {{ task_id }}')" 
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule +1 day">
             +1d
         </button>
-        <button @click.stop="adjustDays(7)" 
+        <button @click.stop="console.log('Reschedule +1w for task {{ task_id }}')" 
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule +1 week">
             +1w
