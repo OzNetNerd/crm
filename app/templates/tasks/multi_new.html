@@ -102,9 +102,9 @@
 
 {% block data_attributes %}
 data-page-type="multi-task"
-data-companies="{{ companies | safe_tojson }}"
-data-contacts="{{ contacts | safe_tojson }}"
-data-opportunities="{{ opportunities | safe_tojson }}"
+data-companies="{{ companies | tojson }}"
+data-contacts="{{ contacts | tojson }}"
+data-opportunities="{{ opportunities | tojson }}"
 {% endblock %}
 
 {% block scripts %}

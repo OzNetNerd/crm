@@ -177,7 +177,7 @@
 {% endblock %}
 
 {% block data_attributes %}
-data-companies="{{ companies | safe_tojson }}"
-data-contacts="{{ contacts | safe_tojson }}"
-data-opportunities="{{ opportunities_data | safe_tojson }}"
+data-companies="{{ companies | tojson }}"
+data-contacts="{{ contacts | tojson }}"
+data-opportunities="{{ opportunities_data | tojson }}"
 {% endblock %}
