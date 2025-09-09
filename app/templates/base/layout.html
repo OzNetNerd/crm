@@ -28,6 +28,10 @@
     <!-- Hide content until Alpine.js loads -->
     <style>
         [x-cloak] { display: none !important; }
+        /* Prevent layout shift when scrollbar appears */
+        html {
+            overflow-y: scroll;
+        }
     </style>
     <nav class="bg-white shadow-sm border-b">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
