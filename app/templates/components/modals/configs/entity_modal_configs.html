@@ -1,197 +1,6 @@
-{# Entity Modal Configurations - DRY Configuration System #}
+{# Entity Modal Configurations - Detail Modal Configs Only #}
 
-{# Company Modal Configurations #}
-{% set company_new_config = {
-    "title": "Create New Company",
-    "save_text": "Create Company",
-    "default_values": {
-        "name": "",
-        "industry": "",
-        "size": "",
-        "website": "",
-        "phone": "",
-        "address": ""
-    },
-    "required_fields": ["name"],
-    "fields": [
-        {
-            "type": "text",
-            "name": "name",
-            "label": "Company Name",
-            "placeholder": "Company name",
-            "required": true
-        },
-        {
-            "type": "grid",
-            "fields": [
-                {
-                    "type": "select",
-                    "name": "industry",
-                    "label": "Industry",
-                    "options": ["technology", "finance", "healthcare", "manufacturing", "retail", "education", "consulting", "other"],
-                    "empty_option": "Select industry"
-                },
-                {
-                    "type": "select",
-                    "name": "size",
-                    "label": "Company Size",
-                    "options": [
-                        {"value": "startup", "label": "Startup (1-10)"},
-                        {"value": "small", "label": "Small (11-50)"},
-                        {"value": "medium", "label": "Medium (51-200)"},
-                        {"value": "large", "label": "Large (201-1000)"},
-                        {"value": "enterprise", "label": "Enterprise (1000+)"}
-                    ],
-                    "empty_option": "Select size"
-                }
-            ]
-        },
-        {
-            "type": "grid",
-            "fields": [
-                {
-                    "type": "url",
-                    "name": "website",
-                    "label": "Website",
-                    "placeholder": "https://company.com"
-                },
-                {
-                    "type": "tel",
-                    "name": "phone",
-                    "label": "Phone",
-                    "placeholder": "Company phone number"
-                }
-            ]
-        },
-        {
-            "type": "textarea",
-            "name": "address",
-            "label": "Address",
-            "placeholder": "Company address"
-        }
-    ]
-} %}
-
-{% set company_detail_config = {
-    "title": "Company Details",
-    "show_notes": true,
-    "default_values": {
-        "name": "",
-        "industry": "",
-        "website": "",
-        "contacts": [],
-        "opportunities": []
-    },
-    "fields": [
-        {
-            "type": "text",
-            "name": "name",
-            "label": "Company Name",
-            "placeholder": "Company name"
-        },
-        {
-            "type": "grid",
-            "columns": 2,
-            "fields": [
-                {
-                    "type": "text",
-                    "name": "industry",
-                    "label": "Industry",
-                    "placeholder": "Industry"
-                },
-                {
-                    "type": "text",
-                    "name": "website",
-                    "label": "Website",
-                    "placeholder": "https://example.com"
-                }
-            ]
-        },
-        {
-            "type": "related_list",
-            "name": "contacts",
-            "label": "Contacts",
-            "item_name": "contact",
-            "template": '''
-                <div>
-                    <p class="text-sm font-medium text-gray-900" x-text="contact.name"></p>
-                    <p class="text-xs-gray-500" x-text="contact.role"></p>
-                </div>
-                <div class="text-xs-gray-500">
-                    <div x-show="contact.email" x-text="contact.email"></div>
-                    <div x-show="contact.phone" x-text="contact.phone"></div>
-                </div>
-            '''
-        },
-        {
-            "type": "related_list",
-            "name": "opportunities",
-            "label": "Opportunities",
-            "item_name": "opportunity",
-            "template": '''
-                <div>
-                    <p class="text-sm font-medium text-gray-900" x-text="opportunity.name"></p>
-                    <p class="text-xs-gray-500" x-text="`$${opportunity.value?.toLocaleString()} • ${opportunity.stage}`"></p>
-                </div>
-                <span class="text-xs-gray-400" x-text="new Date(opportunity.expected_close_date).toLocaleDateString()"></span>
-            '''
-        }
-    ]
-} %}
-
-{# Task Modal Configurations #}
-{% set task_new_config = {
-    "title": "Create New Task",
-    "save_text": "Create Task",
-    "spacing_class": "modal-content-spacing",
-    "default_values": {
-        "description": "",
-        "due_date": "",
-        "priority": "medium",
-        "next_step_type": ""
-    },
-    "required_fields": ["description"],
-    "fields": [
-        {
-            "type": "textarea",
-            "name": "description",
-            "label": "Description",
-            "placeholder": "What needs to be done?",
-            "rows": 3,
-            "required": true
-        },
-        {
-            "type": "grid",
-            "grid_class": "modal-grid-2",
-            "fields": [
-                {
-                    "type": "date",
-                    "name": "due_date",
-                    "label": "Due Date"
-                },
-                {
-                    "type": "select",
-                    "name": "priority",
-                    "label": "Priority",
-                    "options": ["low", "medium", "high"]
-                }
-            ]
-        },
-        {
-            "type": "select",
-            "name": "next_step_type",
-            "label": "Next Step Type",
-            "options": [
-                {"value": "", "label": "None"},
-                {"value": "call", "label": "Call"},
-                {"value": "email", "label": "Email"},
-                {"value": "meeting", "label": "Meeting"},
-                {"value": "demo", "label": "Demo"}
-            ]
-        }
-    ]
-} %}
-
+{# Task Detail Modal Configuration #}
 {% set task_detail_config = {
     "title": "Task Details",
     "default_values": {
@@ -256,106 +65,11 @@
             "name": "description",
             "label": "Description",
             "rows": 3
-        },
-        {
-            "type": "grid",
-            "columns": 2,
-            "fields": [
-                {
-                    "type": "date",
-                    "name": "due_date",
-                    "label": "Due Date"
-                },
-                {
-                    "type": "select",
-                    "name": "priority",
-                    "label": "Priority",
-                    "options": [
-                        {"value": "low", "label": "Low"},
-                        {"value": "medium", "label": "Medium"},
-                        {"value": "high", "label": "High"}
-                    ]
-                }
-            ]
-        },
-        {
-            "type": "grid",
-            "columns": 2,
-            "fields": [
-                {
-                    "type": "select",
-                    "name": "next_step_type",
-                    "label": "Next Step Type",
-                    "options": [
-                        {"value": "", "label": "None"},
-                        {"value": "call", "label": "Call"},
-                        {"value": "email", "label": "Email"},
-                        {"value": "meeting", "label": "Meeting"},
-                        {"value": "demo", "label": "Demo"}
-                    ]
-                },
-                {
-                    "type": "select",
-                    "name": "status",
-                    "label": "Status",
-                    "options": [
-                        {"value": "pending", "label": "Pending"},
-                        {"value": "in_progress", "label": "In Progress"},
-                        {"value": "complete", "label": "Complete"},
-                        {"value": "cancelled", "label": "Cancelled"}
-                    ]
-                }
-            ]
         }
     ]
 } %}
 
-{# Contact Modal Configurations #}
-{% set contact_new_config = {
-    "title": "Create New Contact",
-    "save_text": "Create Contact",
-    "default_values": {
-        "name": "",
-        "email": "",
-        "phone": "",
-        "role": "",
-        "company_id": ""
-    },
-    "required_fields": ["name"],
-    "fields": [
-        {
-            "type": "text",
-            "name": "name",
-            "label": "Full Name",
-            "placeholder": "Contact name",
-            "required": true
-        },
-        {
-            "type": "grid",
-            "fields": [
-                {
-                    "type": "email",
-                    "name": "email",
-                    "label": "Email",
-                    "placeholder": "contact@company.com"
-                },
-                {
-                    "type": "tel",
-                    "name": "phone",
-                    "label": "Phone",
-                    "placeholder": "Phone number"
-                }
-            ]
-        },
-        {
-            "type": "text",
-            "name": "role",
-            "label": "Role",
-            "placeholder": "Job title or role"
-        }
-    ]
-} %}
-
+{# Contact Detail Modal Configuration #}
 {% set contact_detail_config = {
     "title": "Contact Details",
     "show_notes": true,
@@ -372,99 +86,32 @@
             "name": "name",
             "label": "Full Name",
             "placeholder": "Contact name"
-        },
-        {
-            "type": "grid",
-            "columns": 2,
-            "fields": [
-                {
-                    "type": "text",
-                    "name": "email",
-                    "label": "Email",
-                    "placeholder": "contact@company.com"
-                },
-                {
-                    "type": "text",
-                    "name": "phone",
-                    "label": "Phone",
-                    "placeholder": "Phone number"
-                }
-            ]
-        },
-        {
-            "type": "text",
-            "name": "role",
-            "label": "Role",
-            "placeholder": "Job title or role"
         }
     ]
 } %}
 
-{# Opportunity Modal Configurations #}
-{% set opportunity_new_config = {
-    "title": "Create New Opportunity",
-    "save_text": "Create Opportunity",
+{# Company Detail Modal Configuration #}
+{% set company_detail_config = {
+    "title": "Company Details",
+    "show_notes": true,
     "default_values": {
         "name": "",
-        "value": "",
-        "stage": "prospect",
-        "probability": 25,
-        "expected_close_date": "",
-        "company_id": ""
+        "industry": "",
+        "website": "",
+        "contacts": [],
+        "opportunities": []
     },
-    "required_fields": ["name", "value"],
     "fields": [
         {
             "type": "text",
             "name": "name",
-            "label": "Opportunity Name",
-            "placeholder": "Opportunity name",
-            "required": true
-        },
-        {
-            "type": "grid",
-            "fields": [
-                {
-                    "type": "text",
-                    "name": "value",
-                    "label": "Value ($)",
-                    "placeholder": "10000",
-                    "required": true
-                },
-                {
-                    "type": "select",
-                    "name": "stage",
-                    "label": "Stage",
-                    "options": [
-                        {"value": "prospect", "label": "Prospect"},
-                        {"value": "qualified", "label": "Qualified"},
-                        {"value": "proposal", "label": "Proposal"},
-                        {"value": "negotiation", "label": "Negotiation"},
-                        {"value": "closed_won", "label": "Closed Won"},
-                        {"value": "closed_lost", "label": "Closed Lost"}
-                    ]
-                }
-            ]
-        },
-        {
-            "type": "grid",
-            "fields": [
-                {
-                    "type": "text",
-                    "name": "probability",
-                    "label": "Probability (%)",
-                    "placeholder": "25"
-                },
-                {
-                    "type": "date",
-                    "name": "expected_close_date",
-                    "label": "Expected Close Date"
-                }
-            ]
+            "label": "Company Name",
+            "placeholder": "Company name"
         }
     ]
 } %}
 
+{# Opportunity Detail Modal Configuration #}
 {% set opportunity_detail_config = {
     "title": "Opportunity Details",
     "show_notes": true,
@@ -482,48 +129,6 @@
             "name": "name",
             "label": "Opportunity Name",
             "placeholder": "Opportunity name"
-        },
-        {
-            "type": "grid",
-            "columns": 2,
-            "fields": [
-                {
-                    "type": "text",
-                    "name": "value",
-                    "label": "Value ($)",
-                    "placeholder": "10000"
-                },
-                {
-                    "type": "select",
-                    "name": "stage",
-                    "label": "Stage",
-                    "options": [
-                        {"value": "prospect", "label": "Prospect"},
-                        {"value": "qualified", "label": "Qualified"},
-                        {"value": "proposal", "label": "Proposal"},
-                        {"value": "negotiation", "label": "Negotiation"},
-                        {"value": "closed_won", "label": "Closed Won"},
-                        {"value": "closed_lost", "label": "Closed Lost"}
-                    ]
-                }
-            ]
-        },
-        {
-            "type": "grid",
-            "columns": 2,
-            "fields": [
-                {
-                    "type": "text",
-                    "name": "probability",
-                    "label": "Probability (%)",
-                    "placeholder": "25"
-                },
-                {
-                    "type": "date",
-                    "name": "expected_close_date",
-                    "label": "Expected Close Date"
-                }
-            ]
         }
     ]
 } %}

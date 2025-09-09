@@ -81,6 +81,11 @@ function createCRUDMixin(entityType, defaultEntity = {}, options = {}) {
     const entityKey = entityType.toLowerCase();
     const apiEndpoint = `/api/${entityKey}s`;
     
+    // Ensure defaultEntity is a valid object
+    if (!defaultEntity || typeof defaultEntity !== 'object') {
+        defaultEntity = {};
+    }
+    
     return createModalMixin({
         // Entity data
         [entityKey]: { ...defaultEntity },
@@ -283,9 +288,21 @@ const FormValidation = {
     }
 };
 
+// Helper function for creating entity-specific CRUD mixins
+// NOTE: This function is no longer used by the new simplified modal system
+// but kept for compatibility with detail modals
+function createEntityCRUDMixin(entityType, defaultValues, requiredFields) {
+    return createCRUDMixin(entityType, defaultValues, {
+        getRequiredFields() {
+            return requiredFields || [];
+        }
+    });
+}
+
 // Global availability
 window.createModalMixin = createModalMixin;
 window.createCRUDMixin = createCRUDMixin;
+window.createEntityCRUDMixin = createEntityCRUDMixin;
 window.createNotesMixin = createNotesMixin;
 window.FormValidation = FormValidation;
 

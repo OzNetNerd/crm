@@ -42,7 +42,25 @@ def index():
     context = get_all_tasks_context()
     
     # Convert tasks to dictionaries for JSON serialization (for Alpine.js compatibility)
-    tasks = [task.to_dict() for task in context['all_tasks']]
+    print(f"DEBUG: Found {len(context['all_tasks'])} tasks from database")
+    tasks = []
+    for i, task in enumerate(context['all_tasks']):
+        try:
+            task_dict = task.to_dict()
+            tasks.append(task_dict)
+        except Exception as e:
+            print(f"ERROR: Task {i} (ID: {task.id}) failed to serialize: {e}")
+    
+    print(f"DEBUG: Successfully serialized {len(tasks)} tasks")
+    
+    # Test final JSON serialization
+    try:
+        import json
+        json_str = json.dumps(tasks)
+        print(f"DEBUG: Final JSON length: {len(json_str)}")
+    except Exception as e:
+        print(f"ERROR: Final JSON serialization failed: {e}")
+        tasks = []
 
     # Serialize objects for JSON use in templates
     companies_data = [
@@ -251,3 +269,25 @@ def delete_task(task_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@tasks_bp.route("/debug-data")
+def debug_data():
+    """Debug endpoint to test data flow"""
+    context = get_all_tasks_context()
+    tasks_data = [task.to_dict() for task in context['all_tasks']]
+    
+    companies_data = [
+        {"id": c.id, "name": c.name} for c in Company.query.order_by(Company.name).all()
+    ]
+    
+    return jsonify({
+        "data_counts": {
+            "tasks": len(tasks_data),
+            "companies": len(companies_data),
+            "database_tasks": Task.query.count(),
+            "database_companies": Company.query.count()
+        },
+        "sample_task": tasks_data[0] if tasks_data else None,
+        "sample_company": companies_data[0] if companies_data else None
+    })

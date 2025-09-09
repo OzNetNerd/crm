@@ -1,4 +1,175 @@
-{% from "components/modals/base/generic_new.html" import generic_new_modal %}
-{% from "components/modals/configs/entity_modal_configs.html" import opportunity_new_config %}
+<!-- Opportunity New Modal - Direct Alpine.js Implementation -->
+<div x-cloak x-data="{
+    show: false,
+    saving: false,
+    opportunity: {
+        name: '',
+        value: '',
+        stage: 'prospect',
+        probability: 25,
+        expected_close_date: ''
+    },
+    openModal() {
+        this.show = true;
+        this.resetForm();
+    },
+    closeModal() {
+        this.show = false;
+    },
+    resetForm() {
+        this.opportunity = {
+            name: '',
+            value: '',
+            stage: 'prospect',
+            probability: 25,
+            expected_close_date: ''
+        };
+        this.saving = false;
+    },
+    async saveNewOpportunity() {
+        if (!this.opportunity.name.trim()) {
+            alert('Opportunity name is required');
+            return;
+        }
+        if (!this.opportunity.value.trim()) {
+            alert('Value is required');
+            return;
+        }
+        
+        this.saving = true;
+        try {
+            const response = await fetch('/opportunities/new', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(this.opportunity)
+            });
+            
+            if (response.ok) {
+                this.closeModal();
+                window.location.reload(); // Simple refresh for now
+            } else {
+                alert('Error creating opportunity');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error creating opportunity');
+        } finally {
+            this.saving = false;
+        }
+    }
+}"
+@open-new-opportunity-modal.window="openModal()"
+@close-modal.window="closeModal()">
 
-{{ generic_new_modal('opportunity', opportunity_new_config) }}
+    <!-- Modal Overlay -->
+    <div x-show="show" 
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="modal-overlay"
+         @click="closeModal()">
+        
+        <!-- Modal Backdrop -->
+        <div x-show="show" 
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="modal-backdrop"
+             @click.stop>
+            
+            <!-- Modal Content -->
+            <div x-show="show" class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Create New Opportunity</h3>
+                    <button @click="closeModal()" class="modal-close-btn">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="modal-body modal-content-spacing">
+                    <!-- Opportunity Name -->
+                    <div class="form-group">
+                        <label class="form-label required">Opportunity Name</label>
+                        <input x-model="opportunity.name" 
+                               type="text" 
+                               class="form-input" 
+                               placeholder="Opportunity name"
+                               required>
+                    </div>
+
+                    <!-- Value and Stage -->
+                    <div class="modal-grid-2">
+                        <div class="form-group">
+                            <label class="form-label required">Value ($)</label>
+                            <input x-model="opportunity.value" 
+                                   type="number" 
+                                   class="form-input"
+                                   placeholder="10000"
+                                   required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Stage</label>
+                            <select x-model="opportunity.stage" class="form-select">
+                                <option value="prospect">Prospect</option>
+                                <option value="qualified">Qualified</option>
+                                <option value="proposal">Proposal</option>
+                                <option value="negotiation">Negotiation</option>
+                                <option value="closed_won">Closed Won</option>
+                                <option value="closed_lost">Closed Lost</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Probability and Close Date -->
+                    <div class="modal-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Probability (%)</label>
+                            <input x-model="opportunity.probability" 
+                                   type="number" 
+                                   class="form-input"
+                                   placeholder="25"
+                                   min="0"
+                                   max="100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Expected Close Date</label>
+                            <input x-model="opportunity.expected_close_date" 
+                                   type="date" 
+                                   class="form-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button @click="closeModal()" 
+                            :disabled="saving"
+                            class="modal-cancel-button">
+                        Cancel
+                    </button>
+                    <button @click="saveNewOpportunity()" 
+                            :disabled="saving"
+                            class="modal-save-button">
+                        <span x-show="!saving">Create Opportunity</span>
+                        <span x-show="saving" class="flex items-center">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Creating...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

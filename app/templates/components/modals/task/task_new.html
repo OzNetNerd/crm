@@ -1,4 +1,157 @@
-{% from "components/modals/base/generic_new.html" import generic_new_modal %}
-{% from "components/modals/configs/entity_modal_configs.html" import task_new_config %}
+<!-- Task New Modal - Direct Alpine.js Implementation -->
+<div x-cloak x-data="{
+    show: false,
+    saving: false,
+    task: {
+        description: '',
+        due_date: '',
+        priority: 'medium',
+        next_step_type: ''
+    },
+    openModal() {
+        this.show = true;
+        this.resetForm();
+    },
+    closeModal() {
+        this.show = false;
+    },
+    resetForm() {
+        this.task = {
+            description: '',
+            due_date: '',
+            priority: 'medium',
+            next_step_type: ''
+        };
+        this.saving = false;
+    },
+    async saveNewTask() {
+        if (!this.task.description.trim()) {
+            alert('Description is required');
+            return;
+        }
+        
+        this.saving = true;
+        try {
+            const response = await fetch('/tasks/new', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(this.task)
+            });
+            
+            if (response.ok) {
+                this.closeModal();
+                window.location.reload(); // Simple refresh for now
+            } else {
+                alert('Error creating task');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error creating task');
+        } finally {
+            this.saving = false;
+        }
+    }
+}"
+@open-new-task-modal.window="openModal()"
+@close-modal.window="closeModal()">
 
-{{ generic_new_modal('task', task_new_config) }}
+    <!-- Modal Overlay -->
+    <div x-show="show" 
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="modal-overlay"
+         @click="closeModal()">
+        
+        <!-- Modal Backdrop -->
+        <div x-show="show" 
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="modal-backdrop"
+             @click.stop>
+            
+            <!-- Modal Content -->
+            <div x-show="show" class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Create New Task</h3>
+                    <button @click="closeModal()" class="modal-close-btn">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="modal-body modal-content-spacing">
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label class="form-label required">Description</label>
+                        <textarea x-model="task.description" 
+                                  class="form-textarea" 
+                                  rows="3" 
+                                  placeholder="What needs to be done?"
+                                  required></textarea>
+                    </div>
+
+                    <!-- Due Date and Priority -->
+                    <div class="modal-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Due Date</label>
+                            <input x-model="task.due_date" 
+                                   type="date" 
+                                   class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Priority</label>
+                            <select x-model="task.priority" class="form-select">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Next Step Type -->
+                    <div class="form-group">
+                        <label class="form-label">Next Step Type</label>
+                        <select x-model="task.next_step_type" class="form-select">
+                            <option value="">None</option>
+                            <option value="call">Call</option>
+                            <option value="email">Email</option>
+                            <option value="meeting">Meeting</option>
+                            <option value="demo">Demo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button @click="closeModal()" 
+                            :disabled="saving"
+                            class="modal-cancel-button">
+                        Cancel
+                    </button>
+                    <button @click="saveNewTask()" 
+                            :disabled="saving"
+                            class="modal-save-button">
+                        <span x-show="!saving">Create Task</span>
+                        <span x-show="saving" class="flex items-center">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Creating...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

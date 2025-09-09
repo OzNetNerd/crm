@@ -36,8 +36,15 @@ function createEntityManager(config) {
         expandedSections: { ...config.defaultExpandedSections },
 
         init() {
+            // Ensure we have data before proceeding
+            if (!this.allEntities || !Array.isArray(this.allEntities)) {
+                console.warn(`Entity Manager: No data found for ${config.dataSource}. Using empty array.`);
+                this.allEntities = [];
+            }
             this.updateFilters();
             this.setupEventDelegation();
+            // Ensure all sections are expanded by default
+            this.expandedSections = { ...config.defaultExpandedSections };
         },
 
         // Setup event delegation for dynamically rendered entity cards
