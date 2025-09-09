@@ -24,6 +24,7 @@
         {{ notes_operations_js('task') }},
         
         async loadTask(id) {
+            this.taskId = id;
             await this.loadTaskDetails(id);
             this.show = true;
         },
@@ -44,7 +45,7 @@
             }
         }
      }" 
-     @open-task-modal.window="loadTask($event.detail.taskId)"
+     @open-detail-task-modal.window="loadTask($event.detail.id)"
      @close-modal.window="show = false">
 
     {% call base_modal('task-detail-modal', backdrop_click_close=false) %}

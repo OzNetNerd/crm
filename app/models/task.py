@@ -1,23 +1,15 @@
 from datetime import datetime
 from . import db
 
-# Many-to-many relationship tables for tasks and entities
-task_companies = db.Table(
-    "task_companies",
-    db.Column("task_id", db.Integer, db.ForeignKey("tasks.id"), primary_key=True),
-    db.Column("company_id", db.Integer, db.ForeignKey("companies.id"), primary_key=True),
-)
 
-task_contacts = db.Table(
-    "task_contacts", 
-    db.Column("task_id", db.Integer, db.ForeignKey("tasks.id"), primary_key=True),
-    db.Column("contact_id", db.Integer, db.ForeignKey("contacts.id"), primary_key=True),
-)
-
-task_opportunities = db.Table(
-    "task_opportunities",
-    db.Column("task_id", db.Integer, db.ForeignKey("tasks.id"), primary_key=True), 
-    db.Column("opportunity_id", db.Integer, db.ForeignKey("opportunities.id"), primary_key=True),
+# Junction table for task-entity relationships
+task_entities = db.Table(
+    "task_entities",
+    db.Column("id", db.Integer, primary_key=True),
+    db.Column("task_id", db.Integer, db.ForeignKey("tasks.id"), nullable=False),
+    db.Column("entity_type", db.String(50), nullable=False),
+    db.Column("entity_id", db.Integer, nullable=False),
+    db.Column("created_at", db.DateTime, default=datetime.utcnow),
 )
 
 
@@ -86,25 +78,6 @@ class Task(db.Model):
         lazy="select",
     )
 
-    # Many-to-many relationships with entities
-    related_companies = db.relationship(
-        "Company",
-        secondary=task_companies,
-        lazy="subquery",
-        backref=db.backref("related_tasks", lazy=True),
-    )
-    related_contacts = db.relationship(
-        "Contact", 
-        secondary=task_contacts,
-        lazy="subquery",
-        backref=db.backref("related_tasks", lazy=True),
-    )
-    related_opportunities = db.relationship(
-        "Opportunity",
-        secondary=task_opportunities, 
-        lazy="subquery",
-        backref=db.backref("related_tasks", lazy=True),
-    )
 
     @property
     def opportunity_value(self):
@@ -139,80 +112,6 @@ class Task(db.Model):
             )
         return None
 
-    @property
-    def all_company_names(self):
-        """Get all related company names including primary and related"""
-        names = []
-        
-        # Add primary company name
-        primary_name = self.company_name
-        if primary_name:
-            names.append(primary_name)
-            
-        # Add related companies
-        for company in self.related_companies:
-            if company.name not in names:
-                names.append(company.name)
-                
-        # Add companies from related contacts
-        for contact in self.related_contacts:
-            if contact.company and contact.company.name not in names:
-                names.append(contact.company.name)
-                
-        # Add companies from related opportunities  
-        for opportunity in self.related_opportunities:
-            if opportunity.company and opportunity.company.name not in names:
-                names.append(opportunity.company.name)
-                
-        return names
-
-    @property
-    def all_opportunity_names(self):
-        """Get all related opportunity names including primary and related"""
-        names = []
-        
-        # Add primary opportunity name
-        primary_name = self.opportunity_name
-        if primary_name:
-            names.append(primary_name)
-            
-        # Add related opportunities
-        for opportunity in self.related_opportunities:
-            if opportunity.name not in names:
-                names.append(opportunity.name)
-                
-        # Add opportunities from related contacts
-        for contact in self.related_contacts:
-            for opportunity in contact.opportunities:
-                if opportunity.name not in names:
-                    names.append(opportunity.name)
-                    
-        return names
-
-    @property
-    def all_contact_names(self):
-        """Get all related contact names"""
-        names = []
-        
-        # Add primary contact name if entity is contact
-        if self.entity_type == "contact" and self.entity_id:
-            from .contact import Contact
-            contact = Contact.query.get(self.entity_id)
-            if contact:
-                names.append(contact.name)
-        
-        # Add related contacts
-        for contact in self.related_contacts:
-            if contact.name not in names:
-                names.append(contact.name)
-                
-        # Add contacts from related opportunities
-        for opportunity in self.related_opportunities:
-            for contact in opportunity.contacts:
-                if contact.name not in names:
-                    names.append(contact.name)
-                    
-        return names
 
     @property
     def opportunity_name(self):
@@ -318,6 +217,122 @@ class Task(db.Model):
                 return child
         return None
 
+    @property
+    def linked_entities(self):
+        """Get all entities linked to this task"""
+        # Return empty list if task has no ID yet
+        if not self.id:
+            return []
+            
+        # Query the junction table for this task's linked entities
+        linked = db.session.execute(
+            db.text("""
+                SELECT entity_type, entity_id 
+                FROM task_entities 
+                WHERE task_id = :task_id
+            """),
+            {"task_id": self.id}
+        ).fetchall()
+        
+        entities = []
+        for entity_type, entity_id in linked:
+            # Get the actual entity object
+            entity = self._get_entity_by_type_and_id(entity_type, entity_id)
+            if entity:
+                entities.append({
+                    'type': entity_type,
+                    'id': entity_id,
+                    'name': entity.name,
+                    'entity': entity
+                })
+        
+        # Include legacy single entity if no linked entities and legacy fields exist
+        if not entities and self.entity_type and self.entity_id:
+            entity = self._get_entity_by_type_and_id(self.entity_type, self.entity_id)
+            if entity:
+                entities.append({
+                    'type': self.entity_type,
+                    'id': self.entity_id,
+                    'name': entity.name,
+                    'entity': entity
+                })
+        
+        return entities
+
+    def _get_entity_by_type_and_id(self, entity_type, entity_id):
+        """Helper method to get entity by type and id"""
+        if entity_type == "company":
+            from .company import Company
+            return Company.query.get(entity_id)
+        elif entity_type == "contact":
+            from .contact import Contact
+            return Contact.query.get(entity_id)
+        elif entity_type == "opportunity":
+            from .opportunity import Opportunity
+            return Opportunity.query.get(entity_id)
+        return None
+
+    def add_linked_entity(self, entity_type, entity_id):
+        """Add a linked entity to this task"""
+        # Check if already linked
+        existing = db.session.execute(
+            db.text("""
+                SELECT 1 FROM task_entities 
+                WHERE task_id = :task_id AND entity_type = :entity_type AND entity_id = :entity_id
+            """),
+            {"task_id": self.id, "entity_type": entity_type, "entity_id": entity_id}
+        ).fetchone()
+        
+        if not existing:
+            db.session.execute(
+                db.text("""
+                    INSERT INTO task_entities (task_id, entity_type, entity_id, created_at)
+                    VALUES (:task_id, :entity_type, :entity_id, :created_at)
+                """),
+                {
+                    "task_id": self.id,
+                    "entity_type": entity_type,
+                    "entity_id": entity_id,
+                    "created_at": datetime.utcnow()
+                }
+            )
+            db.session.commit()
+
+    def remove_linked_entity(self, entity_type, entity_id):
+        """Remove a linked entity from this task"""
+        db.session.execute(
+            db.text("""
+                DELETE FROM task_entities 
+                WHERE task_id = :task_id AND entity_type = :entity_type AND entity_id = :entity_id
+            """),
+            {"task_id": self.id, "entity_type": entity_type, "entity_id": entity_id}
+        )
+        db.session.commit()
+
+    def set_linked_entities(self, entities):
+        """Set the linked entities for this task (replaces all existing links)"""
+        # Clear existing links
+        db.session.execute(
+            db.text("DELETE FROM task_entities WHERE task_id = :task_id"),
+            {"task_id": self.id}
+        )
+        
+        # Add new links
+        for entity in entities:
+            db.session.execute(
+                db.text("""
+                    INSERT INTO task_entities (task_id, entity_type, entity_id, created_at)
+                    VALUES (:task_id, :entity_type, :entity_id, :created_at)
+                """),
+                {
+                    "task_id": self.id,
+                    "entity_type": entity['type'],
+                    "entity_id": entity['id'],
+                    "created_at": datetime.utcnow()
+                }
+            )
+        db.session.commit()
+
     def to_dict(self):
         """Convert task to dictionary for JSON serialization"""
         return {
@@ -346,13 +361,14 @@ class Task(db.Model):
             'task_type_badge': self.task_type_badge,
             'can_start': self.can_start,
             'completion_percentage': self.completion_percentage,
-            # New multi-entity properties
-            'all_company_names': self.all_company_names,
-            'all_opportunity_names': self.all_opportunity_names,
-            'all_contact_names': self.all_contact_names,
-            'related_companies': [{'id': c.id, 'name': c.name} for c in self.related_companies],
-            'related_contacts': [{'id': c.id, 'name': c.name} for c in self.related_contacts], 
-            'related_opportunities': [{'id': o.id, 'name': o.name} for o in self.related_opportunities],
+            # 'linked_entities': [
+            #     {
+            #         'type': entity['type'],
+            #         'id': entity['id'],
+            #         'name': entity['name']
+            #     }
+            #     for entity in self.linked_entities
+            # ]
         }
 
     def __repr__(self):

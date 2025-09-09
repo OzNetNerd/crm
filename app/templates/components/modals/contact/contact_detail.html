@@ -24,7 +24,7 @@
             return await this.saveEntity();
         }
      }" 
-     @open-contact-modal.window="loadContact($event.detail.contactId)"
+     @open-detail-contact-modal.window="loadContact($event.detail.id)"
      @close-modal.window="closeModal()"
 
     {% call base_modal('contact-detail-modal') %}

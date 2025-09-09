@@ -285,6 +285,16 @@ def create_tasks(companies, contacts, opportunities):
         
         tasks.append(task)
         db.session.add(task)
+        db.session.flush()  # Get task ID
+        
+        # For some tasks (25%), add multiple linked entities using the new system
+        if i < 8:  # First 8 tasks get multiple entity links
+            # Pick 2-3 random entities to link
+            num_links = random.randint(2, 3)
+            selected_entities = random.sample(entities, min(num_links, len(entities)))
+            
+            for link_entity_type, link_entity_id, _ in selected_entities:
+                task.add_linked_entity(link_entity_type, link_entity_id)
     
     # Create parent tasks with children (about 40% of total - 8 parent tasks, each with 3-5 children)
     for i in range(8):
@@ -316,7 +326,13 @@ def create_tasks(companies, contacts, opportunities):
         
         tasks.append(parent_task)
         db.session.add(parent_task)
-        db.session.commit()  # Commit to get the parent task ID
+        db.session.flush()  # Get the parent task ID
+        
+        # Add linked entities to parent task (2-3 entities)
+        num_links = random.randint(2, 3)
+        selected_entities = random.sample(entities, min(num_links, len(entities)))
+        for link_entity_type, link_entity_id, _ in selected_entities:
+            parent_task.add_linked_entity(link_entity_type, link_entity_id)
         
         # Create child tasks for this parent
         child_templates = SUBTASK_TEMPLATES[parent_template]
@@ -363,6 +379,11 @@ def create_tasks(companies, contacts, opportunities):
             
             tasks.append(child_task)
             db.session.add(child_task)
+            db.session.flush()  # Get child task ID
+            
+            # Child tasks inherit parent's linked entities
+            for link_entity_type, link_entity_id, _ in selected_entities:
+                child_task.add_linked_entity(link_entity_type, link_entity_id)
     
     db.session.commit()
     print(f"Created {len(tasks)} tasks (30 single + 8 parent tasks with children)")

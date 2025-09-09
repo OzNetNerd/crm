@@ -11,22 +11,23 @@ def search():
     entity_type = request.args.get("type", "all")
     limit = min(int(request.args.get("limit", 20)), 50)
 
-    if not query:
-        return jsonify([])
-
     results = []
 
     if entity_type in ["all", "companies"]:
-        companies = (
-            Company.query.filter(
-                or_(
-                    Company.name.ilike(f"%{query}%"),
-                    Company.industry.ilike(f"%{query}%"),
+        if query:
+            companies = (
+                Company.query.filter(
+                    or_(
+                        Company.name.ilike(f"%{query}%"),
+                        Company.industry.ilike(f"%{query}%"),
+                    )
                 )
+                .limit(limit)
+                .all()
             )
-            .limit(limit)
-            .all()
-        )
+        else:
+            # Return all companies when no query
+            companies = Company.query.limit(limit).all()
 
         for company in companies:
             results.append(
@@ -40,18 +41,22 @@ def search():
             )
 
     if entity_type in ["all", "contacts"]:
-        contacts = (
-            Contact.query.join(Company)
-            .filter(
-                or_(
-                    Contact.name.ilike(f"%{query}%"),
-                    Contact.email.ilike(f"%{query}%"),
-                    Contact.role.ilike(f"%{query}%"),
+        if query:
+            contacts = (
+                Contact.query.join(Company)
+                .filter(
+                    or_(
+                        Contact.name.ilike(f"%{query}%"),
+                        Contact.email.ilike(f"%{query}%"),
+                        Contact.role.ilike(f"%{query}%"),
+                    )
                 )
+                .limit(limit)
+                .all()
             )
-            .limit(limit)
-            .all()
-        )
+        else:
+            # Return all contacts when no query
+            contacts = Contact.query.join(Company).limit(limit).all()
 
         for contact in contacts:
             results.append(
@@ -69,17 +74,21 @@ def search():
             )
 
     if entity_type in ["all", "opportunities"]:
-        opportunities = (
-            Opportunity.query.join(Company)
-            .filter(
-                or_(
-                    Opportunity.name.ilike(f"%{query}%"),
-                    Company.name.ilike(f"%{query}%"),
+        if query:
+            opportunities = (
+                Opportunity.query.join(Company)
+                .filter(
+                    or_(
+                        Opportunity.name.ilike(f"%{query}%"),
+                        Company.name.ilike(f"%{query}%"),
+                    )
                 )
+                .limit(limit)
+                .all()
             )
-            .limit(limit)
-            .all()
-        )
+        else:
+            # Return all opportunities when no query
+            opportunities = Opportunity.query.join(Company).limit(limit).all()
 
         for opportunity in opportunities:
             results.append(
@@ -97,9 +106,13 @@ def search():
             )
 
     if entity_type in ["all", "tasks"]:
-        tasks = (
-            Task.query.filter(Task.description.ilike(f"%{query}%")).limit(limit).all()
-        )
+        if query:
+            tasks = (
+                Task.query.filter(Task.description.ilike(f"%{query}%")).limit(limit).all()
+            )
+        else:
+            # Return all tasks when no query
+            tasks = Task.query.limit(limit).all()
 
         for task in tasks:
             results.append(
@@ -116,8 +129,13 @@ def search():
                 }
             )
 
-    # Sort by relevance (simple approach)
-    results.sort(key=lambda x: query.lower() in x["title"].lower(), reverse=True)
+    # Sort by relevance if there's a query, otherwise by type and title
+    if query:
+        results.sort(key=lambda x: query.lower() in x["title"].lower(), reverse=True)
+    else:
+        # Sort by type first, then by title
+        type_order = {"company": 0, "contact": 1, "opportunity": 2, "task": 3}
+        results.sort(key=lambda x: (type_order.get(x["type"], 4), x["title"].lower()))
 
     return jsonify(results[:limit])
 
@@ -128,15 +146,16 @@ def autocomplete():
     entity_type = request.args.get("type", "")
     limit = min(int(request.args.get("limit", 10)), 20)
 
-    if not query or len(query) < 2:
-        return jsonify([])
-
     suggestions = []
 
     if entity_type == "company":
-        companies = (
-            Company.query.filter(Company.name.ilike(f"%{query}%")).limit(limit).all()
-        )
+        if query:
+            companies = (
+                Company.query.filter(Company.name.ilike(f"%{query}%")).limit(limit).all()
+            )
+        else:
+            # Return all companies when no query
+            companies = Company.query.limit(limit).all()
 
         suggestions = [
             {"id": company.id, "name": company.name, "type": "company"}
@@ -144,33 +163,41 @@ def autocomplete():
         ]
 
     elif entity_type == "contact":
-        contacts = (
-            Contact.query.filter(Contact.name.ilike(f"%{query}%")).limit(limit).all()
-        )
+        if query:
+            contacts = (
+                Contact.query.filter(Contact.name.ilike(f"%{query}%")).limit(limit).all()
+            )
+        else:
+            # Return all contacts when no query
+            contacts = Contact.query.limit(limit).all()
 
         suggestions = [
             {
                 "id": contact.id,
                 "name": contact.name,
                 "type": "contact",
-                "company": contact.company.name,
+                "company": contact.company.name if contact.company else "",
             }
             for contact in contacts
         ]
 
     elif entity_type == "opportunity":
-        opportunities = (
-            Opportunity.query.filter(Opportunity.name.ilike(f"%{query}%"))
-            .limit(limit)
-            .all()
-        )
+        if query:
+            opportunities = (
+                Opportunity.query.filter(Opportunity.name.ilike(f"%{query}%"))
+                .limit(limit)
+                .all()
+            )
+        else:
+            # Return all opportunities when no query
+            opportunities = Opportunity.query.limit(limit).all()
 
         suggestions = [
             {
                 "id": opportunity.id,
                 "name": opportunity.name,
                 "type": "opportunity",
-                "company": opportunity.company.name,
+                "company": opportunity.company.name if opportunity.company else "",
             }
             for opportunity in opportunities
         ]

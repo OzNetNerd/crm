@@ -1,0 +1,149 @@
+{% macro entity_linker(field_name, placeholder="Search companies, contacts, opportunities...", selected_entities=[], entity_types="company,contact,opportunity") %}
+<div x-data="{
+        search: '',
+        suggestions: [],
+        selectedEntities: {{ selected_entities | tojson }},
+        isSearching: false,
+        showDropdown: false,
+        
+        async searchEntities(force = false) {
+            // Always search if forced (on focus), otherwise need at least some text
+            if (!force && this.search.length < 1) {
+                this.suggestions = [];
+                this.showDropdown = false;
+                return;
+            }
+            
+            this.isSearching = true;
+            try {
+                const response = await fetch(`/api/search?q=${encodeURIComponent(this.search)}&limit=10`);
+                const results = await response.json();
+                
+                // Filter by allowed entity types
+                const allowedTypes = '{{ entity_types }}'.split(',');
+                this.suggestions = results.filter(item => allowedTypes.includes(item.type));
+                this.showDropdown = this.suggestions.length > 0;
+            } catch (error) {
+                console.error('Search error:', error);
+                this.suggestions = [];
+            } finally {
+                this.isSearching = false;
+            }
+        },
+        
+        selectEntity(entity) {
+            // Check if already selected
+            const exists = this.selectedEntities.some(e => e.type === entity.type && e.id === entity.id);
+            if (!exists) {
+                this.selectedEntities.push({
+                    type: entity.type,
+                    id: entity.id,
+                    name: entity.title
+                });
+            }
+            this.search = '';
+            this.suggestions = [];
+            this.showDropdown = false;
+            this.updateHiddenField();
+        },
+        
+        removeEntity(index) {
+            this.selectedEntities.splice(index, 1);
+            this.updateHiddenField();
+        },
+        
+        updateHiddenField() {
+            const hiddenField = document.querySelector(`input[name='{{ field_name }}']`);
+            if (hiddenField) {
+                hiddenField.value = JSON.stringify(this.selectedEntities);
+            }
+        },
+        
+        getEntityTypeIcon(type) {
+            switch(type) {
+                case 'company': return '🏢';
+                case 'contact': return '👤';
+                case 'opportunity': return '💼';
+                default: return '📄';
+            }
+        },
+        
+        getEntityTypeBadgeClass(type) {
+            switch(type) {
+                case 'company': return 'bg-blue-100 text-blue-800';
+                case 'contact': return 'bg-green-100 text-green-800';
+                case 'opportunity': return 'bg-purple-100 text-purple-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+     }"
+     @click.away="showDropdown = false">
+    
+    <!-- Selected Entities (Badges) -->
+    <div class="mb-2" x-show="selectedEntities.length > 0">
+        <div class="flex flex-wrap gap-2">
+            <template x-for="(entity, index) in selectedEntities" :key="`${entity.type}-${entity.id}`">
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border"
+                      :class="getEntityTypeBadgeClass(entity.type)">
+                    <span x-text="getEntityTypeIcon(entity.type)" class="mr-1"></span>
+                    <span x-text="entity.name"></span>
+                    <button @click="removeEntity(index)" 
+                            type="button"
+                            class="ml-1 text-current hover:text-red-600">
+                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </span>
+            </template>
+        </div>
+    </div>
+    
+    <!-- Search Input -->
+    <div class="relative">
+        <input type="text" 
+               x-model="search"
+               @input.debounce.300ms="searchEntities()"
+               @focus="searchEntities(true)"
+               placeholder="{{ placeholder }}"
+               class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+               autocomplete="off">
+        
+        <!-- Loading indicator -->
+        <div x-show="isSearching" class="absolute right-3 top-2">
+            <svg class="animate-spin h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </div>
+        
+        <!-- Dropdown -->
+        <div x-show="showDropdown" 
+             class="absolute z-[9999] w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+            <template x-for="(suggestion, index) in suggestions" :key="`${suggestion.type}-${suggestion.id}`">
+                <button type="button"
+                        @click="selectEntity(suggestion)"
+                        class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center space-x-2 border-b border-gray-100 last:border-b-0">
+                    <span x-text="getEntityTypeIcon(suggestion.type)" class="text-sm"></span>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-medium text-gray-900 truncate" x-text="suggestion.title"></div>
+                        <div class="text-xs text-gray-500 truncate" x-text="suggestion.subtitle"></div>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                          :class="getEntityTypeBadgeClass(suggestion.type)"
+                          x-text="suggestion.type">
+                    </span>
+                </button>
+            </template>
+            
+            <div x-show="suggestions.length === 0 && search.length >= 2 && !isSearching" 
+                 class="px-3 py-2 text-sm text-gray-500">
+                No results found
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden field to store the selected entities as JSON -->
+    <input type="hidden" name="{{ field_name }}" :value="JSON.stringify(selectedEntities)">
+</div>
+{% endmacro %}
