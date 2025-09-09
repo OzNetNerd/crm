@@ -205,11 +205,8 @@ class SearchManager {
     }
     
     renderSearchItem(result) {
-        const iconMap = {
-            company: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l8-4v18M9 9h1m0 0h1m-1 0v1m0-1V8m3 1h1m0 0h1m-1 0v1m0-1V8"/></svg>',
-            contact: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>',
-            opportunity: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>',
-            task: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'
+        const getIcon = (type) => {
+            return window.iconUtility?.getIconSync(type, 'w-5 h-5');
         };
         
         return `
@@ -218,7 +215,7 @@ class SearchManager {
                aria-selected="false"
                class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
                 <div class="flex items-center space-x-3">
-                    <span class="text-lg">${iconMap[result.type] || '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'}</span>
+                    <span class="text-lg">${getIcon(result.type)}</span>
                     <div class="flex-1 min-w-0">
                         <div class="text-label-primary truncate">
                             ${this.highlightQuery(result.title)}

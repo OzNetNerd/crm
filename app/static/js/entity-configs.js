@@ -1,7 +1,19 @@
 /**
  * Entity Configurations for the Generic Entity Manager System
  * Defines specific configurations for each entity type (Tasks, Opportunities, etc.)
+ * Uses centralized icon utility for consistent icon management
  */
+
+// Pre-load commonly used icons on page load
+document.addEventListener('DOMContentLoaded', async function() {
+    if (window.iconUtility) {
+        await window.iconUtility.preloadIcons([
+            'company', 'prospect', 'qualified', 'proposal', 'negotiation', 
+            'high', 'medium', 'low', 'overdue', 'due_today', 'this_week', 
+            'later', 'no_due_date', 'to_do', 'in_progress', 'completed'
+        ], 'w-5 h-5');
+    }
+});
 
 /**
  * Opportunity Configuration
@@ -53,7 +65,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-success', 
                         headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', 
                         badgeClass: 'badge-green',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>'
+                        icon: window.iconUtility?.getIconSync('prospect', 'w-5 h-5')
                     },
                     { 
                         key: 'qualified', 
@@ -62,8 +74,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-info', 
                         headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', 
                         badgeClass: 'badge-blue',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('qualified', 'w-5 h-5')                    },
                     { 
                         key: 'proposal', 
                         title: 'Proposal', 
@@ -71,8 +82,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', 
                         badgeClass: 'badge-yellow',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('proposal', 'w-5 h-5')                    },
                     { 
                         key: 'negotiation', 
                         title: 'Negotiation', 
@@ -80,8 +90,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-orange-200 px-6 py-4 bg-orange-50 hover:bg-orange-100', 
                         badgeClass: 'badge-orange',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
-                    }
+                        icon: window.iconUtility?.getIconSync('clock', 'w-5 h-5')                    }
                 ]
             },
             'close_date': {
@@ -94,8 +103,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-overdue', 
                         headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100', 
                         badgeClass: 'badge-red',
-                        icon: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('overdue', 'w-5 h-5')                    },
                     { 
                         key: 'this_week', 
                         title: 'This Week', 
@@ -103,8 +111,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-orange-200 px-6 py-4 bg-orange-50 hover:bg-orange-100', 
                         badgeClass: 'badge-orange',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5a2.25 2.25 0 002.25-2.25m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5a2.25 2.25 0 012.25 2.25v7.5M8.25 21h7.5"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('calendar_days', 'w-5 h-5')                    },
                     { 
                         key: 'this_month', 
                         title: 'This Month', 
@@ -112,8 +119,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-info', 
                         headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', 
                         badgeClass: 'badge-blue',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('calendar', 'w-5 h-5')                    },
                     { 
                         key: 'later', 
                         title: 'Later', 
@@ -121,8 +127,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-neutral', 
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
                         badgeClass: 'badge-gray',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('later', 'w-5 h-5')                    },
                     { 
                         key: 'no_date', 
                         title: 'No Close Date', 
@@ -130,8 +135,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-neutral', 
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
                         badgeClass: 'badge-gray',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
-                    }
+                        icon: window.iconUtility?.getIconSync('no_due_date', 'w-5 h-5')                    }
                 ],
                 filterFn: (opportunity, groupKey) => {
                     const today = new Date();
@@ -161,8 +165,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-overdue', 
                         headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100', 
                         badgeClass: 'badge-red',
-                        icon: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177A7.547 7.547 0 016.648 6.61a.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 011.925-3.545 3.75 3.75 0 013.255 3.717z" clip-rule="evenodd"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('high', 'w-5 h-5')                    },
                     { 
                         key: 'medium', 
                         title: 'Medium Value ($10K-$50K)', 
@@ -170,8 +173,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', 
                         badgeClass: 'badge-yellow',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('medium', 'w-5 h-5')                    },
                     { 
                         key: 'low', 
                         title: 'Low Value (<$10K)', 
@@ -179,8 +181,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-success', 
                         headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', 
                         badgeClass: 'badge-green',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>'
-                    }
+                        icon: window.iconUtility?.getIconSync('low', 'w-5 h-5')                    }
                 ],
                 filterFn: (opportunity, groupKey) => {
                     const value = opportunity.value || 0;
@@ -324,8 +325,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-info', 
                         headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', 
                         badgeClass: 'badge-blue',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('low', 'w-5 h-5')                    },
                     { 
                         key: 'in-progress', 
                         title: 'In Progress', 
@@ -333,8 +333,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', 
                         badgeClass: 'badge-yellow',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('in_progress', 'w-5 h-5')                    },
                     { 
                         key: 'complete', 
                         title: 'Completed', 
@@ -342,8 +341,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-success', 
                         headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', 
                         badgeClass: 'badge-green',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
-                    }
+                        icon: window.iconUtility?.getIconSync('completed', 'w-5 h-5')                    }
                 ]
             },
             'priority': {
@@ -356,8 +354,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-overdue', 
                         headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100', 
                         badgeClass: 'badge-red',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('fire_alt', 'w-5 h-5')                    },
                     { 
                         key: 'medium', 
                         title: 'Medium Priority', 
@@ -365,8 +362,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', 
                         badgeClass: 'badge-yellow',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('exclamation_triangle_alt', 'w-5 h-5')                    },
                     { 
                         key: 'low', 
                         title: 'Low Priority', 
@@ -374,8 +370,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-success', 
                         headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', 
                         badgeClass: 'badge-green',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>'
-                    }
+                        icon: window.iconUtility?.getIconSync('low', 'w-5 h-5')                    }
                 ]
             },
             'due_date': {
@@ -388,8 +383,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-overdue', 
                         headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100', 
                         badgeClass: 'badge-red',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('information_circle', 'w-5 h-5')                    },
                     { 
                         key: 'today', 
                         title: 'Due Today', 
@@ -397,8 +391,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-orange-200 px-6 py-4 bg-orange-50 hover:bg-orange-100', 
                         badgeClass: 'badge-orange',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('calendar', 'w-5 h-5')                    },
                     { 
                         key: 'this_week', 
                         title: 'This Week', 
@@ -406,8 +399,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-info', 
                         headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', 
                         badgeClass: 'badge-blue',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('calendar', 'w-5 h-5')                    },
                     { 
                         key: 'later', 
                         title: 'Later', 
@@ -415,8 +407,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-neutral', 
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
                         badgeClass: 'badge-gray',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('later', 'w-5 h-5')                    },
                     { 
                         key: 'no_date', 
                         title: 'No Due Date', 
@@ -424,8 +415,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-neutral', 
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
                         badgeClass: 'badge-gray',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
-                    }
+                        icon: window.iconUtility?.getIconSync('no_due_date', 'w-5 h-5')                    }
                 ]
             },
             'entity': {
@@ -438,8 +428,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-info', 
                         headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', 
                         badgeClass: 'badge-blue',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('company', 'w-5 h-5')                    },
                     { 
                         key: 'contact', 
                         title: 'Contact Tasks', 
@@ -447,8 +436,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-success', 
                         headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', 
                         badgeClass: 'badge-green',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('contact', 'w-5 h-5')                    },
                     { 
                         key: 'opportunity', 
                         title: 'Opportunity Tasks', 
@@ -456,8 +444,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', 
                         badgeClass: 'badge-yellow',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
-                    },
+                        icon: window.iconUtility?.getIconSync('currency_dollar_circle', 'w-5 h-5')                    },
                     { 
                         key: 'unrelated', 
                         title: 'General Tasks', 
@@ -465,8 +452,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-neutral', 
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
                         badgeClass: 'badge-gray',
-                        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>'
-                    }
+                        icon: window.iconUtility?.getIconSync('low', 'w-5 h-5')                    }
                 ]
             }
         },
