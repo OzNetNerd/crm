@@ -90,17 +90,26 @@
   {{ contact_info_badge(contact) }}
 #}
 {% macro contact_info_badge(contact, additional_classes='') %}
-{%- set has_email = contact.email -%}
-{%- set has_phone = contact.phone -%}
-{%- if has_email and has_phone -%}
-    <span class="badge-standard badge-green {{ additional_classes }}">Complete Info</span>
-{%- elif has_email -%}
-    <span class="badge-standard badge-blue {{ additional_classes }}">Email Only</span>
-{%- elif has_phone -%}
-    <span class="badge-standard badge-yellow {{ additional_classes }}">Phone Only</span>
-{%- else -%}
-    <span class="badge-standard badge-red {{ additional_classes }}">Missing Info</span>
+{% set info_type = get_contact_info_type(contact) %}
+{% set badge_configs = get_contact_badge_configs() %}
+<span class="badge-standard badge-{{ badge_configs[info_type].color }} {{ additional_classes }}">{{ badge_configs[info_type].label }}</span>
+{% endmacro %}
+
+{% macro get_contact_info_type(contact) %}
+{%- if contact.email and contact.phone -%}complete
+{%- elif contact.email -%}email_only
+{%- elif contact.phone -%}phone_only
+{%- else -%}missing
 {%- endif -%}
+{% endmacro %}
+
+{% macro get_contact_badge_configs() %}
+{
+    'complete': {'color': 'green', 'label': 'Complete Info'},
+    'email_only': {'color': 'blue', 'label': 'Email Only'}, 
+    'phone_only': {'color': 'yellow', 'label': 'Phone Only'},
+    'missing': {'color': 'red', 'label': 'Missing Info'}
+}
 {% endmacro %}
 
 {#
@@ -437,7 +446,6 @@
        filter_config={type: 'status', value: 'todo'}) }}
 #}
 {% macro task_section_group(section_key, title, icon_html, card_class='card', colors=None, x_show_condition='', filter_config=None, additional_classes='') %}
-{%- from "components/expandable_card.html" import expandable_card, task_header_content, task_reschedule_buttons, action_buttons_row -%}
 <div {% if x_show_condition %}x-show="{{ x_show_condition }}" x-cloak {% endif %}class="{{ card_class }}">
     {{ section_group_header(
         section_key,
@@ -699,21 +707,7 @@
   {{ status_badge(company.status, {'active': 'green', 'inactive': 'red'}) }}
 #}
 {% macro status_badge(status, color_map=None, size='md') %}
-{%- if color_map -%}
-    {%- set color = color_map.get(status, 'gray') -%}
-{%- else -%}
-    {%- if status in ['complete', 'completed', 'done', 'active', 'open'] -%}
-        {%- set color = 'green' -%}
-    {%- elif status in ['in-progress', 'in_progress', 'pending', 'working'] -%}
-        {%- set color = 'yellow' -%}
-    {%- elif status in ['overdue', 'late', 'failed', 'error'] -%}
-        {%- set color = 'red' -%}
-    {%- elif status in ['todo', 'new', 'draft'] -%}
-        {%- set color = 'blue' -%}
-    {%- else -%}
-        {%- set color = 'gray' -%}
-    {%- endif -%}
-{%- endif -%}
+{%- set color = get_status_color(status, color_map) -%}
 
 {%- set size_classes = {'sm': 'px-2 py-1 text-xs', 'md': 'px-2.5 py-0.5 text-sm', 'lg': 'px-3 py-1 text-base'} -%}
 
@@ -994,4 +988,31 @@
         </svg>
     </button>
 </div>
+{% endmacro %}
+
+{#
+  Helper macro for status color determination - eliminates if/elif chains
+#}
+{% macro get_status_color(status, color_map=None) %}
+{%- if color_map -%}
+    {{ color_map.get(status, 'gray') }}
+{%- else -%}
+    {% set default_colors = get_default_status_colors() %}
+    {% set found_color = '' %}
+    {% for color_group, statuses in default_colors.items() %}
+        {% if status in statuses and not found_color %}
+            {% set found_color = color_group %}
+        {% endif %}
+    {% endfor %}
+    {{ found_color or 'gray' }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro get_default_status_colors() %}
+{
+    'green': ['complete', 'completed', 'done', 'active', 'open'],
+    'yellow': ['in-progress', 'in_progress', 'pending', 'working'],
+    'red': ['overdue', 'late', 'failed', 'error'],
+    'blue': ['todo', 'new', 'draft']
+}
 {% endmacro %}

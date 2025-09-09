@@ -1,58 +1,47 @@
-{% from "components/ui_elements.html" import action_button, pluralized_count %}
-{% from "components/metadata_display.html" import standard_card_metadata %}
-{% from "components/icons.html" import building_office_icon, envelope_icon, phone_icon, pencil_icon, trash_icon, user_icon %}
 {% from "components/expandable_card.html" import expandable_card, action_buttons_row %}
+{% from "components/ui_elements.html" import pluralized_count %}
 
-{# Helper macro for company header badge - matches other entity patterns #}
-{% macro company_header_content(company) %}
-{% if company.industry %}
-<span class="badge-standard badge-blue">{{ company.industry }}</span>
-{% endif %}
-{% endmacro %}
-
-{# Helper macro for company metadata - matches other entity patterns #}
-{% macro company_metadata_content(company) %}
-{{ standard_card_metadata(company, {'entity_type': 'company', 'include_contacts': true, 'include_opportunities': true}) }}
-{% endmacro %}
-
-{# Helper macro for company secondary info - website and stats #}
-{% macro company_secondary_info(company) %}
-<div class="flex items-center justify-between">
-    <div>
-        {% if company.website %}
-            <a href="{{ company.website }}" target="_blank" 
-               class="text-link hover:text-link-hover"
-               onclick="event.stopPropagation()">
-                {{ company.website }}
-            </a>
-        {% else %}
-            <span class="text-gray-500">No website</span>
-        {% endif %}
-    </div>
-    <div class="contact-methods">
-        <span class="flex items-center">
-            {{ user_icon("w-4 h-4 mr-1") }}
-            {{ pluralized_count(company.contacts|length, 'contact') }}
-        </span>
-        <span class="flex items-center">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-            </svg>
-            {{ pluralized_count(company.opportunities|length, 'opportunity', plural='opportunities') }}
-        </span>
-    </div>
-</div>
-{% endmacro %}
+{# Company field configuration - clean, declarative setup #}
+{% set company_field_config = {
+    'badge_field': 'industry',
+    'badge_style': 'blue',
+    'title_field': 'name',
+    'secondary_fields': [
+        {'field': 'website', 'type': 'link', 'fallback': 'No website'},
+        {'field': 'contacts', 'type': 'count', 'label': 'contact'},
+        {'field': 'opportunities', 'type': 'count', 'label': 'opportunity'}
+    ],
+    'metadata_fields': [
+        {'field': 'created_at', 'type': 'date', 'format': '%m/%d/%y'}
+    ],
+    'expanded_sections': [
+        {
+            'title': 'Company Details',
+            'fields': [
+                {'field': 'industry', 'type': 'text', 'icon': 'building', 'label': 'Industry'},
+                {'field': 'website', 'type': 'link', 'icon': 'link', 'label': 'Website'}
+            ]
+        },
+        {
+            'title': 'Quick Actions',
+            'actions': [
+                {'label': 'Add Task', 'onclick': 'createTask(\'company\', ' + '{{ company.id }}' + ')', 'style': 'primary'},
+                {'label': 'New Contact', 'onclick': 'createContact(\'company\', ' + '{{ company.id }}' + ')', 'style': 'secondary'},
+                {'label': 'New Opportunity', 'onclick': 'createOpportunity(\'company\', ' + '{{ company.id }}' + ')', 'style': 'accent'}
+            ],
+            'stats': [
+                {'field': 'contacts', 'type': 'count', 'label': 'contact'},
+                {'field': 'opportunities', 'type': 'count', 'label': 'opportunity'}
+            ]
+        }
+    ]
+} %}
 
 {% macro render_company(company) %}
 {{ expandable_card('company', company, company.id,
     expansion_enabled=true,
-    badge_content=company_header_content(company),
-    title_content=company.name,
-    secondary_info=company_secondary_info(company),
-    metadata_content=company_metadata_content(company),
-    action_buttons=action_buttons_row('company', company.id),
-    expanded_content=company_expanded_content(company)) }}
+    field_config=company_field_config,
+    action_buttons=action_buttons_row('company', company.id)) }}
 {% endmacro %}
 
 {% macro company_expanded_content(company) %}
