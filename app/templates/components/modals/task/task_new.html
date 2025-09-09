@@ -1,4 +1,5 @@
 {% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
+{% from "components/modals/base/form_fields.html" import text_input, select_input, date_input, textarea_input, radio_group, form_section %}
 
 <div x-data="{
         show: false,
@@ -112,77 +113,45 @@
         {{ modal_header('Create New Task') }}
         
         <!-- Task Type Selection -->
-        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-            <label class="text-form-label mb-3 block">Task Type</label>
-            <div class="flex space-x-6">
-                <label class="flex items-center">
-                    <input type="radio" x-model="taskType" value="single" 
-                           class="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300">
-                    <span class="text-sm">Single Task</span>
-                </label>
-                <label class="flex items-center">
-                    <input type="radio" x-model="taskType" value="multi" 
-                           class="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300">
-                    <span class="text-sm">Multi Task</span>
-                </label>
-            </div>
+        <div class="mb-6 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+            {{ radio_group("taskType", "Task Type", "taskType", [
+                {"value": "single", "label": "Single Task"},
+                {"value": "multi", "label": "Multi Task"}
+            ]) }}
         </div>
         
         <!-- Single Task Form -->
-        <div x-show="taskType === 'single'" class="space-y-4">
-            <div>
-                <label class="text-form-label">Description*</label>
-                <textarea x-model="task.description" 
-                          placeholder="What needs to be done?"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          rows="3" required></textarea>
-            </div>
+        <div x-show="taskType === 'single'" class="space-y-5">
+            {{ textarea_input("description", "Description", "task.description", "What needs to be done?", 3, required=true) }}
             
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-form-label">Due Date</label>
-                    <input type="date" x-model="task.due_date" 
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                
-                <div>
-                    <label class="text-form-label">Priority</label>
-                    <select x-model="task.priority" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                    </select>
-                </div>
+                {{ date_input("due_date", "Due Date", "task.due_date") }}
+                {{ select_input("priority", "Priority", "task.priority", ["low", "medium", "high"]) }}
             </div>
             
-            <div>
-                <label class="text-form-label">Next Step Type</label>
-                <select x-model="task.next_step_type" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">None</option>
-                    <option value="call">Call</option>
-                    <option value="email">Email</option>
-                    <option value="meeting">Meeting</option>
-                    <option value="demo">Demo</option>
-                </select>
-            </div>
+            {{ select_input("next_step_type", "Next Step Type", "task.next_step_type", [
+                {"value": "", "label": "None"},
+                {"value": "call", "label": "Call"},
+                {"value": "email", "label": "Email"},
+                {"value": "meeting", "label": "Meeting"},
+                {"value": "demo", "label": "Demo"}
+            ]) }}
             
             <!-- Related Entities Section -->
-            <div class="space-y-4 p-4 bg-gray-50 rounded-lg">
-                <h4 class="text-sm font-medium text-gray-700">Related Entities (Optional)</h4>
+            <div class="space-y-5 p-5 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+                <h4 class="text-md font-semibold text-gray-900 pb-2 border-b border-gray-200">Related Entities (Optional)</h4>
                 
                 <!-- Companies -->
                 <div>
-                    <label class="text-form-label">Related Companies</label>
-                    <div class="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2 bg-white">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Related Companies</label>
+                    <div class="max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-white shadow-sm">
                         <template x-for="company in companies" :key="company.id">
-                            <label class="flex items-center py-1">
+                            <label class="flex items-center py-2 hover:bg-gray-50 rounded px-2 cursor-pointer transition-colors duration-200">
                                 <input type="checkbox" 
                                        :value="company.id"
                                        x-model="selectedCompanies"
-                                       class="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="text-sm" x-text="company.name"></span>
+                                       class="mr-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="text-sm text-gray-700" x-text="company.name"></span>
                             </label>
                         </template>
                     </div>
@@ -190,15 +159,15 @@
                 
                 <!-- Contacts -->
                 <div>
-                    <label class="text-form-label">Related Contacts</label>
-                    <div class="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2 bg-white">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Related Contacts</label>
+                    <div class="max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-white shadow-sm">
                         <template x-for="contact in contacts" :key="contact.id">
-                            <label class="flex items-center py-1">
+                            <label class="flex items-center py-2 hover:bg-gray-50 rounded px-2 cursor-pointer transition-colors duration-200">
                                 <input type="checkbox" 
                                        :value="contact.id"
                                        x-model="selectedContacts"
-                                       class="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="text-sm" x-text="contact.name + ' (' + (contact.company_name || 'No Company') + ')'"></span>
+                                       class="mr-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="text-sm text-gray-700" x-text="contact.name + ' (' + (contact.company_name || 'No Company') + ')'"></span>
                             </label>
                         </template>
                     </div>
@@ -206,15 +175,15 @@
                 
                 <!-- Opportunities -->
                 <div>
-                    <label class="text-form-label">Related Opportunities</label>
-                    <div class="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2 bg-white">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Related Opportunities</label>
+                    <div class="max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-white shadow-sm">
                         <template x-for="opportunity in opportunities" :key="opportunity.id">
-                            <label class="flex items-center py-1">
+                            <label class="flex items-center py-2 hover:bg-gray-50 rounded px-2 cursor-pointer transition-colors duration-200">
                                 <input type="checkbox" 
                                        :value="opportunity.id"
                                        x-model="selectedOpportunities"
-                                       class="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="text-sm" x-text="opportunity.name + ' (' + (opportunity.company_name || 'No Company') + ')'"></span>
+                                       class="mr-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="text-sm text-gray-700" x-text="opportunity.name + ' (' + (opportunity.company_name || 'No Company') + ')'"></span>
                             </label>
                         </template>
                     </div>
