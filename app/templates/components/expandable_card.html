@@ -161,11 +161,11 @@
         if (this.pendingDays === 0) return;
         
         try {
-            const response = await fetch(`/api/tasks/${taskId}/reschedule`, {
-                method: 'PUT',
+            const response = await fetch(`/tasks/${taskId}/reschedule`, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    days_adjustment: this.pendingDays
+                    days: this.pendingDays
                 })
             });
             
@@ -173,6 +173,8 @@
                 this.cancelChanges();
                 location.reload(); // Simple refresh to show updated date
             } else {
+                const errorText = await response.text();
+                console.error('Failed to reschedule task:', errorText);
                 alert('Failed to reschedule task');
             }
         } catch (error) {
