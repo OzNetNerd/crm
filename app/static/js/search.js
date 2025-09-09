@@ -220,7 +220,7 @@ class SearchManager {
                         <div class="text-label-primary truncate">
                             ${this.highlightQuery(result.title)}
                         </div>
-                        <div class="text-xs text-gray-500 truncate">
+                        <div class="text-xs-gray-500 truncate">
                             ${result.subtitle || ''}
                         </div>
                     </div>
@@ -350,7 +350,7 @@ class AutocompleteManager {
                     <div class="text-label-primary">
                         ${suggestion.name}
                     </div>
-                    ${suggestion.company ? `<div class="text-xs text-gray-500">${suggestion.company}</div>` : ''}
+                    ${suggestion.company ? `<div class="text-xs-gray-500">${suggestion.company}</div>` : ''}
                 </div>
             `;
         });
