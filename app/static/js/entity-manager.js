@@ -12,7 +12,7 @@
 function createEntityManager(config) {
     return {
         // Core data
-        allEntities: window[config.dataSource] || [],
+        allEntities: window[config.dataSource],
         filteredEntities: [],
         
         // Filter states (initialized from backend or defaults)
@@ -38,6 +38,8 @@ function createEntityManager(config) {
         init() {
             this.updateFilters();
             this.setupEventDelegation();
+            // Ensure all sections are expanded by default
+            this.expandedSections = { ...config.defaultExpandedSections };
         },
 
         // Setup event delegation for dynamically rendered entity cards
