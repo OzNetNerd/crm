@@ -2,7 +2,7 @@
 {% from "components/company_card.html" import render_company %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/icons.html" import building_office_icon, user_icon, chevron_right_icon, check_circle_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid %}
-{% from "components/ui_elements.html" import expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar %}
+{% from "components/ui_elements.html" import expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar, enhanced_filter_controls %}
 
 {% block title %}Companies - CRM{% endblock %}
 
@@ -52,67 +52,46 @@
          {'label': 'Delete Selected', 'onclick': 'bulkDelete(selectedItems)', 'color': 'red'}) }}
 
     <!-- Enhanced Filters and Controls with Generic DRY Components -->
-    <div class="card-padded-lg filter-section-enhanced">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:gap-6">
-            <div class="flex flex-wrap items-center gap-6">
-                <label class="text-label-dark">Group by:</label>
-                
-                {{ generic_group_dropdown('groupBy', [
-                    {'value': 'industry', 'label': 'Industry'},
-                    {'value': 'size', 'label': 'Company Size'},
-                    {'value': 'contacts', 'label': 'Contact Count'},
-                    {'value': 'opportunities', 'label': 'Opportunities'}
-                ]) }}
-                
-                <label class="flex items-center">
-                    <input type="checkbox" 
-                           x-model="showCompleted"
-                           @change="updateFilters()"
-                           name="show_incomplete"
-                           value="true"
-                           class="mr-2">
-                    <span class="text-secondary-dark">Show Incomplete Info</span>
-                </label>
-
-                {{ expand_collapse_controls('expandedSections') }}
-            </div>
-            
-            <div class="flex items-center gap-6">
-                <label class="text-label-dark">Sort by:</label>
-                
-                {{ generic_sort_dropdown('sortBy', 'sortDirection', [
-                    {'value': 'name', 'label': 'Name'},
-                    {'value': 'industry', 'label': 'Industry'},
-                    {'value': 'contacts_count', 'label': 'Contact Count'},
-                    {'value': 'opportunities_count', 'label': 'Opportunity Count'},
-                    {'value': 'created_at', 'label': 'Date Added'}
-                ]) }}
-                
-                {{ generic_filter_multiselect('primaryFilter', [
-                    {'value': 'has_industry', 'label': 'Has Industry'},
-                    {'value': 'has_website', 'label': 'Has Website'},
-                    {'value': 'has_contacts', 'label': 'Has Contacts'},
-                    {'value': 'missing_info', 'label': 'Missing Info'}
-                ], 'All Company Info', 'togglePrimaryFilter', 'getPrimaryFilterDisplayText') }}
-                
-                {{ generic_filter_multiselect('secondaryFilter', [
-                    {'value': 'technology', 'label': 'Technology'},
-                    {'value': 'finance', 'label': 'Finance'},
-                    {'value': 'healthcare', 'label': 'Healthcare'},
-                    {'value': 'manufacturing', 'label': 'Manufacturing'},
-                    {'value': 'retail', 'label': 'Retail'},
-                    {'value': 'consulting', 'label': 'Consulting'}
-                ], 'All Industries', 'toggleSecondaryFilter', 'getSecondaryFilterDisplayText') }}
-                
-                {{ generic_filter_multiselect('entityFilter', [
-                    {'value': 'small', 'label': 'Small (1-50)'},
-                    {'value': 'medium', 'label': 'Medium (51-500)'},
-                    {'value': 'large', 'label': 'Large (500+)'},
-                    {'value': 'unknown', 'label': 'Unknown Size'}
-                ], 'All Sizes', 'toggleEntityFilter', 'getEntityFilterDisplayText') }}
-            </div>
-        </div>
-    </div>
+    {{ enhanced_filter_controls(
+        group_options=[
+            {'value': 'industry', 'label': 'Industry'},
+            {'value': 'size', 'label': 'Company Size'},
+            {'value': 'contacts', 'label': 'Contact Count'},
+            {'value': 'opportunities', 'label': 'Opportunities'}
+        ],
+        sort_options=[
+            {'value': 'name', 'label': 'Name'},
+            {'value': 'industry', 'label': 'Industry'},
+            {'value': 'contacts_count', 'label': 'Contact Count'},
+            {'value': 'opportunities_count', 'label': 'Opportunity Count'},
+            {'value': 'created_at', 'label': 'Date Added'}
+        ],
+        show_completed_label='Show Incomplete Info',
+        show_completed_name='show_incomplete',
+        primary_filter_options=[
+            {'value': 'has_industry', 'label': 'Has Industry'},
+            {'value': 'has_website', 'label': 'Has Website'},
+            {'value': 'has_contacts', 'label': 'Has Contacts'},
+            {'value': 'missing_info', 'label': 'Missing Info'}
+        ],
+        primary_filter_label='All Company Info',
+        secondary_filter_options=[
+            {'value': 'technology', 'label': 'Technology'},
+            {'value': 'finance', 'label': 'Finance'},
+            {'value': 'healthcare', 'label': 'Healthcare'},
+            {'value': 'manufacturing', 'label': 'Manufacturing'},
+            {'value': 'retail', 'label': 'Retail'},
+            {'value': 'consulting', 'label': 'Consulting'}
+        ],
+        secondary_filter_label='All Industries',
+        entity_filter_options=[
+            {'value': 'small', 'label': 'Small (1-50)'},
+            {'value': 'medium', 'label': 'Medium (51-500)'},
+            {'value': 'large', 'label': 'Large (500+)'},
+            {'value': 'unknown', 'label': 'Unknown Size'}
+        ],
+        entity_filter_label='All Sizes'
+    ) }}
 
     <!-- Dynamic Client-Side Company Grouping -->
     <div id="companies-content">
@@ -162,7 +141,7 @@
 {% endblock %}
 
 {% block data_attributes %}
-data-companies="{{ companies_data | tojson }}"
-data-contacts="{{ contacts | tojson }}"
-data-opportunities="{{ opportunities | tojson }}"
+data-companies="{{ companies_data | tojson | forceescape }}"
+data-contacts="{{ contacts | tojson | forceescape }}"
+data-opportunities="{{ opportunities | tojson | forceescape }}"
 {% endblock %}

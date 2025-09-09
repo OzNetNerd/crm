@@ -2,7 +2,7 @@
 {% from "components/contact_card.html" import render_contact %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/icons.html" import building_office_icon, user_icon, chevron_right_icon, check_circle_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, phone_icon, envelope_icon %}
-{% from "components/ui_elements.html" import expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar %}
+{% from "components/ui_elements.html" import expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar, enhanced_filter_controls %}
 
 {% block title %}Contacts - CRM{% endblock %}
 
@@ -52,65 +52,44 @@
          {'label': 'Delete Selected', 'onclick': 'bulkDelete(selectedItems)', 'color': 'red'}) }}
 
     <!-- Enhanced Filters and Controls with Generic DRY Components -->
-    <div class="card-padded-lg filter-section-enhanced">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:gap-6">
-            <div class="flex flex-wrap items-center gap-6">
-                <label class="text-label-dark">Group by:</label>
-                
-                {{ generic_group_dropdown('groupBy', [
-                    {'value': 'company', 'label': 'Company'},
-                    {'value': 'industry', 'label': 'Industry'},
-                    {'value': 'role', 'label': 'Role'},
-                    {'value': 'contact_info', 'label': 'Contact Info'}
-                ]) }}
-                
-                <label class="flex items-center">
-                    <input type="checkbox" 
-                           x-model="showCompleted"
-                           @change="updateFilters()"
-                           name="show_incomplete"
-                           value="true"
-                           class="mr-2">
-                    <span class="text-secondary-dark">Show Incomplete Info</span>
-                </label>
-
-                {{ expand_collapse_controls('expandedSections') }}
-            </div>
-            
-            <div class="flex items-center gap-6">
-                <label class="text-label-dark">Sort by:</label>
-                
-                {{ generic_sort_dropdown('sortBy', 'sortDirection', [
-                    {'value': 'name', 'label': 'Name'},
-                    {'value': 'company', 'label': 'Company'},
-                    {'value': 'email', 'label': 'Email'},
-                    {'value': 'phone', 'label': 'Phone'},
-                    {'value': 'role', 'label': 'Role'}
-                ]) }}
-                
-                {{ generic_filter_multiselect('primaryFilter', [
-                    {'value': 'complete', 'label': 'Complete Info'},
-                    {'value': 'email_only', 'label': 'Email Only'},
-                    {'value': 'phone_only', 'label': 'Phone Only'},
-                    {'value': 'missing', 'label': 'Missing Info'}
-                ], 'All Contact Info', 'togglePrimaryFilter', 'getPrimaryFilterDisplayText') }}
-                
-                {{ generic_filter_multiselect('secondaryFilter', [
-                    {'value': 'technology', 'label': 'Technology'},
-                    {'value': 'finance', 'label': 'Finance'},
-                    {'value': 'healthcare', 'label': 'Healthcare'},
-                    {'value': 'manufacturing', 'label': 'Manufacturing'}
-                ], 'All Industries', 'toggleSecondaryFilter', 'getSecondaryFilterDisplayText') }}
-                
-                {{ generic_filter_multiselect('entityFilter', [
-                    {'value': 'ceo', 'label': 'CEO'},
-                    {'value': 'manager', 'label': 'Manager'},
-                    {'value': 'director', 'label': 'Director'},
-                    {'value': 'developer', 'label': 'Developer'}
-                ], 'All Roles', 'toggleEntityFilter', 'getEntityFilterDisplayText') }}
-            </div>
-        </div>
-    </div>
+    {{ enhanced_filter_controls(
+        group_options=[
+            {'value': 'company', 'label': 'Company'},
+            {'value': 'industry', 'label': 'Industry'},
+            {'value': 'role', 'label': 'Role'},
+            {'value': 'contact_info', 'label': 'Contact Info'}
+        ],
+        sort_options=[
+            {'value': 'name', 'label': 'Name'},
+            {'value': 'company', 'label': 'Company'},
+            {'value': 'email', 'label': 'Email'},
+            {'value': 'phone', 'label': 'Phone'},
+            {'value': 'role', 'label': 'Role'}
+        ],
+        show_completed_label='Show Incomplete Info',
+        show_completed_name='show_incomplete',
+        primary_filter_options=[
+            {'value': 'complete', 'label': 'Complete Info'},
+            {'value': 'email_only', 'label': 'Email Only'},
+            {'value': 'phone_only', 'label': 'Phone Only'},
+            {'value': 'missing', 'label': 'Missing Info'}
+        ],
+        primary_filter_label='All Contact Info',
+        secondary_filter_options=[
+            {'value': 'technology', 'label': 'Technology'},
+            {'value': 'finance', 'label': 'Finance'},
+            {'value': 'healthcare', 'label': 'Healthcare'},
+            {'value': 'manufacturing', 'label': 'Manufacturing'}
+        ],
+        secondary_filter_label='All Industries',
+        entity_filter_options=[
+            {'value': 'ceo', 'label': 'CEO'},
+            {'value': 'manager', 'label': 'Manager'},
+            {'value': 'director', 'label': 'Director'},
+            {'value': 'developer', 'label': 'Developer'}
+        ],
+        entity_filter_label='All Roles'
+    ) }}
 
     <!-- Dynamic Client-Side Contact Grouping -->
     <div id="contacts-content">
@@ -161,7 +140,7 @@
 {% endblock %}
 
 {% block data_attributes %}
-data-companies="{{ companies | tojson }}"
-data-opportunities="{{ opportunities | tojson }}"
-data-contacts="{{ contacts_data | tojson }}"
+data-companies="{{ companies | tojson | forceescape }}"
+data-opportunities="{{ opportunities | tojson | forceescape }}"
+data-contacts="{{ contacts_data | tojson | forceescape }}"
 {% endblock %}

@@ -1016,3 +1016,86 @@
     'blue': ['todo', 'new', 'draft']
 }
 {% endmacro %}
+
+{#
+  Enhanced Filter Controls Section - DRY component for all entity index pages
+  
+  Parameters:
+  - group_options (required): List of group options as [{'value': 'key', 'label': 'Display Name'}]
+  - sort_options (required): List of sort options as [{'value': 'key', 'label': 'Display Name'}]
+  - show_completed_label (optional): Label for show completed checkbox (default: 'Show Completed')
+  - show_completed_name (optional): Name attribute for checkbox (default: 'show_completed')
+  - primary_filter_options (optional): List of options for first filter dropdown
+  - primary_filter_label (optional): Label for first filter dropdown (default: 'All Filters')
+  - secondary_filter_options (optional): List of options for second filter dropdown  
+  - secondary_filter_label (optional): Label for second filter dropdown (default: 'All Filters')
+  - entity_filter_options (optional): List of options for entity filter dropdown
+  - entity_filter_label (optional): Label for entity filter dropdown (default: 'All Entities')
+  - entity_filter_search (optional): Enable search in entity filter (default: false)
+  
+  Usage:
+  {{ enhanced_filter_controls(
+      group_options=[{'value': 'stage', 'label': 'Pipeline Stage'}],
+      sort_options=[{'value': 'name', 'label': 'Name'}],
+      show_completed_label='Show Closed',
+      primary_filter_options=[{'value': 'high', 'label': 'High Priority'}],
+      primary_filter_label='All Priorities'
+  ) }}
+#}
+{% macro enhanced_filter_controls(
+    group_options, 
+    sort_options,
+    show_completed_label='Show Completed',
+    show_completed_name='show_completed',
+    primary_filter_options=None,
+    primary_filter_label='All Filters', 
+    secondary_filter_options=None,
+    secondary_filter_label='All Filters',
+    entity_filter_options=None,
+    entity_filter_label='All Entities',
+    entity_filter_search=false
+) %}
+<div class="card-padded-lg filter-section-enhanced">
+    <div class="flex flex-col space-y-4">
+        <!-- First row: Group by, Sort by, and Filters -->
+        <div class="flex flex-wrap items-center gap-6">
+            <label class="text-label-dark">Group by:</label>
+            {{ generic_group_dropdown('groupBy', group_options) }}
+            
+            <label class="text-label-dark">Sort by:</label>
+            {{ generic_sort_dropdown('sortBy', 'sortDirection', sort_options) }}
+            
+            {% if primary_filter_options or secondary_filter_options or entity_filter_options %}
+            <label class="text-label-dark">Filters:</label>
+            {% endif %}
+            
+            {% if primary_filter_options %}
+            {{ generic_filter_multiselect('primaryFilter', primary_filter_options, primary_filter_label, 'togglePrimaryFilter', 'getPrimaryFilterDisplayText') }}
+            {% endif %}
+            
+            {% if secondary_filter_options %}
+            {{ generic_filter_multiselect('secondaryFilter', secondary_filter_options, secondary_filter_label, 'toggleSecondaryFilter', 'getSecondaryFilterDisplayText') }}
+            {% endif %}
+            
+            {% if entity_filter_options %}
+            {{ generic_filter_multiselect('entityFilter', entity_filter_options, entity_filter_label, 'toggleEntityFilter', 'getEntityFilterDisplayText', with_search=entity_filter_search) }}
+            {% endif %}
+        </div>
+        
+        <!-- Second row: Show completed and Expand/Collapse controls -->
+        <div class="flex flex-wrap items-center gap-6">
+            <label class="flex items-center">
+                <input type="checkbox" 
+                       x-model="showCompleted"
+                       @change="updateFilters()"
+                       name="{{ show_completed_name }}"
+                       value="true"
+                       class="mr-2">
+                <span class="text-secondary-dark">{{ show_completed_label }}</span>
+            </label>
+
+            {{ expand_collapse_controls('expandedSections') }}
+        </div>
+    </div>
+</div>
+{% endmacro %}

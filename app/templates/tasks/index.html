@@ -2,7 +2,7 @@
 {% from "components/expandable_card.html" import expandable_card, task_header_content, task_reschedule_buttons, action_buttons_row %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/icons.html" import clipboard_list_icon, bolt_icon, check_circle_icon_solid, fire_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, calendar_days_icon, calendar_icon, chart_bar_icon, question_mark_circle_icon, building_office_icon, user_icon, currency_dollar_icon, chevron_right_icon %}
-{% from "components/ui_elements.html" import expand_collapse_controls, dropdown_select, dropdown_multiselect, section_group_header, task_section_group, badge_count_helper, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar %}
+{% from "components/ui_elements.html" import expand_collapse_controls, dropdown_select, dropdown_multiselect, section_group_header, task_section_group, badge_count_helper, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar, enhanced_filter_controls %}
 
 
 
@@ -57,58 +57,37 @@
 
     <!-- Task Summary now handled by page_layout template -->
 
-    <!-- Enhanced Filters and Controls with HTMX and Better Styling -->
-    <div class="card-padded-lg filter-section-enhanced">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:gap-6">
-            <div class="flex flex-wrap items-center gap-6">
-                <label class="text-label-dark">Group by:</label>
-                
-                {{ generic_group_dropdown('groupBy', [
-                    {'value': 'status', 'label': 'Status'},
-                    {'value': 'due_date', 'label': 'Due Date'},
-                    {'value': 'priority', 'label': 'Priority'},
-                    {'value': 'entity', 'label': 'Related To'}
-                ]) }}
-                
-                <label class="flex items-center">
-                    <input type="checkbox" 
-                           x-model="showCompleted"
-                           @change="updateFilters()"
-                           name="show_completed"
-                           value="true"
-                           class="mr-2">
-                    <span class="text-secondary-dark">Show Completed</span>
-                </label>
-
-                {{ expand_collapse_controls('expandedSections') }}
-            </div>
-            
-            <div class="flex items-center gap-6">
-                <label class="text-label-dark">Sort by:</label>
-                
-                {{ generic_sort_dropdown('sortBy', 'sortDirection', [
-                    {'value': 'due_date', 'label': 'Due Date'},
-                    {'value': 'priority', 'label': 'Priority'},
-                    {'value': 'created_at', 'label': 'Created Date'},
-                    {'value': 'title', 'label': 'Title'},
-                    {'value': 'status', 'label': 'Status'}
-                ]) }}
-                
-                {{ generic_filter_multiselect('primaryFilter', [
-                    {'value': 'high', 'label': 'High'},
-                    {'value': 'medium', 'label': 'Medium'},
-                    {'value': 'low', 'label': 'Low'}
-                ], 'All Priorities', 'togglePrimaryFilter', 'getPrimaryFilterDisplayText') }}
-                
-                {{ generic_filter_multiselect('entityFilter', [
-                    {'value': 'company', 'label': 'Company'},
-                    {'value': 'contact', 'label': 'Contact'},
-                    {'value': 'opportunity', 'label': 'Opportunity'},
-                    {'value': 'unrelated', 'label': 'General'}
-                ], 'All Entities', 'toggleEntityFilter', 'getEntityFilterDisplayText') }}
-            </div>
-        </div>
-    </div>
+    <!-- Enhanced Filters and Controls with Generic DRY Components -->
+    {{ enhanced_filter_controls(
+        group_options=[
+            {'value': 'status', 'label': 'Status'},
+            {'value': 'due_date', 'label': 'Due Date'},
+            {'value': 'priority', 'label': 'Priority'},
+            {'value': 'entity', 'label': 'Related To'}
+        ],
+        sort_options=[
+            {'value': 'due_date', 'label': 'Due Date'},
+            {'value': 'priority', 'label': 'Priority'},
+            {'value': 'created_at', 'label': 'Created Date'},
+            {'value': 'title', 'label': 'Title'},
+            {'value': 'status', 'label': 'Status'}
+        ],
+        show_completed_label='Show Completed',
+        show_completed_name='show_completed',
+        primary_filter_options=[
+            {'value': 'high', 'label': 'High'},
+            {'value': 'medium', 'label': 'Medium'},
+            {'value': 'low', 'label': 'Low'}
+        ],
+        primary_filter_label='All Priorities',
+        entity_filter_options=[
+            {'value': 'company', 'label': 'Company'},
+            {'value': 'contact', 'label': 'Contact'},
+            {'value': 'opportunity', 'label': 'Opportunity'},
+            {'value': 'unrelated', 'label': 'General'}
+        ],
+        entity_filter_label='All Entities'
+    ) }}
 
     <!-- Dynamic Client-Side Task Grouping -->
     <div id="tasks-content">
@@ -171,10 +150,10 @@ data-page-type="tasks-index"
 {% block scripts %}
 <script>
 // Initialize data for the tasks page
-window.companiesData = {{ companies | tojson }};
-window.contactsData = {{ contacts | tojson }};
-window.opportunitiesData = {{ opportunities | tojson }};
-window.tasksData = {{ tasks | tojson }};
+window.companiesData = {{ companies | tojson | safe }};
+window.contactsData = {{ contacts | tojson | safe }};
+window.opportunitiesData = {{ opportunities | tojson | safe }};
+window.tasksData = {{ tasks | tojson | safe }};
 </script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script src="{{ url_for('static', filename='js/entity-manager.js') }}"></script>
