@@ -15,7 +15,8 @@
 {% call expandable_card('opportunity', opportunity, opportunity.id, 
                         expansion_enabled=true,
                         progress_config=progress_config,
-                        card_classes='mb-3') %}
+                        card_classes='mb-3',
+                        expanded_content=opportunity_expanded_content(opportunity, today)) %}
     
     <!-- Opportunity header with value and stage -->
     <div class="flex items-center justify-between mb-3">
@@ -63,4 +64,60 @@
     </div>
     
 {% endcall %}
+{% endmacro %}
+
+{% macro opportunity_expanded_content(opportunity, today) %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Deal Details -->
+    <div>
+        <h4 class="text-sm font-medium text-gray-900 mb-2">Deal Information</h4>
+        <div class="space-y-2 text-sm">
+            {% if opportunity.value %}
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Deal Value:</span>
+                    <span class="text-deal-amount font-semibold">${{ "{:,.0f}".format(opportunity.value) }}</span>
+                </div>
+            {% endif %}
+            {% if opportunity.probability %}
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Success Probability:</span>
+                    <span class="text-blue-600 font-medium">{{ opportunity.probability }}%</span>
+                </div>
+            {% endif %}
+            {% if opportunity.expected_close_date %}
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Expected Close:</span>
+                    <span class="{{ 'text-red-600' if opportunity.expected_close_date < today else 'text-gray-700' }}">
+                        {{ opportunity.expected_close_date.strftime('%B %d, %Y') }}
+                    </span>
+                </div>
+            {% endif %}
+            <div class="flex items-center justify-between">
+                <span class="text-gray-600">Stage:</span>
+                <span class="badge-standard badge-{{ 'green' if opportunity.stage == 'prospect' else 'blue' if opportunity.stage == 'qualified' else 'yellow' if opportunity.stage == 'proposal' else 'orange' if opportunity.stage == 'negotiation' else 'gray' }}">
+                    {{ opportunity.stage|title }}
+                </span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div>
+        <h4 class="text-sm font-medium text-gray-900 mb-2">Quick Actions</h4>
+        <div class="flex flex-wrap gap-2">
+            <button @click.stop="createTask({{ opportunity.id }})" 
+                    class="px-3 py-1 bg-blue-100 text-blue-800 rounded-md text-sm hover:bg-blue-200 transition-colors">
+                Add Task
+            </button>
+            <button @click.stop="updateStage({{ opportunity.id }})" 
+                    class="px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm hover:bg-green-200 transition-colors">
+                Update Stage
+            </button>
+            <button @click.stop="scheduleFollowUp({{ opportunity.id }})" 
+                    class="px-3 py-1 bg-purple-100 text-purple-800 rounded-md text-sm hover:bg-purple-200 transition-colors">
+                Schedule Follow-up
+            </button>
+        </div>
+    </div>
+</div>
 {% endmacro %}
