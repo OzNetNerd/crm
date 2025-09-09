@@ -180,9 +180,10 @@
 {% endmacro %}
 
 {#
-  Entity Filter Manager - Alpine.js data and methods for entity filtering
+  Entity Filter Manager - JavaScript data generator
   
-  Provides standardized filtering logic that can be extended per entity type.
+  Generates the appropriate call to createEntityFilterManager() from the external 
+  entity-filter-manager.js file. All JavaScript logic is now externalized.
   
   Parameters:
   - entity_type (required): Type of entity being managed
@@ -191,158 +192,14 @@
   - filter_options (optional): Additional filter configuration
   - initial_values (optional): Dict of initial filter values
   
-  Usage:
-  In page script block:
-  {{ entity_filter_manager('companies', group_options, sort_options) }}
+  Returns: JavaScript function call suitable for Alpine.js x-data
 #}
 {% macro entity_filter_manager(entity_type, group_options, sort_options, filter_options=None, initial_values=None) %}
-function entityFilterManager() {
-    return {
-        // Core filter states
-        allItems: window.{{ entity_type }}Data || [],
-        filteredItems: [],
-        
-        // Display states  
-        viewMode: '{{ initial_values.view_mode if initial_values and initial_values.view_mode else 'grid' }}',
-        groupBy: '{{ initial_values.group_by if initial_values and initial_values.group_by else group_options[0].value }}',
-        sortBy: '{{ initial_values.sort_by if initial_values and initial_values.sort_by else sort_options[0].value }}',
-        sortDirection: '{{ initial_values.sort_direction if initial_values and initial_values.sort_direction else 'asc' }}',
-        
-        {% if filter_options %}
-        // Entity-specific filters
-        {% for filter_key, _ in filter_options.items() %}
-        {{ filter_key }}Filter: {{ initial_values[filter_key + '_filter'] | safe_tojson if initial_values and initial_values.get(filter_key + '_filter') else '[]' }},
-        {% endfor %}
-        {% endif %}
-        
-        showCompleted: {{ initial_values.show_completed | lower if initial_values and initial_values.show_completed else 'false' }},
-        
-        // Expanded sections state
-        expandedSections: {
-            {% for option in group_options %}
-            {% if option.sections %}
-            {% for section in option.sections %}
-            '{{ section }}': true,
-            {% endfor %}
-            {% endif %}
-            {% endfor %}
-        },
-
-        init() {
-            this.updateFilters();
-        },
-
-        // Core filtering and sorting
-        shouldShowItem(item) {
-            {% if filter_options %}
-            {% for filter_key, _ in filter_options.items() %}
-            const {{ filter_key }}Match = this.{{ filter_key }}Filter.length === 0 || this.{{ filter_key }}Filter.includes(item.{{ filter_key }});
-            {% endfor %}
-            
-            const completedMatch = {% if show_completed_toggle %}item.status !== 'complete' || this.showCompleted{% else %}true{% endif %};
-            
-            return {% for filter_key, _ in filter_options.items() %}{{ filter_key }}Match && {% endfor %}completedMatch;
-            {% else %}
-            return {% if show_completed_toggle %}item.status !== 'complete' || this.showCompleted{% else %}true{% endif %};
-            {% endif %}
-        },
-
-        updateFilters() {
-            let items = [...this.allItems];
-            
-            // Apply filters
-            items = items.filter(item => this.shouldShowItem(item));
-            
-            // Sort items  
-            items = this.sortItems(items);
-            
-            this.filteredItems = items;
-            this.updateUrlState();
-        },
-
-        sortItems(items) {
-            return items.sort((a, b) => {
-                let comparison = 0;
-                
-                switch(this.sortBy) {
-                    {% for option in sort_options %}
-                    case '{{ option.value }}':
-                        {% if option.type == 'string' %}
-                        comparison = (a.{{ option.field or option.value }} || '').localeCompare(b.{{ option.field or option.value }} || '');
-                        {% elif option.type == 'number' %}
-                        comparison = (a.{{ option.field or option.value }} || 0) - (b.{{ option.field or option.value }} || 0);
-                        {% elif option.type == 'date' %}
-                        const dateA = new Date(a.{{ option.field or option.value }});
-                        const dateB = new Date(b.{{ option.field or option.value }});
-                        comparison = dateA - dateB;
-                        {% endif %}
-                        break;
-                    {% endfor %}
-                }
-                
-                return this.sortDirection === 'desc' ? -comparison : comparison;
-            });
-        },
-
-        // Display text helpers
-        getGroupByDisplayText() {
-            {% for option in group_options %}
-            {% if loop.first %}if{% else %}else if{% endif %} (this.groupBy === '{{ option.value }}') return '{{ option.label }}';
-            {% endfor %}
-            return '{{ group_options[0].label }}';
-        },
-
-        getSortByDisplayText() {
-            {% for option in sort_options %}
-            {% if loop.first %}if{% else %}else if{% endif %} (this.sortBy === '{{ option.value }}') return '{{ option.label }}';
-            {% endfor %}
-            return '{{ sort_options[0].label }}';
-        },
-
-        {% if filter_options %}
-        {% for filter_key, _ in filter_options.items() %}
-        // {{ filter_key|title }} filter helpers
-        toggle{{ filter_key|title }}({{ filter_key }}) {
-            if (this.{{ filter_key }}Filter.includes({{ filter_key }})) {
-                this.{{ filter_key }}Filter = this.{{ filter_key }}Filter.filter(f => f !== {{ filter_key }});
-            } else {
-                this.{{ filter_key }}Filter.push({{ filter_key }});
-            }
-            this.updateFilters();
-        },
-
-        get{{ filter_key|title }}DisplayText() {
-            if (this.{{ filter_key }}Filter.length === 0) return 'All {{ filter_key|title }}';
-            if (this.{{ filter_key }}Filter.length === 1) return this.{{ filter_key }}Filter[0];
-            return `${this.{{ filter_key }}Filter.length} Selected`;
-        },
-        {% endfor %}
-        {% endif %}
-
-        // URL state management
-        updateUrlState() {
-            const params = new URLSearchParams(window.location.search);
-            params.set('group_by', this.groupBy);
-            params.set('sort_by', this.sortBy);
-            params.set('sort_direction', this.sortDirection);
-            params.set('view_mode', this.viewMode);
-            {% if show_completed_toggle %}
-            params.set('show_completed', this.showCompleted.toString());
-            {% endif %}
-            {% if filter_options %}
-            {% for filter_key, _ in filter_options.items() %}
-            params.set('{{ filter_key }}', this.{{ filter_key }}Filter.join(','));
-            {% endfor %}
-            {% endif %}
-            
-            const newUrl = window.location.pathname + '?' + params.toString();
-            window.history.pushState({}, '', newUrl);
-        },
-
-        // Section management
-        toggleSection(sectionKey) {
-            this.expandedSections[sectionKey] = !this.expandedSections[sectionKey];
-        }
-    };
-}
+createEntityFilterManager(
+    '{{ entity_type }}',
+    {{ group_options | tojson }},
+    {{ sort_options | tojson }},
+    {% if filter_options %}{{ filter_options | tojson }}{% else %}{}{% endif %},
+    {% if initial_values %}{{ initial_values | tojson }}{% else %}{}{% endif %}
+)
 {% endmacro %}
