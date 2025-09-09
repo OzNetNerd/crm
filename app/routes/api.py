@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template_string
 from app.models import db, Task, Contact, Company, Opportunity, Note
 from app.utils.route_helpers import GenericAPIHandler
 from datetime import datetime
@@ -154,3 +154,29 @@ def delete_company(company_id):
 def delete_opportunity(opportunity_id):
     """Delete opportunity"""
     return opportunity_api.delete_entity(opportunity_id)
+
+
+@api_bp.route("/icon", methods=["POST"])
+def get_icon():
+    """Get icon HTML from Jinja2 macro"""
+    try:
+        data = request.get_json()
+        macro_name = data.get('macro_name')
+        css_class = data.get('class', 'w-5 h-5')
+        
+        if not macro_name:
+            return jsonify({'error': 'macro_name is required'}), 400
+            
+        # Template to call the macro
+        template_str = f"""
+        {{% from 'components/icons.html' import {macro_name} %}}
+        {{{{ {macro_name}(class='{css_class}') }}}}
+        """
+        
+        # Render the macro
+        icon_html = render_template_string(template_str.strip())
+        
+        return icon_html, 200, {'Content-Type': 'text/html'}
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to render icon: {str(e)}'}), 500

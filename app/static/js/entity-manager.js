@@ -289,11 +289,8 @@ function createEntityManager(config) {
             if (config.icons && config.icons[iconType]) {
                 return config.icons[iconType];
             }
-            // Fallback icons
-            const defaultIcons = {
-                'chevron': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>'
-            };
-            return defaultIcons[iconType] || defaultIcons['chevron'];
+            // Use centralized icon utility
+            return window.iconUtility?.getIconSync('chevron', 'w-4 h-4');
         },
 
         // Bulk operations
