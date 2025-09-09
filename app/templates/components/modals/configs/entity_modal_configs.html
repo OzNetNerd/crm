@@ -217,7 +217,7 @@
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3 flex-grow">
                                 <input type="checkbox" 
-                                       :checked="childTask.status === 'complete'"
+                                       :checked="childTask.status === \"complete\""
                                        @change="toggleChildTask(childTask.id)"
                                        class="text-blue-600 focus:ring-blue-500 border-gray-300">
                                 <div class="flex-grow">
@@ -230,9 +230,9 @@
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
-                                <span :class="childTask.status === 'complete' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
+                                <span :class="childTask.status === \"complete\" ? \"bg-green-100 text-green-800\" : \"bg-gray-100 text-gray-800\""
                                       class="px-2 py-1 text-xs font-medium rounded-full capitalize" 
-                                      x-text="childTask.status.replace('_', ' ')"></span>
+                                      x-text="childTask.status.replace(\"_\", \" \")"></span>
                             </div>
                         </div>
                     </div>
@@ -307,13 +307,7 @@
                 }
             ]
         }
-    ],
-    "custom_methods": '''
-        async toggleChildTask(childTaskId) {
-            // Custom method for task-specific functionality
-            console.log('Toggle child task:', childTaskId);
-        }
-    '''
+    ]
 } %}
 
 {# Contact Modal Configurations #}
