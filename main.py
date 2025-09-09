@@ -13,6 +13,7 @@ from app.routes.api import api_bp
 from app.routes.api_notes import api_notes_bp
 from app.routes.notes import notes_bp
 from app.routes.meetings import meetings_bp
+from app.utils.template_filters import register_template_filters
 
 
 def get_database_path():
@@ -69,6 +70,9 @@ def create_app():
     app.register_blueprint(api_notes_bp)
     app.register_blueprint(notes_bp)
     app.register_blueprint(meetings_bp, url_prefix="/meetings")
+
+    # Register custom template filters
+    register_template_filters(app)
 
     with app.app_context():
         db.create_all()
