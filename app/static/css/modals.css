@@ -23,10 +23,8 @@
     right: 0;
     bottom: 0;
     left: 0;
-    background-color: rgb(107 114 128 / 0.75);
-    transition-property: opacity;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
+    background-color: rgba(0, 0, 0, 0.5);
+    transition: var(--transition-fast);
 }
 
 .modal-container {
@@ -52,16 +50,14 @@
     display: inline-block;
     vertical-align: bottom;
     background-color: white;
-    border-radius: 0.75rem;
-    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    padding: 0;
     text-align: left;
     overflow: visible;
-    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    box-shadow: var(--shadow-lg);
     transform: translateZ(0);
-    transition-property: all;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
-    border: 1px solid rgb(243 244 246);
+    transition: var(--transition-normal);
+    border: 1px solid var(--color-gray-200);
     max-width: 42rem;
     width: 100%;
 }
@@ -85,56 +81,187 @@
 /* ========== Modal Header ========== */
 
 .modal-header {
-    @apply flex items-center justify-between mb-6 pb-4 border-b border-gray-100;
+    background-color: var(--color-gray-50);
+    padding: var(--spacing-xl) var(--spacing-2xl);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-bottom: 1px solid var(--color-gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0;
 }
 
 .modal-title {
-    @apply text-xl leading-6 font-semibold text-gray-900;
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+    color: var(--color-gray-900);
+    margin: 0;
 }
 
 .modal-close-button {
-    @apply text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 hover:bg-gray-100 rounded-full;
+    color: var(--color-gray-400);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-full);
+    transition: var(--transition-normal);
+    background: transparent;
+}
+
+.modal-close-button:hover {
+    color: var(--color-gray-600);
+    background-color: var(--color-gray-100);
+}
+
+/* ========== Modal Body ========== */
+
+.modal-body {
+    padding: var(--spacing-2xl);
+    background-color: white;
 }
 
 /* ========== Modal Footer ========== */
 
 .modal-footer {
-    @apply flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-100;
+    padding: var(--spacing-xl) var(--spacing-2xl);
+    background-color: var(--color-gray-50);
+    border-top: 1px solid var(--color-gray-200);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-md);
 }
 
 .modal-cancel-button {
-    @apply px-5 py-2.5 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200;
+    padding: var(--spacing-md) var(--spacing-xl);
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-lg);
+    background-color: white;
+    color: var(--color-gray-700);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+}
+
+.modal-cancel-button:hover {
+    background-color: var(--color-gray-50);
+    border-color: var(--color-gray-400);
 }
 
 .modal-save-button {
-    @apply px-5 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200;
+    padding: var(--spacing-md) var(--spacing-xl);
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    background-color: var(--color-primary);
+    color: white;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+}
+
+.modal-save-button:hover:not(:disabled) {
+    background-color: var(--color-primary-hover);
+}
+
+.modal-save-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* ========== Form Elements ========== */
 
-.form-field {
-    @apply mb-4;
+.form-field, .form-group {
+    margin-bottom: var(--spacing-xl);
 }
 
 .form-label {
-    @apply block text-sm font-medium text-gray-700 mb-2;
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-gray-700);
+    margin-bottom: var(--spacing-sm);
 }
 
-.form-label-required::after {
-    @apply text-red-500 ml-1;
+.form-label.required::after, .form-label-required::after {
     content: '*';
+    color: var(--color-danger);
+    margin-left: var(--spacing-xs);
+    font-weight: var(--font-bold);
 }
 
 .form-input {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 hover:border-gray-400;
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-sm);
+    background-color: white;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+.form-input::placeholder {
+    color: var(--color-gray-400);
+}
+
+.form-input:hover {
+    border-color: var(--color-gray-400);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-lighter);
 }
 
 .form-textarea {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 hover:border-gray-400 resize-none;
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-sm);
+    background-color: white;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+    resize: vertical;
+    min-height: 5rem;
+}
+
+.form-textarea::placeholder {
+    color: var(--color-gray-400);
+}
+
+.form-textarea:hover {
+    border-color: var(--color-gray-400);
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-lighter);
 }
 
 .form-select {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 hover:border-gray-400 bg-white;
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-sm);
+    background-color: white;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+.form-select:hover {
+    border-color: var(--color-gray-400);
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-lighter);
 }
 
 .form-checkbox {
