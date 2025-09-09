@@ -1,44 +1,4 @@
-{% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
-{% from "components/modals/base/form_fields.html" import text_input, select_input, date_input, textarea_input, radio_group %}
-{% from "components/entity_linker.html" import entity_linker %}
+{% from "components/modals/base/generic_new.html" import generic_new_modal %}
+{% from "components/modals/configs/entity_modal_configs.html" import task_new_config %}
 
-<div x-data="createCRUDMixin('task', {
-            description: '',
-            due_date: '',
-            priority: 'medium',
-            next_step_type: ''
-        }, {
-            getRequiredFields() {
-                return ['description'];
-            },
-            
-            async saveNewTask() {
-                return await this.saveEntity();
-            }
-        })" 
-     @open-new-task-modal.window="openModal(); resetForm()"
-     @close-modal.window="closeModal()"
-
-    {% call base_modal('new-task-modal', backdrop_click_close=false) %}
-        {{ modal_header('Create New Task') }}
-        
-        <div class="modal-content-spacing">
-            {{ textarea_input("description", "Description", "task.description", "What needs to be done?", 3, required=true) }}
-            
-            <div class="modal-grid-2">
-                {{ date_input("due_date", "Due Date", "task.due_date") }}
-                {{ select_input("priority", "Priority", "task.priority", ["low", "medium", "high"]) }}
-            </div>
-            
-            {{ select_input("next_step_type", "Next Step Type", "task.next_step_type", [
-                {"value": "", "label": "None"},
-                {"value": "call", "label": "Call"},
-                {"value": "email", "label": "Email"},
-                {"value": "meeting", "label": "Meeting"},
-                {"value": "demo", "label": "Demo"}
-            ]) }}
-        </div>
-        
-        {{ modal_footer(save_action="saveNewTask()", save_text="Create Task") }}
-    {% endcall %}
-</div>
+{{ generic_new_modal('task', task_new_config) }}
