@@ -528,7 +528,7 @@
     flex-direction: column;
     justify-content: center;
     padding: 1.25rem; /* p-5 - better internal padding */
-    background-color: #f9fafb; /* bg-gray-50 */
+    background-color: #ffffff; /* bg-white */
 }
 
 /* Task card content row vertical centering */

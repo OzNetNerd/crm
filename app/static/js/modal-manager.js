@@ -18,8 +18,11 @@ window.modalManager = {
      * @param {number|null} entityId - ID of entity for detail/edit modals
      */
     openModal(modalType, action = 'new', entityId = null) {
-        const eventName = `open-${action}-${modalType}-modal`;
-        const eventData = entityId ? { id: entityId } : {};
+        // Standardize event names: 'detail' becomes just the entity name
+        const eventName = action === 'detail' || action === 'edit' 
+            ? `open-${modalType}-modal` 
+            : `open-${action}-${modalType}-modal`;
+        const eventData = entityId ? { [`${modalType}Id`]: entityId } : {};
         
         // Track open modals
         const modalKey = `${modalType}-${action}${entityId ? `-${entityId}` : ''}`;
