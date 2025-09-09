@@ -416,7 +416,25 @@ function getTaskConfig(today) {
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
                         badgeClass: 'badge-gray',
                         icon: window.iconUtility?.getIconSync('no_due_date', 'w-5 h-5')                    }
-                ]
+                ],
+                filterFn: (task, groupKey) => {
+                    if (task.task_type === 'child') return false;
+                    if (!task.due_date && groupKey === 'no_date') return true;
+                    if (!task.due_date) return false;
+                    
+                    const today = new Date();
+                    const dueDate = new Date(task.due_date);
+                    const daysDiff = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+                    
+                    switch(groupKey) {
+                        case 'overdue': return daysDiff < 0;
+                        case 'today': return daysDiff === 0;
+                        case 'this_week': return daysDiff > 0 && daysDiff <= 7;
+                        case 'later': return daysDiff > 7;
+                        case 'no_date': return false; // Already handled above
+                        default: return false;
+                    }
+                }
             },
             'entity': {
                 field: 'entity_type',
@@ -453,7 +471,14 @@ function getTaskConfig(today) {
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
                         badgeClass: 'badge-gray',
                         icon: window.iconUtility?.getIconSync('low', 'w-5 h-5')                    }
-                ]
+                ],
+                filterFn: (task, groupKey) => {
+                    if (task.task_type === 'child') return false;
+                    if (groupKey === 'unrelated') {
+                        return !task.entity_type || task.entity_type === null;
+                    }
+                    return task.entity_type === groupKey;
+                }
             }
         },
 
@@ -537,43 +562,6 @@ function getTaskConfig(today) {
             return cachedElement ? cachedElement.innerHTML : '';
         },
 
-        // Due date category logic
-        getDueDateCategory: (task, today) => {
-            if (!task.due_date) return 'no_date';
-            
-            const dueDate = new Date(task.due_date);
-            const daysDiff = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-            
-            if (daysDiff < 0) return 'overdue';
-            if (daysDiff === 0) return 'today';
-            if (daysDiff <= 7) return 'this_week';
-            return 'later';
-        },
-
-        // Custom grouping logic for due dates and entities
-        customGroupLogic: {
-            'due_date': (tasks, config) => {
-                return config.groupOptions.due_date.groups.map(group => ({
-                    ...group,
-                    entities: tasks.filter(task => {
-                        if (task.task_type === 'child') return false;
-                        return config.getDueDateCategory(task, config.today) === group.key;
-                    })
-                }));
-            },
-            'entity': (tasks, config) => {
-                return config.groupOptions.entity.groups.map(group => ({
-                    ...group,
-                    entities: tasks.filter(task => {
-                        if (task.task_type === 'child') return false;
-                        if (group.key === 'unrelated') {
-                            return !task.entity_type || task.entity_type === null;
-                        }
-                        return task.entity_type === group.key;
-                    })
-                }));
-            }
-        },
 
         // Bulk action mappings
         bulkActions: {
