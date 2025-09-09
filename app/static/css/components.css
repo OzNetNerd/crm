@@ -79,7 +79,13 @@
 .text-error-color { @apply text-red-600; }
 
 /* Error and status messages */
-.text-error-inline { @apply text-xs text-red-600; }
+.text-error-inline { @apply text-xs text-red-600 mt-1; }
+
+/* Common text patterns for small text with colors */
+.text-xs-gray-500 { @apply text-xs text-gray-500; }
+.text-xs-gray-400 { @apply text-xs text-gray-400; }
+.text-xs-gray-300 { @apply text-xs text-gray-300; }
+.text-xs-red-400 { @apply text-xs text-red-400; }
 
 /* Metadata and small secondary text */
 .text-metadata { 
