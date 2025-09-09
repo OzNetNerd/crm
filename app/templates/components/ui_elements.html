@@ -1057,28 +1057,17 @@
 ) %}
 <div class="card-padded-lg filter-section-enhanced">
     <div class="flex flex-col space-y-4">
-        <!-- First row: Group by and Sort by -->
+        <!-- First row: Group by, Sort by, and Filters -->
         <div class="flex flex-wrap items-center gap-6">
             <label class="text-label-dark">Group by:</label>
             {{ generic_group_dropdown('groupBy', group_options) }}
             
             <label class="text-label-dark">Sort by:</label>
             {{ generic_sort_dropdown('sortBy', 'sortDirection', sort_options) }}
-        </div>
-        
-        <!-- Second row: Show completed, Expand/Collapse controls, and filters -->
-        <div class="flex flex-wrap items-center gap-6">
-            <label class="flex items-center">
-                <input type="checkbox" 
-                       x-model="showCompleted"
-                       @change="updateFilters()"
-                       name="{{ show_completed_name }}"
-                       value="true"
-                       class="mr-2">
-                <span class="text-secondary-dark">{{ show_completed_label }}</span>
-            </label>
-
-            {{ expand_collapse_controls('expandedSections') }}
+            
+            {% if primary_filter_options or secondary_filter_options or entity_filter_options %}
+            <label class="text-label-dark">Filters:</label>
+            {% endif %}
             
             {% if primary_filter_options %}
             {{ generic_filter_multiselect('primaryFilter', primary_filter_options, primary_filter_label, 'togglePrimaryFilter', 'getPrimaryFilterDisplayText') }}
@@ -1091,6 +1080,21 @@
             {% if entity_filter_options %}
             {{ generic_filter_multiselect('entityFilter', entity_filter_options, entity_filter_label, 'toggleEntityFilter', 'getEntityFilterDisplayText', with_search=entity_filter_search) }}
             {% endif %}
+        </div>
+        
+        <!-- Second row: Show completed and Expand/Collapse controls -->
+        <div class="flex flex-wrap items-center gap-6">
+            <label class="flex items-center">
+                <input type="checkbox" 
+                       x-model="showCompleted"
+                       @change="updateFilters()"
+                       name="{{ show_completed_name }}"
+                       value="true"
+                       class="mr-2">
+                <span class="text-secondary-dark">{{ show_completed_label }}</span>
+            </label>
+
+            {{ expand_collapse_controls('expandedSections') }}
         </div>
     </div>
 </div>
