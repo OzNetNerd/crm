@@ -108,10 +108,41 @@
     pendingDays: 0,
     
     getNewDueDate() {
-        if (this.pendingDays === 0) return '{{ entity.due_date.strftime('%m/%d/%y') if entity.due_date else '' }}';
-        const date = new Date('{{ entity.due_date.isoformat() if entity.due_date else '' }}');
-        date.setDate(date.getDate() + this.pendingDays);
-        return date.toLocaleDateString('en-US');
+        if (!{{ 'true' if entity.due_date else 'false' }}) return '';
+        
+        const originalDate = new Date('{{ entity.due_date.isoformat() if entity.due_date else '' }}');
+        const adjustedDate = new Date(originalDate);
+        adjustedDate.setDate(adjustedDate.getDate() + this.pendingDays);
+        
+        // Format as dd/mm/yy
+        const day = String(adjustedDate.getDate()).padStart(2, '0');
+        const month = String(adjustedDate.getMonth() + 1).padStart(2, '0');
+        const year = String(adjustedDate.getFullYear()).slice(-2);
+        const formattedDate = `${day}/${month}/${year}`;
+        
+        // Calculate days difference from today
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        adjustedDate.setHours(0, 0, 0, 0);
+        const diffTime = adjustedDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        let dateText = formattedDate;
+        if (diffDays < 0) {
+            dateText += ` • ${Math.abs(diffDays)} days ago`;
+        } else if (diffDays > 0) {
+            dateText += ` • ${diffDays} days to go`;
+        } else {
+            dateText += ` • Today`;
+        }
+        
+        // Add pending days indicator if there are changes
+        if (this.pendingDays !== 0) {
+            const sign = this.pendingDays > 0 ? '+' : '';
+            dateText += ` (${sign}${this.pendingDays} days)`;
+        }
+        
+        return dateText;
     },
     
     adjustDays(days) {
@@ -501,7 +532,7 @@
     {{ task.next_step_type }}
     {% endif %}
     {% if task.due_date %}
-    • Due: <span x-text="getNewDueDate ? getNewDueDate() : '{{ task.due_date.strftime('%m/%d/%y') }}'">{{ task.due_date.strftime('%m/%d/%y') }}</span>
+    • Due: <span x-text="getNewDueDate ? getNewDueDate() : '{{ task.due_date.strftime('%d/%m/%y') }}'">{{ task.due_date.strftime('%d/%m/%y') }}</span>
     {% endif %}
     {% if task.is_overdue %}
     • <span class="text-badge-overdue">OVERDUE</span>
