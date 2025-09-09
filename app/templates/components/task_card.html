@@ -1,8 +1,9 @@
 {% from "components/icons.html" import check_icon, pencil_icon, document_icon, trash_icon %}
 {% from "components/list_section.html" import status_badge %}
 {% from "components/metadata_display.html" import standard_card_metadata, format_date_with_status %}
+{% from "components/ui_elements.html" import bulk_selection_checkbox %}
 {% macro render_task(task, group_key='', current_group_value='', indent_level=0) %}
-<div class="task-card card-padded" 
+<div class="task-card card-padded relative" 
      data-task-id="{{ task.id }}"
      style="margin-left: {{ indent_level * 20 }}px;"
      {% if task.task_type == 'child' %}class="task-card card-padded border-l-4 border-l-blue-200"{% endif %}
@@ -138,6 +139,11 @@
      @reschedule-saved.window="cancelChanges()"
      :class="{ 'ring-2 ring-blue-200 bg-blue-50': isEditing }">
     
+    <!-- Bulk selection checkbox -->
+    <div class="absolute top-2 left-2">
+        {{ bulk_selection_checkbox(task.id) }}
+    </div>
+
     <!-- Row 1: Priority badge, Company info, Reschedule buttons -->
     <div class="task-content-grid">
         <div class="task-badge-cell">
