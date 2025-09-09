@@ -1,68 +1,36 @@
 {% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
 
-<div x-data="{
-        show: false,
-        loading: false,
-        saving: false,
-        opportunity: {
+<div x-data="createCRUDMixin('opportunity', {
             name: '',
             company_id: '',
             value: '',
             probability: 0,
             expected_close_date: '',
             stage: 'prospect'
-        },
-        companies: [],
-        
-        async loadCompanies() {
-            if (this.companies.length === 0) {
-                try {
-                    const response = await fetch('/api/companies');
-                    if (response.ok) {
-                        this.companies = await response.json();
-                    }
-                } catch (error) {
-                    console.error('Error loading companies:', error);
-                }
-            }
-        },
-        
-        async saveNewOpportunity() {
-            if (!this.opportunity.name.trim() || !this.opportunity.company_id) return;
-            this.saving = true;
+        }, {
+            companies: [],
             
-            try {
-                const response = await fetch('/api/opportunities', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(this.opportunity)
-                });
-                
-                if (response.ok) {
-                    this.resetForm();
-                    this.show = false;
-                    window.location.reload();
+            getRequiredFields() {
+                return ['name', 'company_id'];
+            },
+            
+            async loadCompanies() {
+                if (this.companies.length === 0) {
+                    try {
+                        const response = await this.apiCall('/api/companies');
+                        this.companies = response;
+                    } catch (error) {
+                        // Error handled by apiCall
+                    }
                 }
-            } catch (error) {
-                console.error('Error creating opportunity:', error);
-            } finally {
-                this.saving = false;
+            },
+            
+            async saveNewOpportunity() {
+                return await this.saveEntity();
             }
-        },
-        
-        resetForm() {
-            this.opportunity = {
-                name: '',
-                company_id: '',
-                value: '',
-                probability: 0,
-                expected_close_date: '',
-                stage: 'prospect'
-            };
-        }
-     }" 
-     @open-new-opportunity-modal.window="show = true; loadCompanies(); resetForm()"
-     @close-modal.window="show = false">
+        })" 
+     @open-new-opportunity-modal.window="openModal(); loadCompanies(); resetForm()"
+     @close-modal.window="closeModal()"
 
     {% call base_modal('new-opportunity-modal') %}
         {{ modal_header('Create New Opportunity') }}

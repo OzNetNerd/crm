@@ -1,0 +1,385 @@
+/**
+ * Modal System CSS - Semantic classes to replace inline Tailwind repetition
+ * 
+ * This file consolidates all modal styling into reusable, semantic CSS classes
+ * eliminating the need for repeated Tailwind classes in templates.
+ */
+
+/* ========== Base Modal Structure ========== */
+
+.modal-overlay {
+    @apply fixed inset-0 z-50 overflow-y-auto;
+}
+
+.modal-backdrop {
+    @apply fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity;
+}
+
+.modal-container {
+    @apply flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0;
+}
+
+.modal-content {
+    @apply inline-block align-bottom bg-white rounded-xl px-6 pt-6 pb-6 text-left overflow-visible shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-100;
+}
+
+.modal-content-large {
+    @apply inline-block align-bottom bg-white rounded-xl px-6 pt-6 pb-6 text-left overflow-visible shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-gray-100;
+}
+
+.modal-content-medium {
+    @apply inline-block align-bottom bg-white rounded-xl px-6 pt-6 pb-6 text-left overflow-visible shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100;
+}
+
+/* ========== Modal Header ========== */
+
+.modal-header {
+    @apply flex items-center justify-between mb-6 pb-4 border-b border-gray-100;
+}
+
+.modal-title {
+    @apply text-xl leading-6 font-semibold text-gray-900;
+}
+
+.modal-close-button {
+    @apply text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 hover:bg-gray-100 rounded-full;
+}
+
+/* ========== Modal Footer ========== */
+
+.modal-footer {
+    @apply flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-100;
+}
+
+.modal-cancel-button {
+    @apply px-5 py-2.5 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200;
+}
+
+.modal-save-button {
+    @apply px-5 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200;
+}
+
+/* ========== Form Elements ========== */
+
+.form-field {
+    @apply mb-4;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+.form-label-required::after {
+    @apply text-red-500 ml-1;
+    content: '*';
+}
+
+.form-input {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 hover:border-gray-400;
+}
+
+.form-textarea {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 hover:border-gray-400 resize-none;
+}
+
+.form-select {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 hover:border-gray-400 bg-white;
+}
+
+.form-checkbox {
+    @apply text-blue-600 focus:ring-blue-500 border-gray-300 rounded;
+}
+
+.form-radio {
+    @apply mr-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded;
+}
+
+/* ========== Layout Utilities ========== */
+
+.modal-grid-2 {
+    @apply grid grid-cols-2 gap-4;
+}
+
+.modal-grid-3 {
+    @apply grid grid-cols-3 gap-4;
+}
+
+.modal-section {
+    @apply space-y-4;
+}
+
+.modal-section-title {
+    @apply text-md font-semibold text-gray-900 pb-2 border-b border-gray-100;
+}
+
+.modal-content-spacing {
+    @apply space-y-5;
+}
+
+/* ========== Tab Navigation ========== */
+
+.modal-tab-container {
+    @apply border-b border-gray-200;
+}
+
+.modal-tab-nav {
+    @apply -mb-px flex space-x-8;
+}
+
+.modal-tab-button {
+    @apply whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200;
+}
+
+.modal-tab-button-active {
+    @apply border-blue-500 text-blue-600;
+}
+
+.modal-tab-button-inactive {
+    @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
+}
+
+.modal-tab-badge {
+    @apply ml-1 bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs;
+}
+
+/* ========== Loading States ========== */
+
+.modal-loading {
+    @apply flex items-center justify-center py-8;
+}
+
+.modal-spinner {
+    @apply inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600;
+}
+
+.modal-loading-text {
+    @apply text-gray-500;
+}
+
+/* ========== Notes Section ========== */
+
+.modal-notes {
+    @apply mt-6;
+}
+
+.modal-notes-title {
+    @apply text-sm font-medium text-gray-900 mb-3;
+}
+
+.modal-notes-list {
+    @apply space-y-3 mb-4 max-h-40 overflow-y-auto;
+}
+
+.modal-note-item {
+    @apply bg-gray-50 rounded-lg p-3;
+}
+
+.modal-note-content {
+    @apply flex justify-between items-start;
+}
+
+.modal-note-text {
+    @apply text-sm text-gray-800;
+}
+
+.modal-note-date {
+    @apply text-xs text-gray-500 mt-1;
+}
+
+.modal-note-delete {
+    @apply ml-2 text-gray-400 hover:text-red-600 transition-colors duration-200;
+}
+
+.modal-note-input-container {
+    @apply flex space-x-2;
+}
+
+.modal-note-input {
+    @apply flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.modal-note-add-button {
+    @apply px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* ========== Empty States ========== */
+
+.modal-empty-state {
+    @apply text-center text-gray-500 py-8;
+}
+
+.modal-empty-state-small {
+    @apply text-center text-gray-500 py-4;
+}
+
+.modal-empty-state-text {
+    @apply text-sm italic;
+}
+
+/* ========== Entity Relationship Sections ========== */
+
+.modal-related-items {
+    @apply space-y-2 max-h-32 overflow-y-auto;
+}
+
+.modal-related-item {
+    @apply flex items-center justify-between p-2 bg-gray-50 rounded;
+}
+
+.modal-related-item-content {
+    @apply flex-1;
+}
+
+.modal-related-item-title {
+    @apply text-sm font-medium text-gray-900;
+}
+
+.modal-related-item-subtitle {
+    @apply text-xs text-gray-500;
+}
+
+.modal-related-item-meta {
+    @apply text-xs text-gray-400;
+}
+
+/* ========== Task-Specific Styles ========== */
+
+.modal-task-type-selector {
+    @apply mb-6 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100;
+}
+
+.modal-radio-group {
+    @apply flex space-x-6;
+}
+
+.modal-radio-label {
+    @apply flex items-center cursor-pointer;
+}
+
+.modal-radio-text {
+    @apply text-sm text-gray-700;
+}
+
+.modal-child-task-container {
+    @apply p-3 border border-gray-200 rounded-lg;
+}
+
+.modal-child-task-header {
+    @apply flex justify-between items-start mb-2;
+}
+
+.modal-child-task-title {
+    @apply text-sm font-medium text-gray-700;
+}
+
+.modal-child-task-delete {
+    @apply text-red-500 hover:text-red-700;
+}
+
+.modal-child-task-input {
+    @apply w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.modal-child-task-grid {
+    @apply grid grid-cols-3 gap-2 mt-2;
+}
+
+.modal-child-task-controls {
+    @apply px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.modal-add-subtask-button {
+    @apply text-sm text-blue-600 hover:text-blue-800;
+}
+
+/* ========== Status Badges ========== */
+
+.modal-status-badge {
+    @apply px-2 py-1 text-xs font-medium rounded-full capitalize;
+}
+
+.modal-status-complete {
+    @apply bg-green-100 text-green-800;
+}
+
+.modal-status-pending {
+    @apply bg-gray-100 text-gray-800;
+}
+
+.modal-status-in-progress {
+    @apply bg-yellow-100 text-yellow-800;
+}
+
+.modal-status-cancelled {
+    @apply bg-red-100 text-red-800;
+}
+
+/* ========== Priority Indicators ========== */
+
+.modal-priority-high {
+    @apply text-red-600 font-medium;
+}
+
+.modal-priority-medium {
+    @apply text-yellow-600 font-medium;
+}
+
+.modal-priority-low {
+    @apply text-gray-600 font-medium;
+}
+
+/* ========== Transitions ========== */
+
+.modal-fade-enter {
+    @apply ease-out duration-300 opacity-0;
+}
+
+.modal-fade-enter-to {
+    @apply opacity-100;
+}
+
+.modal-fade-leave {
+    @apply ease-in duration-200 opacity-100;
+}
+
+.modal-fade-leave-to {
+    @apply opacity-0;
+}
+
+.modal-scale-enter {
+    @apply ease-out duration-300 opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95;
+}
+
+.modal-scale-enter-to {
+    @apply opacity-100 translate-y-0 sm:scale-100;
+}
+
+.modal-scale-leave {
+    @apply ease-in duration-200 opacity-100 translate-y-0 sm:scale-100;
+}
+
+.modal-scale-leave-to {
+    @apply opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95;
+}
+
+/* ========== Entity Linker Specific ========== */
+
+.modal-entity-linker-container {
+    @apply relative;
+}
+
+.modal-entity-linker-input {
+    @apply form-input;
+}
+
+.modal-entity-linker-results {
+    @apply absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-40 overflow-y-auto;
+}
+
+.modal-entity-linker-result {
+    @apply px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm;
+}
+
+.modal-entity-linker-selected {
+    @apply bg-blue-50 text-blue-800;
+}
