@@ -556,11 +556,6 @@ function getTaskConfig(today) {
             'unrelated': true
         },
 
-        // Entity card renderer
-        renderEntityCard: (task, groupContext) => {
-            const cachedElement = document.getElementById(`task-card-${task.id}`);
-            return cachedElement ? cachedElement.innerHTML : '';
-        },
 
 
         // Bulk action mappings
@@ -1292,11 +1287,6 @@ function getCompanyConfig(today) {
             'active': true
         },
 
-        // Entity card renderer
-        renderEntityCard: (company, groupContext) => {
-            const cachedElement = document.getElementById(`company-card-${company.id}`);
-            return cachedElement ? cachedElement.innerHTML : '';
-        },
 
         // Action mappings
         actions: {
