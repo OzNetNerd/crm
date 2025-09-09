@@ -98,6 +98,9 @@ function createEntityManager(config) {
 
         // Get primary filter value using config
         getPrimaryFilterValue(entity) {
+            if (config.getPrimaryFilterValue) {
+                return config.getPrimaryFilterValue(entity);
+            }
             if (config.priorityLogic) {
                 return config.priorityLogic(entity);
             }
@@ -106,11 +109,17 @@ function createEntityManager(config) {
 
         // Get secondary filter value using config
         getSecondaryFilterValue(entity) {
+            if (config.getSecondaryFilterValue) {
+                return config.getSecondaryFilterValue(entity);
+            }
             return entity[config.secondaryFilterField] || 'none';
         },
 
         // Get entity filter value using config
         getEntityFilterValue(entity) {
+            if (config.getEntityFilterValue) {
+                return config.getEntityFilterValue(entity);
+            }
             const value = entity[config.entityFilterField];
             return value || 'unrelated';
         },
@@ -191,7 +200,13 @@ function createEntityManager(config) {
             const groupConfig = config.groupOptions[groupType];
             if (!groupConfig) return [];
 
-            return groupConfig.groups.map(group => ({
+            // Handle dynamic groups that need to be generated from data
+            let groups = groupConfig.groups;
+            if (groupConfig.isDynamic && groupConfig.generateGroups) {
+                groups = groupConfig.generateGroups(entities);
+            }
+
+            return groups.map(group => ({
                 ...group,
                 entities: entities.filter(entity => {
                     if (groupConfig.filterFn) {
