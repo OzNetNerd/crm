@@ -2,12 +2,20 @@
 <div x-cloak x-data="{
     show: false,
     saving: false,
+    taskType: 'single',
     task: {
         description: '',
         due_date: '',
         priority: 'medium',
-        next_step_type: ''
+        next_step_type: '',
+        entity_type: '',
+        entity_id: '',
+        dependency_type: 'parallel'
     },
+    childTasks: [
+        { description: '', due_date: '', priority: 'medium', next_step_type: '' },
+        { description: '', due_date: '', priority: 'medium', next_step_type: '' }
+    ],
     openModal() {
         this.show = true;
         this.resetForm();
@@ -16,13 +24,29 @@
         this.show = false;
     },
     resetForm() {
+        this.taskType = 'single';
         this.task = {
             description: '',
             due_date: '',
             priority: 'medium',
-            next_step_type: ''
+            next_step_type: '',
+            entity_type: '',
+            entity_id: '',
+            dependency_type: 'parallel'
         };
+        this.childTasks = [
+            { description: '', due_date: '', priority: 'medium', next_step_type: '' },
+            { description: '', due_date: '', priority: 'medium', next_step_type: '' }
+        ];
         this.saving = false;
+    },
+    addChildTask() {
+        this.childTasks.push({ description: '', due_date: '', priority: 'medium', next_step_type: '' });
+    },
+    removeChildTask(index) {
+        if (this.childTasks.length > 2) {
+            this.childTasks.splice(index, 1);
+        }
     },
     async saveNewTask() {
         if (!this.task.description.trim()) {
@@ -32,19 +56,49 @@
         
         this.saving = true;
         try {
-            const response = await fetch('/tasks/new', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(this.task)
-            });
-            
-            if (response.ok) {
-                this.closeModal();
-                window.location.reload(); // Simple refresh for now
+            if (this.taskType === 'single') {
+                // Create single task
+                const response = await fetch('/tasks/new', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(this.task)
+                });
+                
+                if (response.ok) {
+                    this.closeModal();
+                    window.location.reload();
+                } else {
+                    alert('Error creating task');
+                }
             } else {
-                alert('Error creating task');
+                // Create multi-task
+                const validChildTasks = this.childTasks.filter(child => child.description.trim());
+                if (validChildTasks.length < 2) {
+                    alert('Multi-tasks must have at least 2 child tasks with descriptions');
+                    return;
+                }
+                
+                const multiTaskData = {
+                    ...this.task,
+                    child_tasks: validChildTasks
+                };
+                
+                const response = await fetch('/tasks/multi/new', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(multiTaskData)
+                });
+                
+                if (response.ok) {
+                    this.closeModal();
+                    window.location.reload();
+                } else {
+                    alert('Error creating multi-task');
+                }
             }
         } catch (error) {
             console.error('Error:', error);
@@ -89,7 +143,7 @@
                  class="modal-content"
                  @click.stop>
                 <div class="modal-header">
-                    <h3 class="modal-title">Create New Task</h3>
+                    <h3 class="modal-title" x-text="taskType === 'single' ? 'Create New Task' : 'Create Multi-Task'"></h3>
                     <button @click="closeModal()" class="modal-close-button">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -98,13 +152,27 @@
                 </div>
 
                 <div class="modal-body modal-content-spacing">
+                    <!-- Task Type Selection -->
+                    <div class="form-group">
+                        <label class="form-label">Task Type</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" x-model="taskType" value="single" class="form-radio">
+                                <span class="ml-2">Single Task</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" x-model="taskType" value="multi" class="form-radio">
+                                <span class="ml-2">Multi-Task (Parent + Child Tasks)</span>
+                            </label>
+                        </div>
+                    </div>
                     <!-- Description -->
                     <div class="form-group">
-                        <label class="form-label required">Description</label>
+                        <label class="form-label required" x-text="taskType === 'single' ? 'Description' : 'Parent Task Description'"></label>
                         <textarea x-model="task.description" 
                                   class="form-textarea" 
                                   rows="3" 
-                                  placeholder="What needs to be done?"
+                                  :placeholder="taskType === 'single' ? 'What needs to be done?' : 'What is the overall goal?'"
                                   required></textarea>
                     </div>
 
@@ -126,8 +194,8 @@
                         </div>
                     </div>
 
-                    <!-- Next Step Type -->
-                    <div class="form-group">
+                    <!-- Next Step Type (Single Task Only) -->
+                    <div class="form-group" x-show="taskType === 'single'">
                         <label class="form-label">Next Step Type</label>
                         <select x-model="task.next_step_type" class="form-select">
                             <option value="">None</option>
@@ -136,6 +204,89 @@
                             <option value="meeting">Meeting</option>
                             <option value="demo">Demo</option>
                         </select>
+                    </div>
+
+                    <!-- Multi-Task Specific Fields -->
+                    <div x-show="taskType === 'multi'" x-cloak>
+                        <!-- Entity Type and Dependency -->
+                        <div class="modal-grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Related To</label>
+                                <select x-model="task.entity_type" class="form-select">
+                                    <option value="">None</option>
+                                    <option value="company">Company</option>
+                                    <option value="contact">Contact</option>
+                                    <option value="opportunity">Opportunity</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Child Task Dependencies</label>
+                                <select x-model="task.dependency_type" class="form-select">
+                                    <option value="parallel">Parallel (can run simultaneously)</option>
+                                    <option value="sequential">Sequential (must complete in order)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Child Tasks Section -->
+                        <div class="form-group">
+                            <div class="flex justify-between items-center mb-3">
+                                <label class="form-label">Child Tasks</label>
+                                <button type="button" @click="addChildTask()" 
+                                        class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
+                                    Add Child Task
+                                </button>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <template x-for="(child, index) in childTasks" :key="index">
+                                    <div class="border border-gray-200 rounded p-3 bg-gray-50">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <span class="text-sm font-medium text-gray-700" x-text="'Child Task ' + (index + 1)"></span>
+                                            <button type="button" @click="removeChildTask(index)" 
+                                                    x-show="childTasks.length > 2"
+                                                    class="text-red-600 hover:text-red-800 text-xs">
+                                                Remove
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="space-y-2">
+                                            <div>
+                                                <textarea x-model="child.description" 
+                                                          class="form-textarea text-sm" 
+                                                          rows="2" 
+                                                          placeholder="Child task description..."
+                                                          required></textarea>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-3 gap-2">
+                                                <div>
+                                                    <input x-model="child.due_date" 
+                                                           type="date" 
+                                                           class="form-input text-sm">
+                                                </div>
+                                                <div>
+                                                    <select x-model="child.priority" class="form-select text-sm">
+                                                        <option value="low">Low</option>
+                                                        <option value="medium">Medium</option>
+                                                        <option value="high">High</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <select x-model="child.next_step_type" class="form-select text-sm">
+                                                        <option value="">None</option>
+                                                        <option value="call">Call</option>
+                                                        <option value="email">Email</option>
+                                                        <option value="meeting">Meeting</option>
+                                                        <option value="demo">Demo</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -148,13 +299,13 @@
                     <button @click="saveNewTask()" 
                             :disabled="saving"
                             class="modal-save-button">
-                        <span x-show="!saving">Create Task</span>
+                        <span x-show="!saving" x-text="taskType === 'single' ? 'Create Task' : 'Create Multi-Task'"></span>
                         <span x-show="saving" class="flex items-center">
                             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Creating...
+                            <span x-text="taskType === 'single' ? 'Creating...' : 'Creating Multi-Task...'"></span>
                         </span>
                     </button>
                 </div>
