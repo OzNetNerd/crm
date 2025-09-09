@@ -67,9 +67,9 @@
                         <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
                             <div>
                                 <p class="text-sm font-medium text-gray-900" x-text="contact.name"></p>
-                                <p class="text-xs text-gray-500" x-text="contact.role"></p>
+                                <p class="text-xs-gray-500" x-text="contact.role"></p>
                             </div>
-                            <div class="text-xs text-gray-500">
+                            <div class="text-xs-gray-500">
                                 <div x-show="contact.email" x-text="contact.email"></div>
                                 <div x-show="contact.phone" x-text="contact.phone"></div>
                             </div>
@@ -86,9 +86,9 @@
                         <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
                             <div>
                                 <p class="text-sm font-medium text-gray-900" x-text="opportunity.name"></p>
-                                <p class="text-xs text-gray-500" x-text="`$${opportunity.value?.toLocaleString()} • ${opportunity.stage}`"></p>
+                                <p class="text-xs-gray-500" x-text="`$${opportunity.value?.toLocaleString()} • ${opportunity.stage}`"></p>
                             </div>
-                            <span class="text-xs text-gray-400" x-text="new Date(opportunity.expected_close_date).toLocaleDateString()"></span>
+                            <span class="text-xs-gray-400" x-text="new Date(opportunity.expected_close_date).toLocaleDateString()"></span>
                         </div>
                     </template>
                 </div>
