@@ -1,7 +1,18 @@
 {# HTMX Content Partial for Tasks - Dynamic task sections only #}
-{% from "components/task_card.html" import render_task, render_task_hierarchy %}
+{% from "components/expandable_card.html" import expandable_card, task_header_content, task_title_content, task_metadata_content, task_reschedule_buttons, action_buttons_row %}
 {% from "components/ui_elements.html" import section_group_header %}
 {% from "components/icons.html" import clipboard_list_icon, bolt_icon, check_circle_icon_solid, fire_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, calendar_days_icon, calendar_icon, chart_bar_icon, question_mark_circle_icon, building_office_icon, user_icon, currency_dollar_icon %}
+
+{# Helper macro to render a task using the new expandable_card structure #}
+{% macro render_task(task, group_key='') %}
+{{ expandable_card('task', task, task.id,
+    expansion_enabled=true,
+    group_key=group_key,
+    badge_content=task_header_content(task),
+    title_content=task_title_content(task),
+    metadata_content=task_metadata_content(task),
+    action_buttons=action_buttons_row('task', task.id)) }}
+{% endmacro %}
 
 {# Alpine.js data for expand/collapse state #}
 <div x-data="{ 
@@ -54,11 +65,7 @@
             <div class="p-6" x-show="expandedSections['todo']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if task.status == 'todo' and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'todo') }}
-                        {% else %}
-                            {{ render_task(task, 'todo') }}
-                        {% endif %}
+                        {{ render_task(task, 'todo') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -72,11 +79,7 @@
             <div class="p-6" x-show="expandedSections['in-progress']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if task.status == 'in-progress' and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'in-progress') }}
-                        {% else %}
-                            {{ render_task(task, 'in-progress') }}
-                        {% endif %}
+                        {{ render_task(task, 'in-progress') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -92,11 +95,7 @@
                 {% for task in filtered_tasks %}
                     {% if task.status == 'complete' and task.task_type != 'child' %}
                         <div class="opacity-60">
-                            {% if task.task_type == 'parent' %}
-                                {{ render_task_hierarchy(task, 'complete') }}
-                            {% else %}
-                                {{ render_task(task, 'complete') }}
-                            {% endif %}
+                            {{ render_task(task, 'complete') }}
                         </div>
                     {% endif %}
                 {% else %}
@@ -115,11 +114,7 @@
             <div class="p-6" x-show="expandedSections['high']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if task.priority == 'high' and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'high') }}
-                        {% else %}
-                            {{ render_task(task, 'high') }}
-                        {% endif %}
+                        {{ render_task(task, 'high') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -133,11 +128,7 @@
             <div class="p-6" x-show="expandedSections['medium']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if task.priority == 'medium' and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'medium') }}
-                        {% else %}
-                            {{ render_task(task, 'medium') }}
-                        {% endif %}
+                        {{ render_task(task, 'medium') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -151,11 +142,7 @@
             <div class="p-6" x-show="expandedSections['low']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if task.priority == 'low' and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'low') }}
-                        {% else %}
-                            {{ render_task(task, 'low') }}
-                        {% endif %}
+                        {{ render_task(task, 'low') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -191,11 +178,7 @@
             <div class="p-6" x-show="expandedSections['overdue']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if task.due_date and (task.due_date - today).days < 0 and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'overdue') }}
-                        {% else %}
-                            {{ render_task(task, 'overdue') }}
-                        {% endif %}
+                        {{ render_task(task, 'overdue') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -209,11 +192,7 @@
             <div class="p-6" x-show="expandedSections['today']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if task.due_date and (task.due_date - today).days == 0 and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'today') }}
-                        {% else %}
-                            {{ render_task(task, 'today') }}
-                        {% endif %}
+                        {{ render_task(task, 'today') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -227,11 +206,7 @@
             <div class="p-6" x-show="expandedSections['this_week']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if task.due_date and (task.due_date - today).days > 0 and (task.due_date - today).days <= 7 and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'this_week') }}
-                        {% else %}
-                            {{ render_task(task, 'this_week') }}
-                        {% endif %}
+                        {{ render_task(task, 'this_week') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -245,11 +220,7 @@
             <div class="p-6" x-show="expandedSections['later']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if task.due_date and (task.due_date - today).days > 7 and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'later') }}
-                        {% else %}
-                            {{ render_task(task, 'later') }}
-                        {% endif %}
+                        {{ render_task(task, 'later') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -263,11 +234,7 @@
             <div class="p-6" x-show="expandedSections['no_date']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if not task.due_date and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'no_date') }}
-                        {% else %}
-                            {{ render_task(task, 'no_date') }}
-                        {% endif %}
+                        {{ render_task(task, 'no_date') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -284,11 +251,7 @@
             <div class="p-6" x-show="expandedSections['company']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if task.entity_type == 'company' and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'company') }}
-                        {% else %}
-                            {{ render_task(task, 'company') }}
-                        {% endif %}
+                        {{ render_task(task, 'company') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -302,11 +265,7 @@
             <div class="p-6" x-show="expandedSections['contact']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if task.entity_type == 'contact' and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'contact') }}
-                        {% else %}
-                            {{ render_task(task, 'contact') }}
-                        {% endif %}
+                        {{ render_task(task, 'contact') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -320,11 +279,7 @@
             <div class="p-6" x-show="expandedSections['opportunity']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if task.entity_type == 'opportunity' and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'opportunity') }}
-                        {% else %}
-                            {{ render_task(task, 'opportunity') }}
-                        {% endif %}
+                        {{ render_task(task, 'opportunity') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>
@@ -338,11 +293,7 @@
             <div class="p-6" x-show="expandedSections['unrelated']" x-cloak x-transition>
                 {% for task in filtered_tasks %}
                     {% if (not task.entity_type or task.entity_type == 'unrelated') and task.task_type != 'child' %}
-                        {% if task.task_type == 'parent' %}
-                            {{ render_task_hierarchy(task, 'unrelated') }}
-                        {% else %}
-                            {{ render_task(task, 'unrelated') }}
-                        {% endif %}
+                        {{ render_task(task, 'unrelated') }}
                     {% endif %}
                 {% else %}
                     <p class="text-empty-state">No matching tasks found</p>

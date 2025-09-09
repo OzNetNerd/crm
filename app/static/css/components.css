@@ -524,17 +524,25 @@
     border: 1px solid #e5e7eb; /* border border-gray-200 */
 }
 
-/* Task card specific styling */
-.task-card {
-    margin-bottom: 1rem; /* mb-4 - increased spacing */
+/* Shared card base styling for all entity cards */
+.entity-card-base {
+    margin-bottom: 1rem; /* mb-4 */
     cursor: pointer;
     transition: box-shadow 0.15s ease-in-out; /* transition-shadow */
-    min-height: 130px; /* Increased minimum height for better spacing */
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 1.25rem; /* p-5 - better internal padding */
+    padding: 1.25rem; /* p-5 */
     background-color: #ffffff; /* bg-white */
+}
+
+.entity-card-base:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* hover:shadow-md */
+}
+
+/* Task card specific styling */
+.task-card {
+    min-height: 130px; /* Increased minimum height for better spacing */
 }
 
 /* Task card content row vertical centering */
@@ -590,8 +598,9 @@
     align-items: center;
 }
 
-.task-card:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* hover:shadow-md */
+/* Opportunity card inherits base styling */
+.opportunity-card {
+    /* No additional specific styling needed - inherits from entity-card-base */
 }
 
 /* Task summary vertical centering */

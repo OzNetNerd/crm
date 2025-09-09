@@ -1,5 +1,5 @@
 {% extends "base/layout.html" %}
-{% from "components/task_card.html" import render_task, render_task_hierarchy %}
+{% from "components/expandable_card.html" import expandable_card, task_header_content, task_reschedule_buttons, action_buttons_row %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/icons.html" import clipboard_list_icon, bolt_icon, check_circle_icon_solid, fire_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, calendar_days_icon, calendar_icon, chart_bar_icon, question_mark_circle_icon, building_office_icon, user_icon, currency_dollar_icon, chevron_right_icon %}
 {% from "components/ui_elements.html" import expand_collapse_controls, dropdown_select, dropdown_multiselect, section_group_header, task_section_group, badge_count_helper, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar %}
@@ -117,14 +117,29 @@
 
     <!-- Hidden pre-rendered task cards for client-side use -->
     <div style="display: none;" id="task-cards-cache">
-        {% from "components/task_card.html" import render_task, render_task_hierarchy %}
+        {% from "components/expandable_card.html" import expandable_card, task_header_content, task_title_content, task_metadata_content, task_reschedule_buttons, action_buttons_row %}
         {% for task in tasks_objects %}
             {% if task.task_type != 'child' %}
                 <div id="task-card-{{ task.id }}">
-                    {% if task.task_type == 'parent' %}
-                        {{ render_task_hierarchy(task) }}
-                    {% else %}
-                        {{ render_task(task) }}
+                    {{ expandable_card('task', task, task.id,
+                        expansion_enabled=true,
+                        badge_content=task_header_content(task),
+                        title_content=task_title_content(task),
+                        metadata_content=task_metadata_content(task),
+                        action_buttons=action_buttons_row('task', task.id)) }}
+                    
+                    <!-- Render child tasks if this is a parent -->
+                    {% if task.task_type == 'parent' and task.child_tasks %}
+                        {% for child in task.child_tasks %}
+                            {% if show_completed or child.status != 'complete' %}
+                                {{ expandable_card('task', child, child.id,
+                                    expansion_enabled=true,
+                                    badge_content=task_header_content(child),
+                                    title_content=task_title_content(child),
+                                    metadata_content=task_metadata_content(child),
+                                    action_buttons=action_buttons_row('task', child.id)) }}
+                            {% endif %}
+                        {% endfor %}
                     {% endif %}
                 </div>
             {% endif %}
