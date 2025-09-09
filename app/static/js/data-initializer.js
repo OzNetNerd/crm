@@ -35,6 +35,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Trigger Alpine.js re-initialization after data is loaded
+    // This fixes the timing issue where Alpine.js initializes before data is available
+    document.dispatchEvent(new CustomEvent('dataReady'));
+    
     // Initialize specific functionality based on page
     const pageType = dataContainer.dataset.pageType;
     

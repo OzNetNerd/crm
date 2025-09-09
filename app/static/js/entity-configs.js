@@ -1094,7 +1094,7 @@ function getCompanyConfig(today) {
                     }
                 ],
                 filterFn: (company, groupKey) => {
-                    const industry = company.industry || 'unknown';
+                    const industry = (company.industry || 'unknown').toLowerCase();
                     return industry === groupKey;
                 }
             },

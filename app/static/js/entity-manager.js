@@ -45,6 +45,25 @@ function createEntityManager(config) {
             this.setupEventDelegation();
             // Ensure all sections are expanded by default
             this.expandedSections = { ...config.defaultExpandedSections };
+            
+            // Listen for data ready event to reload data
+            document.addEventListener('dataReady', () => {
+                this.reloadData();
+            });
+        },
+
+        // Reload data when it becomes available
+        reloadData() {
+            const newData = window[config.dataSource];
+            if (newData && Array.isArray(newData) && newData.length > 0) {
+                console.log(`Entity Manager: Reloading ${newData.length} items from ${config.dataSource}`);
+                this.allEntities = [...newData]; // Use spread to trigger reactivity
+                this.updateFilters();
+                // Force re-render by toggling a filter state
+                const currentFilter = this.primaryFilter;
+                this.primaryFilter = [...currentFilter];
+                console.log('Alpine.js reactivity triggered via data spread and filter update');
+            }
         },
 
         // Setup event delegation for dynamically rendered entity cards
