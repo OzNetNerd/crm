@@ -1,6 +1,6 @@
 {% extends "base/layout.html" %}
 {% from "components/page_template.html" import page_layout %}
-{% from "components/ui_elements.html" import action_button, pluralized_count, entity_link_button %}
+{% from "components/ui_elements.html" import action_button, pluralized_count, entity_link_button, bulk_selection_checkbox, empty_state %}
 
 {% block title %}Companies - CRM{% endblock %}
 
@@ -42,41 +42,63 @@
 
 {% call page_layout("Companies", "Manage your company relationships", buttons=company_buttons, summary_data=company_stats) %}
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for company in companies %}
-        <div class="card-padded-lg hover:shadow-md transition-shadow">
-            <div class="flex items-start justify-between mb-4">
-                <h3 class="text-company-name text-lg font-semibold">{{ company.name }}</h3>
-                {{ action_button('openCompanyModal(' + company.id|string + ')', '⋯', 'text-link-subtle') }}
-            </div>
-            
-            {% if company.industry %}
-                <p class="text-secondary-dark mb-2">{{ company.industry }}</p>
-            {% endif %}
-            
-            {% if company.website %}
-                <a href="{{ company.website }}" target="_blank" 
-                   class="text-link mb-3 block">
-                    {{ company.website }}
-                </a>
-            {% endif %}
-            
-            <div class="flex items-center justify-between text-secondary mt-4 pt-4 border-t">
-                <span>{{ pluralized_count(company.contacts|length, 'contact') }}</span>
-                <span>{{ pluralized_count(company.opportunities|length, 'opportunity', plural='opportunities') }}</span>
-            </div>
-            
-            {{ entity_link_button(url_for('companies.detail', company_id=company.id)) }}
-        </div>
-    {% else %}
-        <div class="col-span-full text-center py-12">
-            <p class="text-secondary mb-4">No companies found</p>
-            <button onclick="openNewCompanyModal()" 
-                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                Add Your First Company
+<!-- Enhanced Company Grid with Bulk Selection -->
+<div x-data="companyManager()" class="space-y-6">
+    <!-- Bulk Actions Bar -->
+    <div x-show="selectedItems.length > 0" 
+         x-cloak 
+         x-transition
+         class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <span class="text-blue-800 font-medium" x-text="`${selectedItems.length} companies selected`"></span>
+            <button @click="bulkDelete()" class="bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700">
+                Delete Selected
             </button>
         </div>
-    {% endfor %}
+        <button @click="selectedItems = []" class="text-blue-600 hover:text-blue-800">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Companies Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for company in companies %}
+            <div class="card-padded-lg hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-4">
+                    {{ bulk_selection_checkbox(company.id) }}
+                    <div class="flex-1 ml-3">
+                        <h3 class="text-company-name text-lg font-semibold">{{ company.name }}</h3>
+                    </div>
+                    {{ action_button('openCompanyModal(' + company.id|string + ')', '⋯', 'text-link-subtle') }}
+                </div>
+                
+                {% if company.industry %}
+                    <p class="text-secondary-dark mb-2">{{ company.industry }}</p>
+                {% endif %}
+                
+                {% if company.website %}
+                    <a href="{{ company.website }}" target="_blank" 
+                       class="text-link mb-3 block">
+                        {{ company.website }}
+                    </a>
+                {% endif %}
+                
+                <div class="flex items-center justify-between text-secondary mt-4 pt-4 border-t">
+                    <span>{{ pluralized_count(company.contacts|length, 'contact') }}</span>
+                    <span>{{ pluralized_count(company.opportunities|length, 'opportunity', plural='opportunities') }}</span>
+                </div>
+                
+                {{ entity_link_button(url_for('companies.detail', company_id=company.id)) }}
+            </div>
+        {% else %}
+            <div class="col-span-full">
+                {{ empty_state('No companies found', 'Get started by adding your first company', 
+                     '<button onclick="openNewCompanyModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Add Your First Company</button>') }}
+            </div>
+        {% endfor %}
+    </div>
 </div>
 
 {% endcall %}
@@ -84,8 +106,44 @@
 
 {% block scripts %}
 <script>
-// Companies use the centralized modal system from modal-manager.js
-// All modal functions are now handled globally
+// Make companies data available globally (basic info only)
+window.companiesData = [
+    {% for company in companies %}
+    {
+        id: {{ company.id }},
+        name: "{{ company.name|replace('"', '\\"') }}",
+        industry: "{{ company.industry or '' }}",
+        website: "{{ company.website or '' }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+// Company manager Alpine.js component
+function companyManager() {
+    return {
+        selectedItems: [],
+        allItemIds: [],
+        
+        init() {
+            // Initialize all company IDs for bulk selection
+            this.allItemIds = window.companiesData.map(item => item.id);
+        },
+
+        // Bulk delete functionality
+        bulkDelete() {
+            if (this.selectedItems.length === 0) return;
+            
+            const confirmed = confirm(`Are you sure you want to delete ${this.selectedItems.length} companies?`);
+            if (confirmed) {
+                console.log('Bulk deleting companies:', this.selectedItems);
+                // Here you would make API calls to delete the companies
+                this.selectedItems = [];
+            }
+        }
+    };
+}
+
+// Companies use the centralized modal system
 </script>
 
 {% include "components/modals/confirmation.html" %}

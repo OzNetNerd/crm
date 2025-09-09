@@ -2,7 +2,7 @@
 {% from "components/opportunity_card.html" import render_opportunity %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/quick_actions.html" import opportunities_page_actions %}
-{% from "components/ui_elements.html" import action_button, expand_collapse_controls, dropdown_select, dropdown_multiselect, entity_section_group %}
+{% from "components/ui_elements.html" import action_button, expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_selection_checkbox, view_mode_toggle %}
 {% from "components/icons.html" import chevron_right_icon, building_office_icon, currency_dollar_icon, chart_bar_icon, clock_icon %}
 
 {% block title %}Opportunities - CRM{% endblock %}
@@ -45,214 +45,94 @@
 
 {% call page_layout("Opportunities", "Track your sales pipeline", buttons=opportunity_buttons, summary_data=pipeline_stats) %}
 
-<div x-data="{ 
-    groupBy: 'stage',
-    showClosed: false,
-    stageFilter: [],
-    companyFilter: [],
-    expandedSections: {
-        'prospect': true,
-        'qualified': true,
-        'proposal': true,
-        'negotiation': true,
-        'overdue': true,
-        'this_week': true,
-        'this_month': true,
-        'later': true,
-        'no_date': true
-    }
-}" class="space-y-6">
+<div x-data="createEntityManager(getOpportunityConfig('{{ today }}'))" class="space-y-6">
 
-    <!-- Enhanced Filters and Controls -->
-    <div class="card-padded">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-            <div class="flex flex-wrap items-center gap-4">
+    <!-- Bulk Actions Bar -->
+    <div x-show="selectedItems.length > 0" 
+         x-cloak 
+         x-transition
+         class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <span class="text-blue-800 font-medium" x-text="`${selectedItems.length} opportunities selected`"></span>
+            <button @click="bulkUpdateStage()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-700">
+                Update Stage
+            </button>
+            <button @click="bulkDelete()" class="bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700">
+                Delete Selected
+            </button>
+        </div>
+        <button @click="selectedItems = []" class="text-blue-600 hover:text-blue-800">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+
+
+    <!-- Enhanced Filters and Controls with Generic DRY Components -->
+    <div class="card-padded-lg filter-section-enhanced">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:gap-6">
+            <div class="flex flex-wrap items-center gap-6">
                 <label class="text-label-dark">Group by:</label>
-                {{ dropdown_select('groupBy', [
+                
+                {{ generic_group_dropdown('groupBy', [
                     {'value': 'stage', 'label': 'Pipeline Stage'},
                     {'value': 'close_date', 'label': 'Close Date'},
-                    {'value': 'value', 'label': 'Deal Value'}
+                    {'value': 'value', 'label': 'Deal Value'},
+                    {'value': 'company', 'label': 'Company'}
                 ]) }}
                 
                 <label class="flex items-center">
-                    <input type="checkbox" x-model="showClosed" class="mr-2">
-                    <span class="text-sm text-gray-700">Show Closed</span>
+                    <input type="checkbox" 
+                           x-model="showCompleted"
+                           @change="updateFilters()"
+                           name="show_completed"
+                           value="true"
+                           class="mr-2">
+                    <span class="text-secondary-dark">Show Closed</span>
                 </label>
 
                 {{ expand_collapse_controls('expandedSections') }}
             </div>
             
-            <div class="flex items-center space-x-3">
-                {{ dropdown_multiselect('stageFilter', [
+            <div class="flex items-center gap-6">
+                <label class="text-label-dark">Sort by:</label>
+                
+                {{ generic_sort_dropdown('sortBy', 'sortDirection', [
+                    {'value': 'close_date', 'label': 'Close Date'},
+                    {'value': 'value', 'label': 'Deal Value'},
+                    {'value': 'created_at', 'label': 'Created Date'},
+                    {'value': 'name', 'label': 'Name'},
+                    {'value': 'stage', 'label': 'Stage'}
+                ]) }}
+                
+                {{ generic_filter_multiselect('primaryFilter', [
+                    {'value': 'high', 'label': 'High ($50K+)'},
+                    {'value': 'medium', 'label': 'Medium ($10K-$50K)'},
+                    {'value': 'low', 'label': 'Low (<$10K)'}
+                ], 'All Priorities', 'togglePrimaryFilter', 'getPrimaryFilterDisplayText') }}
+                
+                {{ generic_filter_multiselect('secondaryFilter', [
                     {'value': 'prospect', 'label': 'Prospect'},
                     {'value': 'qualified', 'label': 'Qualified'},
                     {'value': 'proposal', 'label': 'Proposal'},
                     {'value': 'negotiation', 'label': 'Negotiation'}
-                ], 'All Stages') }}
+                ], 'All Stages', 'toggleSecondaryFilter', 'getSecondaryFilterDisplayText') }}
                 
                 {% set company_options = [] %}
-                {% for company in opportunities|map(attribute='company.name')|unique %}
-                    {% set _ = company_options.append({'value': company, 'label': company}) %}
+                {% for opportunity in opportunities %}
+                    {% if opportunity.company and opportunity.company.name not in company_options|map(attribute='value') %}
+                        {% set _ = company_options.append({'value': opportunity.company.name, 'label': opportunity.company.name}) %}
+                    {% endif %}
                 {% endfor %}
-                {{ dropdown_multiselect('companyFilter', company_options, 'All Companies', with_search=true) }}
+                {{ generic_filter_multiselect('entityFilter', company_options, 'All Companies', 'toggleEntityFilter', 'getEntityFilterDisplayText', with_search=true) }}
             </div>
         </div>
     </div>
 
-    <!-- Opportunities by Stage -->
-    <div x-show="groupBy === 'stage'" class="space-y-4">
-        <!-- Prospect -->
-        {% set prospect_opportunities = opportunities|selectattr('stage', 'equalto', 'prospect')|list %}
-        {% call entity_section_group(
-            'prospect',
-            'Prospect',
-            building_office_icon("w-5 h-5 mr-1"),
-            prospect_opportunities,
-            card_class='card-success',
-            colors={'badge_color': 'green', 'border_color': 'green', 'bg_color': 'green', 'hover_color': 'green', 'text_class': 'text-status-success'}
-        ) %}
-            {% for opportunity in prospect_opportunities %}
-                {{ render_opportunity(opportunity, today) }}
-            {% endfor %}
-        {% endcall %}
-
-        <!-- Qualified -->
-        {% set qualified_opportunities = opportunities|selectattr('stage', 'equalto', 'qualified')|list %}
-        {% call entity_section_group(
-            'qualified',
-            'Qualified',
-            chart_bar_icon("w-5 h-5 mr-1"),
-            qualified_opportunities,
-            card_class='card-info',
-            colors={'badge_color': 'blue', 'border_color': 'blue', 'bg_color': 'blue', 'hover_color': 'blue', 'text_class': 'text-status-info'}
-        ) %}
-            {% for opportunity in qualified_opportunities %}
-                {{ render_opportunity(opportunity, today) }}
-            {% endfor %}
-        {% endcall %}
-
-        <!-- Proposal -->
-        {% set proposal_opportunities = opportunities|selectattr('stage', 'equalto', 'proposal')|list %}
-        {% call entity_section_group(
-            'proposal',
-            'Proposal',
-            currency_dollar_icon("w-5 h-5 mr-1"),
-            proposal_opportunities,
-            card_class='card-warning',
-            colors={'badge_color': 'yellow', 'border_color': 'yellow', 'bg_color': 'yellow', 'hover_color': 'yellow', 'text_class': 'text-status-warning'}
-        ) %}
-            {% for opportunity in proposal_opportunities %}
-                {{ render_opportunity(opportunity, today) }}
-            {% endfor %}
-        {% endcall %}
-
-        <!-- Negotiation -->
-        {% set negotiation_opportunities = opportunities|selectattr('stage', 'equalto', 'negotiation')|list %}
-        {% call entity_section_group(
-            'negotiation',
-            'Negotiation',
-            clock_icon("w-5 h-5 mr-1"),
-            negotiation_opportunities,
-            card_class='card-orange',
-            colors={'badge_color': 'orange', 'border_color': 'orange', 'bg_color': 'orange', 'hover_color': 'orange', 'text_class': 'text-status-warning'}
-        ) %}
-            {% for opportunity in negotiation_opportunities %}
-                {{ render_opportunity(opportunity, today) }}
-            {% endfor %}
-        {% endcall %}
-    </div>
-
-    <!-- Opportunities by Close Date -->
-    <div x-show="groupBy === 'close_date'" class="space-y-4">
-        {# Pre-calculate date-based opportunity lists #}
-        {% set overdue_opportunities = [] %}
-        {% set this_week_opportunities = [] %}
-        {% set this_month_opportunities = [] %}
-        {% set later_opportunities = [] %}
-        {% for opp in opportunities %}
-            {% if opp.expected_close_date %}
-                {% if opp.expected_close_date < today %}
-                    {% set _ = overdue_opportunities.append(opp) %}
-                {% elif opp.expected_close_date >= today and (opp.expected_close_date - today).days <= 7 %}
-                    {% set _ = this_week_opportunities.append(opp) %}
-                {% elif (opp.expected_close_date - today).days > 7 and (opp.expected_close_date - today).days <= 30 %}
-                    {% set _ = this_month_opportunities.append(opp) %}
-                {% elif (opp.expected_close_date - today).days > 30 %}
-                    {% set _ = later_opportunities.append(opp) %}
-                {% endif %}
-            {% endif %}
-        {% endfor %}
-        {% set no_date_opportunities = opportunities|selectattr('expected_close_date', 'none')|list %}
-
-        <!-- Overdue -->
-        {% call entity_section_group(
-            'overdue',
-            'Overdue',
-            clock_icon("w-5 h-5 mr-1"),
-            overdue_opportunities,
-            card_class='card-danger',
-            colors={'badge_color': 'red', 'border_color': 'red', 'bg_color': 'red', 'hover_color': 'red', 'text_class': 'text-status-overdue'}
-        ) %}
-            {% for opportunity in overdue_opportunities %}
-                {{ render_opportunity(opportunity, today) }}
-            {% endfor %}
-        {% endcall %}
-
-        <!-- This Week -->
-        {% call entity_section_group(
-            'this_week',
-            'This Week',
-            clock_icon("w-5 h-5 mr-1"),
-            this_week_opportunities,
-            card_class='card-orange',
-            colors={'badge_color': 'orange', 'border_color': 'orange', 'bg_color': 'orange', 'hover_color': 'orange', 'text_class': 'text-status-warning'}
-        ) %}
-            {% for opportunity in this_week_opportunities %}
-                {{ render_opportunity(opportunity, today) }}
-            {% endfor %}
-        {% endcall %}
-
-        <!-- This Month -->
-        {% call entity_section_group(
-            'this_month',
-            'This Month',
-            clock_icon("w-5 h-5 mr-1"),
-            this_month_opportunities,
-            card_class='card-info',
-            colors={'badge_color': 'blue', 'border_color': 'blue', 'bg_color': 'blue', 'hover_color': 'blue', 'text_class': 'text-status-info'}
-        ) %}
-            {% for opportunity in this_month_opportunities %}
-                {{ render_opportunity(opportunity, today) }}
-            {% endfor %}
-        {% endcall %}
-
-        <!-- Later -->
-        {% call entity_section_group(
-            'later',
-            'Later',
-            clock_icon("w-5 h-5 mr-1"),
-            later_opportunities,
-            card_class='card-neutral',
-            colors={'badge_color': 'gray', 'border_color': 'gray', 'bg_color': 'gray', 'hover_color': 'gray', 'text_class': 'text-status-neutral'}
-        ) %}
-            {% for opportunity in later_opportunities %}
-                {{ render_opportunity(opportunity, today) }}
-            {% endfor %}
-        {% endcall %}
-
-        <!-- No Close Date -->
-        {% call entity_section_group(
-            'no_date',
-            'No Close Date',
-            clock_icon("w-5 h-5 mr-1"),
-            no_date_opportunities,
-            card_class='card-neutral',
-            colors={'badge_color': 'gray', 'border_color': 'gray', 'bg_color': 'gray', 'hover_color': 'gray', 'text_class': 'text-status-neutral'}
-        ) %}
-            {% for opportunity in no_date_opportunities %}
-                {{ render_opportunity(opportunity, today) }}
-            {% endfor %}
-        {% endcall %}
+    <!-- Dynamic Client-Side Opportunity Grouping -->
+    <div id="opportunities-content">
+        {{ dynamic_entity_section() }}
     </div>
 
     <!-- Default view when no opportunities -->
@@ -266,13 +146,30 @@
         </div>
     {% endif %}
 
+    <!-- Hidden pre-rendered opportunity cards for client-side use -->
+    <div style="display: none;" id="opportunity-cards-cache">
+        {% for opportunity in opportunities %}
+            <div id="opportunity-card-{{ opportunity.id }}">
+                {{ render_opportunity(opportunity, today) }}
+            </div>
+        {% endfor %}
+    </div>
+
 </div>
 
 {% endcall %}
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/entity-manager.js') }}"></script>
+<script src="{{ url_for('static', filename='js/entity-configs.js') }}"></script>
 <script>
+// Make entity data available globally for the entity manager
+window.companiesData = {{ companies | tojson }};
+window.contactsData = {{ contacts | tojson }};
+window.opportunitiesData = {{ opportunities_data | tojson }};
+
 // Opportunities use the centralized modal system from modal-manager.js
 // All modal functions including deleteOpportunity are now handled globally
 </script>

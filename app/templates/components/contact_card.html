@@ -1,4 +1,4 @@
-{% from "components/ui_elements.html" import action_button, pluralized_count, contact_info_badge %}
+{% from "components/ui_elements.html" import action_button, pluralized_count, contact_info_badge, bulk_selection_checkbox %}
 {% from "components/metadata_display.html" import standard_card_metadata %}
 {% from "components/icons.html" import envelope_icon, phone_icon, pencil_icon, trash_icon, user_plus_icon %}
 
@@ -17,6 +17,11 @@
     <!-- Main contact info row -->
     <div class="flex items-center justify-between">
         <div class="flex items-center flex-grow">
+            <!-- Bulk Selection Checkbox -->
+            <div class="flex-shrink-0 mr-3">
+                {{ bulk_selection_checkbox(contact.id) }}
+            </div>
+            
             <div class="flex-shrink-0">
                 {% set avatar_color = 'blue' if contact.email and contact.phone 
                                       else 'green' if contact.email 
