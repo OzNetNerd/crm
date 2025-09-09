@@ -1,13 +1,8 @@
 {% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
 {% from "components/modals/base/notes_section.html" import notes_section %}
-{% from "components/modals/base/crud_operations.html" import crud_operations_js, notes_operations_js %}
 
 <div x-data="{
-        show: false,
-        opportunityId: null,
-        loading: false,
-        saving: false,
-        opportunity: {
+        ...createCRUDMixin('opportunity', {
             name: '',
             value: '',
             probability: '',
@@ -15,20 +10,20 @@
             expected_close_date: '',
             company_id: '',
             contact_id: ''
-        },
-        notes: [],
-        newNote: '',
-        
-        {{ crud_operations_js('opportunity', '/api/opportunities') }},
-        {{ notes_operations_js('opportunity') }},
+        }),
+        ...createNotesMixin('opportunity'),
         
         async loadOpportunity(id) {
-            await this.loadOpportunityDetails(id);
-            this.show = true;
+            await this.loadEntity(id);
+            this.openModal();
+        },
+        
+        async saveOpportunityDetails() {
+            return await this.saveEntity();
         }
      }" 
      @open-detail-opportunity-modal.window="loadOpportunity($event.detail.id)"
-     @close-modal.window="show = false">
+     @close-modal.window="closeModal()"
 
     {% call base_modal('opportunity-detail-modal') %}
         {{ modal_header('Opportunity Details') }}

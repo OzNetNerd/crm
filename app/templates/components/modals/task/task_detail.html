@@ -1,52 +1,33 @@
 {% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
 {% from "components/modals/base/notes_section.html" import notes_section %}
-{% from "components/modals/base/crud_operations.html" import crud_operations_js, notes_operations_js %}
 
 <div x-data="{
-        show: false,
-        taskId: null,
-        loading: false,
-        saving: false,
-        activeTab: 'details',
-        task: {
+        ...createCRUDMixin('task', {
             description: '',
             due_date: '',
             priority: 'medium',
             next_step_type: '',
-            status: 'pending',
-            task_type: 'single',
-            child_tasks: []
-        },
-        notes: [],
-        newNote: '',
+            status: 'pending'
+        }),
+        ...createNotesMixin('task'),
         
-        {{ crud_operations_js('task', '/api/tasks') }},
-        {{ notes_operations_js('task') }},
+        activeTab: 'details',
         
         async loadTask(id) {
-            this.taskId = id;
-            await this.loadTaskDetails(id);
-            this.show = true;
+            await this.loadEntity(id);
+            this.openModal();
         },
         
-        async toggleChildTask(childId) {
-            try {
-                const response = await fetch(`/api/tasks/${childId}/toggle`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                if (response.ok) {
-                    // Reload task to get updated child status
-                    await this.loadTaskDetails(this.taskId);
-                }
-            } catch (error) {
-                console.error('Error toggling child task:', error);
-            }
+        async saveTaskDetails() {
+            return await this.saveEntity();
+        },
+        
+        switchTab(tab) {
+            this.activeTab = tab;
         }
      }" 
      @open-detail-task-modal.window="loadTask($event.detail.id)"
-     @close-modal.window="show = false">
+     @close-modal.window="closeModal()"
 
     {% call base_modal('task-detail-modal', backdrop_click_close=false) %}
         {{ modal_header('Task Details') }}
