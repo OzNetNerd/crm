@@ -12,7 +12,7 @@
 function createEntityManager(config) {
     return {
         // Core data
-        allEntities: window[config.dataSource],
+        allEntities: window[config.dataSource] || [],
         filteredEntities: [],
         
         // Filter states (initialized from backend or defaults)
@@ -36,6 +36,11 @@ function createEntityManager(config) {
         expandedSections: { ...config.defaultExpandedSections },
 
         init() {
+            // Ensure we have data before proceeding
+            if (!this.allEntities || !Array.isArray(this.allEntities)) {
+                console.warn(`Entity Manager: No data found for ${config.dataSource}. Using empty array.`);
+                this.allEntities = [];
+            }
             this.updateFilters();
             this.setupEventDelegation();
             // Ensure all sections are expanded by default

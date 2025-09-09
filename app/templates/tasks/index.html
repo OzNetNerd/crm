@@ -166,13 +166,16 @@
 
 {% block data_attributes %}
 data-page-type="tasks-index"
-data-companies="{{ companies | safe_tojson }}"
-data-contacts="{{ contacts | safe_tojson }}"
-data-opportunities="{{ opportunities | safe_tojson }}"
-data-tasks="{{ tasks | safe_tojson }}"
 {% endblock %}
 
 {% block scripts %}
+<script>
+// Initialize data for the tasks page
+window.companiesData = {{ companies | tojson }};
+window.contactsData = {{ contacts | tojson }};
+window.opportunitiesData = {{ opportunities | tojson }};
+window.tasksData = {{ tasks | tojson }};
+</script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script src="{{ url_for('static', filename='js/entity-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/entity-configs.js') }}"></script>

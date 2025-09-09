@@ -81,6 +81,11 @@ function createCRUDMixin(entityType, defaultEntity = {}, options = {}) {
     const entityKey = entityType.toLowerCase();
     const apiEndpoint = `/api/${entityKey}s`;
     
+    // Ensure defaultEntity is a valid object
+    if (!defaultEntity || typeof defaultEntity !== 'object') {
+        defaultEntity = {};
+    }
+    
     return createModalMixin({
         // Entity data
         [entityKey]: { ...defaultEntity },

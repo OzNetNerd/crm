@@ -21,8 +21,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (dataAttr) {
             try {
                 window[datasets[key]] = JSON.parse(dataAttr);
+                console.log(`Successfully parsed ${key}:`, window[datasets[key]].length, 'items');
             } catch (e) {
-                console.warn(`Failed to parse ${key} data:`, e);
+                console.error(`Failed to parse ${key} data:`, e);
+                window[datasets[key]] = [];
+            }
+        } else {
+            // Initialize empty arrays to prevent undefined errors only if the data doesn't exist as window variables
+            if (!window[datasets[key]]) {
+                console.log(`No data attribute found for ${key} and no window variable, initializing empty array`);
                 window[datasets[key]] = [];
             }
         }

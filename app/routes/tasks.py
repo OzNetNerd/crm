@@ -42,13 +42,24 @@ def index():
     context = get_all_tasks_context()
     
     # Convert tasks to dictionaries for JSON serialization (for Alpine.js compatibility)
+    print(f"DEBUG: Found {len(context['all_tasks'])} tasks from database")
+    tasks = []
+    for i, task in enumerate(context['all_tasks']):
+        try:
+            task_dict = task.to_dict()
+            tasks.append(task_dict)
+        except Exception as e:
+            print(f"ERROR: Task {i} (ID: {task.id}) failed to serialize: {e}")
+    
+    print(f"DEBUG: Successfully serialized {len(tasks)} tasks")
+    
+    # Test final JSON serialization
     try:
-        tasks = [task.to_dict() for task in context['all_tasks']]
-        # Test JSON serialization
         import json
-        json.dumps(tasks)
+        json_str = json.dumps(tasks)
+        print(f"DEBUG: Final JSON length: {len(json_str)}")
     except Exception as e:
-        print(f"JSON serialization error: {e}")
+        print(f"ERROR: Final JSON serialization failed: {e}")
         tasks = []
 
     # Serialize objects for JSON use in templates
