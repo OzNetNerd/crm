@@ -2,7 +2,7 @@
 {% from "components/task_card.html" import render_task, render_task_hierarchy %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/icons.html" import clipboard_list_icon, bolt_icon, check_circle_icon_solid, fire_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, calendar_days_icon, calendar_icon, chart_bar_icon, question_mark_circle_icon, building_office_icon, user_icon, currency_dollar_icon, chevron_right_icon %}
-{% from "components/ui_elements.html" import expand_collapse_controls, dropdown_select, dropdown_multiselect, section_group_header, task_section_group, badge_count_helper %}
+{% from "components/ui_elements.html" import expand_collapse_controls, dropdown_select, dropdown_multiselect, section_group_header, task_section_group, badge_count_helper, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar %}
 
 
 
@@ -48,28 +48,12 @@
 
 {% call page_layout("All Tasks", "Manage all your tasks in one place", buttons=task_buttons, summary_data=task_stats) %}
 
-<div x-data="taskManager()" class="space-y-6">
+<div x-data="createEntityManager(getTaskConfig('{{ today }}'))" class="space-y-6">
 
     <!-- Bulk Actions Bar -->
-    <div x-show="selectedItems.length > 0" 
-         x-cloak 
-         x-transition
-         class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-            <span class="text-blue-800 font-medium" x-text="`${selectedItems.length} tasks selected`"></span>
-            <button @click="bulkUpdateStatus()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-700">
-                Update Status
-            </button>
-            <button @click="bulkDelete()" class="bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700">
-                Delete Selected
-            </button>
-        </div>
-        <button @click="selectedItems = []" class="text-blue-600 hover:text-blue-800">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
-    </div>
+    {{ bulk_actions_bar('task', 'tasks', 
+         {'label': 'Update Status', 'onclick': 'bulkUpdateStatus()', 'color': 'blue'},
+         {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
 
     <!-- Task Summary now handled by page_layout template -->
 
@@ -79,49 +63,12 @@
             <div class="flex flex-wrap items-center gap-6">
                 <label class="text-label-dark">Group by:</label>
                 
-                <!-- Group By Dropdown (Alpine.js Only) -->
-                <div class="multiselect-custom" x-data="{ 
-                    open: false
-                }" @click.away="open = false">
-                    <button type="button" 
-                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
-                            @click="open = !open">
-                        <span x-text="
-                            groupBy === 'status' ? 'Status' :
-                            groupBy === 'due_date' ? 'Due Date' :
-                            groupBy === 'priority' ? 'Priority' :
-                            groupBy === 'entity' ? 'Related To' : 'Status'
-                        "></span>
-                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    
-                    <div x-show="open" 
-                         x-cloak
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="transform opacity-0 scale-95"
-                         x-transition:enter-end="transform opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="transform opacity-100 scale-100"
-                         x-transition:leave-end="transform opacity-0 scale-95"
-                         class="multiselect-dropdown">
-                        <div class="multiselect-options">
-                            <div class="multiselect-option" @click="groupBy = 'status'; updateFilters(); open = false">
-                                <span>Status</span>
-                            </div>
-                            <div class="multiselect-option" @click="groupBy = 'due_date'; updateFilters(); open = false">
-                                <span>Due Date</span>
-                            </div>
-                            <div class="multiselect-option" @click="groupBy = 'priority'; updateFilters(); open = false">
-                                <span>Priority</span>
-                            </div>
-                            <div class="multiselect-option" @click="groupBy = 'entity'; updateFilters(); open = false">
-                                <span>Related To</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {{ generic_group_dropdown('groupBy', [
+                    {'value': 'status', 'label': 'Status'},
+                    {'value': 'due_date', 'label': 'Due Date'},
+                    {'value': 'priority', 'label': 'Priority'},
+                    {'value': 'entity', 'label': 'Related To'}
+                ]) }}
                 
                 <label class="flex items-center">
                     <input type="checkbox" 
@@ -139,210 +86,33 @@
             <div class="flex items-center gap-6">
                 <label class="text-label-dark">Sort by:</label>
                 
-                <!-- Sort By Dropdown (Alpine.js Only) -->
-                <div class="multiselect-custom" x-data="{ 
-                    open: false
-                }" @click.away="open = false">
-                    <button type="button" 
-                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
-                            @click="open = !open">
-                        <span x-text="
-                            sortBy === 'due_date' ? 'Due Date' :
-                            sortBy === 'priority' ? 'Priority' :
-                            sortBy === 'created' ? 'Created Date' :
-                            sortBy === 'title' ? 'Task Title' :
-                            sortBy === 'status' ? 'Status' : 'Due Date'
-                        "></span>
-                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    
-                    <div x-show="open" 
-                         x-cloak
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="transform opacity-0 scale-95"
-                         x-transition:enter-end="transform opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="transform opacity-100 scale-100"
-                         x-transition:leave-end="transform opacity-0 scale-95"
-                         class="multiselect-dropdown">
-                        <div class="multiselect-options">
-                            <div class="multiselect-option" @click="if (sortBy === 'due_date') { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortBy = 'due_date'; } updateFilters(); open = false">
-                                <span>Due Date</span>
-                                <span x-show="sortBy === 'due_date'" x-text="sortDirection === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
-                            </div>
-                            <div class="multiselect-option" @click="if (sortBy === 'priority') { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortBy = 'priority'; } updateFilters(); open = false">
-                                <span>Priority</span>
-                                <span x-show="sortBy === 'priority'" x-text="sortDirection === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
-                            </div>
-                            <div class="multiselect-option" @click="if (sortBy === 'created') { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortBy = 'created'; } updateFilters(); open = false">
-                                <span>Created Date</span>
-                                <span x-show="sortBy === 'created'" x-text="sortDirection === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
-                            </div>
-                            <div class="multiselect-option" @click="if (sortBy === 'title') { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortBy = 'title'; } updateFilters(); open = false">
-                                <span>Task Title</span>
-                                <span x-show="sortBy === 'title'" x-text="sortDirection === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
-                            </div>
-                            <div class="multiselect-option" @click="if (sortBy === 'status') { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortBy = 'status'; } updateFilters(); open = false">
-                                <span>Status</span>
-                                <span x-show="sortBy === 'status'" x-text="sortDirection === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {{ generic_sort_dropdown('sortBy', 'sortDirection', [
+                    {'value': 'due_date', 'label': 'Due Date'},
+                    {'value': 'priority', 'label': 'Priority'},
+                    {'value': 'created_at', 'label': 'Created Date'},
+                    {'value': 'title', 'label': 'Title'},
+                    {'value': 'status', 'label': 'Status'}
+                ]) }}
                 
-                <!-- Priority Filter (Alpine.js Only) -->
-                <div class="multiselect-custom" x-data="{ 
-                    open: false
-                }" @click.away="open = false">
-                    <button type="button" 
-                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
-                            @click="open = !open">
-                        <span x-text="getPriorityDisplayText()"></span>
-                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    
-                    <div x-show="open" 
-                         x-cloak
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="transform opacity-0 scale-95"
-                         x-transition:enter-end="transform opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="transform opacity-100 scale-100"
-                         x-transition:leave-end="transform opacity-0 scale-95"
-                         class="multiselect-dropdown">
-                        <div class="multiselect-header">
-                            <div class="multiselect-controls">
-                                <span class="multiselect-control-btn" @click="priorityFilter = ['high', 'medium', 'low']; updateFilters()">Select All</span>
-                                <span class="multiselect-control-btn" @click="priorityFilter = []; updateFilters()">Deselect All</span>
-                            </div>
-                        </div>
-                        <div class="multiselect-options">
-                            <div class="multiselect-option" @click="priorityFilter = []; updateFilters()">
-                                <input type="checkbox" :checked="priorityFilter.length === 0" class="mr-2">
-                                <span>All Priorities</span>
-                            </div>
-                            <div class="multiselect-option" @click="togglePriority('high')">
-                                <input type="checkbox" :checked="priorityFilter.includes('high')" class="mr-2">
-                                <span>High</span>
-                            </div>
-                            <div class="multiselect-option" @click="togglePriority('medium')">
-                                <input type="checkbox" :checked="priorityFilter.includes('medium')" class="mr-2">
-                                <span>Medium</span>
-                            </div>
-                            <div class="multiselect-option" @click="togglePriority('low')">
-                                <input type="checkbox" :checked="priorityFilter.includes('low')" class="mr-2">
-                                <span>Low</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {{ generic_filter_multiselect('primaryFilter', [
+                    {'value': 'high', 'label': 'High'},
+                    {'value': 'medium', 'label': 'Medium'},
+                    {'value': 'low', 'label': 'Low'}
+                ], 'All Priorities', 'togglePrimaryFilter', 'getPrimaryFilterDisplayText') }}
                 
-                <!-- Entity Filter (Alpine.js Only) -->
-                <div class="multiselect-custom" x-data="{ 
-                    open: false
-                }" @click.away="open = false">
-                    <button type="button" 
-                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
-                            @click="open = !open">
-                        <span x-text="getEntityDisplayText()"></span>
-                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    
-                    <div x-show="open" 
-                         x-cloak
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="transform opacity-0 scale-95"
-                         x-transition:enter-end="transform opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="transform opacity-100 scale-100"
-                         x-transition:leave-end="transform opacity-0 scale-95"
-                         class="multiselect-dropdown">
-                        <div class="multiselect-header">
-                            <div class="multiselect-controls">
-                                <span class="multiselect-control-btn" @click="entityFilter = ['company', 'contact', 'opportunity', 'unrelated']; updateFilters()">Select All</span>
-                                <span class="multiselect-control-btn" @click="entityFilter = []; updateFilters()">Deselect All</span>
-                            </div>
-                        </div>
-                        <div class="multiselect-options">
-                            <div class="multiselect-option" @click="entityFilter = []; updateFilters()">
-                                <input type="checkbox" :checked="entityFilter.length === 0" class="mr-2">
-                                <span>All Entities</span>
-                            </div>
-                            <div class="multiselect-option" @click="toggleEntity('company')">
-                                <input type="checkbox" :checked="entityFilter.includes('company')" class="mr-2">
-                                <span>Companies</span>
-                            </div>
-                            <div class="multiselect-option" @click="toggleEntity('contact')">
-                                <input type="checkbox" :checked="entityFilter.includes('contact')" class="mr-2">
-                                <span>Contacts</span>
-                            </div>
-                            <div class="multiselect-option" @click="toggleEntity('opportunity')">
-                                <input type="checkbox" :checked="entityFilter.includes('opportunity')" class="mr-2">
-                                <span>Opportunities</span>
-                            </div>
-                            <div class="multiselect-option" @click="toggleEntity('unrelated')">
-                                <input type="checkbox" :checked="entityFilter.includes('unrelated')" class="mr-2">
-                                <span>General Tasks</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {{ generic_filter_multiselect('entityFilter', [
+                    {'value': 'company', 'label': 'Company'},
+                    {'value': 'contact', 'label': 'Contact'},
+                    {'value': 'opportunity', 'label': 'Opportunity'},
+                    {'value': 'unrelated', 'label': 'General'}
+                ], 'All Entities', 'toggleEntityFilter', 'getEntityFilterDisplayText') }}
             </div>
         </div>
     </div>
 
     <!-- Dynamic Client-Side Task Grouping -->
     <div id="tasks-content">
-        <template x-for="group in getGroupedTasks()" :key="group.key">
-            <div class="task-section-spacing">
-                <!-- Group Section -->
-                <div :class="group.containerClass">
-                    <!-- Group Header -->
-                    <div :class="group.headerBgClass" 
-                         class="cursor-pointer"
-                         @click="toggleSection(group.key)">
-                        <div class="flex items-center justify-between">
-                            <h3 :class="group.headerClass">
-                                <span class="mr-2 transition-transform duration-200" 
-                                      :class="expandedSections[group.key] ? 'rotate-90' : ''">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </span>
-                                <span x-html="group.icon" class="w-5 h-5 mr-1"></span>
-                                <span x-text="group.title"></span>
-                                <span class="ml-2 badge-standard" 
-                                      :class="group.badgeClass" 
-                                      x-text="group.tasks.length"></span>
-                            </h3>
-                        </div>
-                    </div>
-                    
-                    <!-- Group Content -->
-                    <div class="task-group-content p-8" 
-                         x-show="expandedSections[group.key]" 
-                         x-cloak 
-                         x-transition>
-                        <template x-if="group.tasks.length > 0">
-                            <div class="space-y-4">
-                                <template x-for="task in group.tasks" :key="task.id">
-                                    <div x-html="renderTaskCard(task, group.key)"></div>
-                                </template>
-                            </div>
-                        </template>
-                        <template x-if="group.tasks.length === 0">
-                            <p class="text-empty-state">No matching tasks found</p>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </template>
+        {{ dynamic_entity_section() }}
     </div>
 
     <!-- Hidden pre-rendered task cards for client-side use -->
@@ -381,521 +151,82 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/entity-manager.js') }}"></script>
+<script src="{{ url_for('static', filename='js/entity-configs.js') }}"></script>
 <script>
-// Make entity data available globally for the modal
+// Make entity data available globally for the entity manager
 window.companiesData = {{ companies | tojson }};
 window.contactsData = {{ contacts | tojson }};
 window.opportunitiesData = {{ opportunities | tojson }};
-// Make tasks data available for client-side sorting
-window.tasksData = {{ tasks | tojson }};
+window.tasksData = {{ tasks_data | tojson }};
 
-// Tasks use the centralized modal system from modal-manager.js
-// The global openNewTaskModal function handles task modal opening
-
-// Alpine.js Task Manager Component
-function taskManager() {
-    return {
-        // All tasks data
-        allTasks: window.tasksData || [],
-        filteredTasks: [],
-        
-        // Filter states (initialized from backend)
-        showCompleted: {{ show_completed | lower }},
-        groupBy: '{{ group_by }}',
-        sortBy: '{{ sort_by }}',
-        sortDirection: '{{ sort_direction }}',
-        priorityFilter: {{ priority_filter | tojson }},
-        entityFilter: {{ entity_filter | tojson }},
-        
-        // Bulk selection
-        selectedItems: [],
-        
-        // Today's date for calculations
-        today: new Date('{{ today }}'),
-        
-        // Expanded sections state
-        expandedSections: {
-            'todo': true,
-            'in-progress': true,
-            'complete': true,
-            'high': true,
-            'medium': true,
-            'low': true,
-            'overdue': true,
-            'today': true,
-            'this_week': true,
-            'later': true,
-            'no_date': true,
-            'company': true,
-            'contact': true,
-            'opportunity': true,
-            'unrelated': true
-        },
-
-        init() {
-            this.updateFilters();
-            this.setupEventDelegation();
-        },
-
-        // Setup event delegation for dynamically rendered task cards
-        setupEventDelegation() {
-            const tasksContent = document.getElementById('tasks-content');
-            if (!tasksContent) return;
-
-            // Event delegation for all task card buttons
-            tasksContent.addEventListener('click', (e) => {
-                // Check if clicked element is a task action button
-                const button = e.target.closest('button[title]');
-                if (!button) return;
-
-                const taskCard = button.closest('[data-task-id]');
-                if (!taskCard) return;
-
-                const taskId = parseInt(taskCard.getAttribute('data-task-id'));
-                if (!taskId) return;
-
-                e.stopPropagation();
-
-                // Route to appropriate action based on button title
-                const title = button.getAttribute('title');
-                switch (title) {
-                    case 'Complete task':
-                        window.completeTask(taskId);
-                        break;
-                    case 'Edit task':
-                        window.editTask(taskId);
-                        break;
-                    case 'Delete task':
-                        window.deleteTask(taskId);
-                        break;
-                }
-            });
-        },
-
-        shouldShowTask(taskData) {
-            // Priority filter logic: empty array means show all
-            const priorityMatch = this.priorityFilter.length === 0 || this.priorityFilter.includes(taskData.priority);
-            
-            // Entity filter logic: empty array means show all, null entity_type becomes 'unrelated'
-            const taskEntityType = taskData.entity_type || 'unrelated';
-            const entityMatch = this.entityFilter.length === 0 || this.entityFilter.includes(taskEntityType);
-            
-            // Completed task visibility based on showCompleted toggle
-            const completedMatch = taskData.status !== 'complete' || this.showCompleted;
-            
-            return priorityMatch && entityMatch && completedMatch;
-        },
-
-        updateFilters() {
-            // Apply all filters and sorting
-            let tasks = [...this.allTasks];
-            
-            // Filter by completed status
-            if (!this.showCompleted) {
-                tasks = tasks.filter(task => task.status !== 'complete');
-            }
-            
-            // Filter by priority (array of values)
-            if (this.priorityFilter.length > 0) {
-                tasks = tasks.filter(task => this.priorityFilter.includes(task.priority));
-            }
-            
-            // Filter by entity (array of values)
-            if (this.entityFilter.length > 0) {
-                tasks = tasks.filter(task => {
-                    if (this.entityFilter.includes('unrelated')) {
-                        if (!task.entity_type || task.entity_type === null) return true;
-                    }
-                    return this.entityFilter.includes(task.entity_type);
-                });
-            }
-            
-            // Sort tasks
-            tasks = this.sortTasks(tasks);
-            
-            this.filteredTasks = tasks;
-            this.updateUrlState();
-        },
-
-        sortTasks(tasks) {
-            return tasks.sort((a, b) => {
-                let comparison = 0;
-                
-                switch(this.sortBy) {
-                    case 'priority':
-                        const priorityOrder = { 'high': 1, 'medium': 2, 'low': 3 };
-                        const priorityA = priorityOrder[a.priority] || 4;
-                        const priorityB = priorityOrder[b.priority] || 4;
-                        comparison = priorityA - priorityB;
-                        break;
-                        
-                    case 'status':
-                        const statusOrder = { 'todo': 1, 'in-progress': 2, 'complete': 3 };
-                        const statusA = statusOrder[a.status] || 4;
-                        const statusB = statusOrder[b.status] || 4;
-                        comparison = statusA - statusB;
-                        break;
-                        
-                    case 'created':
-                        const dateA = new Date(a.created_at);
-                        const dateB = new Date(b.created_at);
-                        comparison = dateA - dateB;
-                        break;
-                        
-                    case 'title':
-                        comparison = (a.description || '').localeCompare(b.description || '');
-                        break;
-                        
-                    case 'due_date':
-                    default:
-                        // Handle null dates - put them last
-                        if (!a.due_date && !b.due_date) comparison = 0;
-                        else if (!a.due_date) comparison = 1;
-                        else if (!b.due_date) comparison = -1;
-                        else {
-                            const dueDateA = new Date(a.due_date);
-                            const dueDateB = new Date(b.due_date);
-                            comparison = dueDateA - dueDateB;
-                        }
-                        break;
-                }
-                
-                return this.sortDirection === 'desc' ? -comparison : comparison;
-            });
-        },
-
-        updateUrlState() {
-            // Update URL parameters to maintain state on refresh
-            const params = new URLSearchParams(window.location.search);
-            params.set('group_by', this.groupBy);
-            params.set('sort_by', this.sortBy);
-            params.set('sort_direction', this.sortDirection);
-            params.set('show_completed', this.showCompleted.toString());
-            params.set('priority', this.priorityFilter.join(','));
-            params.set('entity', this.entityFilter.join(','));
-            
-            const newUrl = window.location.pathname + '?' + params.toString();
-            window.history.pushState({}, '', newUrl);
-        },
-
-        // Get tasks by status for rendering
-        getTasksByStatus(status) {
-            return this.filteredTasks.filter(task => 
-                task.status === status && task.task_type !== 'child'
-            );
-        },
-
-        // Get tasks by priority for rendering
-        getTasksByPriority(priority) {
-            return this.filteredTasks.filter(task => 
-                task.priority === priority && task.task_type !== 'child'
-            );
-        },
-
-        // Get tasks by due date category for rendering
-        getTasksByDueDate(category) {
-            return this.filteredTasks.filter(task => {
-                if (task.task_type === 'child') return false;
-                
-                if (category === 'no_date') {
-                    return !task.due_date;
-                }
-                
-                if (!task.due_date) return false;
-                
-                const dueDate = new Date(task.due_date);
-                const daysDiff = Math.ceil((dueDate - this.today) / (1000 * 60 * 60 * 24));
-                
-                switch(category) {
-                    case 'overdue': return daysDiff < 0;
-                    case 'today': return daysDiff === 0;
-                    case 'this_week': return daysDiff > 0 && daysDiff <= 7;
-                    case 'later': return daysDiff > 7;
-                    default: return false;
-                }
-            });
-        },
-
-        // Get tasks by entity type for rendering
-        getTasksByEntity(entityType) {
-            return this.filteredTasks.filter(task => {
-                if (task.task_type === 'child') return false;
-                
-                if (entityType === 'unrelated') {
-                    return !task.entity_type || task.entity_type === null;
-                }
-                
-                return task.entity_type === entityType;
-            });
-        },
-
-        // Helper functions for multiselect
-        togglePriority(priority) {
-            if (this.priorityFilter.includes(priority)) {
-                this.priorityFilter = this.priorityFilter.filter(p => p !== priority);
-            } else {
-                this.priorityFilter.push(priority);
-            }
-            this.updateFilters();
-        },
-
-        toggleEntity(entity) {
-            if (this.entityFilter.includes(entity)) {
-                this.entityFilter = this.entityFilter.filter(e => e !== entity);
-            } else {
-                this.entityFilter.push(entity);
-            }
-            this.updateFilters();
-        },
-
-        getPriorityDisplayText() {
-            if (this.priorityFilter.length === 0) return 'All Priorities';
-            if (this.priorityFilter.length === 1) {
-                return this.priorityFilter[0].charAt(0).toUpperCase() + this.priorityFilter[0].slice(1);
-            }
-            return `${this.priorityFilter.length} Selected`;
-        },
-
-        getEntityDisplayText() {
-            if (this.entityFilter.length === 0) return 'All Entities';
-            if (this.entityFilter.length === 1) {
-                const entity = this.entityFilter[0];
-                return entity === 'unrelated' ? 'General Tasks' : 
-                       entity === 'company' ? 'Companies' :
-                       entity === 'contact' ? 'Contacts' :
-                       entity === 'opportunity' ? 'Opportunities' : entity;
-            }
-            return `${this.entityFilter.length} Selected`;
-        },
-
-        // Main grouping function - returns grouped and filtered tasks
-        getGroupedTasks() {
-            // 1. Filter tasks first
-            let filteredTasks = this.allTasks.filter(task => this.shouldShowTask(task));
-            
-            // 2. Sort tasks
-            let sortedTasks = this.sortTasks(filteredTasks);
-            
-            // 3. Group by current groupBy setting
-            return this.groupTasksByType(sortedTasks, this.groupBy);
-        },
-
-        // Group tasks by the specified type
-        groupTasksByType(tasks, groupType) {
-            let groups = [];
-            
-            switch(groupType) {
-                case 'status':
-                    groups = this.groupByStatus(tasks);
-                    break;
-                case 'priority':
-                    groups = this.groupByPriority(tasks);
-                    break;
-                case 'due_date':
-                    groups = this.groupByDueDate(tasks);
-                    break;
-                case 'entity':
-                    groups = this.groupByEntity(tasks);
-                    break;
-                default:
-                    groups = this.groupByStatus(tasks);
-            }
-            
-            return groups;
-        },
-
-        // Group by status
-        groupByStatus(tasks) {
-            const statusGroups = [
-                { key: 'todo', title: 'To Do', containerClass: 'card-info', headerClass: 'text-status-info', headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', badgeClass: 'badge-blue', icon: this.getIconHTML('clipboard') },
-                { key: 'in-progress', title: 'In Progress', containerClass: 'card-warning', headerClass: 'text-status-warning', headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', badgeClass: 'badge-yellow', icon: this.getIconHTML('bolt') },
-                { key: 'complete', title: 'Completed', containerClass: 'card-success', headerClass: 'text-status-success', headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', badgeClass: 'badge-green', icon: this.getIconHTML('check-circle') }
-            ];
-            
-            return statusGroups.map(group => ({
-                ...group,
-                tasks: tasks.filter(task => 
-                    task.status === group.key && 
-                    task.task_type !== 'child' &&
-                    (group.key !== 'complete' || this.showCompleted)
-                )
-            })).filter(group => group.key !== 'complete' || this.showCompleted);
-        },
-
-        // Group by priority
-        groupByPriority(tasks) {
-            const priorityGroups = [
-                { key: 'high', title: 'High Priority', containerClass: 'card-danger', headerClass: 'text-status-overdue', headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100', badgeClass: 'badge-red', icon: this.getIconHTML('fire') },
-                { key: 'medium', title: 'Medium Priority', containerClass: 'card-warning', headerClass: 'text-status-warning', headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', badgeClass: 'badge-yellow', icon: this.getIconHTML('exclamation-triangle') },
-                { key: 'low', title: 'Low Priority', containerClass: 'card-success', headerClass: 'text-status-success', headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', badgeClass: 'badge-green', icon: this.getIconHTML('clipboard') }
-            ];
-            
-            return priorityGroups.map(group => ({
-                ...group,
-                tasks: tasks.filter(task => task.priority === group.key && task.task_type !== 'child')
-            }));
-        },
-
-        // Group by due date
-        groupByDueDate(tasks) {
-            const dueDateGroups = [
-                { key: 'overdue', title: 'Overdue', containerClass: 'card-danger', headerClass: 'text-status-overdue', headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100', badgeClass: 'badge-red', icon: this.getIconHTML('exclamation-circle') },
-                { key: 'today', title: 'Due Today', containerClass: 'card-orange', headerClass: 'text-status-warning', headerBgClass: 'border-b border-orange-200 px-6 py-4 bg-orange-50 hover:bg-orange-100', badgeClass: 'badge-orange', icon: this.getIconHTML('calendar-days') },
-                { key: 'this_week', title: 'This Week', containerClass: 'card-info', headerClass: 'text-status-info', headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', badgeClass: 'badge-blue', icon: this.getIconHTML('calendar') },
-                { key: 'later', title: 'Later', containerClass: 'card-neutral', headerClass: 'text-status-neutral', headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', badgeClass: 'badge-gray', icon: this.getIconHTML('chart-bar') },
-                { key: 'no_date', title: 'No Due Date', containerClass: 'card-neutral', headerClass: 'text-status-neutral', headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', badgeClass: 'badge-gray', icon: this.getIconHTML('question-mark-circle') }
-            ];
-            
-            return dueDateGroups.map(group => ({
-                ...group,
-                tasks: this.getTasksByDueDateCategory(tasks, group.key)
-            }));
-        },
-
-        // Group by entity
-        groupByEntity(tasks) {
-            const entityGroups = [
-                { key: 'company', title: 'Company Tasks', containerClass: 'card-info', headerClass: 'text-status-info', headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', badgeClass: 'badge-blue', icon: this.getIconHTML('building-office') },
-                { key: 'contact', title: 'Contact Tasks', containerClass: 'card-success', headerClass: 'text-status-success', headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', badgeClass: 'badge-green', icon: this.getIconHTML('user') },
-                { key: 'opportunity', title: 'Opportunity Tasks', containerClass: 'card-warning', headerClass: 'text-status-warning', headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', badgeClass: 'badge-yellow', icon: this.getIconHTML('currency-dollar') },
-                { key: 'unrelated', title: 'General Tasks', containerClass: 'card-neutral', headerClass: 'text-status-neutral', headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', badgeClass: 'badge-gray', icon: this.getIconHTML('clipboard') }
-            ];
-            
-            return entityGroups.map(group => ({
-                ...group,
-                tasks: tasks.filter(task => {
-                    if (task.task_type === 'child') return false;
-                    if (group.key === 'unrelated') {
-                        return !task.entity_type || task.entity_type === null;
-                    }
-                    return task.entity_type === group.key;
-                })
-            }));
-        },
-
-        // Helper to get tasks by due date category
-        getTasksByDueDateCategory(tasks, category) {
-            return tasks.filter(task => {
-                if (task.task_type === 'child') return false;
-                
-                if (category === 'no_date') {
-                    return !task.due_date;
-                }
-                
-                if (!task.due_date) return false;
-                
-                const dueDate = new Date(task.due_date);
-                const daysDiff = Math.ceil((dueDate - this.today) / (1000 * 60 * 60 * 24));
-                
-                switch(category) {
-                    case 'overdue': return daysDiff < 0;
-                    case 'today': return daysDiff === 0;
-                    case 'this_week': return daysDiff > 0 && daysDiff <= 7;
-                    case 'later': return daysDiff > 7;
-                    default: return false;
-                }
-            });
-        },
-
-        // Toggle section expansion
-        toggleSection(sectionKey) {
-            this.expandedSections[sectionKey] = !this.expandedSections[sectionKey];
-        },
-
-        // Helper to get icon HTML
-        getIconHTML(iconType) {
-            const icons = {
-                'clipboard': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>',
-                'bolt': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>',
-                'check-circle': '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"></path></svg>',
-                'fire': '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177A7.547 7.547 0 016.648 6.61a.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 011.925-3.545 3.75 3.75 0 013.255 3.717z" clip-rule="evenodd"></path></svg>',
-                'exclamation-triangle': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>',
-                'exclamation-circle': '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"></path></svg>',
-                'calendar-days': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5a2.25 2.25 0 002.25-2.25m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5a2.25 2.25 0 012.25 2.25v7.5M8.25 21h7.5"></path></svg>',
-                'calendar': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>',
-                'chart-bar': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>',
-                'question-mark-circle': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
-                'building-office': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>',
-                'user': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>',
-                'currency-dollar': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path></svg>'
-            };
-            return icons[iconType] || icons['clipboard'];
-        },
-
-        // Get pre-rendered task card HTML for a task
-        renderTaskCard(task, groupContext) {
-            const cachedElement = document.getElementById(`task-card-${task.id}`);
-            return cachedElement ? cachedElement.innerHTML : '';
-        },
-
-        // Bulk action functions
-        bulkUpdateStatus() {
-            if (this.selectedItems.length === 0) return;
-            
-            const newStatus = prompt('Enter new status (todo, in-progress, complete):');
-            if (!newStatus) return;
-            
-            if (!['todo', 'in-progress', 'complete'].includes(newStatus)) {
-                alert('Invalid status. Please use: todo, in-progress, or complete');
-                return;
-            }
-            
-            // Update each selected task
-            this.selectedItems.forEach(async (taskId) => {
-                try {
-                    const response = await fetch(`/api/tasks/${taskId}`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ status: newStatus })
-                    });
-                    
-                    if (response.ok) {
-                        // Update task in local data
-                        const taskIndex = this.allTasks.findIndex(t => t.id.toString() === taskId.toString());
-                        if (taskIndex !== -1) {
-                            this.allTasks[taskIndex].status = newStatus;
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error updating task:', error);
-                }
+// Tasks use the centralized entity manager system
+// Bulk action functions for tasks
+window.bulkUpdateTaskStatus = function(selectedIds) {
+    if (selectedIds.length === 0) return;
+    
+    const newStatus = prompt('Enter new status (todo, in-progress, complete):');
+    if (!newStatus) return;
+    
+    if (!['todo', 'in-progress', 'complete'].includes(newStatus)) {
+        alert('Invalid status. Please use: todo, in-progress, or complete');
+        return;
+    }
+    
+    // Update each selected task
+    selectedIds.forEach(async (taskId) => {
+        try {
+            const response = await fetch(`/api/tasks/${taskId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus })
             });
             
-            // Clear selection and refresh
-            this.selectedItems = [];
-            this.updateFilters();
-        },
-
-        bulkDelete() {
-            if (this.selectedItems.length === 0) return;
-            
-            if (!confirm(`Are you sure you want to delete ${this.selectedItems.length} selected tasks?`)) {
-                return;
-            }
-            
-            // Delete each selected task
-            this.selectedItems.forEach(async (taskId) => {
-                try {
-                    const response = await fetch(`/api/tasks/${taskId}`, {
-                        method: 'DELETE'
-                    });
-                    
-                    if (response.ok) {
-                        // Remove task from local data
-                        this.allTasks = this.allTasks.filter(t => t.id.toString() !== taskId.toString());
-                    }
-                } catch (error) {
-                    console.error('Error deleting task:', error);
+            if (response.ok) {
+                // Update task in local data
+                const taskIndex = window.tasksData.findIndex(t => t.id.toString() === taskId.toString());
+                if (taskIndex !== -1) {
+                    window.tasksData[taskIndex].status = newStatus;
                 }
-            });
-            
-            // Clear selection and refresh
-            this.selectedItems = [];
-            this.updateFilters();
+            }
+        } catch (error) {
+            console.error('Error updating task:', error);
         }
-    };
-}
+    });
+    
+    // Refresh the page to show changes
+    setTimeout(() => location.reload(), 1000);
+};
+
+window.bulkDeleteTasks = function(selectedIds) {
+    if (selectedIds.length === 0) return;
+    
+    if (!confirm(`Are you sure you want to delete ${selectedIds.length} selected tasks?`)) {
+        return;
+    }
+    
+    // Delete each selected task
+    selectedIds.forEach(async (taskId) => {
+        try {
+            const response = await fetch(`/api/tasks/${taskId}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                // Remove task from local data
+                window.tasksData = window.tasksData.filter(t => t.id.toString() !== taskId.toString());
+            }
+        } catch (error) {
+            console.error('Error deleting task:', error);
+        }
+    });
+    
+    // Refresh the page to show changes
+    setTimeout(() => location.reload(), 1000);
+};
+// Tasks use the centralized modal system from modal-manager.js
+// All modal functions including deleteTask are now handled globally
 </script>
 {% endblock %}

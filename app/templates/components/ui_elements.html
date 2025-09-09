@@ -938,3 +938,51 @@
     </div>
 </template>
 {% endmacro %}
+
+{#
+  Generic Bulk Actions Bar
+  
+  Displays a blue banner when items are selected for bulk operations.
+  Customizable for different entity types and actions.
+  
+  Parameters:
+  - entity_type: Singular name of entity type (e.g., 'task', 'opportunity')
+  - entity_plural: Plural name for display (e.g., 'tasks', 'opportunities')  
+  - primary_action: Primary bulk action config {label, onclick, color}
+  - secondary_action: Secondary bulk action config {label, onclick, color}
+  
+  Usage:
+  {{ bulk_actions_bar('task', 'tasks', 
+       {'label': 'Update Status', 'onclick': 'bulkUpdateStatus()', 'color': 'blue'},
+       {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
+#}
+{% macro bulk_actions_bar(entity_type, entity_plural, primary_action, secondary_action) %}
+<div x-show="selectedItems.length > 0" 
+     x-cloak 
+     x-transition
+     class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+    <div class="flex items-center space-x-4">
+        <span class="text-blue-800 font-medium" x-text="`${selectedItems.length} {{ entity_plural }} selected`"></span>
+        
+        {% if primary_action %}
+        <button @click="{{ primary_action.onclick }}" 
+                class="bg-{{ primary_action.color }}-600 text-white px-3 py-1.5 rounded text-sm hover:bg-{{ primary_action.color }}-700">
+            {{ primary_action.label }}
+        </button>
+        {% endif %}
+        
+        {% if secondary_action %}
+        <button @click="{{ secondary_action.onclick }}" 
+                class="bg-{{ secondary_action.color }}-600 text-white px-3 py-1.5 rounded text-sm hover:bg-{{ secondary_action.color }}-700">
+            {{ secondary_action.label }}
+        </button>
+        {% endif %}
+    </div>
+    
+    <button @click="selectedItems = []" class="text-blue-600 hover:text-blue-800">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+</div>
+{% endmacro %}
