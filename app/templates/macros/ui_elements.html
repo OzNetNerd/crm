@@ -1151,11 +1151,14 @@
             class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between min-w-[120px] group"
             onclick="this.nextElementSibling.classList.toggle('hidden')">
         <span>
+            {% set found = namespace(value=false) %}
             {% for option in options %}
-                {% if option.value == current_value %}{{ option.label }}{% break %}{% endif %}
-            {% else %}
-                {{ label_text }}
+                {% if option.value == current_value and not found.value %}
+                    {{ option.label }}
+                    {% set found.value = true %}
+                {% endif %}
             {% endfor %}
+            {% if not found.value %}{{ label_text }}{% endif %}
         </span>
         <svg class="w-4 h-4 ml-2 transition-transform group-focus:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -1198,8 +1201,12 @@
             {% if current_values|length == 0 %}
                 {{ placeholder }}
             {% elif current_values|length == 1 %}
+                {% set found = namespace(value=false) %}
                 {% for option in options %}
-                    {% if option.value in current_values %}{{ option.label }}{% break %}{% endif %}
+                    {% if option.value in current_values and not found.value %}
+                        {{ option.label }}
+                        {% set found.value = true %}
+                    {% endif %}
                 {% endfor %}
             {% else %}
                 {{ current_values|length }} selected
