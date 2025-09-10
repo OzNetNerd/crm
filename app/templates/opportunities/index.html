@@ -121,15 +121,15 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-<script src="{{ url_for('static', filename='js/entity-manager.js') }}"></script>
-<script src="{{ url_for('static', filename='js/entity-configs.js') }}"></script>
+<script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
+<script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
 
 {% include "components/modals/confirmation.html" %}
 {% include "components/modals/task/task_detail.html" %}
 {% include "components/modals/task/task_new.html" %}
-{% include "components/modals/contact/contact_detail.html" %}
-{% include "components/modals/contact/contact_new.html" %}
+{% include "components/modals/stakeholder/stakeholder_detail.html" %}
+{% include "components/modals/stakeholder/stakeholder_new.html" %}
 {% include "components/modals/company/company_detail.html" %}
 {% include "components/modals/company/company_new.html" %}
 {% include "components/modals/opportunity/opportunity_detail.html" %}
