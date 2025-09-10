@@ -236,7 +236,7 @@
                             <div class="flex justify-between items-center mb-3">
                                 <label class="form-label">Child Tasks</label>
                                 <button type="button" @click="addChildTask()" 
-                                        class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
+                                        class="btn-primary">
                                     Add Child Task
                                 </button>
                             </div>
@@ -301,7 +301,7 @@
                     </button>
                     <button @click="saveNewTask()" 
                             :disabled="saving || !isFormValid"
-                            class="modal-save-button">
+                            class="btn-primary">
                         <span x-show="!saving">Save</span>
                         <span x-show="saving" class="flex items-center">
                             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

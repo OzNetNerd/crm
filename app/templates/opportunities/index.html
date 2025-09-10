@@ -53,10 +53,10 @@
          class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
         <div class="flex items-center space-x-4">
             <span class="text-blue-800 font-medium" x-text="`${selectedItems.length} opportunities selected`"></span>
-            <button @click="bulkUpdateStage()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-700">
+            <button @click="bulkUpdateStage()" class="btn-primary">
                 Update Stage
             </button>
-            <button @click="bulkDelete()" class="bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700">
+            <button @click="bulkDelete()" class="btn-danger">
                 Delete Selected
             </button>
         </div>
@@ -120,7 +120,7 @@
         <div class="card p-12 text-center">
             <p class="text-gray-500 mb-4">No opportunities found</p>
             <button onclick="openNewOpportunityModal()" 
-                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    class="btn-primary">
                 Add Your First Opportunity
             </button>
         </div>

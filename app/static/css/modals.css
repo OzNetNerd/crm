@@ -130,14 +130,15 @@
     gap: var(--spacing-md);
 }
 
+/* Modal Cancel Button - keep specific styling for secondary action */
 .modal-cancel-button {
-    padding: 0.5rem 1rem; /* Match main button padding */
+    padding: 0.5rem 1rem;
     border: 1px solid var(--color-gray-300);
     border-radius: var(--radius-lg);
     background-color: white;
     color: var(--color-gray-700);
-    font-size: 0.875rem; /* Match main button font-size */
-    font-weight: 500; /* Match main button font-weight */
+    font-size: 0.875rem;
+    font-weight: 500;
     transition: var(--transition-normal);
     box-shadow: var(--shadow-sm);
     cursor: pointer;
@@ -148,26 +149,9 @@
     border-color: var(--color-gray-400);
 }
 
+/* Modal Save Button - now just use universal btn-primary */
 .modal-save-button {
-    padding: 0.5rem 1rem; /* Match main button padding */
-    border: 1px solid transparent;
-    border-radius: var(--radius-lg);
-    background-color: var(--color-primary);
-    color: white;
-    font-size: 0.875rem; /* Match main button font-size */
-    font-weight: 500; /* Match main button font-weight */
-    transition: var(--transition-normal);
-    box-shadow: var(--shadow-sm);
-    cursor: pointer;
-}
-
-.modal-save-button:hover:not(:disabled) {
-    background-color: var(--color-primary-hover);
-}
-
-.modal-save-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    /* This class now inherits from btn-primary for consistency */
 }
 
 /* ========== Form Elements ========== */
@@ -178,8 +162,8 @@
 
 .form-label {
     display: block;
-    font-size: 0.875rem; /* Match main button font-size */
-    font-weight: 500; /* Match main button font-weight */
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--color-gray-700);
     margin-bottom: var(--spacing-sm);
 }
@@ -191,58 +175,9 @@
     font-weight: var(--font-bold);
 }
 
-.form-input {
-    width: 100%;
-    padding: var(--spacing-md) var(--spacing-lg);
-    border: 1px solid var(--color-gray-300);
-    border-radius: var(--radius-lg);
-    font-size: var(--text-sm);
-    background-color: white;
-    transition: var(--transition-normal);
-    box-shadow: var(--shadow-sm);
-}
-
-.form-input::placeholder {
-    color: var(--color-gray-400);
-}
-
-.form-input:hover {
-    border-color: var(--color-gray-400);
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-primary-lighter);
-}
-
-.form-textarea {
-    width: 100%;
-    padding: var(--spacing-md) var(--spacing-lg);
-    border: 1px solid var(--color-gray-300);
-    border-radius: var(--radius-lg);
-    font-size: var(--text-sm);
-    background-color: white;
-    transition: var(--transition-normal);
-    box-shadow: var(--shadow-sm);
-    resize: vertical;
-    min-height: 5rem;
-}
-
-.form-textarea::placeholder {
-    color: var(--color-gray-400);
-}
-
-.form-textarea:hover {
-    border-color: var(--color-gray-400);
-}
-
-.form-textarea:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-primary-lighter);
-}
-
+/* DRY Form Elements - grouped selectors eliminate duplication */
+.form-input,
+.form-textarea,
 .form-select {
     width: 100%;
     padding: var(--spacing-md) var(--spacing-lg);
@@ -254,14 +189,29 @@
     box-shadow: var(--shadow-sm);
 }
 
+.form-input::placeholder,
+.form-textarea::placeholder {
+    color: var(--color-gray-400);
+}
+
+.form-input:hover,
+.form-textarea:hover,
 .form-select:hover {
     border-color: var(--color-gray-400);
 }
 
+.form-input:focus,
+.form-textarea:focus,
 .form-select:focus {
     outline: none;
     border-color: var(--color-primary);
     box-shadow: 0 0 0 3px var(--color-primary-lighter);
+}
+
+/* Textarea specific styles */
+.form-textarea {
+    resize: vertical;
+    min-height: 5rem;
 }
 
 .form-checkbox {
