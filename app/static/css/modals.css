@@ -151,7 +151,32 @@
 
 /* Modal Save Button - now just use universal btn-primary */
 .modal-save-button {
-    /* This class now inherits from btn-primary for consistency */
+    background-color: #2563eb;
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    transform: scale(1);
+}
+
+.modal-save-button:hover {
+    background-color: #1d4ed8;
+    transform: scale(1.05);
+}
+
+.modal-save-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px rgba(59, 130, 246, 0.5);
+}
+
+.modal-save-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: scale(1);
 }
 
 /* ========== Form Elements ========== */

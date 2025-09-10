@@ -130,6 +130,20 @@ function createCRUDMixin(entityType, defaultEntity = {}, options = {}) {
         async saveEntity() {
             if (!this.validateEntity()) return;
             
+            // Show confirmation dialog if enabled
+            if (this.confirmBeforeSave !== false) {
+                const entityName = entityType.charAt(0).toUpperCase() + entityType.slice(1);
+                const isUpdate = !!this[`${entityKey}Id`];
+                const action = isUpdate ? 'update' : 'create';
+                const confirmMessage = this.getConfirmMessage ? 
+                    this.getConfirmMessage(action, entityName) : 
+                    `Are you sure you want to save changes to this ${entityName.toLowerCase()}?`;
+                
+                if (!confirm(confirmMessage)) {
+                    return;
+                }
+            }
+            
             this.setSaving(true);
             
             try {
@@ -183,12 +197,16 @@ function createCRUDMixin(entityType, defaultEntity = {}, options = {}) {
             return true;
         },
         
+        // Configuration options
+        confirmBeforeSave: true,
+        
         // Event handlers for modals to override
         onEntityLoaded: null,
         onEntitySaved: null,
         onFormReset: null,
         customValidation: null,
         getRequiredFields: null,
+        getConfirmMessage: null,
         
         ...options
     });
