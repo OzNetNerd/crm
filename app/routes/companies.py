@@ -101,7 +101,7 @@ def index():
 
 
 
-@companies_bp.route("/new", methods=["GET", "POST"])
+@companies_bp.route("/create", methods=["GET", "POST"])
 def create():
     if request.method == "POST":
         return company_handler.handle_create(

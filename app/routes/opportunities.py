@@ -1,8 +1,10 @@
 from datetime import date
 from flask import Blueprint, render_template, request, jsonify
 from app.models import Opportunity, Company, Stakeholder, Note, db
+from app.utils.route_helpers import GenericAPIHandler
 
 opportunities_bp = Blueprint("opportunities", __name__)
+opportunity_handler = GenericAPIHandler(Opportunity, "opportunity")
 
 
 @opportunities_bp.route("/")
@@ -206,3 +208,22 @@ def create_opportunity_note(opportunity_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+
+@opportunities_bp.route("/create", methods=["GET", "POST"])
+def create():
+    if request.method == "POST":
+        return opportunity_handler.create_entity(
+            [
+                "name",
+                "value",
+                "probability",
+                "expected_close_date",
+                "stage",
+                "company_id",
+            ]
+        )
+
+    # GET request - render template (if needed)
+    companies = Company.query.all()
+    return render_template("opportunities/new.html", companies=companies)

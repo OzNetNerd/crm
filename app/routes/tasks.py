@@ -107,7 +107,7 @@ def index():
 
 
 
-@tasks_bp.route("/new", methods=["GET", "POST"])
+@tasks_bp.route("/create", methods=["GET", "POST"])
 def create():
     if request.method == "POST":
         try:
@@ -154,7 +154,7 @@ def create():
     )
 
 
-@tasks_bp.route("/multi/new", methods=["GET", "POST"])
+@tasks_bp.route("/multi/create", methods=["GET", "POST"])
 def create_multi():
     """Create a new Multi Task with child tasks using WTF form validation"""
     form = MultiTaskForm()
