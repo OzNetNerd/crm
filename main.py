@@ -4,7 +4,7 @@ from flask import Flask
 from app.models import db
 from app.routes.dashboard import dashboard_bp
 from app.routes.companies import companies_bp
-from app.routes.contacts import contacts_bp
+from app.routes.stakeholders import stakeholders_bp
 from app.routes.opportunities import opportunities_bp
 from app.routes.tasks import tasks_bp
 from app.routes.tasks_api import tasks_api_bp
@@ -62,7 +62,7 @@ def create_app():
 
     app.register_blueprint(dashboard_bp, url_prefix="/")
     app.register_blueprint(companies_bp, url_prefix="/companies")
-    app.register_blueprint(contacts_bp, url_prefix="/contacts")
+    app.register_blueprint(stakeholders_bp, url_prefix="/stakeholders")
     app.register_blueprint(opportunities_bp, url_prefix="/opportunities")
     app.register_blueprint(tasks_bp, url_prefix="/tasks")
     app.register_blueprint(tasks_api_bp, url_prefix="/api/tasks")

@@ -87,11 +87,11 @@ def parse_int_field(data, field_name, default=None):
 
 def get_entity_data_for_forms():
     """Get entity data commonly needed for forms"""
-    from app.models import Company, Contact, Opportunity
+    from app.models import Company, Stakeholder, Opportunity
     
     return {
         'companies': [{"id": c.id, "name": c.name} for c in Company.query.order_by(Company.name).all()],
-        'contacts': [{"id": c.id, "name": c.name} for c in Contact.query.order_by(Contact.name).all()],
+        'contacts': [{"id": c.id, "name": c.name} for c in Stakeholder.query.order_by(Stakeholder.name).all()],
         'opportunities': [{"id": o.id, "name": o.name} for o in Opportunity.query.order_by(Opportunity.name).all()]
     }
 

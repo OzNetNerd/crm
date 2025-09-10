@@ -3,11 +3,11 @@ from flask import Blueprint, render_template, request
 from app.models import Stakeholder, Company, Opportunity
 from app.utils.route_helpers import BaseRouteHandler, get_entity_data_for_forms
 
-contacts_bp = Blueprint("contacts", __name__)
-contact_handler = BaseRouteHandler(Stakeholder, "contacts")
+stakeholders_bp = Blueprint("stakeholders", __name__)
+stakeholder_handler = BaseRouteHandler(Stakeholder, "stakeholders")
 
 
-@contacts_bp.route("/")
+@stakeholders_bp.route("/")
 def index():
     # Get filter parameters for initial state and URL persistence
     group_by = request.args.get('group_by', 'company')
@@ -57,7 +57,7 @@ def index():
     today = date.today()
     
     return render_template(
-        "contacts/index.html", 
+        "stakeholders/index.html", 
         contacts=contacts,
         companies=companies_data,
         opportunities=opportunities_data,
@@ -74,13 +74,13 @@ def index():
     )
 
 
-@contacts_bp.route("/<int:contact_id>")
+@stakeholders_bp.route("/<int:contact_id>")
 def detail(contact_id):
     contact = Stakeholder.query.get_or_404(contact_id)
-    return render_template("contacts/detail.html", contact=contact)
+    return render_template("stakeholders/detail.html", contact=contact)
 
 
-@contacts_bp.route("/new", methods=["GET", "POST"])
+@stakeholders_bp.route("/new", methods=["GET", "POST"])
 def new():
     if request.method == "POST":
         return contact_handler.handle_create(
@@ -92,4 +92,4 @@ def new():
         )
 
     entity_data = get_entity_data_for_forms()
-    return render_template("contacts/new.html", companies=entity_data['companies'])
+    return render_template("stakeholders/new.html", companies=entity_data['companies'])
