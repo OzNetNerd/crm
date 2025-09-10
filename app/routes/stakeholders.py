@@ -83,7 +83,7 @@ def detail(contact_id):
 @stakeholders_bp.route("/new", methods=["GET", "POST"])
 def new():
     if request.method == "POST":
-        return contact_handler.handle_create(
+        return stakeholder_handler.handle_create(
             name="name",
             role="role", 
             email="email",

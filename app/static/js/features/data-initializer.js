@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Parse and set global data if available
     const datasets = {
         companies: 'companiesData',
-        contacts: 'contactsData', 
+        contacts: 'stakeholdersData', 
         opportunities: 'opportunitiesData',
         tasks: 'tasksData'
     };
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (typeof initMultiTaskData === 'function') {
                 initMultiTaskData(
                     window.companiesData || [],
-                    window.contactsData || [],
+                    window.stakeholdersData || [],
                     window.opportunitiesData || []
                 );
             }
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (typeof initTasksData === 'function') {
                 initTasksData(
                     window.companiesData || [],
-                    window.contactsData || [],
+                    window.stakeholdersData || [],
                     window.opportunitiesData || [],
                     window.tasksData || []
                 );

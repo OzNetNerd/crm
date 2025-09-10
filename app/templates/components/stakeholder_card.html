@@ -1,11 +1,12 @@
 {% from "components/expandable_card.html" import expandable_card, action_buttons_row %}
 {% from "components/ui_elements.html" import pluralized_count %}
+{% from "components/icons.html" import envelope_icon, phone_icon %}
 
 {# Stakeholder field configuration - clean, declarative setup #}
 {% set stakeholder_field_config = {
     'title_field': 'name',
     'secondary_fields': [
-        {'field': 'role', 'type': 'text'}
+        {'field': 'job_title', 'type': 'text'}
     ],
     'metadata_fields': [
         {'field': 'created_at', 'type': 'date', 'format': '%m/%d/%y'}
@@ -14,7 +15,7 @@
 
 {# Custom secondary info handler for stakeholder company link #}
 {% macro stakeholder_secondary_info(stakeholder) %}
-{% if stakeholder.role %}{{ stakeholder.role }} • {% endif %}
+{% if stakeholder.job_title %}{{ stakeholder.job_title }} • {% endif %}
 <span class="text-link-interactive" 
       onclick="event.stopPropagation(); openCompanyDetailModal({{ stakeholder.company.id }})">
     <span class="text-entity-base text-color-company">{{ stakeholder.company.name }}</span>
