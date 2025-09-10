@@ -1,7 +1,7 @@
 {% extends "base/layout.html" %}
-{% from "components/page_template.html" import page_layout %}
-{% from "components/ui_elements.html" import action_button %}
-{% from "components/icons.html" import pencil_icon, arrow_left_icon %}
+{% from "macros/page_template.html" import page_layout %}
+{% from "macros/ui_elements.html" import action_button %}
+{% from "macros/icons.html" import pencil_icon, arrow_left_icon %}
 
 {% block title %}{{ opportunity.name }} - Opportunities - CRM{% endblock %}
 
@@ -189,13 +189,13 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/entities/opportunity-detail.js') }}"></script>
 
-{% include "components/modals/confirmation.html" %}
-{% include "components/modals/task/task_detail.html" %}
-{% include "components/modals/task/task_new.html" %}
-{% include "components/modals/stakeholder/stakeholder_detail.html" %}
-{% include "components/modals/stakeholder/stakeholder_new.html" %}
-{% include "components/modals/company/company_detail.html" %}
-{% include "components/modals/company/company_new.html" %}
-{% include "components/modals/opportunity/opportunity_detail.html" %}
-{% include "components/modals/opportunity/opportunity_new.html" %}
+{% include "macros/modals/confirmation.html" %}
+{% include "macros/modals/task/task_detail.html" %}
+{% include "macros/modals/task/task_new.html" %}
+{% include "macros/modals/stakeholder/stakeholder_detail.html" %}
+{% include "macros/modals/stakeholder/stakeholder_new.html" %}
+{% include "macros/modals/company/company_detail.html" %}
+{% include "macros/modals/company/company_new.html" %}
+{% include "macros/modals/opportunity/opportunity_detail.html" %}
+{% include "macros/modals/opportunity/opportunity_new.html" %}
 {% endblock %}

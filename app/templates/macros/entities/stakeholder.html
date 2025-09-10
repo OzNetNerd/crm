@@ -1,0 +1,112 @@
+{% from "macros/expandable_card.html" import expandable_card, action_buttons_row %}
+{% from "macros/ui_elements.html" import pluralized_count %}
+{% from "macros/icons.html" import plus_icon, clipboard_list_icon, envelope_icon, phone_icon %}
+{% from "macros/list_section.html" import status_badge %}
+
+{# Stakeholder field configuration - clean, declarative setup #}
+{% set stakeholder_field_config = {
+    'title_field': 'name',
+    'secondary_fields': [
+        {'field': 'job_title', 'type': 'text'}
+    ],
+    'metadata_fields': [
+        {'field': 'created_at', 'type': 'date', 'format': '%d/%m/%y'}
+    ]
+} %}
+
+{# Custom secondary info handler for stakeholder company link #}
+{% macro stakeholder_secondary_info(stakeholder) %}
+{% if stakeholder.job_title %}{{ stakeholder.job_title }} • {% endif %}
+<span class="text-link-interactive" 
+      onclick="event.stopPropagation(); openCompanyDetailModal({{ stakeholder.company.id }})">
+    <span class="text-entity-base text-color-company">{{ stakeholder.company.name }}</span>
+</span>
+{% endmacro %}
+
+{% macro render_stakeholder(stakeholder) %}
+{{ expandable_card('stakeholder', stakeholder, stakeholder.id,
+    expansion_enabled=true,
+    field_config=stakeholder_field_config,
+    badge_content=stakeholder_header_content(stakeholder),
+    secondary_info=stakeholder_secondary_info(stakeholder),
+    metadata_content=stakeholder_metadata_content(stakeholder),
+    action_buttons=action_buttons_row('stakeholder', stakeholder.id),
+    expanded_content=stakeholder_expanded_content(stakeholder)) }}
+{% endmacro %}
+
+{% macro stakeholder_expanded_content(stakeholder) %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Stakeholder Details -->
+    <div>
+        <h4 class="text-sm font-medium text-gray-900 mb-2">Stakeholder Details</h4>
+        <div class="space-y-2 text-sm">
+            {% if stakeholder.email %}
+                <div class="flex items-center">
+                    {{ envelope_icon("w-4 h-4 text-gray-400 mr-2") }}
+                    <a href="mailto:{{ stakeholder.email }}" class="text-blue-600 hover:text-blue-800">
+                        {{ stakeholder.email }}
+                    </a>
+                </div>
+            {% endif %}
+            {% if stakeholder.phone %}
+                <div class="flex items-center">
+                    {{ phone_icon("w-4 h-4 text-gray-400 mr-2") }}
+                    <a href="tel:{{ stakeholder.phone }}" class="text-green-600 hover:text-green-800">
+                        {{ stakeholder.phone }}
+                    </a>
+                </div>
+            {% endif %}
+            {% if not stakeholder.email and not stakeholder.phone %}
+                <p class="text-gray-500 italic">No contact information available</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div>
+        <h4 class="text-sm font-medium text-gray-900 mb-2">Quick Actions</h4>
+        <div class="quick-actions-grid">
+            <button @click.stop="createTask({{ stakeholder.id }})" 
+                    class="quick-action-btn quick-action-btn-primary">
+                {{ clipboard_list_icon('w-4 h-4 mr-1') }}Add Task
+            </button>
+            <button @click.stop="createOpportunity({{ stakeholder.id }})" 
+                    class="quick-action-btn quick-action-btn-secondary">
+                {{ plus_icon('w-4 h-4 mr-1') }}New Opportunity
+            </button>
+            {% if stakeholder.opportunities %}
+                <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm">
+                    {{ pluralized_count(stakeholder.opportunities|length, 'opportunity', short=true) }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{# Stakeholder Header Content - Standardized stakeholder header badge #}
+{% macro stakeholder_header_content(stakeholder) %}
+{% if stakeholder.email and stakeholder.phone %}
+    {{ status_badge('Complete', 'green') }}
+{% elif stakeholder.email or stakeholder.phone %}
+    {{ status_badge('Partial', 'yellow') }}
+{% else %}
+    {{ status_badge('Incomplete', 'red') }}
+{% endif %}
+{% endmacro %}
+
+{# Stakeholder Metadata Content - Standardized stakeholder metadata layout #}
+{% macro stakeholder_metadata_content(stakeholder) %}
+<span class="text-gray-500">
+    Added: {{ stakeholder.created_at.strftime('%d/%m/%y') if stakeholder.created_at else 'Unknown' }}
+    {% if stakeholder.opportunities %}
+    • {{ pluralized_count(stakeholder.opportunities|length, 'opportunity', short=true) }}
+    {% endif %}
+    {% if stakeholder.email %}
+    • {{ envelope_icon("w-3 h-3 inline") }}
+    {% endif %}
+    {% if stakeholder.phone %}
+    • {{ phone_icon("w-3 h-3 inline") }}
+    {% endif %}
+</span>
+{% endmacro %}

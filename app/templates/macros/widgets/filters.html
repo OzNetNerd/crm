@@ -1,0 +1,205 @@
+{# Entity Filter System - Unified filtering components for all entity pages #}
+
+{#
+  Entity Filter Controls - Comprehensive filter toolbar for entity pages
+  
+  Provides the same advanced filtering capabilities as the tasks page but
+  abstracted for reuse across companies, contacts, and opportunities.
+  
+  Parameters:
+  - entity_type (required): 'companies', 'contacts', 'opportunities', 'tasks'
+  - group_options (required): Array of grouping options
+  - sort_options (required): Array of sorting options  
+  - filter_options (optional): Dict of additional filter arrays
+  - show_completed_toggle (optional): Show completed/closed items toggle
+  - show_view_toggle (optional): Show grid/list view toggle
+  - expand_collapse_target (optional): Target for expand/collapse controls
+  
+  Usage:
+  {{ entity_filter_controls('companies', group_options, sort_options, 
+       filter_options={'industry': industries, 'size': sizes},
+       show_view_toggle=true) }}
+#}
+{% macro entity_filter_controls(entity_type, group_options, sort_options, filter_options=None, show_completed_toggle=false, show_view_toggle=false, expand_collapse_target='expandedSections') %}
+{% from "macros/ui_elements.html" import expand_collapse_controls %}
+
+<div class="card-padded-lg filter-section-enhanced">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:gap-6">
+        <!-- Left Side Controls -->
+        <div class="flex flex-wrap items-center gap-6">
+            <label class="text-label-dark">Group by:</label>
+            
+            <!-- Group By Dropdown -->
+            <div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
+                <button type="button" 
+                        class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
+                        @click="open = !open">
+                    <span x-text="getGroupByDisplayText()"></span>
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div x-show="open" 
+                     x-cloak
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="transform opacity-0 scale-95"
+                     x-transition:enter-end="transform opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="transform opacity-100 scale-100"
+                     x-transition:leave-end="transform opacity-0 scale-95"
+                     class="multiselect-dropdown">
+                    <div class="multiselect-options">
+                        {% for option in group_options %}
+                        <div class="multiselect-option" @click="groupBy = '{{ option.value }}'; updateFilters(); open = false">
+                            <span>{{ option.label }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            {% if show_completed_toggle %}
+            <label class="flex items-center">
+                <input type="checkbox" 
+                       x-model="showCompleted"
+                       @change="updateFilters()"
+                       name="show_completed"
+                       value="true"
+                       class="mr-2">
+                <span class="text-secondary-dark">Show Completed</span>
+            </label>
+            {% endif %}
+
+            {% if expand_collapse_target %}
+            {{ expand_collapse_controls(expand_collapse_target) }}
+            {% endif %}
+        </div>
+        
+        <!-- Right Side Controls -->
+        <div class="flex items-center gap-6">
+            {% if show_view_toggle %}
+            <div class="flex items-center gap-2">
+                <button @click="viewMode = 'grid'" 
+                        :class="viewMode === 'grid' ? 'text-blue-600' : 'text-gray-400'"
+                        class="p-1 hover:text-blue-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                <button @click="viewMode = 'list'" 
+                        :class="viewMode === 'list' ? 'text-blue-600' : 'text-gray-400'"
+                        class="p-1 hover:text-blue-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                </button>
+            </div>
+            {% endif %}
+            
+            <label class="text-label-dark">Sort by:</label>
+            
+            <!-- Sort By Dropdown -->
+            <div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
+                <button type="button" 
+                        class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
+                        @click="open = !open">
+                    <span x-text="getSortByDisplayText()"></span>
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div x-show="open" 
+                     x-cloak
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="transform opacity-0 scale-95"
+                     x-transition:enter-end="transform opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="transform opacity-100 scale-100"
+                     x-transition:leave-end="transform opacity-0 scale-95"
+                     class="multiselect-dropdown">
+                    <div class="multiselect-options">
+                        {% for option in sort_options %}
+                        <div class="multiselect-option" @click="if (sortBy === '{{ option.value }}') { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortBy = '{{ option.value }}'; } updateFilters(); open = false">
+                            <span>{{ option.label }}</span>
+                            <span x-show="sortBy === '{{ option.value }}'" x-text="sortDirection === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            {% if filter_options %}
+            {% for filter_key, filter_opts in filter_options.items() %}
+            <!-- {{ filter_key|title }} Filter -->
+            <div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
+                <button type="button" 
+                        class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
+                        @click="open = !open">
+                    <span x-text="get{{ filter_key|title }}DisplayText()"></span>
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div x-show="open" 
+                     x-cloak
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="transform opacity-0 scale-95"
+                     x-transition:enter-end="transform opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="transform opacity-100 scale-100"
+                     x-transition:leave-end="transform opacity-0 scale-95"
+                     class="multiselect-dropdown">
+                    <div class="multiselect-header">
+                        <div class="multiselect-controls">
+                            <span class="multiselect-control-btn" @click="{{ filter_key }}Filter = [{% for opt in filter_opts %}'{{ opt.value if opt is mapping else opt }}'{% if not loop.last %}, {% endif %}{% endfor %}]; updateFilters()">Select All</span>
+                            <span class="multiselect-control-btn" @click="{{ filter_key }}Filter = []; updateFilters()">Deselect All</span>
+                        </div>
+                    </div>
+                    <div class="multiselect-options">
+                        <div class="multiselect-option" @click="{{ filter_key }}Filter = []; updateFilters()">
+                            <input type="checkbox" :checked="{{ filter_key }}Filter.length === 0" class="mr-2">
+                            <span>All {{ filter_key|title }}</span>
+                        </div>
+                        {% for opt in filter_opts %}
+                        <div class="multiselect-option" @click="toggle{{ filter_key|title }}('{{ opt.value if opt is mapping else opt }}')">
+                            <input type="checkbox" :checked="{{ filter_key }}Filter.includes('{{ opt.value if opt is mapping else opt }}')" class="mr-2">
+                            <span>{{ opt.label if opt is mapping else opt|title }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  Entity Filter Manager - JavaScript data generator
+  
+  Generates the appropriate call to createEntityFilterManager() from the external 
+  entity-filter-manager.js file. All JavaScript logic is now externalized.
+  
+  Parameters:
+  - entity_type (required): Type of entity being managed
+  - group_options (required): Available grouping options  
+  - sort_options (required): Available sorting options
+  - filter_options (optional): Additional filter configuration
+  - initial_values (optional): Dict of initial filter values
+  
+  Returns: JavaScript function call suitable for Alpine.js x-data
+#}
+{% macro entity_filter_manager(entity_type, group_options, sort_options, filter_options=None, initial_values=None) %}
+createEntityFilterManager(
+    '{{ entity_type }}',
+    {{ group_options | tojson }},
+    {{ sort_options | tojson }},
+    {% if filter_options %}{{ filter_options | tojson }}{% else %}{}{% endif %},
+    {% if initial_values %}{{ initial_values | tojson }}{% else %}{}{% endif %}
+)
+{% endmacro %}

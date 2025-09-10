@@ -1,10 +1,10 @@
 {% extends "base/layout.html" %}
 
-{% from "components/page_template.html" import page_layout %}
-{% from "components/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
-{% from "components/expandable_card.html" import expandable_card, task_header_content, task_reschedule_buttons, action_buttons_row, task_title_content, task_metadata_content %}
-{% from "components/imports/entity_imports.html" import include_common_modals %}
-{% from "components/icons.html" import plus_icon %}
+{% from "macros/page_template.html" import page_layout %}
+{% from "macros/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
+{% from "macros/expandable_card.html" import expandable_card, task_header_content, task_reschedule_buttons, action_buttons_row, task_title_content, task_metadata_content %}
+{% from "macros/imports/entity_imports.html" import include_common_modals %}
+{% from "macros/icons.html" import plus_icon %}
 
 {% block title %}All Tasks - CRM{% endblock %}
 
@@ -122,7 +122,7 @@
 {% endblock %}
 
 {% block modals %}
-{% from "components/modals/confirmation.html" import confirmation_modal %}
+{% from "macros/modals/confirmation.html" import confirmation_modal %}
 {{ confirmation_modal('task-confirmation-modal') }}
 {{ include_common_modals() }}
 {% endblock %}

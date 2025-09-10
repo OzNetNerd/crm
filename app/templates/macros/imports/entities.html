@@ -1,0 +1,46 @@
+{# Entity Imports - Entity-specific macro imports #}
+
+{# Entity Cards #}
+{% from "macros/entities/company.html" import 
+    company_card,
+    company_header_content,
+    company_metadata_content,
+    company_expanded_content
+%}
+
+{% from "macros/entities/opportunity.html" import 
+    opportunity_card,
+    opportunity_header_content,
+    opportunity_metadata_content,
+    opportunity_expanded_content
+%}
+
+{% from "macros/entities/stakeholder.html" import 
+    stakeholder_card,
+    stakeholder_header_content,
+    stakeholder_metadata_content,
+    stakeholder_expanded_content
+%}
+
+{% from "macros/entities/task.html" import 
+    task_card,
+    task_header_content,
+    task_metadata_content,
+    task_expanded_content,
+    task_section_group
+%}
+
+{% from "macros/entities/team.html" import 
+    team_card,
+    team_header_content,
+    team_metadata_content,
+    team_expanded_content
+%}
+
+{# Entity Forms #}
+{% from "macros/modals/forms.html" import 
+    company_new_modal,
+    opportunity_new_modal,
+    stakeholder_new_modal,
+    task_new_modal
+%}

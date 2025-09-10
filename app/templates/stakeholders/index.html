@@ -1,15 +1,15 @@
 {% extends "base/layout.html" %}
 
 {# DRY Common Imports - reduced from 15+ lines to this clean set #}
-{% from "components/icons.html" import plus_icon, clipboard_list_icon, building_office_icon, user_icon, chevron_right_icon, check_circle_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, phone_icon, envelope_icon %}
-{% from "components/ui_elements.html" import expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar, enhanced_filter_controls %}
-{% from "components/page_template.html" import page_layout %}
+{% from "macros/icons.html" import plus_icon, clipboard_list_icon, building_office_icon, user_icon, chevron_right_icon, check_circle_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, phone_icon, envelope_icon %}
+{% from "macros/ui_elements.html" import expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar, enhanced_filter_controls %}
+{% from "macros/page_template.html" import page_layout %}
 
 {# Entity-specific imports #}
-{% from "components/expandable_card.html" import expandable_card, action_buttons_row %}
-{% from "components/imports/entity_imports.html" import include_common_modals %}
-{% from "components/ui_elements.html" import pluralized_count %}
-{% from "components/list_section.html" import status_badge %}
+{% from "macros/expandable_card.html" import expandable_card, action_buttons_row %}
+{% from "macros/imports/entity_imports.html" import include_common_modals %}
+{% from "macros/ui_elements.html" import pluralized_count %}
+{% from "macros/list_section.html" import status_badge %}
 
 {% block title %}Stakeholders - CRM{% endblock %}
 
