@@ -75,14 +75,7 @@
             {'value': 'missing_info', 'label': 'Missing Info'}
         ],
         primary_filter_label='All Company Info',
-        secondary_filter_options=[
-            {'value': 'technology', 'label': 'Technology'},
-            {'value': 'finance', 'label': 'Finance'},
-            {'value': 'healthcare', 'label': 'Healthcare'},
-            {'value': 'manufacturing', 'label': 'Manufacturing'},
-            {'value': 'retail', 'label': 'Retail'},
-            {'value': 'consulting', 'label': 'Consulting'}
-        ],
+        secondary_filter_options=get_filter_options('Company', 'industry'),
         secondary_filter_label='All Industries',
         entity_filter_options=[
             {'value': 'small', 'label': 'Small (1-50)'},
