@@ -26,24 +26,32 @@ def get_distinct_values(model_class, field_name, label_transform=None):
     return sorted(options, key=lambda x: x['label'])
 
 
-def get_model_columns(model_class, exclude_fields=None):
+def get_model_columns(model_class, exclude_fields=None, custom_fields=None):
     """
     Get sortable column names from a model.
     
     Args:
         model_class: SQLAlchemy model class
         exclude_fields: List of field names to exclude
+        custom_fields: Dict of custom computed fields to add {'value': 'label'}
     
     Returns:
         List of {'value': str, 'label': str} dictionaries
     """
     exclude_fields = exclude_fields or ['id', 'created_at', 'updated_at']
+    custom_fields = custom_fields or {}
     
     columns = []
+    
+    # Add database columns
     for column in model_class.__table__.columns:
         if column.name not in exclude_fields:
             label = column.name.replace('_', ' ').title()
             columns.append({'value': column.name, 'label': label})
+    
+    # Add custom computed fields
+    for value, label in custom_fields.items():
+        columns.append({'value': value, 'label': label})
     
     return sorted(columns, key=lambda x: x['label'])
 
@@ -76,13 +84,14 @@ def get_filter_options(model_name, field_name, **kwargs):
     return get_distinct_values(model_class, field_name, kwargs.get('label_transform'))
 
 
-def get_sort_options(model_name, exclude_fields=None):
+def get_sort_options(model_name, exclude_fields=None, custom_fields=None):
     """
     Generic function to get sort options for any model.
     
     Args:
         model_name: String name of the model
         exclude_fields: List of field names to exclude
+        custom_fields: Dict of custom computed fields to add
     
     Returns:
         List of {'value': str, 'label': str} dictionaries
@@ -96,8 +105,27 @@ def get_sort_options(model_name, exclude_fields=None):
         'Opportunity': Opportunity
     }
     
+    # Default custom fields for each model
+    default_custom_fields = {
+        'Company': {
+            'contacts_count': 'Contact Count',
+            'opportunities_count': 'Opportunity Count'
+        },
+        'Task': {
+            'entity_name': 'Related To'
+        },
+        'Opportunity': {
+            'deal_age': 'Deal Age'
+        }
+    }
+    
     model_class = model_map.get(model_name)
     if not model_class:
         return []
     
-    return get_model_columns(model_class, exclude_fields)
+    # Merge default custom fields with any provided
+    final_custom_fields = default_custom_fields.get(model_name, {})
+    if custom_fields:
+        final_custom_fields.update(custom_fields)
+    
+    return get_model_columns(model_class, exclude_fields, final_custom_fields)
