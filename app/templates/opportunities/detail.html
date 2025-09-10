@@ -1,6 +1,7 @@
 {% extends "base/layout.html" %}
 {% from "components/page_template.html" import page_layout %}
 {% from "components/ui_elements.html" import action_button %}
+{% from "components/icons.html" import pencil_icon, arrow_left_icon %}
 
 {% block title %}{{ opportunity.name }} - Opportunities - CRM{% endblock %}
 
@@ -11,13 +12,13 @@
         'label': 'Edit Opportunity',
         'onclick': 'openOpportunityDetailModal(' + opportunity.id|string + ')',
         'color': 'blue',
-        'icon': ''
+        'icon': pencil_icon('w-4 h-4')
     },
     {
         'label': 'All Opportunities',
         'onclick': 'window.location.href="/opportunities"',
         'color': 'gray',
-        'icon': ''
+        'icon': arrow_left_icon('w-4 h-4')
     }
 ] %}
 

@@ -1,5 +1,6 @@
 {% extends "base/layout.html" %}
 {% from "components/page_template.html" import page_layout %}
+{% from "components/icons.html" import pencil_icon, arrow_left_icon %}
 
 {% block title %}{{ task.description[:50] }}... - Tasks - CRM{% endblock %}
 
@@ -10,13 +11,13 @@
         'label': 'Edit Task',
         'onclick': 'openTaskDetailModal(' + task.id|string + ')',
         'color': 'blue',
-        'icon': ''
+        'icon': pencil_icon('w-4 h-4')
     },
     {
         'label': 'All Tasks',
         'onclick': 'window.location.href="/tasks"',
         'color': 'gray',
-        'icon': ''
+        'icon': arrow_left_icon('w-4 h-4')
     }
 ] %}
 
