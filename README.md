@@ -5,6 +5,7 @@ A simple yet powerful CRM system built with Python/Flask, focused on task manage
 ## Features
 
 ### Core Functionality
+
 - **Task Management Dashboard**: Central hub with collapsible sections (Overdue, Today, This Week, etc.)
 - **Companies**: Manage company relationships and information
 - **Contacts**: Track stakeholders with company associations
@@ -12,6 +13,7 @@ A simple yet powerful CRM system built with Python/Flask, focused on task manage
 - **Notes**: Attach contextual notes to any entity (companies, contacts, opportunities, tasks)
 
 ### Key Features
+
 - **Inline Task Editing**: Click to edit task descriptions directly
 - **Quick Actions**: Complete, reschedule (+1 day, +1 week), delete tasks
 - **Collapsible Sections**: Organized task view with persistent state
@@ -20,6 +22,7 @@ A simple yet powerful CRM system built with Python/Flask, focused on task manage
 - **Real-time Updates**: Task operations without page reloads
 
 ### Technical Stack
+
 - **Backend**: Flask, SQLAlchemy, WTForms
 - **Database**: SQLite (zero configuration)
 - **Frontend**: Tailwind CSS, Alpine.js (no build step required)
@@ -28,16 +31,19 @@ A simple yet powerful CRM system built with Python/Flask, focused on task manage
 ## Quick Start
 
 ### 1. Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 2. Create Sample Data (Optional)
+
 ```bash
 python sample_data.py
 ```
 
 ### 3. Run the Application
+
 ```bash
 python3 main.py
 ```
@@ -65,17 +71,20 @@ app/
 ## Architecture Highlights
 
 ### Database Design
+
 - **Polymorphic relationships**: Tasks and Notes can link to any entity via `entity_type` + `entity_id`
 - **Many-to-many**: Contacts can be associated with multiple Opportunities
 - **Calculated properties**: Deal age, days since contact, overdue status
 
 ### Frontend Approach
+
 - **Server-rendered**: Initial page loads with Jinja2 templates
 - **Progressive enhancement**: Alpine.js adds interactivity
 - **Component-based**: Reusable template macros for task cards, modals
 - **No build process**: Uses CDN for Alpine.js and Tailwind CSS
 
 ### Task Management
+
 - **Section-based organization**: Overdue (auto-expanded), Today, This Week, etc.
 - **Persistent state**: Section collapsed/expanded state saved in localStorage
 - **Inline editing**: Click-to-edit functionality with immediate API updates
@@ -84,17 +93,20 @@ app/
 ## API Endpoints
 
 ### Task Operations
+
 - `POST /tasks/<id>/complete` - Mark task as complete
 - `POST /tasks/<id>/update` - Update task details
 - `POST /tasks/<id>/reschedule` - Reschedule task by X days
 
 ### Search
+
 - `GET /api/search?q=query` - Global search across all entities
 - `GET /api/autocomplete?q=query&type=entity` - Entity-specific autocomplete
 
 ## Sample Data
 
 The `sample_data.py` script creates realistic test data:
+
 - 5 companies with different industries
 - 6 contacts across companies
 - 5 opportunities in various stages
@@ -104,11 +116,13 @@ The `sample_data.py` script creates realistic test data:
 ## Development Notes
 
 ### MVP Principles
+
 - **Simple**: Standard Flask patterns, minimal JavaScript
 - **Fast**: Sub-second task operations, no unnecessary abstractions
 - **Extensible**: Clean separation of concerns, ready for growth
 
 ### Future Extensions
+
 - Mobile app API endpoints already structured
 - Modal system ready for complex forms
 - Polymorphic relationships support new entity types

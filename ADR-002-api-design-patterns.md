@@ -9,14 +9,18 @@
 **Deciders:** Will Robinson, Development Team
 
 ### Context
+
 The CRM system needed a consistent API design pattern for handling relationships between entities and their sub-resources (particularly notes). The initial implementation used a generic entity-based approach, but as documented in API_REFACTOR.md, this created inconsistencies with REST conventions. Requirements included:
+
 - Consistent RESTful API patterns
 - Clear resource hierarchy representation  
 - Scalability for future sub-resources (attachments, comments, etc.)
 - Alignment with existing route patterns
 
 ### Decision
+
 We will adopt a **RESTful Resource Hierarchy** pattern for API design:
+
 - Sub-resources are accessed through their parent resource path
 - Use standard HTTP methods (GET, POST, PUT, DELETE) with resource hierarchy
 - Notes API pattern: `/api/{entity_type}/{entity_id}/notes`
@@ -24,7 +28,9 @@ We will adopt a **RESTful Resource Hierarchy** pattern for API design:
 - Maintain consistency with existing UI route patterns
 
 ### Rationale
+
 Resource hierarchy provides the best balance of:
+
 - **REST Compliance**: Standard REST conventions for sub-resource access
 - **Clarity**: URL structure immediately shows entity-sub-resource relationship  
 - **Consistency**: Aligns with existing route patterns (`/tasks/123`, `/companies/456`)
@@ -32,8 +38,9 @@ Resource hierarchy provides the best balance of:
 - **Developer Experience**: Intuitive API structure for frontend development
 
 ### Alternatives Considered
+
 - **Option A: Generic Entity Routes** - Current implementation, violates REST conventions
-  - Example: `/api/notes/entity/task/123` 
+  - Example: `/api/notes/entity/task/123`
   - Rejected: Non-standard, doesn't follow REST hierarchy patterns
 - **Option B: Flat Note Routes** - All notes managed independently
   - Example: `/api/notes?entity_type=task&entity_id=123`
@@ -44,6 +51,7 @@ Resource hierarchy provides the best balance of:
 ### Consequences
 
 **Positive:**
+
 - Standard REST conventions improve API discoverability
 - URL structure clearly communicates resource relationships
 - Consistent with existing UI route patterns (`/tasks/123`)
@@ -51,16 +59,19 @@ Resource hierarchy provides the best balance of:
 - Better alignment with OpenAPI/Swagger documentation tools
 
 **Negative:**
+
 - Requires refactoring existing generic entity note routes
 - More API endpoints to implement and maintain
 - Need to handle entity validation in each endpoint
 
 **Neutral:**
+
 - Change from `/api/notes/entity/{type}/{id}` to `/api/{type}s/{id}/notes`
 - Individual note operations remain at `/api/notes/{id}` for simplicity
 - Frontend code needs updates to use new endpoint patterns
 
 ### Implementation Notes
+
 - New API structure:
   - `GET /api/tasks/123/notes` - Get notes for task 123
   - `POST /api/tasks/123/notes` - Create note for task 123
@@ -73,6 +84,7 @@ Resource hierarchy provides the best balance of:
 - Pattern extends to opportunities, contacts as needed
 
 ### Version History
+
 | Date | Session | Todo | Commit | Changes | Rationale |
 |------|---------|------|--------|---------|-----------|
 | 06-09-25-19h-02m-15s | c2222c23.jsonl | N/A | Initial | Initial ADR creation | Document API design pattern decision |

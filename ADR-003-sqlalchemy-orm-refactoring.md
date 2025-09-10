@@ -18,6 +18,7 @@ The CRM application was using anti-pattern raw SQL queries mixed with SQLAlchemy
 - **Single source of truth violation**: Data serialization logic scattered across codebase
 
 **Specific anti-patterns found:**
+
 - Stakeholder model: Raw SQL for relationship owners and MEDDPICC role assignment
 - Company model: Raw SQL for account team retrieval  
 - Opportunity model: Manual dictionary construction for stakeholders and account teams
@@ -34,6 +35,7 @@ The CRM application was using anti-pattern raw SQL queries mixed with SQLAlchemy
 5. **Preserve raw SQL only where necessary** (MEDDPICC string roles, complex utility queries)
 
 **Specific refactoring implemented:**
+
 - **Stakeholder**: `get_relationship_owners()` → use `self.relationship_owners` ORM relationship
 - **Company**: `get_account_team()` → use `self.account_team_assignments` relationship  
 - **Opportunity**: `get_stakeholders()` and `get_full_account_team()` → use ORM relationships
@@ -43,6 +45,7 @@ The CRM application was using anti-pattern raw SQL queries mixed with SQLAlchemy
 ### Rationale
 
 **Primary drivers:**
+
 - **Maintainability**: Single source of truth for data serialization eliminates duplication
 - **SQLAlchemy best practices**: Proper use of ORM relationships as intended
 - **Performance**: Lazy loading and relationship optimization handle efficient querying  
@@ -50,6 +53,7 @@ The CRM application was using anti-pattern raw SQL queries mixed with SQLAlchemy
 - **Testing**: ORM relationships easier to mock and test than raw SQL
 
 **Technical benefits:**
+
 - Clean separation between data access and business logic
 - Automatic relationship handling (cascade deletes, lazy loading)
 - Better IDE support and type hints for ORM relationships
@@ -66,6 +70,7 @@ The CRM application was using anti-pattern raw SQL queries mixed with SQLAlchemy
 ### Consequences
 
 **Positive:**
+
 - ✅ **Eliminated 85 lines** of redundant manual dictionary construction and raw SQL
 - ✅ **Single source of truth** for model serialization via `to_dict()` methods
 - ✅ **Cleaner codebase** following SQLAlchemy ORM patterns consistently
@@ -74,11 +79,13 @@ The CRM application was using anti-pattern raw SQL queries mixed with SQLAlchemy
 - ✅ **Enhanced testability** with mockable ORM relationships
 
 **Negative:**
+
 - ➖ **Learning curve** for developers unfamiliar with advanced ORM relationships
 - ➖ **ORM complexity** - need to understand lazy loading and N+1 query implications  
 - ➖ **Less explicit control** over exact SQL queries generated
 
 **Neutral:**
+
 - 🔄 **MEDDPICC roles preserved** as raw SQL (string values in junction table require manual handling)
 - 🔄 **Complex utility queries** may still require raw SQL where ORM relationships insufficient
 - 🔄 **Performance monitoring** needed to ensure ORM queries remain efficient
@@ -86,6 +93,7 @@ The CRM application was using anti-pattern raw SQL queries mixed with SQLAlchemy
 ### Implementation Notes
 
 **Files Modified (5 total):**
+
 - `app/models/company.py`: Replaced `get_account_team()` raw SQL with `account_team_assignments` relationship
 - `app/models/opportunity.py`: Refactored `get_stakeholders()` and `get_full_account_team()` to use ORM relationships  
 - `app/models/stakeholder.py`: Updated `get_relationship_owners()` and `assign_relationship_owner()` to use ORM
@@ -93,6 +101,7 @@ The CRM application was using anti-pattern raw SQL queries mixed with SQLAlchemy
 - `app/routes/stakeholders.py`: Replaced manual dictionary construction with `stakeholder.to_dict()`
 
 **Migration Pattern:**
+
 1. Identify raw SQL queries in model methods
 2. Replace with equivalent ORM relationship access  
 3. Update `to_dict()` methods to use ORM relationships
@@ -100,6 +109,7 @@ The CRM application was using anti-pattern raw SQL queries mixed with SQLAlchemy
 5. Update routes to use `model.to_dict()` instead of manual serialization
 
 **Preserved Raw SQL:**
+
 - MEDDPICC role management (string values in junction table)
 - Complex reporting queries where ORM relationships don't exist
 - Performance-critical queries requiring specific SQL optimization
