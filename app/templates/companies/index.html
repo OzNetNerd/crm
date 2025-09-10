@@ -1,10 +1,10 @@
 {% extends "base/layout.html" %}
 
-{% from "macros/base/layout.html" import page_layout %}
-{% from "macros/widgets/filters.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
-{% from "macros/expandable_card.html" import expandable_card, company_header_content, company_title_content, company_metadata_content, action_buttons_row %}
-{% from "macros/imports/modals.html" import include_common_modals %}
-{% from "macros/base/icons.html" import plus_icon %}
+{% from "components/page_template.html" import page_layout %}
+{% from "components/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar, htmx_enhanced_filter_controls %}
+{% from "components/expandable_card.html" import expandable_card, company_header_content, company_title_content, company_metadata_content, action_buttons_row %}
+{% from "components/imports/entity_imports.html" import include_common_modals %}
+{% from "components/icons.html" import plus_icon %}
 
 {% block title %}Companies - CRM{% endblock %}
 
@@ -58,61 +58,22 @@
 {% call page_layout("Companies", "Manage your company relationships", buttons=entity_buttons, summary_data=entity_stats) %}
 
 <div class="space-y-6">
-    <!-- HTMX-Based Filters - Original styling preserved -->
-    <div class="card-padded-lg filter-section-enhanced">
-        <form hx-get="{{ url_for('companies.content') }}" 
-              hx-target="#company-content"
-              hx-trigger="change, submit"
-              hx-indicator="#loading-indicator">
-            <div class="flex flex-col space-y-4">
-                <!-- First row: Group by, Sort by, and Filters -->
-                <div class="flex flex-wrap items-center gap-6">
-                    <label class="text-label-dark">Group by:</label>
-                    <select name="group_by" id="group_by" 
-                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 min-w-[120px]">
-                        <option value="industry" {{ 'selected' if group_by == 'industry' else '' }}>Industry</option>
-                        <option value="size" {{ 'selected' if group_by == 'size' else '' }}>Size</option>
-                    </select>
-
-                    <label class="text-label-dark">Sort by:</label>
-                    <select name="sort_by" id="sort_by" 
-                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 min-w-[120px]">
-                        <option value="name" {{ 'selected' if sort_by == 'name' else '' }}>Name</option>
-                        <option value="industry" {{ 'selected' if sort_by == 'industry' else '' }}>Industry</option>
-                    </select>
-                    
-                    <select name="sort_direction" id="sort_direction" 
-                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 min-w-[100px]">
-                        <option value="asc" {{ 'selected' if sort_direction == 'asc' else '' }}>Ascending</option>
-                        <option value="desc" {{ 'selected' if sort_direction == 'desc' else '' }}>Descending</option>
-                    </select>
-
-                    <label class="text-label-dark">Filters:</label>
-                    <select name="primary_filter" id="primary_filter" multiple
-                            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 min-w-[140px]">
-                        <option value="Technology">Technology</option>
-                        <option value="Finance">Finance</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Manufacturing">Manufacturing</option>
-                        <option value="Retail">Retail</option>
-                        <option value="Consulting">Consulting</option>
-                        <option value="Education">Education</option>
-                    </select>
-                </div>
-                
-                <!-- Second row: Expand/Collapse controls -->
-                <div class="flex flex-wrap items-center gap-6">
-                    <div class="flex items-center gap-4 border-l pl-4">
-                        <button type="button" onclick="document.querySelectorAll('[x-show]').forEach(el => el.__x.$data.expandedSections && Object.keys(el.__x.$data.expandedSections).forEach(key => el.__x.$data.expandedSections[key] = true))"
-                                class="text-secondary-dark hover:text-gray-900">Expand All</button>
-                        <div class="border-l border-gray-300 h-5"></div>
-                        <button type="button" onclick="document.querySelectorAll('[x-show]').forEach(el => el.__x.$data.expandedSections && Object.keys(el.__x.$data.expandedSections).forEach(key => el.__x.$data.expandedSections[key] = false))"
-                                class="text-secondary-dark hover:text-gray-900">Collapse All</button>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div>
+    <!-- HTMX Enhanced Filter Controls - Pure CSS Components -->
+    <form hx-get="{{ url_for('companies.content') }}" 
+          hx-target="#company-content"
+          hx-trigger="change, submit"
+          hx-indicator="#loading-indicator">
+        {{ htmx_enhanced_filter_controls(
+            group_options=group_options,
+            sort_options=sort_options,
+            primary_filter_options=industry_options,
+            primary_filter_label='All Industries',
+            primary_filter_values=primary_filter,
+            group_by=group_by,
+            sort_by=sort_by,
+            sort_direction=sort_direction
+        ) }}
+    </form>
 
     <!-- Loading Indicator -->
     <div id="loading-indicator" class="htmx-indicator">

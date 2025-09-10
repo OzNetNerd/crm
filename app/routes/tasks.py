@@ -282,6 +282,31 @@ def index():
         for o in Opportunity.query.order_by(Opportunity.name).all()
     ]
 
+    # Prepare filter options for the new HTMX controls
+    group_options = [
+        {'value': 'status', 'label': 'Status'},
+        {'value': 'priority', 'label': 'Priority'},
+        {'value': 'due_date', 'label': 'Due Date'}
+    ]
+    
+    sort_options = [
+        {'value': 'due_date', 'label': 'Due Date'},
+        {'value': 'priority', 'label': 'Priority'},
+        {'value': 'created_at', 'label': 'Created Date'}
+    ]
+    
+    priority_options = [
+        {'value': 'high', 'label': 'High'},
+        {'value': 'medium', 'label': 'Medium'},
+        {'value': 'low', 'label': 'Low'}
+    ]
+    
+    entity_type_options = [
+        {'value': 'company', 'label': 'Company'},
+        {'value': 'contact', 'label': 'Contact'},
+        {'value': 'opportunity', 'label': 'Opportunity'}
+    ]
+
     return render_template(
         "tasks/index.html",
         tasks=tasks,
@@ -296,6 +321,11 @@ def index():
         companies=companies_data,
         contacts=contacts_data,
         opportunities=opportunities_data,
+        # New filter options for HTMX controls
+        group_options=group_options,
+        sort_options=sort_options,
+        priority_options=priority_options,
+        entity_type_options=entity_type_options,
     )
 
 

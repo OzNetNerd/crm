@@ -206,6 +206,25 @@ def index():
     ]
 
     today = date.today()
+    
+    # Prepare filter options for the new HTMX controls
+    group_options = [
+        {'value': 'industry', 'label': 'Industry'},
+        {'value': 'size', 'label': 'Company Size'}
+    ]
+    
+    sort_options = [
+        {'value': 'name', 'label': 'Name'},
+        {'value': 'industry', 'label': 'Industry'}
+    ]
+    
+    # Get unique industries from database for filter options
+    industry_options = []
+    industries = db.session.query(Company.industry).distinct().filter(Company.industry.isnot(None)).all()
+    for industry_tuple in industries:
+        industry = industry_tuple[0]
+        if industry:
+            industry_options.append({'value': industry, 'label': industry})
 
     return render_template(
         "companies/index.html",
@@ -219,9 +238,13 @@ def index():
         sort_by=sort_by,
         sort_direction=sort_direction,
         show_completed=show_completed,
-        primary_filter=",".join(primary_filter),
-        secondary_filter=",".join(secondary_filter),
-        entity_filter=",".join(entity_filter),
+        primary_filter=primary_filter,
+        secondary_filter=secondary_filter,
+        entity_filter=entity_filter,
+        # New filter options for HTMX controls
+        group_options=group_options,
+        sort_options=sort_options,
+        industry_options=industry_options,
     )
 
 
