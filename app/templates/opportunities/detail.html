@@ -32,7 +32,7 @@
                 <div class="flex items-center space-x-4 text-secondary">
                     <span class="text-entity-base text-color-company">{{ opportunity.company.name }}</span>
                     {% if opportunity.value %}
-                        <span class="text-deal-amount-lg text-success">
+                        <span class="text-entity-base text-color-deal">
                             ${{ "{:,.0f}".format(opportunity.value) }}
                         </span>
                     {% endif %}

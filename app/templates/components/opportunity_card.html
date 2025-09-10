@@ -31,7 +31,7 @@
             {% if opportunity.value %}
                 <div class="flex items-center justify-between">
                     <span class="text-gray-600">Deal Value:</span>
-                    <span class="text-deal-amount font-semibold">${{ "{:,.0f}".format(opportunity.value) }}</span>
+                    <span class="text-entity-base text-color-deal">${{ "{:,.0f}".format(opportunity.value) }}</span>
                 </div>
             {% endif %}
             {% if opportunity.probability %}

@@ -105,8 +105,8 @@
 
 /* DRY Entity Styling - Base class with color modifiers */
 .text-entity-base {
-    font-size: 1rem; /* text-base - larger consistent size */
-    font-weight: 500; /* font-medium */
+    font-size: 1.125rem; /* text-lg - consistent large size */
+    font-weight: 600; /* font-semibold - prominent text */
 }
 
 /* Color-only modifier classes for semantic entity types */
@@ -122,18 +122,11 @@
 .text-color-default {
     color: #111827; /* text-gray-900 - default text color */
 }
+.text-color-deal {
+    color: #059669; /* green-600 - success green for deal amounts */
+}
 
 
-/* Deal amount styling - matches heading size */
-.text-deal-amount {
-    font-size: 0.875rem; /* text-sm - matches text-label-primary */
-    font-weight: 600; /* font-semibold */
-    color: #059669; /* text-green-600 */
-}
-.text-deal-amount-lg {
-    font-size: 1.125rem; /* text-lg */
-    font-weight: 600; /* font-semibold */
-}
 .text-label-dark { 
     font-size: 0.875rem; /* text-sm */
     font-weight: 500; /* font-medium */

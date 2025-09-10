@@ -351,7 +351,7 @@
                 {% endif %}
                 <h3 class="{{ 'text-entity-base text-color-opportunity' if card_type == 'opportunity' else 'text-entity-base text-color-default' }}">{{ title_content|safe }}</h3>
                 {% if value_content %}
-                <div class="{{ 'text-deal-amount-lg text-success' if card_type == 'opportunity' else 'text-label-primary' }}">
+                <div class="{{ 'text-entity-base text-color-deal' if card_type == 'opportunity' else 'text-label-primary' }}">
                     {{ value_content|safe }}
                 </div>
                 {% endif %}
@@ -575,7 +575,7 @@
     {% endif %}
     <span class="text-entity-base text-color-opportunity">{{ opportunity.name }}</span> • 
     {{ opportunity.stage }} • 
-    <span class="text-deal-amount">${{ "{:,.0f}".format(opportunity.value) if opportunity.value else '0' }}</span> • 
+    <span class="text-entity-base text-color-deal">${{ "{:,.0f}".format(opportunity.value) if opportunity.value else '0' }}</span> • 
     {% if opportunity.contact %}
         <span class="text-entity-base text-color-stakeholder">{{ opportunity.contact.name }}</span> • 
     {% endif %}
