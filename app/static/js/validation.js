@@ -165,7 +165,7 @@ const FieldDisplayNames = {
     created_at: 'Created Date',
     updated_at: 'Updated Date',
     
-    // Contact fields
+    // Stakeholder fields
     role: 'Role/Title',
     email: 'Email Address',
     phone: 'Phone Number',

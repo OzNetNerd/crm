@@ -27,7 +27,7 @@ class EntityManager:
         """Get entity object by type and ID - used across the application"""
         if entity_type == "company":
             return Company.query.get(entity_id)
-        elif entity_type == "contact":
+        elif entity_type == "stakeholder":
             return Stakeholder.query.get(entity_id)
         elif entity_type == "opportunity":
             return Opportunity.query.get(entity_id)

@@ -449,7 +449,7 @@ function getTaskConfig(today) {
                         icon: window.iconUtility?.getIconSync('company', 'w-5 h-5')                    },
                     { 
                         key: 'contact', 
-                        title: 'Contact Tasks', 
+                        title: 'Stakeholder Tasks', 
                         containerClass: 'card-success', 
                         headerClass: 'text-status-success', 
                         headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', 
@@ -531,7 +531,7 @@ function getTaskConfig(today) {
 
         entityFilterOptions: [
             { value: 'company', label: 'Company' },
-            { value: 'contact', label: 'Contact' },
+            { value: 'contact', label: 'Stakeholder' },
             { value: 'opportunity', label: 'Opportunity' },
             { value: 'unrelated', label: 'General' }
         ],
@@ -567,10 +567,10 @@ function getTaskConfig(today) {
 }
 
 /**
- * Contact Configuration
+ * Stakeholder Configuration
  * Used with createEntityManager() to handle contacts
  */
-function getContactConfig(today) {
+function getStakeholderConfig(today) {
     return {
         // Data source
         entityName: 'contact',
@@ -582,7 +582,7 @@ function getContactConfig(today) {
         defaultSortBy: 'name',
         defaultSortDirection: 'asc',
         defaultShowCompleted: false,
-        defaultPrimaryFilter: [], // Contact info filter
+        defaultPrimaryFilter: [], // Stakeholder info filter
         defaultSecondaryFilter: [], // Industry filter
         defaultEntityFilter: [], // Role filter
         today: today,
@@ -598,8 +598,8 @@ function getContactConfig(today) {
 
         // Override primary filter value getter to calculate contact info status
         getPrimaryFilterValue: function(contact) {
-            const hasEmail = !!contact.email;
-            const hasPhone = !!contact.phone;
+            const hasEmail = !!stakeholder.email;
+            const hasPhone = !!stakeholder.phone;
             if (hasEmail && hasPhone) return 'complete';
             if (hasEmail) return 'email_only';
             if (hasPhone) return 'phone_only';
@@ -608,12 +608,12 @@ function getContactConfig(today) {
 
         // Override secondary filter value getter for industry
         getSecondaryFilterValue: function(contact) {
-            return (contact.company?.industry || 'unknown').toLowerCase();
+            return (stakeholder.company?.industry || 'unknown').toLowerCase();
         },
 
         // Override entity filter value getter for roles
         getEntityFilterValue: function(contact) {
-            return contact.role || 'no_role';
+            return stakeholder.role || 'no_role';
         },
 
         // Grouping options
@@ -626,8 +626,8 @@ function getContactConfig(today) {
                     // Get unique companies from contacts data
                     const companies = new Set();
                     entities.forEach(contact => {
-                        if (contact.company?.name) {
-                            companies.add(contact.company.name);
+                        if (stakeholder.company?.name) {
+                            companies.add(stakeholder.company.name);
                         }
                     });
                     
@@ -694,7 +694,7 @@ function getContactConfig(today) {
                     return schemes[index % schemes.length];
                 },
                 filterFn: (contact, groupKey) => {
-                    return contact.company?.name === groupKey;
+                    return stakeholder.company?.name === groupKey;
                 }
             },
             'industry': {
@@ -747,7 +747,7 @@ function getContactConfig(today) {
                     }
                 ],
                 filterFn: (contact, groupKey) => {
-                    const industry = contact.company?.industry || 'unknown';
+                    const industry = stakeholder.company?.industry || 'unknown';
                     return industry === groupKey;
                 }
             },
@@ -801,8 +801,8 @@ function getContactConfig(today) {
                     }
                 ],
                 filterFn: (contact, groupKey) => {
-                    if (groupKey === 'no_role') return !contact.role;
-                    return contact.role === groupKey;
+                    if (groupKey === 'no_role') return !stakeholder.role;
+                    return stakeholder.role === groupKey;
                 }
             },
             'contact_info': {
@@ -837,7 +837,7 @@ function getContactConfig(today) {
                     },
                     { 
                         key: 'missing', 
-                        title: 'Missing Contact Info', 
+                        title: 'Missing Stakeholder Info', 
                         containerClass: 'card-danger', 
                         headerClass: 'text-status-overdue', 
                         headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100', 
@@ -846,8 +846,8 @@ function getContactConfig(today) {
                     }
                 ],
                 filterFn: (contact, groupKey) => {
-                    const hasEmail = !!contact.email;
-                    const hasPhone = !!contact.phone;
+                    const hasEmail = !!stakeholder.email;
+                    const hasPhone = !!stakeholder.phone;
                     
                     switch(groupKey) {
                         case 'complete': return hasEmail && hasPhone;
@@ -895,7 +895,7 @@ function getContactConfig(today) {
             { value: 'phone_only', label: 'Phone Only' },
             { value: 'missing', label: 'Missing Info' }
         ],
-        primaryFilterLabel: 'All Contact Info',
+        primaryFilterLabel: 'All Stakeholder Info',
 
         secondaryFilterOptions: [
             { value: 'technology', label: 'Technology' },
@@ -936,17 +936,17 @@ function getContactConfig(today) {
 
         // Action mappings
         actions: {
-            'View contact': 'openContactModal',
-            'Edit contact': 'editContact',
-            'Delete contact': 'deleteContact',
-            'Create task': 'createTaskForContact',
-            'Create opportunity': 'createOpportunityForContact'
+            'View contact': 'openStakeholderModal',
+            'Edit contact': 'editStakeholder',
+            'Delete contact': 'deleteStakeholder',
+            'Create task': 'createTaskForStakeholder',
+            'Create opportunity': 'createOpportunityForStakeholder'
         },
 
         // Bulk actions
         bulkActions: {
-            'delete': (selectedIds) => window.bulkDeleteContacts(selectedIds),
-            'createTasks': (selectedIds) => window.bulkCreateTasksForContacts(selectedIds)
+            'delete': (selectedIds) => window.bulkDeleteStakeholders(selectedIds),
+            'createTasks': (selectedIds) => window.bulkCreateTasksForStakeholders(selectedIds)
         }
     };
 }
@@ -985,11 +985,11 @@ function getCompanyConfig(today) {
         getPrimaryFilterValue: function(company) {
             const hasIndustry = !!company.industry;
             const hasWebsite = !!company.website;
-            const hasContacts = company.contacts && company.contacts.length > 0;
+            const hasStakeholders = company.contacts && company.contacts.length > 0;
             
-            if (hasIndustry && hasWebsite && hasContacts) return 'has_industry';
+            if (hasIndustry && hasWebsite && hasStakeholders) return 'has_industry';
             if (hasWebsite) return 'has_website';
-            if (hasContacts) return 'has_contacts';
+            if (hasStakeholders) return 'has_contacts';
             return 'missing_info';
         },
 
@@ -1113,7 +1113,7 @@ function getCompanyConfig(today) {
                     },
                     { 
                         key: 'unknown', 
-                        title: 'No Contacts', 
+                        title: 'No Stakeholders', 
                         containerClass: 'card-neutral', 
                         headerClass: 'text-status-neutral', 
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
@@ -1137,7 +1137,7 @@ function getCompanyConfig(today) {
                 groups: [
                     { 
                         key: 'many', 
-                        title: 'Many Contacts (20+)', 
+                        title: 'Many Stakeholders (20+)', 
                         containerClass: 'card-success', 
                         headerClass: 'text-status-success', 
                         headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', 
@@ -1146,7 +1146,7 @@ function getCompanyConfig(today) {
                     },
                     { 
                         key: 'few', 
-                        title: 'Few Contacts (1-19)', 
+                        title: 'Few Stakeholders (1-19)', 
                         containerClass: 'card-warning', 
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', 
@@ -1155,7 +1155,7 @@ function getCompanyConfig(today) {
                     },
                     { 
                         key: 'none', 
-                        title: 'No Contacts', 
+                        title: 'No Stakeholders', 
                         containerClass: 'card-neutral', 
                         headerClass: 'text-status-neutral', 
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
@@ -1217,7 +1217,7 @@ function getCompanyConfig(today) {
                 compareFn: (a, b) => (a.industry || '').localeCompare(b.industry || '')
             },
             'contacts_count': {
-                label: 'Contact Count',
+                label: 'Stakeholder Count',
                 compareFn: (a, b) => {
                     const contactsA = a.contacts ? a.contacts.length : 0;
                     const contactsB = b.contacts ? b.contacts.length : 0;
@@ -1242,7 +1242,7 @@ function getCompanyConfig(today) {
         primaryFilterOptions: [
             { value: 'has_industry', label: 'Has Industry' },
             { value: 'has_website', label: 'Has Website' },
-            { value: 'has_contacts', label: 'Has Contacts' },
+            { value: 'has_contacts', label: 'Has Stakeholders' },
             { value: 'missing_info', label: 'Missing Info' }
         ],
         primaryFilterLabel: 'All Company Info',
@@ -1279,7 +1279,7 @@ function getCompanyConfig(today) {
             'large': true,
             'medium': true,
             'small': true,
-            // Contact count grouping
+            // Stakeholder count grouping
             'many': true,
             'few': true,
             'none': true,
@@ -1294,7 +1294,7 @@ function getCompanyConfig(today) {
             'Edit company': 'editCompany',
             'Delete company': 'deleteCompany',
             'Create task': 'createTaskForCompany',
-            'Create contact': 'createContactForCompany',
+            'Create contact': 'createStakeholderForCompany',
             'Create opportunity': 'createOpportunityForCompany'
         },
 
@@ -1309,5 +1309,5 @@ function getCompanyConfig(today) {
 // Export configurations
 window.getOpportunityConfig = getOpportunityConfig;
 window.getTaskConfig = getTaskConfig;
-window.getContactConfig = getContactConfig;
+window.getStakeholderConfig = getStakeholderConfig;
 window.getCompanyConfig = getCompanyConfig;

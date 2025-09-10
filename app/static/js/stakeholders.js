@@ -1,7 +1,7 @@
-// Contacts-specific JavaScript functionality
+// Stakeholders-specific JavaScript functionality
 // Extracted from contacts/index.html template
 
-// Contact-specific bulk action functions
+// Stakeholder-specific bulk action functions
 window.bulkDelete = function(selectedIds) {
     if (selectedIds.length === 0) return;
     
@@ -38,14 +38,14 @@ window.bulkCreateTasks = function(selectedIds) {
     window.location.href = `/tasks/multi_new?contact_ids=${selectedIds.join(',')}`;
 };
 
-// Contact-specific functions that extend the centralized modal system
-function createTaskForContact(contactId) {
+// Stakeholder-specific functions that extend the centralized modal system
+function createTaskForStakeholder(contactId) {
     createTask('contact', contactId);
 }
 
-function createOpportunityForContact(contactId) {
+function createOpportunityForStakeholder(contactId) {
     createOpportunity('contact', contactId);
 }
 
-// Contacts use the centralized entity manager system
-// All modal functions including deleteContact are now handled globally
+// Stakeholders use the centralized entity manager system
+// All modal functions including deleteStakeholder are now handled globally

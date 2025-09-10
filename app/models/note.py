@@ -25,10 +25,10 @@ class Note(db.Model):
             from .company import Company
 
             entity = Company.query.get(self.entity_id)
-        elif self.entity_type == "contact":
-            from .contact import Contact
+        elif self.entity_type == "stakeholder":
+            from .stakeholder import Stakeholder
 
-            entity = Contact.query.get(self.entity_id)
+            entity = Stakeholder.query.get(self.entity_id)
         elif self.entity_type == "opportunity":
             from .opportunity import Opportunity
 

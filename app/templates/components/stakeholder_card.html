@@ -1,7 +1,7 @@
 {% from "components/expandable_card.html" import expandable_card, action_buttons_row %}
 {% from "components/ui_elements.html" import pluralized_count %}
 
-{# Contact field configuration - clean, declarative setup #}
+{# Stakeholder field configuration - clean, declarative setup #}
 {% set contact_field_config = {
     'title_field': 'name',
     'secondary_fields': [
@@ -31,9 +31,9 @@
 
 {% macro contact_expanded_content(contact) %}
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <!-- Contact Details -->
+    <!-- Stakeholder Details -->
     <div>
-        <h4 class="text-sm font-medium text-gray-900 mb-2">Contact Details</h4>
+        <h4 class="text-sm font-medium text-gray-900 mb-2">Stakeholder Details</h4>
         <div class="space-y-2 text-sm">
             {% if contact.email %}
                 <div class="flex items-center">

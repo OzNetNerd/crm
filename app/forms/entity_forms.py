@@ -35,7 +35,7 @@ class CompanyForm(FlaskForm):
     )
 
 
-class ContactForm(FlaskForm):
+class StakeholderForm(FlaskForm):
     name = StringField(
         "Full Name",
         validators=[DataRequired(), Length(min=1, max=255)],

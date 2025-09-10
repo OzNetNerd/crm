@@ -4,15 +4,15 @@
 {% from "components/icons.html" import building_office_icon, user_icon, chevron_right_icon, check_circle_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, phone_icon, envelope_icon %}
 {% from "components/ui_elements.html" import expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar, enhanced_filter_controls %}
 
-{% block title %}Contacts - CRM{% endblock %}
+{% block title %}Stakeholders - CRM{% endblock %}
 
 {% block content %}
 {% set contact_stats = {
-    'title': 'Contact Overview',
+    'title': 'Stakeholder Overview',
     'stats': [
         {
             'value': contacts|length,
-            'label': 'Total Contacts',
+            'label': 'Total Stakeholders',
             'color_class': 'text-blue-600'
         },
         {
@@ -35,16 +35,16 @@
 
 {% set contact_buttons = [
     {
-        'label': 'New Contact',
-        'onclick': 'openNewContactModal()',
+        'label': 'New Stakeholder',
+        'onclick': 'openNewStakeholderModal()',
         'color': 'blue',
         'icon': ''
     }
 ] %}
 
-{% call page_layout("Contacts", "Manage your contact relationships", buttons=contact_buttons, summary_data=contact_stats) %}
+{% call page_layout("Stakeholders", "Manage your contact relationships", buttons=contact_buttons, summary_data=contact_stats) %}
 
-<div x-data="createEntityManager(getContactConfig('{{ today }}'))" class="space-y-6">
+<div x-data="createEntityManager(getStakeholderConfig('{{ today }}'))" class="space-y-6">
 
     <!-- Bulk Actions Bar -->
     {{ bulk_actions_bar('contact', 'contacts', 
@@ -53,19 +53,19 @@
 
     <!-- Enhanced Filters and Controls with Generic DRY Components -->
     {{ enhanced_filter_controls(
-        group_options=get_grouping_options('Contact'),
-        sort_options=get_sort_options('Contact'),
+        group_options=get_grouping_options('Stakeholder'),
+        sort_options=get_sort_options('Stakeholder'),
         show_completed_label='Show Incomplete Info',
         show_completed_name='show_incomplete',
-        primary_filter_options=get_priority_options('Contact'),
-        primary_filter_label='All Contact Info',
-        secondary_filter_options=get_filter_options('Contact', 'industry'),
+        primary_filter_options=get_priority_options('Stakeholder'),
+        primary_filter_label='All Stakeholder Info',
+        secondary_filter_options=get_filter_options('Stakeholder', 'industry'),
         secondary_filter_label='All Industries',
-        entity_filter_options=get_filter_options('Contact', 'role'),
+        entity_filter_options=get_filter_options('Stakeholder', 'role'),
         entity_filter_label='All Roles'
     ) }}
 
-    <!-- Dynamic Client-Side Contact Grouping -->
+    <!-- Dynamic Client-Side Stakeholder Grouping -->
     <div id="contacts-content">
         {{ dynamic_entity_section() }}
     </div>
@@ -74,9 +74,9 @@
     {% if not contacts %}
         <div class="card p-12 text-center">
             <p class="text-gray-500 mb-4">No contacts found</p>
-            <button onclick="openNewContactModal()" 
+            <button onclick="openNewStakeholderModal()" 
                     class="btn-primary">
-                Add Your First Contact
+                Add Your First Stakeholder
             </button>
         </div>
     {% endif %}

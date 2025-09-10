@@ -1,7 +1,7 @@
 /**
  * Generic Entity Manager System
  * Provides filtering, sorting, grouping, and bulk operations for any entity type
- * Used by Tasks, Opportunities, Contacts, Companies, etc.
+ * Used by Tasks, Opportunities, Stakeholders, Companies, etc.
  */
 
 /**

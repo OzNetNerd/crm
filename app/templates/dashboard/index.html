@@ -30,8 +30,8 @@
         'icon': ''
     },
     {
-        'label': 'New Contact',
-        'onclick': 'openNewContactModal()',
+        'label': 'New Stakeholder',
+        'onclick': 'openNewStakeholderModal()',
         'icon': ''
     },
     {
@@ -47,7 +47,7 @@
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     {{ metric_card('Companies', metrics.total_companies, building_office_icon(), 'blue') }}
 
-    {{ metric_card('Contacts', metrics.total_contacts, user_icon(), 'green') }}
+    {{ metric_card('Stakeholders', metrics.total_contacts, user_icon(), 'green') }}
 
     {{ metric_card('Opportunities', metrics.total_opportunities, currency_dollar_icon(), 'yellow') }}
 
