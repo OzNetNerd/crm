@@ -53,7 +53,7 @@ Usage: {{ setup_entity_imports('company') }}
     {% from "components/opportunity_card.html" import render_opportunity %}
     {% from "components/quick_actions.html" import opportunities_page_actions %}
 {% elif entity_type == 'contact' or entity_type == 'stakeholder' %}
-    {% from "components/contact_card.html" import render_contact %}
+    {% from "components/stakeholder_card.html" import render_stakeholder %}
 {% elif entity_type == 'task' %}
     {% from "components/expandable_card.html" import 
         expandable_card, 
