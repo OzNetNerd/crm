@@ -4,16 +4,7 @@
  * Uses centralized icon utility for consistent icon management
  */
 
-// Pre-load commonly used icons on page load
-document.addEventListener('DOMContentLoaded', async function() {
-    if (window.iconUtility) {
-        await window.iconUtility.preloadIcons([
-            'company', 'prospect', 'qualified', 'proposal', 'negotiation', 
-            'high', 'medium', 'low', 'overdue', 'due_today', 'this_week', 
-            'later', 'no_due_date', 'to_do', 'in_progress', 'completed'
-        ], 'w-5 h-5');
-    }
-});
+// Icons are handled server-side via Jinja2 templates for DRY architecture
 
 /**
  * Opportunity Configuration
@@ -65,7 +56,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-success', 
                         headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', 
                         badgeClass: 'badge-green',
-                        icon: window.iconUtility?.getIconSync('prospect', 'w-5 h-5')
+                        icon: ''
                     },
                     { 
                         key: 'qualified', 
@@ -74,7 +65,8 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-info', 
                         headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', 
                         badgeClass: 'badge-blue',
-                        icon: window.iconUtility?.getIconSync('qualified', 'w-5 h-5')                    },
+                        icon: ''
+                    },
                     { 
                         key: 'proposal', 
                         title: 'Proposal', 
@@ -82,7 +74,8 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', 
                         badgeClass: 'badge-yellow',
-                        icon: window.iconUtility?.getIconSync('proposal', 'w-5 h-5')                    },
+                        icon: ''
+                    },
                     { 
                         key: 'negotiation', 
                         title: 'Negotiation', 
@@ -90,7 +83,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-orange-200 px-6 py-4 bg-orange-50 hover:bg-orange-100', 
                         badgeClass: 'badge-orange',
-                        icon: window.iconUtility?.getIconSync('clock', 'w-5 h-5')                    }
+                        icon: ''                    }
                 ]
             },
             'close_date': {
@@ -103,7 +96,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-overdue', 
                         headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100', 
                         badgeClass: 'badge-red',
-                        icon: window.iconUtility?.getIconSync('overdue', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'this_week', 
                         title: 'This Week', 
@@ -111,7 +104,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-orange-200 px-6 py-4 bg-orange-50 hover:bg-orange-100', 
                         badgeClass: 'badge-orange',
-                        icon: window.iconUtility?.getIconSync('calendar_days', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'this_month', 
                         title: 'This Month', 
@@ -119,7 +112,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-info', 
                         headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', 
                         badgeClass: 'badge-blue',
-                        icon: window.iconUtility?.getIconSync('calendar', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'later', 
                         title: 'Later', 
@@ -127,7 +120,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-neutral', 
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
                         badgeClass: 'badge-gray',
-                        icon: window.iconUtility?.getIconSync('later', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'no_date', 
                         title: 'No Close Date', 
@@ -135,7 +128,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-neutral', 
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
                         badgeClass: 'badge-gray',
-                        icon: window.iconUtility?.getIconSync('no_due_date', 'w-5 h-5')                    }
+                        icon: ''                    }
                 ],
                 filterFn: (opportunity, groupKey) => {
                     const today = new Date();
@@ -165,7 +158,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-overdue', 
                         headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100', 
                         badgeClass: 'badge-red',
-                        icon: window.iconUtility?.getIconSync('high', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'medium', 
                         title: 'Medium Value ($10K-$50K)', 
@@ -173,7 +166,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', 
                         badgeClass: 'badge-yellow',
-                        icon: window.iconUtility?.getIconSync('medium', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'low', 
                         title: 'Low Value (<$10K)', 
@@ -181,7 +174,7 @@ function getOpportunityConfig(today) {
                         headerClass: 'text-status-success', 
                         headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', 
                         badgeClass: 'badge-green',
-                        icon: window.iconUtility?.getIconSync('low', 'w-5 h-5')                    }
+                        icon: ''                    }
                 ],
                 filterFn: (opportunity, groupKey) => {
                     const value = opportunity.value || 0;
@@ -325,7 +318,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-info', 
                         headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', 
                         badgeClass: 'badge-blue',
-                        icon: window.iconUtility?.getIconSync('low', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'in-progress', 
                         title: 'In Progress', 
@@ -333,7 +326,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', 
                         badgeClass: 'badge-yellow',
-                        icon: window.iconUtility?.getIconSync('in_progress', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'complete', 
                         title: 'Completed', 
@@ -341,7 +334,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-success', 
                         headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', 
                         badgeClass: 'badge-green',
-                        icon: window.iconUtility?.getIconSync('completed', 'w-5 h-5')                    }
+                        icon: ''                    }
                 ]
             },
             'priority': {
@@ -354,7 +347,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-overdue', 
                         headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100', 
                         badgeClass: 'badge-red',
-                        icon: window.iconUtility?.getIconSync('fire_alt', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'medium', 
                         title: 'Medium Priority', 
@@ -362,7 +355,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', 
                         badgeClass: 'badge-yellow',
-                        icon: window.iconUtility?.getIconSync('exclamation_triangle_alt', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'low', 
                         title: 'Low Priority', 
@@ -370,7 +363,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-success', 
                         headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', 
                         badgeClass: 'badge-green',
-                        icon: window.iconUtility?.getIconSync('low', 'w-5 h-5')                    }
+                        icon: ''                    }
                 ]
             },
             'due_date': {
@@ -383,7 +376,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-overdue', 
                         headerBgClass: 'border-b border-red-200 px-6 py-4 bg-red-50 hover:bg-red-100', 
                         badgeClass: 'badge-red',
-                        icon: window.iconUtility?.getIconSync('information_circle', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'today', 
                         title: 'Due Today', 
@@ -391,7 +384,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-orange-200 px-6 py-4 bg-orange-50 hover:bg-orange-100', 
                         badgeClass: 'badge-orange',
-                        icon: window.iconUtility?.getIconSync('calendar', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'this_week', 
                         title: 'This Week', 
@@ -399,7 +392,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-info', 
                         headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', 
                         badgeClass: 'badge-blue',
-                        icon: window.iconUtility?.getIconSync('calendar', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'later', 
                         title: 'Later', 
@@ -407,7 +400,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-neutral', 
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
                         badgeClass: 'badge-gray',
-                        icon: window.iconUtility?.getIconSync('later', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'no_date', 
                         title: 'No Due Date', 
@@ -415,7 +408,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-neutral', 
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
                         badgeClass: 'badge-gray',
-                        icon: window.iconUtility?.getIconSync('no_due_date', 'w-5 h-5')                    }
+                        icon: ''                    }
                 ],
                 filterFn: (task, groupKey) => {
                     if (task.task_type === 'child') return false;
@@ -446,7 +439,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-info', 
                         headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', 
                         badgeClass: 'badge-blue',
-                        icon: window.iconUtility?.getIconSync('company', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'contact', 
                         title: 'Stakeholder Tasks', 
@@ -454,7 +447,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-success', 
                         headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', 
                         badgeClass: 'badge-green',
-                        icon: window.iconUtility?.getIconSync('contact', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'opportunity', 
                         title: 'Opportunity Tasks', 
@@ -462,7 +455,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-warning', 
                         headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', 
                         badgeClass: 'badge-yellow',
-                        icon: window.iconUtility?.getIconSync('currency_dollar_circle', 'w-5 h-5')                    },
+                        icon: ''                    },
                     { 
                         key: 'unrelated', 
                         title: 'General Tasks', 
@@ -470,7 +463,7 @@ function getTaskConfig(today) {
                         headerClass: 'text-status-neutral', 
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
                         badgeClass: 'badge-gray',
-                        icon: window.iconUtility?.getIconSync('low', 'w-5 h-5')                    }
+                        icon: ''                    }
                 ],
                 filterFn: (task, groupKey) => {
                     if (task.task_type === 'child') return false;
