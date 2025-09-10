@@ -120,26 +120,33 @@ class ModelIntrospector:
         groupable_fields = []
         
         for attr_name in dir(model_class):
-            attr = getattr(model_class, attr_name)
-            if hasattr(attr.property, 'columns'):
-                column = attr.property.columns[0]
-                info = column.info
+            # Skip private/system attributes
+            if attr_name.startswith('_') or attr_name in ['metadata', 'registry', 'query', 'query_class']:
+                continue
                 
-                # Check if field has groupable choices
-                choices_config = info.get('choices', {})
-                if isinstance(choices_config, dict):
-                    has_groupable = any(
-                        config.get('groupable', False) 
-                        for config in choices_config.values()
-                    )
-                    if has_groupable:
+            try:
+                attr = getattr(model_class, attr_name)
+                if hasattr(attr, 'property') and hasattr(attr.property, 'columns') and len(attr.property.columns) > 0:
+                    column = attr.property.columns[0]
+                    info = column.info
+                    
+                    # Check if field has groupable choices
+                    choices_config = info.get('choices', {})
+                    if isinstance(choices_config, dict):
+                        has_groupable = any(
+                            config.get('groupable', False) 
+                            for config in choices_config.values()
+                        )
+                        if has_groupable:
+                            label = info.get('display_label', attr_name.replace('_', ' ').title())
+                            groupable_fields.append((attr_name, label))
+                    
+                    # Check if field is explicitly marked as groupable
+                    elif info.get('groupable', False):
                         label = info.get('display_label', attr_name.replace('_', ' ').title())
                         groupable_fields.append((attr_name, label))
-                
-                # Check if field is explicitly marked as groupable
-                elif info.get('groupable', False):
-                    label = info.get('display_label', attr_name.replace('_', ' ').title())
-                    groupable_fields.append((attr_name, label))
+            except (AttributeError, TypeError):
+                continue
         
         return sorted(groupable_fields, key=lambda x: x[1])
     
@@ -157,26 +164,33 @@ class ModelIntrospector:
         sortable_fields = []
         
         for attr_name in dir(model_class):
-            attr = getattr(model_class, attr_name)
-            if hasattr(attr.property, 'columns'):
-                column = attr.property.columns[0]
-                info = column.info
+            # Skip private/system attributes
+            if attr_name.startswith('_') or attr_name in ['metadata', 'registry', 'query', 'query_class']:
+                continue
                 
-                # Check if field has sortable choices
-                choices_config = info.get('choices', {})
-                if isinstance(choices_config, dict):
-                    has_sortable = any(
-                        config.get('sortable', True)  # Default to sortable
-                        for config in choices_config.values()
-                    )
-                    if has_sortable:
+            try:
+                attr = getattr(model_class, attr_name)
+                if hasattr(attr, 'property') and hasattr(attr.property, 'columns') and len(attr.property.columns) > 0:
+                    column = attr.property.columns[0]
+                    info = column.info
+                    
+                    # Check if field has sortable choices
+                    choices_config = info.get('choices', {})
+                    if isinstance(choices_config, dict):
+                        has_sortable = any(
+                            config.get('sortable', True)  # Default to sortable
+                            for config in choices_config.values()
+                        )
+                        if has_sortable:
+                            label = info.get('display_label', attr_name.replace('_', ' ').title())
+                            sortable_fields.append((attr_name, label))
+                    
+                    # Check if field is explicitly marked as sortable (default True)
+                    elif info.get('sortable', True):
                         label = info.get('display_label', attr_name.replace('_', ' ').title())
                         sortable_fields.append((attr_name, label))
-                
-                # Check if field is explicitly marked as sortable (default True)
-                elif info.get('sortable', True):
-                    label = info.get('display_label', attr_name.replace('_', ' ').title())
-                    sortable_fields.append((attr_name, label))
+            except (AttributeError, TypeError):
+                continue
         
         return sorted(sortable_fields, key=lambda x: x[1])
     
@@ -222,19 +236,28 @@ class ModelIntrospector:
         
         # Add field-specific configuration
         for attr_name in dir(model_class):
-            attr = getattr(model_class, attr_name)
-            if hasattr(attr.property, 'columns'):
-                column = attr.property.columns[0]
-                info = column.info
+            # Skip private/system attributes
+            if attr_name.startswith('_') or attr_name in ['metadata', 'registry', 'query', 'query_class']:
+                continue
                 
-                if info:  # Only include fields with metadata
-                    config['fields'][attr_name] = {
-                        'choices': ModelIntrospector.get_field_choices_with_metadata(model_class, attr_name),
-                        'form_choices': ModelIntrospector.get_field_choices(model_class, attr_name),
-                        'display_label': info.get('display_label', attr_name.replace('_', ' ').title()),
-                        'groupable': info.get('groupable', False),
-                        'sortable': info.get('sortable', True)
-                    }
+            try:
+                attr = getattr(model_class, attr_name)
+                # Check if it's a SQLAlchemy column
+                if hasattr(attr, 'property') and hasattr(attr.property, 'columns') and len(attr.property.columns) > 0:
+                    column = attr.property.columns[0]
+                    info = column.info
+                    
+                    if info:  # Only include fields with metadata
+                        config['fields'][attr_name] = {
+                            'choices': ModelIntrospector.get_field_choices_with_metadata(model_class, attr_name),
+                            'form_choices': ModelIntrospector.get_field_choices(model_class, attr_name),
+                            'display_label': info.get('display_label', attr_name.replace('_', ' ').title()),
+                            'groupable': info.get('groupable', False),
+                            'sortable': info.get('sortable', True)
+                        }
+            except (AttributeError, TypeError):
+                # Skip attributes that can't be introspected
+                continue
         
         return config
     
