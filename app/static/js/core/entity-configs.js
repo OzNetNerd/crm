@@ -612,15 +612,15 @@ function getStakeholderConfig(today) {
         // Grouping options
         groupOptions: {
             'company': {
-                field: 'company.name',
+                field: 'company_name',
                 groups: [], // Will be populated dynamically from data
                 isDynamic: true,
                 generateGroups: function(entities) {
                     // Get unique companies from contacts data
                     const companies = new Set();
                     entities.forEach(contact => {
-                        if (contact.company?.name) {
-                            companies.add(contact.company.name);
+                        if (contact.company_name) {
+                            companies.add(contact.company_name);
                         }
                     });
                     
@@ -645,7 +645,7 @@ function getStakeholderConfig(today) {
                     });
                 },
                 filterFn: (contact, groupKey) => {
-                    return contact.company?.name === groupKey;
+                    return contact.company_name === groupKey;
                 }
             },
             'industry': {

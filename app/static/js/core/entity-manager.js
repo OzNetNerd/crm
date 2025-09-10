@@ -34,6 +34,9 @@ function createEntityManager(config) {
         
         // Expanded sections state
         expandedSections: { ...config.defaultExpandedSections },
+        
+        // Store config for access to groupOptions and other settings
+        config: config,
 
         init() {
             // Ensure we have data before proceeding
