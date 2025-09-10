@@ -231,31 +231,34 @@ class TaskEntityManager:
     @staticmethod
     def get_tasks_for_entity(entity_type, entity_id, status_filter=None):
         """Get all tasks linked to a specific entity"""
-        query = """
-            SELECT DISTINCT t.id, t.description, t.status, t.priority, t.due_date, t.task_type
-            FROM tasks t
-            JOIN task_entities te ON t.id = te.task_id
-            WHERE te.entity_type = :entity_type AND te.entity_id = :entity_id
-        """
-        params = {"entity_type": entity_type, "entity_id": entity_id}
-
+        from app.models import Task
+        from app.models.task import task_entities
+        
+        # Build ORM query for tasks linked to specific entity
+        query = (
+            db.session.query(Task)
+            .join(task_entities, Task.id == task_entities.c.task_id)
+            .filter(task_entities.c.entity_type == entity_type)
+            .filter(task_entities.c.entity_id == entity_id)
+        )
+        
         if status_filter:
-            query += " AND t.status = :status"
-            params["status"] = status_filter
-
-        query += " ORDER BY t.due_date ASC, t.created_at DESC"
-
-        results = db.session.execute(db.text(query), params).fetchall()
+            query = query.filter(Task.status == status_filter)
+            
+        # Order by due_date ASC, then created_at DESC
+        query = query.order_by(Task.due_date.asc(), Task.created_at.desc())
+        
+        tasks = query.all()
         return [
             {
-                "id": row[0],
-                "description": row[1],
-                "status": row[2],
-                "priority": row[3],
-                "due_date": row[4].isoformat() if row[4] else None,
-                "task_type": row[5],
+                "id": task.id,
+                "description": task.description,
+                "status": task.status,
+                "priority": task.priority,
+                "due_date": task.due_date.isoformat() if task.due_date else None,
+                "task_type": task.task_type,
             }
-            for row in results
+            for task in tasks
         ]
 
 
