@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
         companies: 'companiesData',
         contacts: 'contactsData', 
         opportunities: 'opportunitiesData',
-        tasks: 'tasksData'
+        tasks: 'tasksData',
+        teamMembers: 'teamData'
     };
     
     Object.keys(datasets).forEach(key => {

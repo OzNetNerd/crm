@@ -37,6 +37,70 @@ window.bulkAssignToCompany = function(selectedIds) {
     openBulkCompanyAssignmentModal(selectedIds);
 };
 
+function openBulkCompanyAssignmentModal(selectedIds) {
+    // Create a modal to select company for bulk assignment
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Bulk Assign to Company</h3>
+                <button onclick="closeModal()" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Select a company to assign ${selectedIds.length} team members:</p>
+                <select id="bulk-company-select" class="w-full p-2 border rounded">
+                    <option value="">Select a company...</option>
+                    ${window.companiesData ? window.companiesData.map(c => 
+                        `<option value="${c.id}">${c.name}</option>`
+                    ).join('') : ''}
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" class="btn-secondary">Cancel</button>
+                <button onclick="confirmBulkCompanyAssignment(${JSON.stringify(selectedIds)})" class="btn-primary">Assign All</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function confirmBulkCompanyAssignment(selectedIds) {
+    const companyId = document.getElementById('bulk-company-select').value;
+    if (!companyId) {
+        alert('Please select a company');
+        return;
+    }
+    
+    // Make API calls to assign multiple team members to company
+    Promise.all(selectedIds.map(memberId => 
+        fetch('/api/company-account-teams', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user_id: memberId,
+                company_id: companyId
+            })
+        })
+    ))
+    .then(responses => Promise.all(responses.map(r => r.json())))
+    .then(results => {
+        const failures = results.filter(r => !r.success);
+        if (failures.length === 0) {
+            closeModal();
+            location.reload(); // Refresh to show changes
+        } else {
+            alert(`Some assignments failed: ${failures.map(f => f.message).join(', ')}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error assigning team members');
+    });
+}
+
 // Team-specific functions for account team interactions
 window.assignToCompany = function(memberId) {
     console.log("Assigning team member to company:", memberId);
@@ -267,13 +331,13 @@ function createTaskForTeamMember(memberId) {
     createTask('user', memberId);
 }
 
-// Initialize team-specific data when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Get team data from the template
-    const appData = document.getElementById('app-data');
-    if (appData) {
-        window.teamData = JSON.parse(appData.getAttribute('data-team-members') || '[]');
-        window.companiesData = JSON.parse(appData.getAttribute('data-companies') || '[]');
-        window.opportunitiesData = JSON.parse(appData.getAttribute('data-opportunities') || '[]');
-    }
+// Initialize team-specific data when centralized data is ready
+document.addEventListener('dataReady', function() {
+    // Data is already loaded by the centralized data initializer
+    // Just ensure we have fallback empty arrays
+    if (!window.teamData) window.teamData = [];
+    if (!window.companiesData) window.companiesData = [];
+    if (!window.opportunitiesData) window.opportunitiesData = [];
+    
+    console.log('Team data initialized:', window.teamData.length, 'members');
 });
