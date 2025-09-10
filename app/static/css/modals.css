@@ -175,11 +175,8 @@
     font-weight: var(--font-bold);
 }
 
-/* DRY Form Elements - grouped selectors eliminate duplication */
-.form-input,
-.form-textarea,
-.form-select {
-    width: 100%;
+/* Form Field Base Styling - No width constraints */
+.form-field-base {
     padding: var(--spacing-md) var(--spacing-lg);
     border: 1px solid var(--color-gray-300);
     border-radius: var(--radius-lg);
@@ -189,20 +186,33 @@
     box-shadow: var(--shadow-sm);
 }
 
+/* Full-width modifier for traditional form inputs */
+.form-field-full {
+    width: 100%;
+}
+
+/* Specific form element styling */
+.form-input,
+.form-textarea {
+    /* Traditional full-width form inputs */
+    @apply form-field-base form-field-full;
+}
+
+.form-select {
+    /* Dropdowns use base styling only - width controlled by component */
+    @apply form-field-base;
+}
+
 .form-input::placeholder,
 .form-textarea::placeholder {
     color: var(--color-gray-400);
 }
 
-.form-input:hover,
-.form-textarea:hover,
-.form-select:hover {
+.form-field-base:hover {
     border-color: var(--color-gray-400);
 }
 
-.form-input:focus,
-.form-textarea:focus,
-.form-select:focus {
+.form-field-base:focus {
     outline: none;
     border-color: var(--color-primary);
     box-shadow: 0 0 0 3px var(--color-primary-lighter);

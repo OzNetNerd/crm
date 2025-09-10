@@ -141,7 +141,7 @@
   {{ dropdown_select('groupBy', [{'value': 'stage', 'label': 'Pipeline Stage'}], 'Group by:') }}
   {{ dropdown_select('sortBy', ['name', 'date', 'priority']) }}
 #}
-{% macro dropdown_select(model, options, placeholder='Select...', classes='px-3 py-2 border border-gray-300 rounded-md text-sm') %}
+{% macro dropdown_select(model, options, placeholder='Select...', classes='form-field-base') %}
 <div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
     <button type="button" 
             class="select-custom {{ classes }}" 
@@ -247,7 +247,7 @@
   {{ dropdown_multiselect('priorityFilter', [{'value': 'high', 'label': 'High'}], 'All Priorities') }}
   {{ dropdown_multiselect('companyFilter', companies, 'All Companies', with_search=true) }}
 #}
-{% macro dropdown_multiselect(model, options, placeholder='Select...', with_search=false, classes='px-3 py-2 border border-gray-300 rounded-md text-sm') %}
+{% macro dropdown_multiselect(model, options, placeholder='Select...', with_search=false, classes='form-field-base') %}
 <div class="multiselect-custom" 
      x-data="{ 
          open: false, 
@@ -734,7 +734,7 @@
 {% macro generic_group_dropdown(model, options, on_change='updateFilters()') %}
 <div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
     <button type="button" 
-            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
+            class="select-custom form-field-base bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
             @click="open = !open">
         <span x-text="
             {% for option in options %}
@@ -782,7 +782,7 @@
 {% macro generic_sort_dropdown(sort_model, direction_model, options, on_change='updateFilters()') %}
 <div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
     <button type="button" 
-            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
+            class="select-custom form-field-base bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
             @click="open = !open">
         <span x-text="
             {% for option in options %}
@@ -839,7 +839,7 @@
     search: ''{% endif %}
 }" @click.away="open = false">
     <button type="button" 
-            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
+            class="select-custom form-field-base bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
             @click="open = !open">
         <span x-text="{{ display_function }}()">{{ placeholder }}</span>
         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1035,9 +1035,9 @@
     on_change='',
     with_search=false,
     sort_direction_model=None,
-    classes='px-3 py-2 border border-gray-300 rounded-md text-sm',
+    classes='form-field-base',
     show_chevron=true,
-    min_width='min-w-0 w-auto max-w-xs'
+    min_width='min-w-[140px] max-w-[200px]'
 ) %}
 
 {# Set smart defaults #}

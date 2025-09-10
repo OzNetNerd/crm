@@ -38,8 +38,7 @@
     
     {{ universal_dropdown(model_var, dropdown_options, 
                          label=label, 
-                         label_class='form-label' + (' form-label-required' if required else ''),
-                         classes='form-select') }}
+                         label_class='form-label' + (' form-label-required' if required else '')) }}
 </div>
 {% endmacro %}
 

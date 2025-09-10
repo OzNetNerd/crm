@@ -193,7 +193,7 @@
                                 {'value': 'low', 'label': 'Low'},
                                 {'value': 'medium', 'label': 'Medium'},
                                 {'value': 'high', 'label': 'High'}
-                            ], label='Priority', label_class='form-label', classes='form-select') }}
+                            ], label='Priority', label_class='form-label') }}
                         </div>
                     </div>
 
@@ -205,7 +205,7 @@
                             {'value': 'email', 'label': 'Email'},
                             {'value': 'meeting', 'label': 'Meeting'},
                             {'value': 'demo', 'label': 'Demo'}
-                        ], label='Next Step Type', label_class='form-label', classes='form-select') }}
+                        ], label='Next Step Type', label_class='form-label') }}
                     </div>
 
                     <!-- Multi-Task Specific Fields -->
@@ -218,13 +218,13 @@
                                     {'value': 'company', 'label': 'Company'},
                                     {'value': 'contact', 'label': 'Contact'},
                                     {'value': 'opportunity', 'label': 'Opportunity'}
-                                ], label='Related To', label_class='form-label', classes='form-select') }}
+                                ], label='Related To', label_class='form-label') }}
                             </div>
                             <div class="form-group">
                                 {{ universal_dropdown('task.dependency_type', [
                                     {'value': 'parallel', 'label': 'Parallel (can run simultaneously)'},
                                     {'value': 'sequential', 'label': 'Sequential (must complete in order)'}
-                                ], label='Child Task Dependencies', label_class='form-label', classes='form-select') }}
+                                ], label='Child Task Dependencies', label_class='form-label') }}
                             </div>
                         </div>
 
@@ -270,7 +270,7 @@
                                                         {'value': 'low', 'label': 'Low'},
                                                         {'value': 'medium', 'label': 'Medium'},
                                                         {'value': 'high', 'label': 'High'}
-                                                    ], classes='form-select text-sm') }}
+                                                    ], classes='form-field-base text-sm', min_width='min-w-[80px] max-w-[120px]') }}
                                                 </div>
                                                 <div>
                                                     {{ universal_dropdown('child.next_step_type', [
@@ -279,7 +279,7 @@
                                                         {'value': 'email', 'label': 'Email'},
                                                         {'value': 'meeting', 'label': 'Meeting'},
                                                         {'value': 'demo', 'label': 'Demo'}
-                                                    ], classes='form-select text-sm') }}
+                                                    ], classes='form-field-base text-sm', min_width='min-w-[80px] max-w-[120px]') }}
                                                 </div>
                                             </div>
                                         </div>
