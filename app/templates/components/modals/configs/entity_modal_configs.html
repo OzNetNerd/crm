@@ -121,7 +121,7 @@
         "email": "",
         "phone": "",
         "role": "",
-        "company": null
+        "company_id": ""
     },
     "fields": [
         {
@@ -160,13 +160,15 @@
 {# Company Detail Modal Configuration #}
 {% set company_detail_config = {
     "title": "Company Details",
+    "title_singular": "Company",
     "show_notes": true,
     "default_values": {
         "name": "",
         "industry": "",
+        "size": "",
         "website": "",
-        "contacts": [],
-        "opportunities": []
+        "phone": "",
+        "address": ""
     },
     "fields": [
         {
@@ -246,9 +248,9 @@
         "name": "",
         "value": "",
         "stage": "",
-        "probability": 0,
+        "probability": "",
         "expected_close_date": "",
-        "company": null
+        "company_id": ""
     },
     "fields": [
         {
