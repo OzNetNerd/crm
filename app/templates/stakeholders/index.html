@@ -6,39 +6,39 @@
 {% from "components/page_template.html" import page_layout %}
 
 {# Entity-specific imports #}
-{% from "components/stakeholder_card.html" import render_contact %}
+{% from "components/stakeholder_card.html" import render_stakeholder %}
 {% from "components/imports/entity_imports.html" import include_common_modals %}
 
 {% block title %}Stakeholders - CRM{% endblock %}
 
 {% block content %}
-{% set contact_stats = {
+{% set stakeholder_stats = {
     'title': 'Stakeholder Overview',
     'stats': [
         {
-            'value': contacts|length,
+            'value': stakeholders|length,
             'label': 'Total Stakeholders',
             'color_class': 'text-blue-600'
         },
         {
-            'value': contacts|selectattr('email')|list|length,
+            'value': stakeholders|selectattr('email')|list|length,
             'label': 'With Email',
             'color_class': 'text-green-600'
         },
         {
-            'value': contacts|selectattr('phone')|list|length,
+            'value': stakeholders|selectattr('phone')|list|length,
             'label': 'With Phone',
             'color_class': 'text-purple-600'
         },
         {
-            'value': contacts|map(attribute='opportunities')|map('length')|sum,
+            'value': stakeholders|map(attribute='opportunities')|map('length')|sum,
             'label': 'Total Opportunities',
             'color_class': 'text-orange-600'
         }
     ]
 } %}
 
-{% set contact_buttons = [
+{% set stakeholder_buttons = [
     {
         'label': 'New Stakeholder',
         'onclick': 'openNewStakeholderModal()',
@@ -47,12 +47,12 @@
     }
 ] %}
 
-{% call page_layout("Stakeholders", "Manage your contact relationships", buttons=contact_buttons, summary_data=contact_stats) %}
+{% call page_layout("Stakeholders", "Manage your stakeholder relationships", buttons=stakeholder_buttons, summary_data=stakeholder_stats) %}
 
 <div x-data="createEntityManager(getStakeholderConfig('{{ today }}'))" class="space-y-6">
 
     <!-- Bulk Actions Bar -->
-    {{ bulk_actions_bar('contact', 'contacts', 
+    {{ bulk_actions_bar('stakeholder', 'stakeholders', 
          {'label': 'Create Tasks', 'onclick': 'bulkCreateTasks(selectedItems)', 'color': 'green'},
          {'label': 'Delete Selected', 'onclick': 'bulkDelete(selectedItems)', 'color': 'red'}) }}
 
@@ -64,21 +64,21 @@
         show_completed_name='show_incomplete',
         primary_filter_options=PRIORITY_OPTIONS,
         primary_filter_label='All Stakeholder Info',
-        secondary_filter_options=get_field_options(Stakeholder, 'role'),
-        secondary_filter_label='All Roles',
+        secondary_filter_options=get_field_options(Stakeholder, 'job_title'),
+        secondary_filter_label='All Job Titles',
         entity_filter_options=[],
         entity_filter_label='All Companies'
     ) }}
 
     <!-- Dynamic Client-Side Stakeholder Grouping -->
-    <div id="contacts-content">
+    <div id="stakeholders-content">
         {{ dynamic_entity_section() }}
     </div>
 
-    <!-- Default view when no contacts -->
-    {% if not contacts %}
+    <!-- Default view when no stakeholders -->
+    {% if not stakeholders %}
         <div class="card p-12 text-center">
-            <p class="text-gray-500 mb-4">No contacts found</p>
+            <p class="text-gray-500 mb-4">No stakeholders found</p>
             <button onclick="openNewStakeholderModal()" 
                     class="btn-primary">
                 Add Your First Stakeholder
@@ -86,11 +86,11 @@
         </div>
     {% endif %}
 
-    <!-- Hidden pre-rendered contact cards for client-side use -->
-    <div style="display: none;" id="contact-cards-cache">
-        {% for contact in contacts %}
-            <div id="contact-card-{{ contact.id }}">
-                {{ render_contact(contact) }}
+    <!-- Hidden pre-rendered stakeholder cards for client-side use -->
+    <div style="display: none;" id="stakeholder-cards-cache">
+        {% for stakeholder in stakeholders %}
+            <div id="stakeholder-card-{{ stakeholder.id }}">
+                {{ render_stakeholder(stakeholder) }}
             </div>
         {% endfor %}
     </div>
@@ -113,5 +113,5 @@
 {% block data_attributes %}
 data-companies="{{ companies | tojson | forceescape }}"
 data-opportunities="{{ opportunities | tojson | forceescape }}"
-data-contacts="{{ contacts_data | tojson | forceescape }}"
+data-stakeholders="{{ stakeholders_data | tojson | forceescape }}"
 {% endblock %}

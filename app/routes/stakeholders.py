@@ -18,8 +18,8 @@ def index():
     secondary_filter = request.args.get('secondary_filter', '').split(',') if request.args.get('secondary_filter') else []
     entity_filter = request.args.get('entity_filter', '').split(',') if request.args.get('entity_filter') else []
     
-    # Get all contacts with relationships
-    contacts = Stakeholder.query.join(Company).order_by(Company.name, Stakeholder.name).all()
+    # Get all stakeholders with relationships
+    stakeholders = Stakeholder.query.join(Company).order_by(Company.name, Stakeholder.name).all()
     
     # Get all companies and opportunities for global data
     companies_objects = Company.query.all()
@@ -40,28 +40,28 @@ def index():
         'company_id': opp.company_id
     } for opp in opportunities_objects]
     
-    contacts_data = [{
-        'id': contact.id,
-        'name': contact.name,
-        'email': contact.email,
-        'phone': contact.phone,
-        'role': contact.job_title,
-        'company_id': contact.company_id,
+    stakeholders_data = [{
+        'id': stakeholder.id,
+        'name': stakeholder.name,
+        'email': stakeholder.email,
+        'phone': stakeholder.phone,
+        'job_title': stakeholder.job_title,
+        'company_id': stakeholder.company_id,
         'company': {
-            'id': contact.company.id,
-            'name': contact.company.name,
-            'industry': contact.company.industry
-        } if contact.company else None
-    } for contact in contacts]
+            'id': stakeholder.company.id,
+            'name': stakeholder.company.name,
+            'industry': stakeholder.company.industry
+        } if stakeholder.company else None
+    } for stakeholder in stakeholders]
     
     today = date.today()
     
     return render_template(
         "stakeholders/index.html", 
-        contacts=contacts,
+        stakeholders=stakeholders,
         companies=companies_data,
         opportunities=opportunities_data,
-        contacts_data=contacts_data,
+        stakeholders_data=stakeholders_data,
         today=today,
         # Filter states for URL persistence
         group_by=group_by,
