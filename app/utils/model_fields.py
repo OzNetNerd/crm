@@ -81,9 +81,11 @@ def get_filter_options(model_name, field_name, **kwargs):
     if not model_class:
         return []
     
-    # Special handling for Task entity_type field
+    # Special handling for specific model-field combinations
     if model_name == 'Task' and field_name == 'entity_type':
         return get_task_entity_types()
+    elif model_name == 'Contact' and field_name == 'industry':
+        return get_contact_industries()
     
     return get_distinct_values(model_class, field_name, kwargs.get('label_transform'))
 
@@ -118,6 +120,29 @@ def get_task_entity_types():
     null_count = db.session.query(Task).filter(Task.entity_type.is_(None)).count()
     if null_count > 0:
         options.append({'value': 'unrelated', 'label': 'General'})
+    
+    return sorted(options, key=lambda x: x['label'])
+
+
+def get_contact_industries():
+    """
+    Get available industries for contacts (from their companies).
+    
+    Returns:
+        List of {'value': str, 'label': str} dictionaries
+    """
+    from app.models import Company
+    
+    # Get distinct industries from companies that have contacts
+    companies_with_contacts = db.session.query(distinct(Company.industry))\
+        .join(Company.contacts)\
+        .filter(Company.industry.isnot(None))\
+        .all()
+    
+    options = []
+    for (industry,) in companies_with_contacts:
+        if industry:
+            options.append({'value': industry, 'label': industry.title()})
     
     return sorted(options, key=lambda x: x['label'])
 
