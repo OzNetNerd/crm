@@ -884,7 +884,7 @@ function getStakeholderConfig(today) {
             'healthcare': true,
             'manufacturing': true,
             'unknown': true,
-            // Role grouping
+            // Job Title grouping
             'ceo': true,
             'manager': true,
             'director': true,

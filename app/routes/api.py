@@ -99,11 +99,6 @@ def get_stakeholder_details(stakeholder_id):
     """Get stakeholder details with notes"""
     return stakeholder_api.get_details(stakeholder_id)
 
-# Legacy endpoint for backwards compatibility
-@api_bp.route("/contacts/<int:contact_id>")
-def get_contact_details(contact_id):
-    """Legacy contact endpoint - redirects to stakeholder"""
-    return stakeholder_api.get_details(contact_id)
 
 
 @api_bp.route("/companies")
@@ -135,11 +130,6 @@ def get_stakeholders():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Legacy endpoint for backwards compatibility  
-@api_bp.route("/contacts")
-def get_contacts():
-    """Legacy contact endpoint - redirects to stakeholders"""
-    return get_stakeholders()
 
 
 @api_bp.route("/opportunities")
@@ -182,11 +172,6 @@ def update_stakeholder(stakeholder_id):
     """Update stakeholder details"""
     return stakeholder_api.update_entity(stakeholder_id, ["name", "job_title", "email", "phone"])
 
-# Legacy endpoint for backwards compatibility
-@api_bp.route("/contacts/<int:contact_id>", methods=["PUT"])
-def update_contact(contact_id):
-    """Legacy contact update endpoint"""
-    return stakeholder_api.update_entity(contact_id, ["name", "job_title", "email", "phone"])
 
 
 @api_bp.route("/companies/<int:company_id>", methods=["PUT"])
@@ -314,11 +299,6 @@ def create_stakeholder():
     """Create new stakeholder"""
     return stakeholder_api.create_entity(["name", "job_title", "email", "phone", "company_id"])
 
-# Legacy endpoint for backwards compatibility
-@api_bp.route("/contacts", methods=["POST"])
-def create_contact():
-    """Legacy contact creation endpoint"""
-    return stakeholder_api.create_entity(["name", "job_title", "email", "phone", "company_id"])
 
 
 @api_bp.route("/companies", methods=["POST"])
@@ -345,11 +325,6 @@ def delete_stakeholder(stakeholder_id):
     """Delete stakeholder"""
     return stakeholder_api.delete_entity(stakeholder_id)
 
-# Legacy endpoint for backwards compatibility
-@api_bp.route("/contacts/<int:contact_id>", methods=["DELETE"])
-def delete_contact(contact_id):
-    """Legacy contact deletion endpoint"""
-    return stakeholder_api.delete_entity(contact_id)
 
 
 @api_bp.route("/companies/<int:company_id>", methods=["DELETE"])
