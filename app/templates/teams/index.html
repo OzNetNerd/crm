@@ -1,0 +1,126 @@
+{% extends "base/layout.html" %}
+
+{# DRY Common Imports - reduced from 15+ lines to this clean set #}
+{% from "components/icons.html" import building_office_icon, user_icon, chevron_right_icon, check_circle_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid %}
+{% from "components/ui_elements.html" import expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar, enhanced_filter_controls %}
+{% from "components/page_template.html" import page_layout %}
+
+{# Entity-specific imports #}
+{% from "components/team_card.html" import render_team_member %}
+{% from "components/imports/entity_imports.html" import include_common_modals %}
+
+{% block title %}Account Teams - CRM{% endblock %}
+
+{% block content %}
+{% set team_stats = {
+    'title': 'Account Team Overview',
+    'stats': [
+        {
+            'value': team_members|length,
+            'label': 'Team Members',
+            'color_class': 'text-blue-600'
+        },
+        {
+            'value': team_data|map(attribute='company_assignments')|map('length')|sum if team_data else 0,
+            'label': 'Company Assignments',
+            'color_class': 'text-green-600'
+        },
+        {
+            'value': team_data|map(attribute='opportunity_assignments')|map('length')|sum if team_data else 0,
+            'label': 'Opportunity Assignments',
+            'color_class': 'text-purple-600'
+        },
+        {
+            'value': team_members|map(attribute='job_title')|unique|list|length if team_members else 0,
+            'label': 'Unique Roles',
+            'color_class': 'text-orange-600'
+        }
+    ]
+} %}
+
+{% set team_buttons = [
+    {
+        'label': 'New Team Member',
+        'onclick': 'openNewTeamMemberModal()',
+        'color': 'blue',
+        'icon': ''
+    }
+] %}
+
+{% call page_layout("Account Teams", "Manage your account team members", buttons=team_buttons, summary_data=team_stats) %}
+
+<div x-data="createEntityManager(getTeamConfig('{{ today }}'))" class="space-y-6">
+
+    <!-- Bulk Actions Bar -->
+    {{ bulk_actions_bar('team', 'team members', 
+         {'label': 'Assign to Company', 'onclick': 'bulkAssignToCompany(selectedItems)', 'color': 'green'},
+         {'label': 'Remove Selected', 'onclick': 'bulkDelete(selectedItems)', 'color': 'red'}) }}
+
+    <!-- Enhanced Filters and Controls with Generic DRY Components -->
+    {{ enhanced_filter_controls(
+        group_options=[
+            {'value': 'job_title', 'label': 'By Role'},
+            {'value': 'name', 'label': 'By Name'},
+            {'value': 'company_count', 'label': 'By Company Count'}
+        ],
+        sort_options=[
+            {'value': 'name', 'label': 'Name'},
+            {'value': 'job_title', 'label': 'Job Title'},
+            {'value': 'email', 'label': 'Email'}
+        ],
+        show_completed_label='Show Unassigned Only',
+        show_completed_name='show_unassigned',
+        primary_filter_options=[
+            {'value': 'all', 'label': 'All Members'},
+            {'value': 'assigned', 'label': 'Assigned Members'},
+            {'value': 'unassigned', 'label': 'Unassigned Members'}
+        ],
+        primary_filter_label='All Members',
+        secondary_filter_options=team_members|map(attribute='job_title')|unique|list|map('title')|list if team_members else [],
+        secondary_filter_label='All Roles'
+    ) }}
+
+    <!-- Dynamic Client-Side Team Member Grouping -->
+    <div id="teams-content">
+        {{ dynamic_entity_section() }}
+    </div>
+
+    <!-- Default view when no team members -->
+    {% if not team_members %}
+        <div class="card p-12 text-center">
+            <p class="text-gray-500 mb-4">No team members found</p>
+            <button onclick="openNewTeamMemberModal()" 
+                    class="btn-primary">
+                Add Your First Team Member
+            </button>
+        </div>
+    {% endif %}
+
+    <!-- Hidden pre-rendered team member cards for client-side use -->
+    <div style="display: none;" id="team-cards-cache">
+        {% for member in team_members %}
+            <div id="team-card-{{ member.id }}">
+                {{ render_team_member(member) }}
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endcall %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
+<script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
+<script src="{{ url_for('static', filename='js/entities/teams.js') }}"></script>
+
+{{ include_common_modals() }}
+{% endblock %}
+
+{% block data_attributes %}
+data-team-members="{{ team_data | tojson | forceescape }}"
+data-companies="{{ companies | tojson | forceescape }}"
+data-opportunities="{{ opportunities | tojson | forceescape }}"
+{% endblock %}

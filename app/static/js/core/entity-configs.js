@@ -1264,8 +1264,193 @@ function getCompanyConfig(today) {
     };
 }
 
+/**
+ * Team Configuration
+ * Used with createEntityManager() to handle account team members
+ */
+function getTeamConfig(today) {
+    return {
+        // Data source
+        entityName: 'team',
+        dataSource: 'teamData',
+        contentContainerId: 'teams-content',
+        
+        // Default states
+        defaultGroupBy: 'job_title',
+        defaultSortBy: 'name',
+        defaultSortDirection: 'asc',
+        defaultShowCompleted: false,
+        defaultPrimaryFilter: [], // Assignment status filter
+        defaultSecondaryFilter: [], // Job title filter  
+        defaultEntityFilter: [], // Assignment count filter
+        today: today,
+        persistState: true,
+
+        // Field mappings
+        primaryFilterField: 'assignment_status', // Will be calculated from assignments
+        secondaryFilterField: 'job_title',
+        entityFilterField: 'assignment_count',
+        
+        // Completion logic (for "show unassigned only" functionality)
+        isCompleted: (member) => {
+            const totalAssignments = (member.company_assignments?.length || 0) + (member.opportunity_assignments?.length || 0);
+            return totalAssignments > 0; // "completed" = has assignments
+        },
+
+        // Priority calculation based on assignment count
+        priorityLogic: (member) => {
+            const totalAssignments = (member.company_assignments?.length || 0) + (member.opportunity_assignments?.length || 0);
+            if (totalAssignments === 0) return 'unassigned';
+            if (totalAssignments >= 5) return 'assigned';
+            return 'assigned';
+        },
+
+        // Grouping configurations
+        groupOptions: {
+            'job_title': {
+                field: 'job_title',
+                groups: [
+                    { key: 'Account Manager', label: 'Account Manager', color: 'blue', expanded: true },
+                    { key: 'Sales Representative', label: 'Sales Representative', color: 'green', expanded: true },
+                    { key: 'Solutions Engineer', label: 'Solutions Engineer', color: 'purple', expanded: true },
+                    { key: 'Technical Architect', label: 'Technical Architect', color: 'orange', expanded: true },
+                    { key: 'Customer Success Manager', label: 'Customer Success Manager', color: 'teal', expanded: true },
+                    { key: 'Sales Engineer', label: 'Sales Engineer', color: 'indigo', expanded: true },
+                    { key: 'Account Executive', label: 'Account Executive', color: 'pink', expanded: true },
+                    { key: 'Implementation Specialist', label: 'Implementation Specialist', color: 'yellow', expanded: true },
+                    { key: 'Support Manager', label: 'Support Manager', color: 'red', expanded: true },
+                    { key: 'Business Development Rep', label: 'Business Development Rep', color: 'gray', expanded: true }
+                ]
+            },
+            'name': {
+                field: 'name',
+                groups: [], // Will be populated dynamically
+                isDynamic: true,
+                generateGroups: function(entities) {
+                    const letters = [...new Set(entities.map(member => 
+                        (member.name?.charAt(0)?.toUpperCase() || 'Unknown')
+                    ))].sort();
+                    return letters.map(letter => ({ 
+                        key: letter, 
+                        label: `${letter}*`, 
+                        color: 'blue',
+                        expanded: true 
+                    }));
+                },
+                filterFn: (entity, groupKey) => {
+                    const firstLetter = entity.name?.charAt(0)?.toUpperCase() || 'Unknown';
+                    return firstLetter === groupKey;
+                }
+            },
+            'assignment_count': {
+                field: 'assignment_count',
+                groups: [
+                    { key: 'unassigned', label: 'Unassigned', color: 'red', expanded: true },
+                    { key: 'light_workload', label: 'Light Workload (1)', color: 'yellow', expanded: true },
+                    { key: 'medium_workload', label: 'Medium Workload (2-4)', color: 'blue', expanded: true },
+                    { key: 'high_workload', label: 'High Workload (5+)', color: 'green', expanded: true }
+                ],
+                filterFn: (entity, groupKey) => {
+                    const total = (entity.company_assignments?.length || 0) + (entity.opportunity_assignments?.length || 0);
+                    switch(groupKey) {
+                        case 'unassigned': return total === 0;
+                        case 'light_workload': return total === 1;
+                        case 'medium_workload': return total >= 2 && total <= 4;
+                        case 'high_workload': return total >= 5;
+                        default: return false;
+                    }
+                }
+            }
+        },
+
+        // Sorting configurations
+        sortOptions: {
+            'name': {
+                label: 'Name',
+                sortFn: (a, b) => (a.name || '').localeCompare(b.name || '')
+            },
+            'job_title': {
+                label: 'Job Title', 
+                sortFn: (a, b) => (a.job_title || '').localeCompare(b.job_title || '')
+            },
+            'email': {
+                label: 'Email',
+                sortFn: (a, b) => (a.email || '').localeCompare(b.email || '')
+            },
+            'assignment_count': {
+                label: 'Assignment Count',
+                sortFn: (a, b) => {
+                    const aCount = (a.company_assignments?.length || 0) + (a.opportunity_assignments?.length || 0);
+                    const bCount = (b.company_assignments?.length || 0) + (b.opportunity_assignments?.length || 0);
+                    return bCount - aCount; // Descending by default
+                }
+            }
+        },
+
+        // Filter configurations
+        primaryFilterOptions: [
+            { value: 'all', label: 'All Members' },
+            { value: 'assigned', label: 'Assigned Members' },
+            { value: 'unassigned', label: 'Unassigned Members' }
+        ],
+        primaryFilterLabel: 'All Members',
+
+        secondaryFilterOptions: [
+            { value: 'Account Manager', label: 'Account Manager' },
+            { value: 'Sales Representative', label: 'Sales Representative' },
+            { value: 'Technical Consultant', label: 'Technical Consultant' },
+            { value: 'Customer Success Manager', label: 'Customer Success Manager' },
+            { value: 'Business Development Manager', label: 'Business Development Manager' }
+        ],
+        secondaryFilterLabel: 'All Roles',
+
+        entityFilterOptions: [
+            { value: 'high_workload', label: 'High Workload (5+)' },
+            { value: 'medium_workload', label: 'Medium Workload (2-4)' },
+            { value: 'light_workload', label: 'Light Workload (1)' },
+            { value: 'unassigned', label: 'Unassigned' }
+        ],
+        entityFilterLabel: 'All Workloads',
+
+        // Default expanded sections
+        defaultExpandedSections: {
+            // Job title grouping
+            'Account Manager': true,
+            'Sales Representative': true,
+            'Technical Consultant': true,
+            'Customer Success Manager': true,
+            'Business Development Manager': true,
+            'Unknown Role': true,
+            // Assignment count grouping
+            'High Workload (5+)': true,
+            'Medium Workload (2-4)': true,
+            'Light Workload (1)': true,
+            'Unassigned': true,
+            // Name grouping (first letters)
+            'A': true, 'B': true, 'C': true, 'D': true, 'E': true
+        },
+
+        // Action mappings
+        actions: {
+            'View member': 'openTeamMemberModal',
+            'Edit member': 'editTeamMember',
+            'Remove member': 'removeTeamMember',
+            'Assign to company': 'assignToCompany',
+            'Assign to opportunity': 'assignToOpportunity',
+            'Create task': 'createTaskForTeamMember'
+        },
+
+        // Bulk actions
+        bulkActions: {
+            'remove': (selectedIds) => window.bulkDelete(selectedIds),
+            'assignToCompany': (selectedIds) => window.bulkAssignToCompany(selectedIds)
+        }
+    };
+}
+
 // Export configurations
 window.getOpportunityConfig = getOpportunityConfig;
 window.getTaskConfig = getTaskConfig;
 window.getStakeholderConfig = getStakeholderConfig;
 window.getCompanyConfig = getCompanyConfig;
+window.getTeamConfig = getTeamConfig;
