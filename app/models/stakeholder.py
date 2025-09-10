@@ -109,46 +109,18 @@ class Stakeholder(db.Model):
     
     def get_relationship_owners(self):
         """Get all users who own relationships with this stakeholder"""
-        result = db.session.execute(
-            db.text("""
-                SELECT u.id, u.name, u.job_title
-                FROM users u
-                JOIN stakeholder_relationship_owners sro ON u.id = sro.user_id
-                WHERE sro.stakeholder_id = :stakeholder_id
-                ORDER BY u.name
-            """),
-            {"stakeholder_id": self.id}
-        ).fetchall()
-        
         return [{
-            'id': row[0],
-            'name': row[1],
-            'job_title': row[2]
-        } for row in result]
+            'id': user.id,
+            'name': user.name,
+            'job_title': user.job_title
+        } for user in self.relationship_owners]
     
     def assign_relationship_owner(self, user_id):
         """Assign a user as relationship owner for this stakeholder"""
-        # Check if already exists
-        existing = db.session.execute(
-            db.text("""
-                SELECT 1 FROM stakeholder_relationship_owners 
-                WHERE stakeholder_id = :stakeholder_id AND user_id = :user_id
-            """),
-            {"stakeholder_id": self.id, "user_id": user_id}
-        ).fetchone()
-        
-        if not existing:
-            db.session.execute(
-                db.text("""
-                    INSERT INTO stakeholder_relationship_owners (stakeholder_id, user_id, created_at)
-                    VALUES (:stakeholder_id, :user_id, :created_at)
-                """),
-                {
-                    "stakeholder_id": self.id,
-                    "user_id": user_id,
-                    "created_at": datetime.utcnow()
-                }
-            )
+        from .user import User  # Import here to avoid circular imports
+        user = User.query.get(user_id)
+        if user and user not in self.relationship_owners:
+            self.relationship_owners.append(user)
             db.session.commit()
 
     def to_dict(self):
