@@ -1264,8 +1264,204 @@ function getCompanyConfig(today) {
     };
 }
 
+/**
+ * Team Configuration
+ * Used with createEntityManager() to handle account team members
+ */
+function getTeamConfig(today) {
+    return {
+        // Data source
+        entityName: 'team',
+        dataSource: 'teamData',
+        contentContainerId: 'teams-content',
+        
+        // Default states
+        defaultGroupBy: 'job_title',
+        defaultSortBy: 'name',
+        defaultSortDirection: 'asc',
+        defaultShowCompleted: false,
+        defaultPrimaryFilter: [], // Assignment status filter
+        defaultSecondaryFilter: [], // Job title filter  
+        defaultEntityFilter: [], // Assignment count filter
+        today: today,
+        persistState: true,
+
+        // Field mappings
+        primaryFilterField: 'assignment_status', // Will be calculated from assignments
+        secondaryFilterField: 'job_title',
+        entityFilterField: 'assignment_count',
+        
+        // Completion logic (for "show unassigned only" functionality)
+        // Note: In this context, "completed" means "unassigned" (no assignments)
+        isCompleted: (member) => {
+            const totalAssignments = (member.company_assignments?.length || 0) + (member.opportunity_assignments?.length || 0);
+            return totalAssignments === 0; // "completed" = unassigned (no assignments)
+        },
+
+        // Priority calculation based on assignment count
+        priorityLogic: (member) => {
+            const totalAssignments = (member.company_assignments?.length || 0) + (member.opportunity_assignments?.length || 0);
+            if (totalAssignments === 0) return 'unassigned';
+            if (totalAssignments >= 5) return 'assigned';
+            return 'assigned';
+        },
+
+        // Grouping configurations
+        groupOptions: {
+            'job_title': {
+                field: 'job_title',
+                groups: [
+                    { key: 'Account Manager', title: 'Account Manager', color: 'blue', expanded: true, 
+                      icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>' },
+                    { key: 'Sales Representative', title: 'Sales Representative', color: 'green', expanded: true,
+                      icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>' },
+                    { key: 'Solutions Engineer', title: 'Solutions Engineer', color: 'purple', expanded: true,
+                      icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>' },
+                    { key: 'Technical Architect', title: 'Technical Architect', color: 'orange', expanded: true,
+                      icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>' },
+                    { key: 'Customer Success Manager', title: 'Customer Success Manager', color: 'teal', expanded: true,
+                      icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>' },
+                    { key: 'Sales Engineer', title: 'Sales Engineer', color: 'indigo', expanded: true,
+                      icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>' },
+                    { key: 'Account Executive', title: 'Account Executive', color: 'pink', expanded: true,
+                      icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>' },
+                    { key: 'Implementation Specialist', title: 'Implementation Specialist', color: 'yellow', expanded: true,
+                      icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100-4m0 4v2m0-6V4"></path></svg>' },
+                    { key: 'Support Manager', title: 'Support Manager', color: 'red', expanded: true,
+                      icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' },
+                    { key: 'Business Development Rep', title: 'Business Development Rep', color: 'gray', expanded: true,
+                      icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' }
+                ]
+            },
+            'name': {
+                field: 'name',
+                groups: [], // Will be populated dynamically
+                isDynamic: true,
+                generateGroups: function(entities) {
+                    const letters = [...new Set(entities.map(member => 
+                        (member.name?.charAt(0)?.toUpperCase() || 'Unknown')
+                    ))].sort();
+                    return letters.map(letter => ({ 
+                        key: letter, 
+                        title: `${letter}*`, 
+                        color: 'blue',
+                        expanded: true 
+                    }));
+                },
+                filterFn: (entity, groupKey) => {
+                    const firstLetter = entity.name?.charAt(0)?.toUpperCase() || 'Unknown';
+                    return firstLetter === groupKey;
+                }
+            },
+            'assignment_count': {
+                field: 'assignment_count',
+                groups: [
+                    { key: 'unassigned', title: 'Unassigned', color: 'red', expanded: true },
+                    { key: 'light_workload', title: 'Light Workload (1)', color: 'yellow', expanded: true },
+                    { key: 'medium_workload', title: 'Medium Workload (2-4)', color: 'blue', expanded: true },
+                    { key: 'high_workload', title: 'High Workload (5+)', color: 'green', expanded: true }
+                ],
+                filterFn: (entity, groupKey) => {
+                    const total = (entity.company_assignments?.length || 0) + (entity.opportunity_assignments?.length || 0);
+                    switch(groupKey) {
+                        case 'unassigned': return total === 0;
+                        case 'light_workload': return total === 1;
+                        case 'medium_workload': return total >= 2 && total <= 4;
+                        case 'high_workload': return total >= 5;
+                        default: return false;
+                    }
+                }
+            }
+        },
+
+        // Sorting configurations
+        sortOptions: {
+            'name': {
+                label: 'Name',
+                sortFn: (a, b) => (a.name || '').localeCompare(b.name || '')
+            },
+            'job_title': {
+                label: 'Job Title', 
+                sortFn: (a, b) => (a.job_title || '').localeCompare(b.job_title || '')
+            },
+            'email': {
+                label: 'Email',
+                sortFn: (a, b) => (a.email || '').localeCompare(b.email || '')
+            },
+            'assignment_count': {
+                label: 'Assignment Count',
+                sortFn: (a, b) => {
+                    const aCount = (a.company_assignments?.length || 0) + (a.opportunity_assignments?.length || 0);
+                    const bCount = (b.company_assignments?.length || 0) + (b.opportunity_assignments?.length || 0);
+                    return bCount - aCount; // Descending by default
+                }
+            }
+        },
+
+        // Filter configurations
+        primaryFilterOptions: [
+            { value: 'all', label: 'All Members' },
+            { value: 'assigned', label: 'Assigned Members' },
+            { value: 'unassigned', label: 'Unassigned Members' }
+        ],
+        primaryFilterLabel: 'All Members',
+
+        secondaryFilterOptions: [
+            { value: 'Account Manager', label: 'Account Manager' },
+            { value: 'Sales Representative', label: 'Sales Representative' },
+            { value: 'Technical Consultant', label: 'Technical Consultant' },
+            { value: 'Customer Success Manager', label: 'Customer Success Manager' },
+            { value: 'Business Development Manager', label: 'Business Development Manager' }
+        ],
+        secondaryFilterLabel: 'All Roles',
+
+        entityFilterOptions: [
+            { value: 'high_workload', label: 'High Workload (5+)' },
+            { value: 'medium_workload', label: 'Medium Workload (2-4)' },
+            { value: 'light_workload', label: 'Light Workload (1)' },
+            { value: 'unassigned', label: 'Unassigned' }
+        ],
+        entityFilterLabel: 'All Workloads',
+
+        // Default expanded sections
+        defaultExpandedSections: {
+            // Job title grouping
+            'Account Manager': true,
+            'Sales Representative': true,
+            'Technical Consultant': true,
+            'Customer Success Manager': true,
+            'Business Development Manager': true,
+            'Unknown Role': true,
+            // Assignment count grouping
+            'High Workload (5+)': true,
+            'Medium Workload (2-4)': true,
+            'Light Workload (1)': true,
+            'Unassigned': true,
+            // Name grouping (first letters)
+            'A': true, 'B': true, 'C': true, 'D': true, 'E': true
+        },
+
+        // Action mappings
+        actions: {
+            'View member': 'openTeamMemberModal',
+            'Edit member': 'editTeamMember',
+            'Remove member': 'removeTeamMember',
+            'Assign to company': 'assignToCompany',
+            'Assign to opportunity': 'assignToOpportunity',
+            'Create task': 'createTaskForTeamMember'
+        },
+
+        // Bulk actions
+        bulkActions: {
+            'remove': (selectedIds) => window.bulkDelete(selectedIds),
+            'assignToCompany': (selectedIds) => window.bulkAssignToCompany(selectedIds)
+        }
+    };
+}
+
 // Export configurations
 window.getOpportunityConfig = getOpportunityConfig;
 window.getTaskConfig = getTaskConfig;
 window.getStakeholderConfig = getStakeholderConfig;
 window.getCompanyConfig = getCompanyConfig;
+window.getTeamConfig = getTeamConfig;
