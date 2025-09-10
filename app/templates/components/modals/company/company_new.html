@@ -1,4 +1,5 @@
 <!-- Company New Modal - Direct Alpine.js Implementation -->
+{% from "components/ui_elements.html" import universal_dropdown %}
 <div x-cloak x-data="{
     show: false,
     saving: false,
@@ -115,29 +116,27 @@
                     <!-- Industry and Size -->
                     <div class="modal-grid-2">
                         <div class="form-group">
-                            <label class="form-label">Industry</label>
-                            <select x-model="company.industry" class="form-select">
-                                <option value="">Select industry</option>
-                                <option value="technology">Technology</option>
-                                <option value="finance">Finance</option>
-                                <option value="healthcare">Healthcare</option>
-                                <option value="manufacturing">Manufacturing</option>
-                                <option value="retail">Retail</option>
-                                <option value="education">Education</option>
-                                <option value="consulting">Consulting</option>
-                                <option value="other">Other</option>
-                            </select>
+                            {{ universal_dropdown('company.industry', [
+                                {'value': '', 'label': 'Select industry'},
+                                {'value': 'technology', 'label': 'Technology'},
+                                {'value': 'finance', 'label': 'Finance'},
+                                {'value': 'healthcare', 'label': 'Healthcare'},
+                                {'value': 'manufacturing', 'label': 'Manufacturing'},
+                                {'value': 'retail', 'label': 'Retail'},
+                                {'value': 'education', 'label': 'Education'},
+                                {'value': 'consulting', 'label': 'Consulting'},
+                                {'value': 'other', 'label': 'Other'}
+                            ], label='Industry', label_class='form-label', classes='form-select') }}
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Company Size</label>
-                            <select x-model="company.size" class="form-select">
-                                <option value="">Select size</option>
-                                <option value="startup">Startup (1-10)</option>
-                                <option value="small">Small (11-50)</option>
-                                <option value="medium">Medium (51-200)</option>
-                                <option value="large">Large (201-1000)</option>
-                                <option value="enterprise">Enterprise (1000+)</option>
-                            </select>
+                            {{ universal_dropdown('company.size', [
+                                {'value': '', 'label': 'Select size'},
+                                {'value': 'startup', 'label': 'Startup (1-10)'},
+                                {'value': 'small', 'label': 'Small (11-50)'},
+                                {'value': 'medium', 'label': 'Medium (51-200)'},
+                                {'value': 'large', 'label': 'Large (201-1000)'},
+                                {'value': 'enterprise', 'label': 'Enterprise (1000+)'}
+                            ], label='Company Size', label_class='form-label', classes='form-select') }}
                         </div>
                     </div>
 

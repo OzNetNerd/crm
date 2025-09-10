@@ -1,4 +1,5 @@
 <!-- Task New Modal - Direct Alpine.js Implementation -->
+{% from "components/ui_elements.html" import universal_dropdown %}
 <div x-cloak x-data="{
     show: false,
     saving: false,
@@ -188,25 +189,23 @@
                                    class="form-input">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Priority</label>
-                            <select x-model="task.priority" class="form-select">
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                            </select>
+                            {{ universal_dropdown('task.priority', [
+                                {'value': 'low', 'label': 'Low'},
+                                {'value': 'medium', 'label': 'Medium'},
+                                {'value': 'high', 'label': 'High'}
+                            ], label='Priority', label_class='form-label', classes='form-select') }}
                         </div>
                     </div>
 
                     <!-- Next Step Type (Single Task Only) -->
                     <div class="form-group" x-show="taskType === 'single'">
-                        <label class="form-label">Next Step Type</label>
-                        <select x-model="task.next_step_type" class="form-select">
-                            <option value="">None</option>
-                            <option value="call">Call</option>
-                            <option value="email">Email</option>
-                            <option value="meeting">Meeting</option>
-                            <option value="demo">Demo</option>
-                        </select>
+                        {{ universal_dropdown('task.next_step_type', [
+                            {'value': '', 'label': 'None'},
+                            {'value': 'call', 'label': 'Call'},
+                            {'value': 'email', 'label': 'Email'},
+                            {'value': 'meeting', 'label': 'Meeting'},
+                            {'value': 'demo', 'label': 'Demo'}
+                        ], label='Next Step Type', label_class='form-label', classes='form-select') }}
                     </div>
 
                     <!-- Multi-Task Specific Fields -->
@@ -214,20 +213,18 @@
                         <!-- Entity Type and Dependency -->
                         <div class="modal-grid-2">
                             <div class="form-group">
-                                <label class="form-label">Related To</label>
-                                <select x-model="task.entity_type" class="form-select">
-                                    <option value="">None</option>
-                                    <option value="company">Company</option>
-                                    <option value="contact">Contact</option>
-                                    <option value="opportunity">Opportunity</option>
-                                </select>
+                                {{ universal_dropdown('task.entity_type', [
+                                    {'value': '', 'label': 'None'},
+                                    {'value': 'company', 'label': 'Company'},
+                                    {'value': 'contact', 'label': 'Contact'},
+                                    {'value': 'opportunity', 'label': 'Opportunity'}
+                                ], label='Related To', label_class='form-label', classes='form-select') }}
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Child Task Dependencies</label>
-                                <select x-model="task.dependency_type" class="form-select">
-                                    <option value="parallel">Parallel (can run simultaneously)</option>
-                                    <option value="sequential">Sequential (must complete in order)</option>
-                                </select>
+                                {{ universal_dropdown('task.dependency_type', [
+                                    {'value': 'parallel', 'label': 'Parallel (can run simultaneously)'},
+                                    {'value': 'sequential', 'label': 'Sequential (must complete in order)'}
+                                ], label='Child Task Dependencies', label_class='form-label', classes='form-select') }}
                             </div>
                         </div>
 
@@ -269,20 +266,20 @@
                                                            class="form-input text-sm">
                                                 </div>
                                                 <div>
-                                                    <select x-model="child.priority" class="form-select text-sm">
-                                                        <option value="low">Low</option>
-                                                        <option value="medium">Medium</option>
-                                                        <option value="high">High</option>
-                                                    </select>
+                                                    {{ universal_dropdown('child.priority', [
+                                                        {'value': 'low', 'label': 'Low'},
+                                                        {'value': 'medium', 'label': 'Medium'},
+                                                        {'value': 'high', 'label': 'High'}
+                                                    ], classes='form-select text-sm') }}
                                                 </div>
                                                 <div>
-                                                    <select x-model="child.next_step_type" class="form-select text-sm">
-                                                        <option value="">None</option>
-                                                        <option value="call">Call</option>
-                                                        <option value="email">Email</option>
-                                                        <option value="meeting">Meeting</option>
-                                                        <option value="demo">Demo</option>
-                                                    </select>
+                                                    {{ universal_dropdown('child.next_step_type', [
+                                                        {'value': '', 'label': 'None'},
+                                                        {'value': 'call', 'label': 'Call'},
+                                                        {'value': 'email', 'label': 'Email'},
+                                                        {'value': 'meeting', 'label': 'Meeting'},
+                                                        {'value': 'demo', 'label': 'Demo'}
+                                                    ], classes='form-select text-sm') }}
                                                 </div>
                                             </div>
                                         </div>

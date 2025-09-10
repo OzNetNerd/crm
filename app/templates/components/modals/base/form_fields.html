@@ -20,23 +20,26 @@
 </div>
 {% endmacro %}
 
+{% from "components/ui_elements.html" import universal_dropdown %}
+
 {% macro select_input(name, label, model_var, options, required=false, empty_option="") %}
 <div class="form-field">
-    <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
-    <select x-model="{{ model_var }}" 
-            class="form-select"
-            {% if required %}required{% endif %}>
-        {% if empty_option %}
-        <option value="">{{ empty_option }}</option>
-        {% endif %}
-        {% for option in options %}
-            {% if option is mapping %}
-                <option value="{{ option.value }}">{{ option.label }}</option>
-            {% else %}
-                <option value="{{ option }}">{{ option|title }}</option>
-            {% endif %}
-        {% endfor %}
-    </select>
+    {%- set dropdown_options = [] -%}
+    {%- if empty_option -%}
+        {%- set _ = dropdown_options.append({'value': '', 'label': empty_option}) -%}
+    {%- endif -%}
+    {%- for option in options -%}
+        {%- if option is mapping -%}
+            {%- set _ = dropdown_options.append(option) -%}
+        {%- else -%}
+            {%- set _ = dropdown_options.append({'value': option, 'label': option|title}) -%}
+        {%- endif -%}
+    {%- endfor -%}
+    
+    {{ universal_dropdown(model_var, dropdown_options, 
+                         label=label, 
+                         label_class='form-label' + (' form-label-required' if required else ''),
+                         classes='form-select') }}
 </div>
 {% endmacro %}
 

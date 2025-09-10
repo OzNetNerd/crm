@@ -1,4 +1,5 @@
 <!-- Opportunity New Modal - Direct Alpine.js Implementation -->
+{% from "components/ui_elements.html" import universal_dropdown %}
 <div x-cloak x-data="{
     show: false,
     saving: false,
@@ -125,15 +126,14 @@
                                    required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Stage</label>
-                            <select x-model="opportunity.stage" class="form-select">
-                                <option value="prospect">Prospect</option>
-                                <option value="qualified">Qualified</option>
-                                <option value="proposal">Proposal</option>
-                                <option value="negotiation">Negotiation</option>
-                                <option value="closed_won">Closed Won</option>
-                                <option value="closed_lost">Closed Lost</option>
-                            </select>
+                            {{ universal_dropdown('opportunity.stage', [
+                                {'value': 'prospect', 'label': 'Prospect'},
+                                {'value': 'qualified', 'label': 'Qualified'},
+                                {'value': 'proposal', 'label': 'Proposal'},
+                                {'value': 'negotiation', 'label': 'Negotiation'},
+                                {'value': 'closed_won', 'label': 'Closed Won'},
+                                {'value': 'closed_lost', 'label': 'Closed Lost'}
+                            ], label='Stage', label_class='form-label', classes='form-select') }}
                         </div>
                     </div>
 

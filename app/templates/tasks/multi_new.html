@@ -1,5 +1,6 @@
 {% extends "base/layout.html" %}
 {% from "components/page_template.html" import page_layout %}
+{% from "components/ui_elements.html" import universal_dropdown %}
 
 {% block title %}New Multi Task - CRM{% endblock %}
 
@@ -27,26 +28,23 @@
                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 
-                <div>
-                    <label for="priority" class="block text-sm font-medium text-gray-700">Priority</label>
-                    <select id="priority" name="priority" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                        <option value="low">Low</option>
-                    </select>
+                <div x-data="{ priority: 'medium' }">
+                    {{ universal_dropdown('priority', [
+                        {'value': 'medium', 'label': 'Medium'},
+                        {'value': 'high', 'label': 'High'},
+                        {'value': 'low', 'label': 'Low'}
+                    ], label='Priority', classes='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500') }}
+                    <input type="hidden" name="priority" :value="priority">
                 </div>
                 
-                <div>
-                    <label for="entity_type" class="block text-sm font-medium text-gray-700">Related To</label>
-                    <select id="entity_type" name="entity_type"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            onchange="updateEntityOptions()">
-                        <option value="">None</option>
-                        <option value="company">Company</option>
-                        <option value="contact">Contact</option>
-                        <option value="opportunity">Opportunity</option>
-                    </select>
+                <div x-data="{ entityType: '' }">
+                    {{ universal_dropdown('entityType', [
+                        {'value': '', 'label': 'None'},
+                        {'value': 'company', 'label': 'Company'},
+                        {'value': 'contact', 'label': 'Contact'},
+                        {'value': 'opportunity', 'label': 'Opportunity'}
+                    ], label='Related To', classes='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500', on_change='updateEntityOptions()') }}
+                    <input type="hidden" name="entity_type" :value="entityType">
                 </div>
                 
                 <div id="entity_select_container" style="display: none;">
@@ -57,13 +55,12 @@
                     </select>
                 </div>
                 
-                <div>
-                    <label for="dependency_type" class="block text-sm font-medium text-gray-700">Child Task Dependencies</label>
-                    <select id="dependency_type" name="dependency_type" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="parallel">Parallel (can run simultaneously)</option>
-                        <option value="sequential">Sequential (must complete in order)</option>
-                    </select>
+                <div x-data="{ dependencyType: 'parallel' }">
+                    {{ universal_dropdown('dependencyType', [
+                        {'value': 'parallel', 'label': 'Parallel (can run simultaneously)'},
+                        {'value': 'sequential', 'label': 'Sequential (must complete in order)'}
+                    ], label='Child Task Dependencies', classes='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500') }}
+                    <input type="hidden" name="dependency_type" :value="dependencyType">
                 </div>
             </div>
         </div>

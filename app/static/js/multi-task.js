@@ -61,14 +61,30 @@ function addChildTask() {
                           placeholder="Child task description..."></textarea>
             </div>
             
-            <div>
+            <div x-data="{ childPriority${childTaskCounter}: 'medium' }">
                 <label class="block text-sm font-medium text-gray-700">Priority</label>
-                <select name="child_tasks[${childTaskCounter-1}][priority]" required
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="low">Low</option>
-                </select>
+                <div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
+                    <button type="button" class="select-custom mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 min-w-[120px] px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between" @click="open = !open">
+                        <span x-text="childPriority${childTaskCounter} === 'medium' ? 'Medium' : childPriority${childTaskCounter} === 'high' ? 'High' : childPriority${childTaskCounter} === 'low' ? 'Low' : 'Medium'">Medium</span>
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div x-show="open" x-cloak class="multiselect-dropdown">
+                        <div class="multiselect-options">
+                            <div class="multiselect-option" @click="childPriority${childTaskCounter} = 'medium'; open = false">
+                                <span>Medium</span>
+                            </div>
+                            <div class="multiselect-option" @click="childPriority${childTaskCounter} = 'high'; open = false">
+                                <span>High</span>
+                            </div>
+                            <div class="multiselect-option" @click="childPriority${childTaskCounter} = 'low'; open = false">
+                                <span>Low</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="child_tasks[${childTaskCounter-1}][priority]" :value="childPriority${childTaskCounter}">
             </div>
             
             <div>
@@ -77,16 +93,36 @@ function addChildTask() {
                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
             </div>
             
-            <div>
+            <div x-data="{ childNextStep${childTaskCounter}: '' }">
                 <label class="block text-sm font-medium text-gray-700">Next Step Type</label>
-                <select name="child_tasks[${childTaskCounter-1}][next_step_type]"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="">None</option>
-                    <option value="call">Call</option>
-                    <option value="email">Email</option>
-                    <option value="meeting">Meeting</option>
-                    <option value="demo">Demo</option>
-                </select>
+                <div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
+                    <button type="button" class="select-custom mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 min-w-[120px] px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between" @click="open = !open">
+                        <span x-text="childNextStep${childTaskCounter} === '' ? 'None' : childNextStep${childTaskCounter} === 'call' ? 'Call' : childNextStep${childTaskCounter} === 'email' ? 'Email' : childNextStep${childTaskCounter} === 'meeting' ? 'Meeting' : childNextStep${childTaskCounter} === 'demo' ? 'Demo' : 'None'">None</span>
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div x-show="open" x-cloak class="multiselect-dropdown">
+                        <div class="multiselect-options">
+                            <div class="multiselect-option" @click="childNextStep${childTaskCounter} = ''; open = false">
+                                <span>None</span>
+                            </div>
+                            <div class="multiselect-option" @click="childNextStep${childTaskCounter} = 'call'; open = false">
+                                <span>Call</span>
+                            </div>
+                            <div class="multiselect-option" @click="childNextStep${childTaskCounter} = 'email'; open = false">
+                                <span>Email</span>
+                            </div>
+                            <div class="multiselect-option" @click="childNextStep${childTaskCounter} = 'meeting'; open = false">
+                                <span>Meeting</span>
+                            </div>
+                            <div class="multiselect-option" @click="childNextStep${childTaskCounter} = 'demo'; open = false">
+                                <span>Demo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="child_tasks[${childTaskCounter-1}][next_step_type]" :value="childNextStep${childTaskCounter}">
             </div>
         </div>
     `;

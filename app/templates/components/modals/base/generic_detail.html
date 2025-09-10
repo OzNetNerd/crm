@@ -1,5 +1,6 @@
 {% from "components/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
 {% from "components/modals/base/notes_section.html" import notes_section %}
+{% from "components/ui_elements.html" import universal_dropdown %}
 
 {% macro generic_detail_modal(entity_type, config) %}
 <div x-data="{
@@ -97,15 +98,10 @@
             </div>
         {% elif field.type == 'select' %}
             <div>
-                <label class="text-form-label">{{ field.label }}</label>
-                <select x-model="{{ entity_type }}.{{ field.name }}" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    {% for option in field.options %}
-                    <option value="{{ option.value if option is mapping else option }}">
-                        {{ option.label if option is mapping else option|title }}
-                    </option>
-                    {% endfor %}
-                </select>
+                {{ universal_dropdown(entity_type + '.' + field.name, field.options, 
+                                     label=field.label, 
+                                     label_class='text-form-label',
+                                     classes='w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500') }}
             </div>
         {% elif field.type == 'date' %}
             <div>
