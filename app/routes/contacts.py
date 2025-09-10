@@ -1,10 +1,10 @@
 from datetime import date
 from flask import Blueprint, render_template, request
-from app.models import Contact, Company, Opportunity
+from app.models import Stakeholder, Company, Opportunity
 from app.utils.route_helpers import BaseRouteHandler, get_entity_data_for_forms
 
 contacts_bp = Blueprint("contacts", __name__)
-contact_handler = BaseRouteHandler(Contact, "contacts")
+contact_handler = BaseRouteHandler(Stakeholder, "contacts")
 
 
 @contacts_bp.route("/")
@@ -19,7 +19,7 @@ def index():
     entity_filter = request.args.get('entity_filter', '').split(',') if request.args.get('entity_filter') else []
     
     # Get all contacts with relationships
-    contacts = Contact.query.join(Company).order_by(Company.name, Contact.name).all()
+    contacts = Stakeholder.query.join(Company).order_by(Company.name, Stakeholder.name).all()
     
     # Get all companies and opportunities for global data
     companies_objects = Company.query.all()
@@ -76,7 +76,7 @@ def index():
 
 @contacts_bp.route("/<int:contact_id>")
 def detail(contact_id):
-    contact = Contact.query.get_or_404(contact_id)
+    contact = Stakeholder.query.get_or_404(contact_id)
     return render_template("contacts/detail.html", contact=contact)
 
 

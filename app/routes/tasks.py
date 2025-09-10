@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
-from app.models import db, Task, Company, Contact, Opportunity
+from app.models import db, Task, Company, Stakeholder, Opportunity
 from app.forms import MultiTaskForm
 from app.utils.route_helpers import BaseRouteHandler, parse_date_field, parse_int_field, get_entity_data_for_forms
 
@@ -67,7 +67,7 @@ def index():
         {"id": c.id, "name": c.name} for c in Company.query.order_by(Company.name).all()
     ]
     contacts_data = [
-        {"id": c.id, "name": c.name} for c in Contact.query.order_by(Contact.name).all()
+        {"id": c.id, "name": c.name} for c in Stakeholder.query.order_by(Stakeholder.name).all()
     ]
     opportunities_data = [
         {"id": o.id, "name": o.name}

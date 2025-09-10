@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template_string
-from app.models import db, Task, Contact, Company, Opportunity, Note
+from app.models import db, Task, Stakeholder, Company, Opportunity, Note
 from app.utils.route_helpers import GenericAPIHandler
 from datetime import datetime
 
@@ -7,7 +7,7 @@ api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 # Create generic API handlers
 task_api = GenericAPIHandler(Task, "task")
-contact_api = GenericAPIHandler(Contact, "contact")  
+contact_api = GenericAPIHandler(Stakeholder, "contact")  
 company_api = GenericAPIHandler(Company, "company")
 opportunity_api = GenericAPIHandler(Opportunity, "opportunity")
 
@@ -42,7 +42,7 @@ def get_companies():
 def get_contacts():
     """Get all contacts for form dropdowns"""
     try:
-        contacts = Contact.query.order_by(Contact.name).all()
+        contacts = Stakeholder.query.order_by(Stakeholder.name).all()
         return jsonify([{
             'id': contact.id,
             'name': contact.name,

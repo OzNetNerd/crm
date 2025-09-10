@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.models import db, Company, Contact, Opportunity, Note
+from app.models import db, Company, Stakeholder, Opportunity, Note
 
 api_notes_bp = Blueprint("api_notes", __name__, url_prefix="/api")
 
@@ -82,7 +82,7 @@ def get_contact_notes(contact_id):
     """Get all notes for a specific contact"""
     try:
         # Verify contact exists
-        _ = Contact.query.get_or_404(contact_id)  # Verify contact exists
+        _ = Stakeholder.query.get_or_404(contact_id)  # Verify contact exists
 
         notes = (
             Note.query.filter_by(entity_type="contact", entity_id=contact_id)
@@ -114,7 +114,7 @@ def create_contact_note(contact_id):
     """Create a new note for a specific contact"""
     try:
         # Verify contact exists
-        _ = Contact.query.get_or_404(contact_id)  # Verify contact exists
+        _ = Stakeholder.query.get_or_404(contact_id)  # Verify contact exists
 
         data = request.get_json()
         if not data or not data.get("content"):

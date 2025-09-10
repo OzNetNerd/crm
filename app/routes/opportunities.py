@@ -1,6 +1,6 @@
 from datetime import date
 from flask import Blueprint, render_template, request, jsonify
-from app.models import Opportunity, Company, Contact, Note, db
+from app.models import Opportunity, Company, Stakeholder, Note, db
 from app.utils.route_helpers import BaseRouteHandler, parse_date_field, parse_int_field, get_entity_data_for_forms
 
 opportunities_bp = Blueprint("opportunities", __name__)
@@ -27,7 +27,7 @@ def index():
     
     # Get all companies and contacts for global data
     companies_objects = Company.query.all()
-    contacts_objects = Contact.query.all()
+    contacts_objects = Stakeholder.query.all()
     
     # Convert to JSON-serializable format for JavaScript
     companies_data = [{

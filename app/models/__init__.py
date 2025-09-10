@@ -4,11 +4,11 @@ db = SQLAlchemy()
 
 # Import models after db initialization (required for SQLAlchemy)
 from .company import Company as Company  # noqa: E402
-from .contact import Contact as Contact  # noqa: E402
+from .stakeholder import Stakeholder  # noqa: E402
 from .note import Note as Note  # noqa: E402
 from .opportunity import Opportunity as Opportunity  # noqa: E402
 from .task import Task as Task  # noqa: E402
-from .user import User, CompanyTeam, OpportunityTeam, TaskTeam  # noqa: E402
+from .user import User, CompanyAccountTeam, OpportunityAccountTeam  # noqa: E402
 
 # LLM-related models
 from .meeting import Meeting as Meeting  # noqa: E402
@@ -19,14 +19,13 @@ from .embedding import Embedding as Embedding  # noqa: E402
 __all__ = [
     "db",
     "Company",
-    "Contact",
+    "Stakeholder", 
     "Note",
     "Opportunity",
     "Task",
     "User",
-    "CompanyTeam", 
-    "OpportunityTeam",
-    "TaskTeam",
+    "CompanyAccountTeam", 
+    "OpportunityAccountTeam",
     "Meeting",
     "ExtractedInsight",
     "ChatHistory",
