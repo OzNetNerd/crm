@@ -48,7 +48,7 @@ def search():
                     or_(
                         Stakeholder.name.ilike(f"%{query}%"),
                         Stakeholder.email.ilike(f"%{query}%"),
-                        Stakeholder.role.ilike(f"%{query}%"),
+                        Stakeholder.job_title.ilike(f"%{query}%"),
                     )
                 )
                 .limit(limit)
@@ -65,8 +65,8 @@ def search():
                     "type": "contact",
                     "title": contact.name,
                     "subtitle": (
-                        f"{contact.role} at {contact.company.name}"
-                        if contact.role
+                        f"{contact.job_title} at {contact.company.name}"
+                        if contact.job_title
                         else contact.company.name
                     ),
                     "url": f"/contacts/{contact.id}",
