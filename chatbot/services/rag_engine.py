@@ -199,12 +199,7 @@ class RAGEngine:
             
         except Exception as e:
             logger.error(f"Context retrieval failed: {e}")
-            return {
-                "sources": [],
-                "confidence": 0.0,
-                "method": "fallback",
-                "error": str(e)
-            }
+            raise RuntimeError(f"RAG context retrieval failed: {str(e)}") from e
     
     async def _direct_database_search(
         self,

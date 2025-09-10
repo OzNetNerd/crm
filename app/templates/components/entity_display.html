@@ -230,11 +230,8 @@ renderItemCard(item, groupContext, macroName, viewMode = 'grid') {
         return cachedElement.innerHTML;
     }
     
-    // Fallback rendering if no cached element
-    return `<div class="p-4 border border-gray-200 rounded-md">
-        <div class="text-sm font-medium">${item.name || item.title || 'Untitled'}</div>
-        <div class="text-xs-gray-500 mt-1">ID: ${item.id}</div>
-    </div>`;
+    // No cached element found - this indicates a configuration error
+    throw new Error(`No cached element found for ${type} ${item.id}. Ensure proper entity display initialization.`);
 },
 
 // Helper to get icon HTML

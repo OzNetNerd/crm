@@ -62,7 +62,7 @@
     {%- if entity[field_config.field] -%}
     <a href="{{ entity[field_config.field] }}" target="_blank" class="text-link hover:text-link-hover" onclick="event.stopPropagation()">{{ entity[field_config.field] }}</a>
     {%- else -%}
-    <span class="text-gray-500">{{ field_config.fallback }}</span>
+    <span class="text-gray-500">No link provided</span>
     {%- endif -%}
 {%- elif field_config.type == 'badge' -%}
     <span class="badge-standard badge-{{ field_config.style }}">{{ entity[field_config.field] }}</span>

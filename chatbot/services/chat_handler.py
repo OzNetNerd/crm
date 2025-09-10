@@ -54,15 +54,16 @@ class ChatHandler:
                     }
                 }
             
-            # Get Ollama client
+            # Get Ollama client - service must be healthy
             ollama_client = await get_ollama_client()
             
-            # Check if Ollama is available
+            # Verify Ollama is healthy - fail fast if not available
             health_status = await ollama_client.health_check()
-            
             if health_status.get("status") != "healthy":
-                # Fallback to keyword-based routing
-                return await self._route_query(user_message, session_id, db_session)
+                raise RuntimeError(
+                    f"Ollama service is not healthy: {health_status}. "
+                    "Please ensure Ollama is running and properly configured."
+                )
             
             # Add to conversation history
             if session_id not in self.conversation_history:
@@ -92,8 +93,8 @@ class ChatHandler:
             }
                 
         except Exception as e:
-            # On any error, fallback to keyword routing
-            return await self._route_query(user_message, session_id, db_session)
+            # Re-raise exceptions instead of hiding them with fallbacks
+            raise RuntimeError(f"Chat processing failed: {str(e)}") from e
     
     async def _gather_context(self, user_message: str, db_session: AsyncSession) -> Dict[str, Any]:
         """Gather relevant context using Qdrant semantic search"""
@@ -163,8 +164,8 @@ class ChatHandler:
             }
                 
         except Exception as e:
-            # If context gathering fails, return empty context with error info
-            context = {"context_error": str(e), "fallback_used": True}
+            # Context gathering failure is a critical error
+            raise RuntimeError(f"Context gathering failed: {str(e)}") from e
             
         return context
     

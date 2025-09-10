@@ -12,7 +12,6 @@ This system automatically generates CSS classes based on button labels for consi
 | Company | `.btn-new-company` | Green (`bg-green-600`) | Business/growth related actions |
 | Opportunity | `.btn-new-opportunity` | Purple (`bg-purple-600`) | Sales/revenue related actions |
 | Contact | `.btn-new-contact` | Yellow (`bg-yellow-600`) | People/relationship actions |
-| Default | `.btn-new-default` | Gray (`bg-gray-600`) | Fallback for unknown types |
 
 ### How It Works
 
