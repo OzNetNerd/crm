@@ -74,18 +74,9 @@
         ],
         show_completed_label='Show Completed',
         show_completed_name='show_completed',
-        primary_filter_options=[
-            {'value': 'high', 'label': 'High'},
-            {'value': 'medium', 'label': 'Medium'},
-            {'value': 'low', 'label': 'Low'}
-        ],
+        primary_filter_options=get_filter_options('Task', 'priority'),
         primary_filter_label='All Priorities',
-        entity_filter_options=[
-            {'value': 'company', 'label': 'Company'},
-            {'value': 'contact', 'label': 'Contact'},
-            {'value': 'opportunity', 'label': 'Opportunity'},
-            {'value': 'unrelated', 'label': 'General'}
-        ],
+        entity_filter_options=get_filter_options('Task', 'entity_type'),
         entity_filter_label='All Entities'
     ) }}
 

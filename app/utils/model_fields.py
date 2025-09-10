@@ -81,7 +81,45 @@ def get_filter_options(model_name, field_name, **kwargs):
     if not model_class:
         return []
     
+    # Special handling for Task entity_type field
+    if model_name == 'Task' and field_name == 'entity_type':
+        return get_task_entity_types()
+    
     return get_distinct_values(model_class, field_name, kwargs.get('label_transform'))
+
+
+def get_task_entity_types():
+    """
+    Get available entity types for tasks with proper labels.
+    
+    Returns:
+        List of {'value': str, 'label': str} dictionaries
+    """
+    from app.models import Task
+    
+    # Get distinct entity types from database
+    distinct_types = db.session.query(distinct(Task.entity_type)).filter(Task.entity_type.isnot(None)).all()
+    
+    # Map to proper labels
+    type_labels = {
+        'company': 'Company',
+        'contact': 'Contact', 
+        'opportunity': 'Opportunity'
+    }
+    
+    options = []
+    for (entity_type,) in distinct_types:
+        if entity_type:
+            label = type_labels.get(entity_type, entity_type.title())
+            options.append({'value': entity_type, 'label': label})
+    
+    # Add 'General' for tasks with no entity relationship
+    # Check if there are tasks with null entity_type
+    null_count = db.session.query(Task).filter(Task.entity_type.is_(None)).count()
+    if null_count > 0:
+        options.append({'value': 'unrelated', 'label': 'General'})
+    
+    return sorted(options, key=lambda x: x['label'])
 
 
 def get_sort_options(model_name, exclude_fields=None, custom_fields=None):
