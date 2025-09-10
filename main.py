@@ -14,7 +14,7 @@ from app.routes.api_notes import api_notes_bp
 from app.routes.notes import notes_bp
 from app.routes.meetings import meetings_bp
 from app.utils.template_filters import register_template_filters
-from app.utils.model_fields import get_filter_options, get_sort_options
+from app.utils.model_fields import get_filter_options, get_sort_options, get_group_options, get_grouping_options, get_priority_options, get_size_options
 
 
 def get_database_path():
@@ -78,6 +78,10 @@ def create_app():
     # Register template global functions
     app.jinja_env.globals['get_filter_options'] = get_filter_options
     app.jinja_env.globals['get_sort_options'] = get_sort_options
+    app.jinja_env.globals['get_group_options'] = get_group_options
+    app.jinja_env.globals['get_grouping_options'] = get_grouping_options
+    app.jinja_env.globals['get_priority_options'] = get_priority_options
+    app.jinja_env.globals['get_size_options'] = get_size_options
 
     with app.app_context():
         db.create_all()

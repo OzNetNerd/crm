@@ -78,26 +78,11 @@
     {% endfor %}
     
     {{ enhanced_filter_controls(
-        group_options=[
-            {'value': 'stage', 'label': 'Pipeline Stage'},
-            {'value': 'close_date', 'label': 'Close Date'},
-            {'value': 'value', 'label': 'Deal Value'},
-            {'value': 'company', 'label': 'Company'}
-        ],
-        sort_options=[
-            {'value': 'close_date', 'label': 'Close Date'},
-            {'value': 'value', 'label': 'Deal Value'},
-            {'value': 'created_at', 'label': 'Created Date'},
-            {'value': 'name', 'label': 'Name'},
-            {'value': 'stage', 'label': 'Stage'}
-        ],
+        group_options=get_grouping_options('Opportunity'),
+        sort_options=get_sort_options('Opportunity'),
         show_completed_label='Show Closed',
         show_completed_name='show_completed',
-        primary_filter_options=[
-            {'value': 'high', 'label': 'High ($50K+)'},
-            {'value': 'medium', 'label': 'Medium ($10K-$50K)'},
-            {'value': 'low', 'label': 'Low (<$10K)'}
-        ],
+        primary_filter_options=get_priority_options('Opportunity'),
         primary_filter_label='All Priorities',
         secondary_filter_options=get_filter_options('Opportunity', 'stage'),
         secondary_filter_label='All Stages',

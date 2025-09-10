@@ -192,3 +192,108 @@ def get_sort_options(model_name, exclude_fields=None, custom_fields=None):
         final_custom_fields.update(custom_fields)
     
     return get_model_columns(model_class, exclude_fields, final_custom_fields)
+
+
+def get_group_options(model_name, exclude_fields=None, custom_fields=None):
+    """
+    Get grouping options for any model (same as sort options since grouping uses same fields).
+    
+    Args:
+        model_name: String name of the model
+        exclude_fields: List of field names to exclude
+        custom_fields: Dict of custom computed fields to add
+    
+    Returns:
+        List of {'value': str, 'label': str} dictionaries
+    """
+    return get_sort_options(model_name, exclude_fields, custom_fields)
+
+
+def get_grouping_options(model_name):
+    """
+    Get semantic grouping options for different models.
+    These are business-logic based groupings, not just database fields.
+    
+    Args:
+        model_name: String name of the model
+        
+    Returns:
+        List of {'value': str, 'label': str} dictionaries
+    """
+    grouping_configs = {
+        'Opportunity': [
+            {'value': 'stage', 'label': 'Pipeline Stage'},
+            {'value': 'close_date', 'label': 'Close Date'},
+            {'value': 'value', 'label': 'Deal Value'},
+            {'value': 'company', 'label': 'Company'}
+        ],
+        'Contact': [
+            {'value': 'company', 'label': 'Company'},
+            {'value': 'industry', 'label': 'Industry'},
+            {'value': 'role', 'label': 'Role'},
+            {'value': 'contact_info', 'label': 'Contact Info'}
+        ],
+        'Company': [
+            {'value': 'industry', 'label': 'Industry'},
+            {'value': 'size', 'label': 'Company Size'},
+            {'value': 'contacts', 'label': 'Contact Count'},
+            {'value': 'opportunities', 'label': 'Opportunities'}
+        ],
+        'Task': [
+            {'value': 'status', 'label': 'Status'},
+            {'value': 'due_date', 'label': 'Due Date'},
+            {'value': 'priority', 'label': 'Priority'},
+            {'value': 'entity', 'label': 'Related To'}
+        ]
+    }
+    
+    return grouping_configs.get(model_name, [])
+
+
+def get_priority_options(model_name):
+    """
+    Get priority/quality filter options for different models.
+    
+    Args:
+        model_name: String name of the model
+        
+    Returns:
+        List of {'value': str, 'label': str} dictionaries
+    """
+    priority_configs = {
+        'Opportunity': [
+            {'value': 'high', 'label': 'High ($50K+)'},
+            {'value': 'medium', 'label': 'Medium ($10K-$50K)'},
+            {'value': 'low', 'label': 'Low (<$10K)'}
+        ],
+        'Contact': [
+            {'value': 'complete', 'label': 'Complete Info'},
+            {'value': 'email_only', 'label': 'Email Only'},
+            {'value': 'phone_only', 'label': 'Phone Only'},
+            {'value': 'missing', 'label': 'Missing Info'}
+        ],
+        'Company': [
+            {'value': 'has_industry', 'label': 'Has Industry'},
+            {'value': 'has_website', 'label': 'Has Website'},
+            {'value': 'has_contacts', 'label': 'Has Contacts'},
+            {'value': 'missing_info', 'label': 'Missing Info'}
+        ],
+        'Task': []  # Tasks use get_filter_options('Task', 'priority') instead
+    }
+    
+    return priority_configs.get(model_name, [])
+
+
+def get_size_options():
+    """
+    Get company size filter options.
+    
+    Returns:
+        List of {'value': str, 'label': str} dictionaries
+    """
+    return [
+        {'value': 'small', 'label': 'Small (1-50)'},
+        {'value': 'medium', 'label': 'Medium (51-500)'},
+        {'value': 'large', 'label': 'Large (500+)'},
+        {'value': 'unknown', 'label': 'Unknown Size'}
+    ]

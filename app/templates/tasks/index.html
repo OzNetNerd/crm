@@ -59,19 +59,8 @@
 
     <!-- Enhanced Filters and Controls with Generic DRY Components -->
     {{ enhanced_filter_controls(
-        group_options=[
-            {'value': 'status', 'label': 'Status'},
-            {'value': 'due_date', 'label': 'Due Date'},
-            {'value': 'priority', 'label': 'Priority'},
-            {'value': 'entity', 'label': 'Related To'}
-        ],
-        sort_options=[
-            {'value': 'due_date', 'label': 'Due Date'},
-            {'value': 'priority', 'label': 'Priority'},
-            {'value': 'created_at', 'label': 'Created Date'},
-            {'value': 'title', 'label': 'Title'},
-            {'value': 'status', 'label': 'Status'}
-        ],
+        group_options=get_grouping_options('Task'),
+        sort_options=get_sort_options('Task'),
         show_completed_label='Show Completed',
         show_completed_name='show_completed',
         primary_filter_options=get_filter_options('Task', 'priority'),

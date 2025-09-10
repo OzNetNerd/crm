@@ -53,27 +53,11 @@
 
     <!-- Enhanced Filters and Controls with Generic DRY Components -->
     {{ enhanced_filter_controls(
-        group_options=[
-            {'value': 'company', 'label': 'Company'},
-            {'value': 'industry', 'label': 'Industry'},
-            {'value': 'role', 'label': 'Role'},
-            {'value': 'contact_info', 'label': 'Contact Info'}
-        ],
-        sort_options=[
-            {'value': 'name', 'label': 'Name'},
-            {'value': 'company', 'label': 'Company'},
-            {'value': 'email', 'label': 'Email'},
-            {'value': 'phone', 'label': 'Phone'},
-            {'value': 'role', 'label': 'Role'}
-        ],
+        group_options=get_grouping_options('Contact'),
+        sort_options=get_sort_options('Contact'),
         show_completed_label='Show Incomplete Info',
         show_completed_name='show_incomplete',
-        primary_filter_options=[
-            {'value': 'complete', 'label': 'Complete Info'},
-            {'value': 'email_only', 'label': 'Email Only'},
-            {'value': 'phone_only', 'label': 'Phone Only'},
-            {'value': 'missing', 'label': 'Missing Info'}
-        ],
+        primary_filter_options=get_priority_options('Contact'),
         primary_filter_label='All Contact Info',
         secondary_filter_options=get_filter_options('Contact', 'industry'),
         secondary_filter_label='All Industries',
