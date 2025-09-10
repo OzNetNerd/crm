@@ -17,7 +17,7 @@
 {% if contact.role %}{{ contact.role }} • {% endif %}
 <span class="text-link-interactive" 
       onclick="event.stopPropagation(); openCompanyDetailModal({{ contact.company.id }})">
-    <span class="text-company-name">{{ contact.company.name }}</span>
+    <span class="text-entity-base text-color-company">{{ contact.company.name }}</span>
 </span>
 {% endmacro %}
 

@@ -144,8 +144,8 @@
         {% call list_section('Recent Opportunities', href='/opportunities/') %}
             {% for opp in recent_opportunities %}
                 {{ simple_list_item(
-                    title='<span class="text-opportunity-name">' + opp.name + '</span>',
-                    subtitle='<span class="text-company-name">' + opp.company.name + '</span> • <span class="text-deal-amount-lg text-success">$' + "{:,.0f}".format(opp.value or 0) + '</span>',
+                    title='<span class="text-entity-base text-color-opportunity">' + opp.name + '</span>',
+                    subtitle='<span class="text-entity-base text-color-company">' + opp.company.name + '</span> • <span class="text-deal-amount-lg text-success">$' + "{:,.0f}".format(opp.value or 0) + '</span>',
                     badge_text=opp.stage|title,
                     badge_color='green' if opp.stage == 'prospect' else 'blue' if opp.stage == 'qualified' else 'yellow' if opp.stage == 'proposal' else 'orange' if opp.stage == 'negotiation' else 'gray'
                 ) }}

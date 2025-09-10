@@ -103,19 +103,26 @@
     text-overflow: ellipsis; /* truncate */
 }
 
-/* Entity-specific styling for consistent color coding */
-.text-company-name {
+/* DRY Entity Styling - Base class with color modifiers */
+.text-entity-base {
+    font-size: 1rem; /* text-base - larger consistent size */
+    font-weight: 500; /* font-medium */
+}
+
+/* Color-only modifier classes for semantic entity types */
+.text-color-company {
     color: #475569; /* slate-600 - professional blue-gray for companies */
-    font-weight: 500; /* font-medium */
 }
-.text-stakeholder-name {
+.text-color-stakeholder {
     color: #374151; /* gray-700 - warm charcoal for stakeholders/contacts */
-    font-weight: 500; /* font-medium */
 }
-.text-opportunity-name {
+.text-color-opportunity {
     color: #4338ca; /* indigo-600 - rich indigo for opportunities */
-    font-weight: 500; /* font-medium */
 }
+.text-color-default {
+    color: #111827; /* text-gray-900 - default text color */
+}
+
 
 /* Deal amount styling - matches heading size */
 .text-deal-amount {

@@ -28,9 +28,9 @@
     <div class="card p-6 mb-6">
         <div class="flex items-start justify-between mb-6">
             <div>
-                <h2 class="text-opportunity-name mb-2">{{ opportunity.name }}</h2>
+                <h2 class="text-entity-base text-color-opportunity mb-2">{{ opportunity.name }}</h2>
                 <div class="flex items-center space-x-4 text-secondary">
-                    <span class="text-company-name">{{ opportunity.company.name }}</span>
+                    <span class="text-entity-base text-color-company">{{ opportunity.company.name }}</span>
                     {% if opportunity.value %}
                         <span class="text-deal-amount-lg text-success">
                             ${{ "{:,.0f}".format(opportunity.value) }}

@@ -16,7 +16,7 @@
     badge_content=opportunity_header_content(opportunity),
     title_content=opportunity.name,
     value_content='$' + "{:,.0f}".format(opportunity.value) if opportunity.value else '',
-    secondary_info='<span class="text-company-name">' + opportunity.company.name + '</span>',
+    secondary_info='<span class="text-entity-base text-color-company">' + opportunity.company.name + '</span>',
     metadata_content=opportunity_metadata_content(opportunity),
     action_buttons=action_buttons_row('opportunity', opportunity.id),
     expanded_content=opportunity_expanded_content(opportunity, today)) }}
