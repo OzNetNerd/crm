@@ -1,15 +1,91 @@
 from flask import Blueprint, request, jsonify, render_template_string
-from app.models import db, Task, Stakeholder, Company, Opportunity, Note
+from app.models import db, Task, Stakeholder, Company, Opportunity, Note, User
 from app.utils.route_helpers import GenericAPIHandler
+from app.utils.form_configs import FormConfigManager, DynamicChoiceProvider
+from app.forms.entity_forms import CompanyForm, StakeholderForm, OpportunityForm, NoteForm
 from datetime import datetime
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 # Create generic API handlers
 task_api = GenericAPIHandler(Task, "task")
-contact_api = GenericAPIHandler(Stakeholder, "contact")  
+stakeholder_api = GenericAPIHandler(Stakeholder, "stakeholder")  
 company_api = GenericAPIHandler(Company, "company")
 opportunity_api = GenericAPIHandler(Opportunity, "opportunity")
+
+
+# ==============================================================================
+# DYNAMIC FORM CONFIGURATION ENDPOINTS - DRY APPROACH
+# Single source of truth for all form configurations
+# ==============================================================================
+
+@api_bp.route("/form-config/<entity_type>")
+def get_form_config(entity_type):
+    """
+    Get dynamic form configuration for any entity type.
+    
+    This endpoint eliminates duplication between backend forms and frontend
+    template configs by generating configurations directly from WTForms.
+    """
+    try:
+        # Map entity types to form classes
+        form_classes = {
+            'company': CompanyForm,
+            'stakeholder': StakeholderForm,
+            'opportunity': OpportunityForm,
+            'note': NoteForm
+        }
+        
+        form_class = form_classes.get(entity_type)
+        if not form_class:
+            return jsonify({'error': f'Unknown entity type: {entity_type}'}), 400
+        
+        # Get context from query parameters for dynamic choices
+        context = {
+            'company_id': request.args.get('company_id'),
+            'user_id': request.args.get('user_id'),
+        }
+        
+        # Generate configuration using DRY approach
+        config = FormConfigManager.get_form_config(form_class, context)
+        
+        return jsonify(config)
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to generate form config: {str(e)}'}), 500
+
+
+@api_bp.route("/choices/<choice_type>")
+def get_dynamic_choices(choice_type):
+    """
+    Get dynamic choices for select fields.
+    
+    Supports real-time choice population and filtering based on context.
+    """
+    try:
+        # Get filter parameters
+        company_id = request.args.get('company_id', type=int)
+        
+        # Route to appropriate choice provider
+        choice_methods = {
+            'companies': DynamicChoiceProvider.get_company_choices,
+            'users': DynamicChoiceProvider.get_user_choices,
+            'stakeholders': lambda: DynamicChoiceProvider.get_stakeholder_choices(company_id),
+            'meddpicc_roles': DynamicChoiceProvider.get_meddpicc_role_choices,
+            'industries': DynamicChoiceProvider.get_industry_choices,
+            'opportunity_stages': DynamicChoiceProvider.get_opportunity_stage_choices,
+            'company_sizes': DynamicChoiceProvider.get_company_size_choices,
+        }
+        
+        choice_method = choice_methods.get(choice_type)
+        if not choice_method:
+            return jsonify({'error': f'Unknown choice type: {choice_type}'}), 400
+        
+        choices = choice_method()
+        return jsonify({'choices': choices})
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get choices: {str(e)}'}), 500
 
 
 @api_bp.route("/tasks/<int:task_id>")
@@ -18,10 +94,11 @@ def get_task_details(task_id):
     return task_api.get_details(task_id)
 
 
-@api_bp.route("/contacts/<int:contact_id>")
-def get_contact_details(contact_id):
-    """Get contact details with notes"""
-    return contact_api.get_details(contact_id)
+@api_bp.route("/stakeholders/<int:stakeholder_id>")
+def get_stakeholder_details(stakeholder_id):
+    """Get stakeholder details with notes"""
+    return stakeholder_api.get_details(stakeholder_id)
+
 
 
 @api_bp.route("/companies")
@@ -38,19 +115,21 @@ def get_companies():
         return jsonify({'error': str(e)}), 500
 
 
-@api_bp.route("/contacts")
-def get_contacts():
-    """Get all contacts for form dropdowns"""
+@api_bp.route("/stakeholders")
+def get_stakeholders():
+    """Get all stakeholders for form dropdowns"""
     try:
-        contacts = Stakeholder.query.order_by(Stakeholder.name).all()
+        stakeholders = Stakeholder.query.order_by(Stakeholder.name).all()
         return jsonify([{
-            'id': contact.id,
-            'name': contact.name,
-            'role': contact.role,
-            'company_name': contact.company.name if contact.company else None
-        } for contact in contacts])
+            'id': stakeholder.id,
+            'name': stakeholder.name,
+            'job_title': stakeholder.job_title,
+            'company_name': stakeholder.company.name if stakeholder.company else None,
+            'meddpicc_roles': stakeholder.get_meddpicc_role_names()
+        } for stakeholder in stakeholders])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 
 @api_bp.route("/opportunities")
@@ -88,10 +167,11 @@ def update_task(task_id):
     return task_api.update_entity(task_id, ["description", "due_date", "priority", "status", "next_step_type"])
 
 
-@api_bp.route("/contacts/<int:contact_id>", methods=["PUT"])
-def update_contact(contact_id):
-    """Update contact details"""
-    return contact_api.update_entity(contact_id, ["name", "role", "email", "phone"])
+@api_bp.route("/stakeholders/<int:stakeholder_id>", methods=["PUT"])
+def update_stakeholder(stakeholder_id):
+    """Update stakeholder details"""
+    return stakeholder_api.update_entity(stakeholder_id, ["name", "job_title", "email", "phone"])
+
 
 
 @api_bp.route("/companies/<int:company_id>", methods=["PUT"])
@@ -214,10 +294,11 @@ def create_task():
         return jsonify({"error": str(e)}), 400
 
 
-@api_bp.route("/contacts", methods=["POST"])
-def create_contact():
-    """Create new contact"""
-    return contact_api.create_entity(["name", "role", "email", "phone", "company_id"])
+@api_bp.route("/stakeholders", methods=["POST"])
+def create_stakeholder():
+    """Create new stakeholder"""
+    return stakeholder_api.create_entity(["name", "job_title", "email", "phone", "company_id"])
+
 
 
 @api_bp.route("/companies", methods=["POST"])
@@ -239,10 +320,11 @@ def delete_task(task_id):
     return task_api.delete_entity(task_id)
 
 
-@api_bp.route("/contacts/<int:contact_id>", methods=["DELETE"])
-def delete_contact(contact_id):
-    """Delete contact"""
-    return contact_api.delete_entity(contact_id)
+@api_bp.route("/stakeholders/<int:stakeholder_id>", methods=["DELETE"])
+def delete_stakeholder(stakeholder_id):
+    """Delete stakeholder"""
+    return stakeholder_api.delete_entity(stakeholder_id)
+
 
 
 @api_bp.route("/companies/<int:company_id>", methods=["DELETE"])

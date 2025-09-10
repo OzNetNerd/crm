@@ -2,11 +2,11 @@
 <div x-cloak x-data="{
     show: false,
     saving: false,
-    contact: {
+    stakeholder: {
         name: '',
         email: '',
         phone: '',
-        role: ''
+        job_title: ''
     },
     openModal() {
         this.show = true;
@@ -16,45 +16,45 @@
         this.show = false;
     },
     resetForm() {
-        this.contact = {
+        this.stakeholder = {
             name: '',
             email: '',
             phone: '',
-            role: ''
+            job_title: ''
         };
         this.saving = false;
     },
     async saveNewStakeholder() {
-        if (!this.contact.name.trim()) {
+        if (!this.stakeholder.name.trim()) {
             alert('Name is required');
             return;
         }
         
         this.saving = true;
         try {
-            const response = await fetch('/contacts/new', {
+            const response = await fetch('/api/stakeholders', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(this.contact)
+                body: JSON.stringify(this.stakeholder)
             });
             
             if (response.ok) {
                 this.closeModal();
                 window.location.reload(); // Simple refresh for now
             } else {
-                alert('Error creating contact');
+                alert('Error creating stakeholder');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error creating contact');
+            alert('Error creating stakeholder');
         } finally {
             this.saving = false;
         }
     }
 }"
-@open-new-contact-modal.window="openModal()"
+@open-new-stakeholder-modal.window="openModal()"
 @close-modal.window="closeModal()">
 
     <!-- Modal Overlay -->
@@ -64,7 +64,7 @@
          x-transition:leave="modal-fade-leave"
          x-transition:leave-end="modal-fade-leave-to"
          class="modal-overlay"
-         aria-labelledby="contact-new-modal-title" 
+         aria-labelledby="stakeholder-new-modal-title" 
          role="dialog" 
          aria-modal="true">
         
@@ -101,7 +101,7 @@
                     <!-- Name -->
                     <div class="form-group">
                         <label class="form-label required">Full Name</label>
-                        <input x-model="contact.name" 
+                        <input x-model="stakeholder.name" 
                                type="text" 
                                class="form-input" 
                                placeholder="Stakeholder name"
@@ -112,24 +112,24 @@
                     <div class="modal-grid-2">
                         <div class="form-group">
                             <label class="form-label">Email</label>
-                            <input x-model="contact.email" 
+                            <input x-model="stakeholder.email" 
                                    type="email" 
                                    class="form-input"
                                    placeholder="contact@company.com">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Phone</label>
-                            <input x-model="contact.phone" 
+                            <input x-model="stakeholder.phone" 
                                    type="tel" 
                                    class="form-input"
                                    placeholder="Phone number">
                         </div>
                     </div>
 
-                    <!-- Role -->
+                    <!-- Job Title -->
                     <div class="form-group">
-                        <label class="form-label">Role</label>
-                        <input x-model="contact.role" 
+                        <label class="form-label">Job Title</label>
+                        <input x-model="stakeholder.job_title" 
                                type="text" 
                                class="form-input" 
                                placeholder="Job title or role">

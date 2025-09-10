@@ -573,9 +573,9 @@ function getTaskConfig(today) {
 function getStakeholderConfig(today) {
     return {
         // Data source
-        entityName: 'contact',
-        dataSource: 'contactsData',
-        contentContainerId: 'contacts-content',
+        entityName: 'stakeholder',
+        dataSource: 'stakeholdersData',
+        contentContainerId: 'stakeholders-content',
         
         // Default states
         defaultGroupBy: 'company',
@@ -591,15 +591,15 @@ function getStakeholderConfig(today) {
         // Field mappings
         primaryFilterField: 'contact_info_status', // Will be calculated
         secondaryFilterField: 'company.industry',
-        entityFilterField: 'role',
+        entityFilterField: 'job_title',
         
         // Completion logic (not applicable for contacts)
         isCompleted: (contact) => false,
 
         // Override primary filter value getter to calculate contact info status
         getPrimaryFilterValue: function(contact) {
-            const hasEmail = !!stakeholder.email;
-            const hasPhone = !!stakeholder.phone;
+            const hasEmail = !!contact.email;
+            const hasPhone = !!contact.phone;
             if (hasEmail && hasPhone) return 'complete';
             if (hasEmail) return 'email_only';
             if (hasPhone) return 'phone_only';
@@ -608,12 +608,12 @@ function getStakeholderConfig(today) {
 
         // Override secondary filter value getter for industry
         getSecondaryFilterValue: function(contact) {
-            return (stakeholder.company?.industry || 'unknown').toLowerCase();
+            return (contact.company?.industry || 'unknown').toLowerCase();
         },
 
         // Override entity filter value getter for roles
         getEntityFilterValue: function(contact) {
-            return stakeholder.role || 'no_role';
+            return contact.job_title || 'no_job_title';
         },
 
         // Grouping options
@@ -626,8 +626,8 @@ function getStakeholderConfig(today) {
                     // Get unique companies from contacts data
                     const companies = new Set();
                     entities.forEach(contact => {
-                        if (stakeholder.company?.name) {
-                            companies.add(stakeholder.company.name);
+                        if (contact.company?.name) {
+                            companies.add(contact.company.name);
                         }
                     });
                     
@@ -652,7 +652,7 @@ function getStakeholderConfig(today) {
                     });
                 },
                 filterFn: (contact, groupKey) => {
-                    return stakeholder.company?.name === groupKey;
+                    return contact.company?.name === groupKey;
                 }
             },
             'industry': {
@@ -705,12 +705,12 @@ function getStakeholderConfig(today) {
                     }
                 ],
                 filterFn: (contact, groupKey) => {
-                    const industry = stakeholder.company?.industry || 'unknown';
+                    const industry = contact.company?.industry || 'unknown';
                     return industry === groupKey;
                 }
             },
-            'role': {
-                field: 'role',
+            'job_title': {
+                field: 'job_title',
                 groups: [
                     { 
                         key: 'ceo', 
@@ -749,8 +749,8 @@ function getStakeholderConfig(today) {
                         icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>'
                     },
                     { 
-                        key: 'no_role', 
-                        title: 'No Role Specified', 
+                        key: 'no_job_title', 
+                        title: 'No Job Title Specified', 
                         containerClass: 'card-neutral', 
                         headerClass: 'text-status-neutral', 
                         headerBgClass: 'border-b border-gray-200 px-6 py-4 bg-gray-50 hover:bg-gray-100', 
@@ -759,8 +759,8 @@ function getStakeholderConfig(today) {
                     }
                 ],
                 filterFn: (contact, groupKey) => {
-                    if (groupKey === 'no_role') return !stakeholder.role;
-                    return stakeholder.role === groupKey;
+                    if (groupKey === 'no_job_title') return !contact.job_title;
+                    return contact.job_title === groupKey;
                 }
             },
             'contact_info': {
@@ -804,8 +804,8 @@ function getStakeholderConfig(today) {
                     }
                 ],
                 filterFn: (contact, groupKey) => {
-                    const hasEmail = !!stakeholder.email;
-                    const hasPhone = !!stakeholder.phone;
+                    const hasEmail = !!contact.email;
+                    const hasPhone = !!contact.phone;
                     
                     switch(groupKey) {
                         case 'complete': return hasEmail && hasPhone;
@@ -840,9 +840,9 @@ function getStakeholderConfig(today) {
                 label: 'Phone',
                 compareFn: (a, b) => (a.phone || '').localeCompare(b.phone || '')
             },
-            'role': {
-                label: 'Role',
-                compareFn: (a, b) => (a.role || '').localeCompare(b.role || '')
+            'job_title': {
+                label: 'Job Title',
+                compareFn: (a, b) => (a.job_title || '').localeCompare(b.job_title || '')
             }
         },
 
@@ -869,7 +869,7 @@ function getStakeholderConfig(today) {
             { value: 'director', label: 'Director' },
             { value: 'developer', label: 'Developer' }
         ],
-        entityFilterLabel: 'All Roles',
+        entityFilterLabel: 'All Job Titles',
 
         // Default expanded sections
         defaultExpandedSections: {
@@ -884,12 +884,12 @@ function getStakeholderConfig(today) {
             'healthcare': true,
             'manufacturing': true,
             'unknown': true,
-            // Role grouping
+            // Job Title grouping
             'ceo': true,
             'manager': true,
             'director': true,
             'developer': true,
-            'no_role': true
+            'no_job_title': true
         },
 
         // Action mappings

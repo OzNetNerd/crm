@@ -3,12 +3,14 @@ from wtforms import (
     StringField,
     TextAreaField,
     SelectField,
+    SelectMultipleField,
     DecimalField,
     DateField,
     IntegerField,
 )
 from wtforms.validators import DataRequired, Length, Optional, Email, NumberRange, URL
 from wtforms.widgets import TextArea
+from app.utils.form_configs import DynamicChoiceProvider
 
 
 class CompanyForm(FlaskForm):
@@ -39,13 +41,13 @@ class StakeholderForm(FlaskForm):
     name = StringField(
         "Full Name",
         validators=[DataRequired(), Length(min=1, max=255)],
-        render_kw={"placeholder": "Enter contact name..."},
+        render_kw={"placeholder": "Enter stakeholder name..."},
     )
 
-    role = StringField(
-        "Role/Title",
+    job_title = StringField(
+        "Job Title",
         validators=[Optional(), Length(max=100)],
-        render_kw={"placeholder": "e.g., CEO, Sales Manager, Developer..."},
+        render_kw={"placeholder": "e.g., CEO, VP Sales, CTO..."},
     )
 
     email = StringField(
@@ -55,7 +57,7 @@ class StakeholderForm(FlaskForm):
             Email(message="Please enter a valid email address"),
             Length(max=255),
         ],
-        render_kw={"placeholder": "contact@company.com"},
+        render_kw={"placeholder": "stakeholder@company.com"},
     )
 
     phone = StringField(
@@ -130,7 +132,7 @@ class NoteForm(FlaskForm):
         "Attach To",
         choices=[
             ("company", "Company"),
-            ("contact", "Contact"),
+            ("stakeholder", "Stakeholder"),
             ("opportunity", "Opportunity"),
             ("task", "Task"),
         ],

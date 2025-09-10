@@ -113,14 +113,14 @@
 } %}
 
 {# Stakeholder Detail Modal Configuration #}
-{% set contact_detail_config = {
+{% set stakeholder_detail_config = {
     "title": "Stakeholder Details",
     "show_notes": true,
     "default_values": {
         "name": "",
         "email": "",
         "phone": "",
-        "role": "",
+        "job_title": "",
         "company_id": ""
     },
     "fields": [
@@ -150,8 +150,8 @@
         },
         {
             "type": "text",
-            "name": "role",
-            "label": "Role",
+            "name": "job_title",
+            "label": "Job Title",
             "placeholder": "Job title or role"
         }
     ]
