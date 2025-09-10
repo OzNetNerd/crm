@@ -8,6 +8,7 @@ from .contact import Contact as Contact  # noqa: E402
 from .note import Note as Note  # noqa: E402
 from .opportunity import Opportunity as Opportunity  # noqa: E402
 from .task import Task as Task  # noqa: E402
+from .user import User, CompanyTeam, OpportunityTeam, TaskTeam  # noqa: E402
 
 # LLM-related models
 from .meeting import Meeting as Meeting  # noqa: E402
@@ -22,6 +23,10 @@ __all__ = [
     "Note",
     "Opportunity",
     "Task",
+    "User",
+    "CompanyTeam", 
+    "OpportunityTeam",
+    "TaskTeam",
     "Meeting",
     "ExtractedInsight",
     "ChatHistory",

@@ -160,8 +160,6 @@ def new_multi():
                 due_date=form.due_date.data,
                 priority=form.priority.data,
                 status="todo",
-                entity_type=form.entity_type.data if form.entity_type.data else None,
-                entity_id=form.entity_id.data if form.entity_id.data else None,
                 task_type="parent",
                 dependency_type=form.dependency_type.data,
             )
@@ -182,10 +180,6 @@ def new_multi():
                             if child_form.next_step_type.data
                             else None
                         ),
-                        entity_type=(
-                            form.entity_type.data if form.entity_type.data else None
-                        ),
-                        entity_id=form.entity_id.data if form.entity_id.data else None,
                         task_type="child",
                         parent_task_id=parent_task.id,
                         sequence_order=i,

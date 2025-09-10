@@ -117,7 +117,7 @@ def create_task():
         if data.get("task_type") == "single" or not data.get("task_type"):
             # Create single task
             task_data = {}
-            allowed_fields = ["description", "due_date", "priority", "status", "next_step_type", "entity_type", "entity_id", "task_type"]
+            allowed_fields = ["description", "due_date", "priority", "status", "next_step_type", "task_type"]
             
             for field in allowed_fields:
                 if field in data:
@@ -162,8 +162,6 @@ def create_task():
                 ),
                 priority=data.get("priority", "medium"),
                 status="todo",
-                entity_type=data.get("entity_type"),
-                entity_id=data.get("entity_id"),
                 task_type="parent",
                 dependency_type=data.get("dependency_type", "parallel"),
             )

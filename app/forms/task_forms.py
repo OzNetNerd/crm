@@ -52,19 +52,12 @@ class TaskForm(FlaskForm):
         validators=[Optional()],
     )
 
-    entity_type = SelectField(
-        "Related To",
-        choices=[
-            ("", "None"),
-            ("company", "Company"),
-            ("contact", "Contact"),
-            ("opportunity", "Opportunity"),
-        ],
-        default="",
+    # Multi-entity selection - JSON string of selected entities
+    linked_entities = StringField(
+        "Linked Entities", 
         validators=[Optional()],
+        render_kw={"data-entity-selector": "true", "placeholder": "Select companies, contacts, or opportunities"}
     )
-
-    entity_id = IntegerField("Entity ID", validators=[Optional(), NumberRange(min=1)])
 
     task_type = SelectField(
         "Task Type",
@@ -96,22 +89,26 @@ class TaskForm(FlaskForm):
         if not super().validate(extra_validators):
             return False
 
-        # If entity_type is specified, entity_id must be provided
-        if self.entity_type.data and not self.entity_id.data:
-            self.entity_id.errors.append(
-                "Entity ID is required when entity type is specified"
-            )
-            return False
+        # Validate linked_entities JSON if provided
+        if self.linked_entities.data:
+            try:
+                import json
+                entities = json.loads(self.linked_entities.data)
+                if not isinstance(entities, list):
+                    self.linked_entities.errors.append("Linked entities must be a list")
+                    return False
+                for entity in entities:
+                    if not isinstance(entity, dict) or 'type' not in entity or 'id' not in entity:
+                        self.linked_entities.errors.append("Each linked entity must have 'type' and 'id' fields")
+                        return False
+            except json.JSONDecodeError:
+                self.linked_entities.errors.append("Invalid JSON format for linked entities")
+                return False
 
         # If task_type is child, parent_task_id must be provided
         if self.task_type.data == "child" and not self.parent_task_id.data:
             self.parent_task_id.errors.append("Parent task is required for child tasks")
             return False
-
-        # Due date cannot be in the past for new tasks
-        if self.due_date.data and self.due_date.data < date.today():
-            # Allow past dates for existing tasks being updated
-            pass
 
         return True
 
@@ -182,19 +179,12 @@ class MultiTaskForm(FlaskForm):
         validators=[DataRequired()],
     )
 
-    entity_type = SelectField(
-        "Related To",
-        choices=[
-            ("", "None"),
-            ("company", "Company"),
-            ("contact", "Contact"),
-            ("opportunity", "Opportunity"),
-        ],
-        default="",
+    # Multi-entity selection for parent task
+    linked_entities = StringField(
+        "Linked Entities", 
         validators=[Optional()],
+        render_kw={"data-entity-selector": "true", "placeholder": "Select companies, contacts, or opportunities"}
     )
-
-    entity_id = IntegerField("Entity ID", validators=[Optional(), NumberRange(min=1)])
 
     dependency_type = SelectField(
         "Child Task Dependencies",
@@ -214,12 +204,21 @@ class MultiTaskForm(FlaskForm):
         if not super().validate(extra_validators):
             return False
 
-        # If entity_type is specified, entity_id must be provided
-        if self.entity_type.data and not self.entity_id.data:
-            self.entity_id.errors.append(
-                "Entity ID is required when entity type is specified"
-            )
-            return False
+        # Validate linked_entities JSON if provided
+        if self.linked_entities.data:
+            try:
+                import json
+                entities = json.loads(self.linked_entities.data)
+                if not isinstance(entities, list):
+                    self.linked_entities.errors.append("Linked entities must be a list")
+                    return False
+                for entity in entities:
+                    if not isinstance(entity, dict) or 'type' not in entity or 'id' not in entity:
+                        self.linked_entities.errors.append("Each linked entity must have 'type' and 'id' fields")
+                        return False
+            except json.JSONDecodeError:
+                self.linked_entities.errors.append("Invalid JSON format for linked entities")
+                return False
 
         # Ensure at least 2 child tasks
         if len(self.child_tasks.data) < 2:
