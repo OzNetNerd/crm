@@ -1,0 +1,25 @@
+{# Common UI Elements Import - DRY consolidation of UI components used across all index templates #}
+
+{# Import all common UI elements used across index templates #}
+{% from "components/ui_elements.html" import 
+    expand_collapse_controls,
+    generic_group_dropdown,
+    generic_sort_dropdown,
+    generic_filter_multiselect,
+    dynamic_entity_section,
+    bulk_actions_bar,
+    enhanced_filter_controls,
+    action_button,
+    bulk_selection_checkbox,
+    view_mode_toggle,
+    dropdown_select,
+    dropdown_multiselect
+%}
+
+{# Import page layout component #}
+{% from "components/page_template.html" import page_layout %}
+
+{# Export macro to make UI elements available to templates that import this file #}
+{% macro export_common_ui_elements() %}
+{# This macro exists to establish the import context - UI elements are available once this file is imported #}
+{% endmacro %}

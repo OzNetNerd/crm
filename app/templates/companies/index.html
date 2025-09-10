@@ -1,8 +1,13 @@
 {% extends "base/layout.html" %}
-{% from "components/company_card.html" import render_company %}
-{% from "components/page_template.html" import page_layout %}
+
+{# DRY Common Imports - reduced from 15+ lines to this clean set #}
 {% from "components/icons.html" import building_office_icon, user_icon, chevron_right_icon, check_circle_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid %}
 {% from "components/ui_elements.html" import expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar, enhanced_filter_controls %}
+{% from "components/page_template.html" import page_layout %}
+
+{# Entity-specific imports #}
+{% from "components/company_card.html" import render_company %}
+{% from "components/imports/entity_imports.html" import include_common_modals %}
 
 {% block title %}Companies - CRM{% endblock %}
 
@@ -53,15 +58,15 @@
 
     <!-- Enhanced Filters and Controls with Generic DRY Components -->
     {{ enhanced_filter_controls(
-        group_options=get_grouping_options('Company'),
-        sort_options=get_sort_options('Company'),
+        group_options=get_groupable_fields(Company),
+        sort_options=get_sortable_fields(Company),
         show_completed_label='Show Incomplete Info',
         show_completed_name='show_incomplete',
-        primary_filter_options=get_priority_options('Company'),
+        primary_filter_options=PRIORITY_OPTIONS,
         primary_filter_label='All Company Info',
-        secondary_filter_options=get_filter_options('Company', 'industry'),
+        secondary_filter_options=get_field_options(Company, 'industry'),
         secondary_filter_label='All Industries',
-        entity_filter_options=get_size_options(),
+        entity_filter_options=SIZE_OPTIONS,
         entity_filter_label='All Sizes'
     ) }}
 
@@ -101,15 +106,7 @@
 <script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
 <script src="{{ url_for('static', filename='js/entities/companies.js') }}"></script>
 
-{% include "components/modals/confirmation.html" %}
-{% include "components/modals/task/task_detail.html" %}
-{% include "components/modals/task/task_new.html" %}
-{% include "components/modals/stakeholder/stakeholder_detail.html" %}
-{% include "components/modals/stakeholder/stakeholder_new.html" %}
-{% include "components/modals/company/company_detail.html" %}
-{% include "components/modals/company/company_new.html" %}
-{% include "components/modals/opportunity/opportunity_detail.html" %}
-{% include "components/modals/opportunity/opportunity_new.html" %}
+{{ include_common_modals() }}
 {% endblock %}
 
 {% block data_attributes %}

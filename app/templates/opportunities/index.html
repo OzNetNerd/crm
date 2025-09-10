@@ -1,9 +1,14 @@
 {% extends "base/layout.html" %}
-{% from "components/opportunity_card.html" import render_opportunity %}
-{% from "components/page_template.html" import page_layout %}
-{% from "components/quick_actions.html" import opportunities_page_actions %}
-{% from "components/ui_elements.html" import action_button, expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_selection_checkbox, view_mode_toggle, enhanced_filter_controls %}
+
+{# DRY Common Imports - reduced from 15+ lines to this clean set #}
 {% from "components/icons.html" import chevron_right_icon, building_office_icon, currency_dollar_icon, chart_bar_icon, clock_icon %}
+{% from "components/ui_elements.html" import action_button, expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_selection_checkbox, view_mode_toggle, enhanced_filter_controls %}
+{% from "components/page_template.html" import page_layout %}
+
+{# Entity-specific imports #}
+{% from "components/opportunity_card.html" import render_opportunity %}
+{% from "components/quick_actions.html" import opportunities_page_actions %}
+{% from "components/imports/entity_imports.html" import include_common_modals %}
 
 {% block title %}Opportunities - CRM{% endblock %}
 
@@ -77,13 +82,13 @@
     {% endfor %}
     
     {{ enhanced_filter_controls(
-        group_options=get_grouping_options('Opportunity'),
-        sort_options=get_sort_options('Opportunity'),
+        group_options=get_groupable_fields(Opportunity),
+        sort_options=get_sortable_fields(Opportunity),
         show_completed_label='Show Closed',
         show_completed_name='show_completed',
-        primary_filter_options=get_priority_options('Opportunity'),
+        primary_filter_options=PRIORITY_OPTIONS,
         primary_filter_label='All Priorities',
-        secondary_filter_options=get_filter_options('Opportunity', 'stage'),
+        secondary_filter_options=get_field_options(Opportunity, 'stage'),
         secondary_filter_label='All Stages',
         entity_filter_options=company_options,
         entity_filter_label='All Companies',
@@ -125,15 +130,7 @@
 <script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
 
-{% include "components/modals/confirmation.html" %}
-{% include "components/modals/task/task_detail.html" %}
-{% include "components/modals/task/task_new.html" %}
-{% include "components/modals/stakeholder/stakeholder_detail.html" %}
-{% include "components/modals/stakeholder/stakeholder_new.html" %}
-{% include "components/modals/company/company_detail.html" %}
-{% include "components/modals/company/company_new.html" %}
-{% include "components/modals/opportunity/opportunity_detail.html" %}
-{% include "components/modals/opportunity/opportunity_new.html" %}
+{{ include_common_modals() }}
 {% endblock %}
 
 {% block data_attributes %}

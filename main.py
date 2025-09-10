@@ -14,7 +14,11 @@ from app.routes.api_notes import api_notes_bp
 from app.routes.notes import notes_bp
 from app.routes.meetings import meetings_bp
 from app.utils.template_filters import register_template_filters
-from app.utils.model_fields import get_filter_options, get_sort_options, get_group_options, get_grouping_options, get_priority_options, get_size_options
+from app.models import Company, Stakeholder, Task, Opportunity
+from app.utils.template_globals import (
+    get_field_options, get_sortable_fields, get_groupable_fields,
+    PRIORITY_OPTIONS, SIZE_OPTIONS
+)
 
 
 def get_database_path():
@@ -75,13 +79,18 @@ def create_app():
     # Register custom template filters
     register_template_filters(app)
     
-    # Register template global functions
-    app.jinja_env.globals['get_filter_options'] = get_filter_options
-    app.jinja_env.globals['get_sort_options'] = get_sort_options
-    app.jinja_env.globals['get_group_options'] = get_group_options
-    app.jinja_env.globals['get_grouping_options'] = get_grouping_options
-    app.jinja_env.globals['get_priority_options'] = get_priority_options
-    app.jinja_env.globals['get_size_options'] = get_size_options
+    # Register clean template functions - no more string hacks!
+    app.jinja_env.globals['get_field_options'] = get_field_options
+    app.jinja_env.globals['get_sortable_fields'] = get_sortable_fields 
+    app.jinja_env.globals['get_groupable_fields'] = get_groupable_fields
+    app.jinja_env.globals['PRIORITY_OPTIONS'] = PRIORITY_OPTIONS
+    app.jinja_env.globals['SIZE_OPTIONS'] = SIZE_OPTIONS
+    
+    # Make model classes available to templates
+    app.jinja_env.globals['Company'] = Company
+    app.jinja_env.globals['Stakeholder'] = Stakeholder 
+    app.jinja_env.globals['Task'] = Task
+    app.jinja_env.globals['Opportunity'] = Opportunity
 
     with app.app_context():
         db.create_all()
