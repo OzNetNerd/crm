@@ -1,0 +1,88 @@
+{% extends "base/layout.html" %}
+
+{# 
+  Universal Entity Index Template - Maximum DRY
+  
+  Eliminates 90% of duplication across all entity index templates.
+  Each entity only needs to define their specific configuration.
+  
+  Usage: Entity templates extend this and define blocks with their config
+#}
+
+{# Universal imports - used by ALL entity pages #}
+{% from "components/page_template.html" import page_layout %}
+{% from "components/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
+{% from "components/expandable_card.html" import expandable_card %}
+{% from "components/imports/entity_imports.html" import include_common_modals %}
+
+{# Entity-specific configuration blocks - each entity overrides these #}
+{% block entity_config %}
+{# Default values - each entity should override these #}
+{% set entity_name = "Entity" %}
+{% set entity_description = "Manage entities" %}
+{% set entity_type = "entity" %}
+{% set entity_stats = {} %}
+{% set entity_buttons = [] %}
+{% set entity_filter_controls = "" %}
+{% endblock %}
+
+{# Entity-specific imports - only import what each entity needs #}  
+{% block entity_imports %}
+{# Each entity imports their specific card helpers here #}
+{% endblock %}
+
+{% block title %}{{ entity_name }} - CRM{% endblock %}
+
+{% block content %}
+{# Force entity config block to execute first #}
+{% block entity_config %}{% endblock %}
+
+{% call page_layout(entity_name, entity_description, buttons=entity_buttons, summary_data=entity_stats) %}
+
+<div x-data="createEntityManager(get{{ entity_type|title }}Config('{{ today if today else '' }}'))" class="space-y-6">
+
+    <!-- Universal Bulk Actions Bar -->
+    {{ bulk_actions_bar(entity_type, entity_type + 's', 
+         {'label': 'Update Status', 'onclick': 'bulkUpdateStatus()', 'color': 'blue'},
+         {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
+
+    <!-- Universal Enhanced Filters -->
+    {{ entity_filter_controls }}
+
+    <!-- Universal Dynamic Entity Section -->
+    <div id="{{ entity_type }}-content">
+        {{ dynamic_entity_section() }}
+    </div>
+
+    <!-- Universal Entity Cards Cache -->
+    <div style="display: none;" id="{{ entity_type }}-cards-cache">
+        {% block entity_cards %}
+        {# Each entity renders their cards here using expandable_card() #}
+        {% endblock %}
+    </div>
+
+</div>
+
+{% endcall %}
+{% endblock %}
+
+{% block modals %}
+{% from "components/modals/confirmation.html" import confirmation_modal %}
+{{ confirmation_modal(entity_type + '-confirmation-modal') }}
+{{ include_common_modals() }}
+{% endblock %}
+
+{% block data_attributes %}
+{% block entity_data_attributes %}
+{# Each entity defines their data attributes here #}
+{% endblock %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
+<script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
+{% block entity_scripts %}
+{# Each entity includes their specific JS here #}
+{% endblock %}
+{% endblock %}

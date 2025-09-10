@@ -639,3 +639,53 @@
     </div>
 </div>
 {% endmacro %}
+
+{#
+  Company Helper Functions - for DRY entity system
+#}
+{% macro company_header_content(company) %}
+{% if company.industry %}
+    <span class="badge-standard badge-blue">{{ company.industry }}</span>
+{% endif %}
+{% endmacro %}
+
+{% macro company_title_content(company) %}
+{{ company.name }}
+{% endmacro %}
+
+{% macro company_metadata_content(company) %}
+<div class="text-sm text-gray-500 flex items-center space-x-4">
+    {% if company.contacts %}
+        <span>{{ company.contacts|length }} contact{{ 's' if company.contacts|length != 1 else '' }}</span>
+    {% endif %}
+    {% if company.opportunities %}  
+        <span>{{ company.opportunities|length }} opportunit{{ 'ies' if company.opportunities|length != 1 else 'y' }}</span>
+    {% endif %}
+    <span>{{ company.created_at.strftime('%m/%d/%y') if company.created_at else 'N/A' }}</span>
+</div>
+{% endmacro %}
+
+{#
+  Team Helper Functions - for DRY entity system  
+#}
+{% macro team_header_content(member) %}
+{% if member.job_title %}
+    <span class="badge-standard badge-blue">{{ member.job_title }}</span>
+{% endif %}
+{% endmacro %}
+
+{% macro team_title_content(member) %}
+{{ member.name }}
+{% endmacro %}
+
+{% macro team_metadata_content(member) %}
+<div class="text-sm text-gray-500 flex items-center space-x-4">
+    {% if member.email %}
+        <span>{{ member.email }}</span>
+    {% endif %}
+    {% if member.company %}
+        <span>{{ member.company.name }}</span>
+    {% endif %}
+    <span>{{ member.created_at.strftime('%m/%d/%y') if member.created_at else 'N/A' }}</span>
+</div>
+{% endmacro %}

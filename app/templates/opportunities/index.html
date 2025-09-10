@@ -1,19 +1,16 @@
-{% extends "base/layout.html" %}
-
-{# DRY Common Imports - reduced from 15+ lines to this clean set #}
-{% from "components/icons.html" import chevron_right_icon, building_office_icon, currency_dollar_icon, chart_bar_icon, clock_icon %}
-{% from "components/ui_elements.html" import action_button, expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_selection_checkbox, view_mode_toggle, enhanced_filter_controls %}
-{% from "components/page_template.html" import page_layout %}
+{% extends "base/entity_index.html" %}
 
 {# Entity-specific imports #}
-{% from "components/opportunity_card.html" import render_opportunity %}
-{% from "components/quick_actions.html" import opportunities_page_actions %}
-{% from "components/imports/entity_imports.html" import include_common_modals %}
+{% block entity_imports %}
+{% from "components/expandable_card.html" import opportunity_header_content, opportunity_metadata_content, action_buttons_row %}
+{% endblock %}
 
-{% block title %}Opportunities - CRM{% endblock %}
+{% block entity_config %}
+{% set entity_name = "Opportunities" %}
+{% set entity_description = "Track your sales pipeline" %}
+{% set entity_type = "opportunity" %}
 
-{% block content %}
-{% set pipeline_stats = {
+{% set entity_stats = {
     'title': 'Pipeline Summary',
     'stats': [
         {
@@ -23,7 +20,7 @@
         },
         {
             'value': '${:,.0f}'.format(opportunities|selectattr('stage', 'equalto', 'qualified')|sum(attribute='value') or 0),
-            'label': 'Qualified', 
+            'label': 'Qualified',
             'color_class': 'text-blue-600'
         },
         {
@@ -39,104 +36,70 @@
     ]
 } %}
 
-{% set opportunity_buttons = [
+{% set entity_buttons = [
     {
         'label': 'New Opportunity',
         'onclick': 'openNewOpportunityModal()',
+        'color': 'blue',
         'icon': ''
     }
 ] %}
 
-{% call page_layout("Opportunities", "Track your sales pipeline", buttons=opportunity_buttons, summary_data=pipeline_stats) %}
-
-<div x-data="createEntityManager(getOpportunityConfig('{{ today }}'))" class="space-y-6">
-
-    <!-- Bulk Actions Bar -->
-    <div x-show="selectedItems.length > 0" 
-         x-cloak 
-         x-transition
-         class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-            <span class="text-blue-800 font-medium" x-text="`${selectedItems.length} opportunities selected`"></span>
-            <button @click="bulkUpdateStage()" class="btn-primary">
-                Update Stage
-            </button>
-            <button @click="bulkDelete()" class="btn-danger">
-                Delete Selected
-            </button>
-        </div>
-        <button @click="selectedItems = []" class="text-blue-600 hover:text-blue-800">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
-    </div>
-
-
-    <!-- Enhanced Filters and Controls with Generic DRY Components -->
-    {% set company_options = [] %}
-    {% for opportunity in opportunities %}
-        {% if opportunity.company and opportunity.company.name not in company_options|map(attribute='value') %}
-            {% set _ = company_options.append({'value': opportunity.company.name, 'label': opportunity.company.name}) %}
-        {% endif %}
-    {% endfor %}
-    
-    {{ enhanced_filter_controls(
-        group_options=get_groupable_fields(Opportunity),
-        sort_options=get_sortable_fields(Opportunity),
-        show_completed_label='Show Closed',
-        show_completed_name='show_completed',
-        primary_filter_options=PRIORITY_OPTIONS,
-        primary_filter_label='All Priorities',
-        secondary_filter_options=get_field_options(Opportunity, 'stage'),
-        secondary_filter_label='All Stages',
-        entity_filter_options=company_options,
-        entity_filter_label='All Companies',
-        entity_filter_search=true
-    ) }}
-
-    <!-- Dynamic Client-Side Opportunity Grouping -->
-    <div id="opportunities-content">
-        {{ dynamic_entity_section() }}
-    </div>
-
-    <!-- Default view when no opportunities -->
-    {% if not opportunities %}
-        <div class="card p-12 text-center">
-            <p class="text-gray-500 mb-4">No opportunities found</p>
-            <button onclick="openNewOpportunityModal()" 
-                    class="btn-primary">
-                Add Your First Opportunity
-            </button>
-        </div>
+{# Build unique company options for filtering #}
+{% set company_options = [] %}
+{% for opportunity in opportunities %}
+    {% if opportunity.company and opportunity.company.name not in company_options|map(attribute='value')|list %}
+        {% set _ = company_options.append({'value': opportunity.company.name, 'label': opportunity.company.name}) %}
     {% endif %}
+{% endfor %}
 
-    <!-- Hidden pre-rendered opportunity cards for client-side use -->
-    <div style="display: none;" id="opportunity-cards-cache">
-        {% for opportunity in opportunities %}
-            <div id="opportunity-card-{{ opportunity.id }}">
-                {{ render_opportunity(opportunity, today) }}
-            </div>
-        {% endfor %}
+{% set entity_filter_controls %}
+{{ enhanced_filter_controls(
+    group_options=get_groupable_fields(Opportunity),
+    sort_options=get_sortable_fields(Opportunity),
+    show_completed_label='Show Closed',
+    show_completed_name='show_completed',
+    primary_filter_options=PRIORITY_OPTIONS,
+    primary_filter_label='All Priorities',
+    secondary_filter_options=get_field_options(Opportunity, 'stage'),
+    secondary_filter_label='All Stages',
+    entity_filter_options=company_options,
+    entity_filter_label='All Companies',
+    entity_filter_search=true
+) }}
+{% endset %}
+{% endblock %}
+
+{% block entity_cards %}
+{% for opportunity in opportunities %}
+    <div id="opportunity-card-{{ opportunity.id }}">
+        {% set progress_config = {
+            'enabled': opportunity.probability is not none,
+            'type': 'probability', 
+            'value': opportunity.probability or 0,
+            'color_scheme': 'blue',
+            'size': 'md'
+        } %}
+        {{ expandable_card('opportunity', opportunity, opportunity.id,
+            expansion_enabled=true,
+            progress_config=progress_config,
+            badge_content=opportunity_header_content(opportunity),
+            title_content=opportunity.name,
+            value_content='$' + "{:,.0f}".format(opportunity.value) if opportunity.value else '',
+            secondary_info='<span class="text-entity-base text-color-company">' + opportunity.company.name + '</span>',
+            metadata_content=opportunity_metadata_content(opportunity),
+            action_buttons=action_buttons_row('opportunity', opportunity.id)) }}
     </div>
-
-</div>
-
-{% endcall %}
+{% endfor %}
 {% endblock %}
 
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
-<script src="{{ url_for('static', filename='js/features/data-initializer.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
-<script src="{{ url_for('static', filename='js/entities/opportunities.js') }}"></script>
-
-{{ include_common_modals() }}
-{% endblock %}
-
-{% block data_attributes %}
+{% block entity_data_attributes %}
 data-companies="{{ companies | tojson | forceescape }}"
 data-contacts="{{ contacts | tojson | forceescape }}"
 data-opportunities="{{ opportunities_data | tojson | forceescape }}"
+{% endblock %}
+
+{% block entity_scripts %}
+<script src="{{ url_for('static', filename='js/features/data-initializer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/entities/opportunities.js') }}"></script>
 {% endblock %}
