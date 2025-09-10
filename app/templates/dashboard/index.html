@@ -1,10 +1,11 @@
 {% extends "base/layout.html" %}
-{% from "components/icons.html" import building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon %}
+{% from "components/imports/entity_imports.html" import include_common_modals %}
 {% from "components/metric_card.html" import metric_card, stat_card, overview_section %}
 {% from "components/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
 {% from "components/page_template.html" import simple_page_header %}
 {% from "components/quick_actions.html" import default_dashboard_actions %}
 {% from "components/metadata_display.html" import standard_card_metadata %}
+{% from "components/icons.html" import building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon %}
 
 {# Use standard metadata macro for consistency #}
 {% macro task_metadata(task) %}
@@ -169,15 +170,7 @@
 {% endblock %}
 
 {% block modals %}
-{% include "components/modals/confirmation.html" %}
-{% include "components/modals/task/task_detail.html" %}
-{% include "components/modals/task/task_new.html" %}
-{% include "components/modals/stakeholder/stakeholder_detail.html" %}
-{% include "components/modals/stakeholder/stakeholder_new.html" %}
-{% include "components/modals/company/company_detail.html" %}
-{% include "components/modals/company/company_new.html" %}
-{% include "components/modals/opportunity/opportunity_detail.html" %}
-{% include "components/modals/opportunity/opportunity_new.html" %}
+{{ include_common_modals() }}
 {% endblock %}
 
 {% block scripts %}
