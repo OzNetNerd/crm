@@ -47,9 +47,12 @@ def get_database_path():
                 print(f"DEBUG: Using database path: {db_path}")
                 return db_path
         current = current.parent
-    fallback = "sqlite:///crm.db"
-    print(f"DEBUG: Using fallback database path: {fallback}")
-    return fallback
+    
+    # No git repository found - this is a configuration error
+    raise RuntimeError(
+        "No git repository found. The application must be run from within a git repository. "
+        "This ensures proper database path detection and prevents configuration issues."
+    )
 
 
 def create_app():

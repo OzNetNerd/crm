@@ -63,7 +63,7 @@ function chatWidget() {
                             this.currentStreamingMessage = null;
                             this.isTyping = false;
                         } else if (data.type === 'bot_response') {
-                            // Handle regular response (fallback)
+                            // Handle non-streaming response
                             this.isTyping = false;
                             this.addMessage({
                                 type: 'bot',

@@ -902,29 +902,6 @@
     box-shadow: 0 0 0 2px #eab308, 0 0 0 4px rgba(234, 179, 8, 0.5);
 }
 
-/* Fallback for unknown entity types */
-.btn-new-default {
-    background-color: #4b5563; /* gray-600 */
-    color: white;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 0.5rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    transform: scale(1);
-}
-
-.btn-new-default:hover {
-    background-color: #374151; /* gray-700 */
-    transform: scale(1.05);
-}
-
-.btn-new-default:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #6b7280, 0 0 0 4px rgba(107, 114, 128, 0.5);
-}
 
 /* Universal button classes for consistent styling */
 .btn-primary {

@@ -259,7 +259,7 @@ class ExtractionValidator:
             sentiment_lower = sentiment.lower()
             if sentiment_lower in ["positive", "neutral", "negative"]:
                 return sentiment_lower
-        return "neutral"  # Default fallback
+        raise ValueError(f"Invalid sentiment value: {sentiment}. Must be one of: positive, neutral, negative")
     
     def _validate_date(self, date_str: Any) -> Optional[str]:
         """Validate and normalize date string"""

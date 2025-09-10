@@ -158,18 +158,7 @@
                   {% endfor %}
                   '{{ options[0].label if options[0] is mapping else options[0]|title }}'
               ">
-                  {# Smart fallback: try to match the likely preset value #}
-                  {% set smart_fallback = options[0].label if options[0] is mapping else options[0]|title %}
-                  {% for option in options %}
-                      {% if option is mapping and option.value == 'status' %}
-                          {% set smart_fallback = option.label %}
-                      {% elif option is mapping and option.value == 'stage' %}
-                          {% set smart_fallback = option.label %}  
-                      {% elif option is mapping and option.value == 'company' %}
-                          {% set smart_fallback = option.label %}
-                      {% endif %}
-                  {% endfor %}
-                  {{ smart_fallback }}
+                  {{ options[0].label if options[0] is mapping else options[0]|title }}
               </span>
     </button>
     

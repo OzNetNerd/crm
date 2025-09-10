@@ -159,40 +159,14 @@ async def websocket_endpoint(
                             break
                             
                 else:
-                    # Handle regular response (fallback)
-                    bot_response = response_data.get("response", "I'm sorry, I couldn't process your request.")
-                    context_used = response_data.get("context_used", {})
-                    response_metadata = response_data.get("response_metadata", {})
-                    
-                    # Save to chat history
-                    chat_history = ChatHistory(
-                        session_id=session_id,
-                        user_message=user_message,
-                        bot_response=bot_response,
-                        context_used=context_used,
-                        response_metadata=response_metadata
-                    )
-                    
-                    session.add(chat_history)
-                    await session.commit()
-                    
-                    # Send response to client
-                    await manager.send_personal_message({
-                        "type": "bot_response",
-                        "message": bot_response,
-                        "timestamp": datetime.utcnow().isoformat(),
-                        "session_id": session_id
-                    }, websocket)
+                    # Invalid response type - this should not happen
+                    raise RuntimeError(f"Invalid response type received: {response_data}")
                 
             except Exception as e:
-                # Fallback response on error
-                bot_response = f"I encountered an error: {str(e)}"
-                await manager.send_personal_message({
-                    "type": "bot_response",
-                    "message": bot_response,
-                    "timestamp": datetime.utcnow().isoformat(),
-                    "session_id": session_id
-                }, websocket)
+                # Close the websocket connection on errors instead of sending fallback responses
+                print(f"Chat processing failed: {e}")
+                manager.disconnect(websocket)
+                raise
             
     except WebSocketDisconnect:
         manager.disconnect(websocket)
@@ -334,7 +308,7 @@ async def get_chat_widget():
                     messageInput.focus();
                     
                 } else if (data.type === 'bot_response') {
-                    // Handle regular (fallback) response
+                    // Handle non-streaming response
                     removeTypingIndicator();
                     addMessage(data.message);
                     
