@@ -45,7 +45,201 @@ def get_all_tasks_context():
     }
 
 
-# Removed /content endpoint - using frontend-only filtering
+def get_filtered_tasks_context():
+    """Server-side filtering and sorting for HTMX endpoints"""
+    # Get filter parameters
+    show_completed = request.args.get("show_completed", "false").lower() == "true"
+    sort_by = request.args.get("sort_by", "due_date")
+    sort_direction = request.args.get("sort_direction", "asc")
+    group_by = request.args.get("group_by", "status")
+    
+    # Parse filter arrays
+    priority_filter = []
+    if request.args.get("priority_filter"):
+        priority_filter = [p.strip() for p in request.args.get("priority_filter").split(",") if p.strip()]
+    
+    secondary_filter = []
+    if request.args.get("secondary_filter"):
+        secondary_filter = [s.strip() for s in request.args.get("secondary_filter").split(",") if s.strip()]
+    
+    entity_filter = []
+    if request.args.get("entity_filter"):
+        entity_filter = [e.strip() for e in request.args.get("entity_filter").split(",") if e.strip()]
+
+    # Start with base query
+    query = Task.query
+    
+    # Apply filters
+    if not show_completed:
+        query = query.filter(Task.status != 'complete')
+    
+    if priority_filter:
+        query = query.filter(Task.priority.in_(priority_filter))
+        
+    if entity_filter:
+        query = query.filter(Task.entity_type.in_(entity_filter))
+    
+    # Apply sorting
+    if sort_by == "due_date":
+        if sort_direction == "desc":
+            query = query.order_by(Task.due_date.desc().nullslast())
+        else:
+            query = query.order_by(Task.due_date.asc().nullsfirst())
+    elif sort_by == "priority":
+        # Custom priority order: high, medium, low
+        priority_order = ["high", "medium", "low"]
+        if sort_direction == "desc":
+            priority_order.reverse()
+        
+        from sqlalchemy import case
+        priority_case = case(
+            {priority: i for i, priority in enumerate(priority_order)},
+            value=Task.priority
+        )
+        query = query.order_by(priority_case)
+    elif sort_by == "created_at":
+        if sort_direction == "desc":
+            query = query.order_by(Task.created_at.desc())
+        else:
+            query = query.order_by(Task.created_at.asc())
+    else:
+        # Default sort
+        query = query.order_by(Task.created_at.desc())
+    
+    filtered_tasks = query.all()
+    
+    # Group tasks by the specified grouping
+    grouped_tasks = group_tasks_by_field(filtered_tasks, group_by)
+    
+    return {
+        "grouped_tasks": grouped_tasks,
+        "group_by": group_by,
+        "total_count": len(filtered_tasks),
+        "show_completed": show_completed,
+        "sort_by": sort_by,
+        "sort_direction": sort_direction,
+        "priority_filter": priority_filter,
+        "secondary_filter": secondary_filter,
+        "entity_filter": entity_filter,
+        "today": date.today(),
+    }
+
+
+def group_tasks_by_field(tasks, group_by):
+    """Group tasks by specified field"""
+    from collections import defaultdict
+    
+    grouped = defaultdict(list)
+    
+    if group_by == "status":
+        # Predefined status groups
+        status_groups = ["todo", "in-progress", "complete"]
+        for task in tasks:
+            status = task.status or "todo"
+            grouped[status].append(task)
+        
+        # Return in predefined order
+        result = []
+        for status in status_groups:
+            if grouped[status]:
+                result.append({
+                    "key": status,
+                    "label": status.replace("-", " ").title(),
+                    "entities": grouped[status],
+                    "count": len(grouped[status])
+                })
+        return result
+        
+    elif group_by == "priority":
+        # Predefined priority groups
+        priority_groups = ["high", "medium", "low"]
+        for task in tasks:
+            priority = task.priority or "medium"
+            grouped[priority].append(task)
+        
+        # Return in priority order
+        result = []
+        for priority in priority_groups:
+            if grouped[priority]:
+                result.append({
+                    "key": priority,
+                    "label": priority.title(),
+                    "entities": grouped[priority],
+                    "count": len(grouped[priority])
+                })
+        return result
+        
+    elif group_by == "due_date":
+        # Group by due date categories
+        from datetime import timedelta
+        today = date.today()
+        
+        for task in tasks:
+            if not task.due_date:
+                grouped["no_date"].append(task)
+            elif task.due_date < today:
+                grouped["overdue"].append(task)
+            elif task.due_date == today:
+                grouped["today"].append(task)
+            elif task.due_date <= today + timedelta(days=7):
+                grouped["this_week"].append(task)
+            else:
+                grouped["future"].append(task)
+        
+        # Return in chronological order
+        date_groups = ["overdue", "today", "this_week", "future", "no_date"]
+        labels = {
+            "overdue": "Overdue",
+            "today": "Due Today", 
+            "this_week": "Due This Week",
+            "future": "Future",
+            "no_date": "No Due Date"
+        }
+        
+        result = []
+        for group_key in date_groups:
+            if grouped[group_key]:
+                result.append({
+                    "key": group_key,
+                    "label": labels[group_key],
+                    "entities": grouped[group_key],
+                    "count": len(grouped[group_key])
+                })
+        return result
+    
+    # Default: return all tasks in one group
+    return [{
+        "key": "all",
+        "label": "All Tasks",
+        "entities": tasks,
+        "count": len(tasks)
+    }]
+
+
+@tasks_bp.route("/content")
+def content():
+    """HTMX endpoint for filtered task content"""
+    context = get_filtered_tasks_context()
+    
+    # Universal template configuration
+    context.update({
+        'grouped_entities': context["grouped_tasks"],
+        'entity_type': 'task',
+        'entity_name_singular': 'task',
+        'entity_name_plural': 'tasks',
+        'card_config': {
+            'badge_field': 'priority',
+            'badge_style': 'blue',
+            'title_field': 'description',
+            'secondary_fields': [],
+            'metadata_fields': [
+                {'field': 'due_date', 'type': 'date', 'format': '%d/%m/%y'},
+                {'field': 'next_step_type', 'type': 'text'}
+            ]
+        }
+    })
+    
+    return render_template("shared/entity_content.html", **context)
 
 
 @tasks_bp.route("/")

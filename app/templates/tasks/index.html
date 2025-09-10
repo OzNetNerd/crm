@@ -72,50 +72,90 @@
 
 {% call page_layout(entity_name, entity_description, buttons=entity_buttons, summary_data=entity_stats) %}
 
-<div x-data="createEntityManager(get{{ entity_type|title }}Config('{{ today if today else '' }}'))" class="space-y-6">
-
-    <!-- Bulk Actions Bar -->
-    {{ bulk_actions_bar(entity_type, entity_type + 's', 
-         {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
-
-    <!-- Enhanced Filters -->
-    {{ entity_filter_controls }}
-
-    <!-- Dynamic Entity Section -->
-    <div id="{{ entity_type }}-content">
-        {{ dynamic_entity_section() }}
-    </div>
-
-    <!-- Entity Cards Cache -->
-    <div style="display: none;" id="{{ entity_type }}-cards-cache">
-{% for task in tasks_objects %}
-    {% if task.task_type != 'child' %}
-        <div id="task-card-{{ task.id }}">
-            {{ expandable_card('task', task, task.id,
-                expansion_enabled=true,
-                badge_content=task_header_content(task),
-                title_content=task_title_content(task),
-                metadata_content=task_metadata_content(task),
-                action_buttons=action_buttons_row('task', task.id)) }}
+<div class="space-y-6">
+    <!-- HTMX-Based Filters -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <form hx-get="{{ url_for('tasks.content') }}" 
+              hx-target="#task-content"
+              hx-trigger="change, submit"
+              hx-indicator="#loading-indicator"
+              class="grid grid-cols-1 md:grid-cols-5 gap-4">
             
-            <!-- Render child tasks if this is a parent -->
-            {% if task.task_type == 'parent' and task.child_tasks %}
-                {% for child in task.child_tasks %}
-                    {% if show_completed or child.status != 'complete' %}
-                        {{ expandable_card('task', child, child.id,
-                            expansion_enabled=true,
-                            badge_content=task_header_content(child),
-                            title_content=task_title_content(child),
-                            metadata_content=task_metadata_content(child),
-                            action_buttons=action_buttons_row('task', child.id)) }}
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-        </div>
-    {% endif %}
-{% endfor %}
+            <!-- Group By -->
+            <div>
+                <label for="group_by" class="block text-sm font-medium text-gray-700 mb-1">Group by</label>
+                <select name="group_by" id="group_by" 
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="status" {{ 'selected' if group_by == 'status' else '' }}>Status</option>
+                    <option value="priority" {{ 'selected' if group_by == 'priority' else '' }}>Priority</option>
+                    <option value="due_date" {{ 'selected' if group_by == 'due_date' else '' }}>Due Date</option>
+                </select>
+            </div>
+
+            <!-- Sort By -->
+            <div>
+                <label for="sort_by" class="block text-sm font-medium text-gray-700 mb-1">Sort by</label>
+                <select name="sort_by" id="sort_by" 
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="due_date" {{ 'selected' if sort_by == 'due_date' else '' }}>Due Date</option>
+                    <option value="priority" {{ 'selected' if sort_by == 'priority' else '' }}>Priority</option>
+                    <option value="created_at" {{ 'selected' if sort_by == 'created_at' else '' }}>Created Date</option>
+                </select>
+            </div>
+
+            <!-- Sort Direction -->
+            <div>
+                <label for="sort_direction" class="block text-sm font-medium text-gray-700 mb-1">Order</label>
+                <select name="sort_direction" id="sort_direction" 
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="asc" {{ 'selected' if sort_direction == 'asc' else '' }}>Ascending</option>
+                    <option value="desc" {{ 'selected' if sort_direction == 'desc' else '' }}>Descending</option>
+                </select>
+            </div>
+
+            <!-- Priority Filter -->
+            <div>
+                <label for="priority_filter" class="block text-sm font-medium text-gray-700 mb-1">Priorities</label>
+                <select name="priority_filter" id="priority_filter" multiple
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="high" {{ 'selected' if 'high' in priority_filter else '' }}>High</option>
+                    <option value="medium" {{ 'selected' if 'medium' in priority_filter else '' }}>Medium</option>
+                    <option value="low" {{ 'selected' if 'low' in priority_filter else '' }}>Low</option>
+                </select>
+            </div>
+
+            <!-- Show Completed -->
+            <div class="flex items-center">
+                <div class="flex items-center h-5">
+                    <input type="checkbox" name="show_completed" id="show_completed" value="true"
+                           {{ 'checked' if show_completed else '' }}
+                           class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                </div>
+                <div class="ml-3 text-sm">
+                    <label for="show_completed" class="font-medium text-gray-700">Show Completed</label>
+                </div>
+            </div>
+        </form>
     </div>
 
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="htmx-indicator">
+        <div class="flex items-center justify-center p-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2 text-gray-600">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Dynamic Content Area -->
+    <div id="task-content" 
+         hx-get="{{ url_for('tasks.content') }}?{{ request.query_string.decode('utf-8') }}"
+         hx-trigger="load">
+        <!-- Content will be loaded here via HTMX -->
+        <div class="flex items-center justify-center p-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2 text-gray-600">Loading tasks...</span>
+        </div>
+    </div>
 </div>
 
 {% endcall %}
@@ -128,19 +168,11 @@
 {% endblock %}
 
 {% block data_attributes %}
-data-page-type="tasks-index"
+{# No longer need page-type for data initialization since using HTMX #}
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
-<script>
-// Initialize data for the tasks page
-window.companiesData = {{ companies | tojson | safe }};
-window.contactsData = {{ contacts | tojson | safe }};
-window.opportunitiesData = {{ opportunities | tojson | safe }};
-window.tasksData = {{ tasks | tojson | safe }};
-</script>
+<!-- Minimal scripts for modal functionality only -->
+<script src="{{ url_for('static', filename='js/components/modals/modal-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/features/tasks.js') }}"></script>
 {% endblock %}

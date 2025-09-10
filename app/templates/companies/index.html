@@ -57,34 +57,79 @@
 
 {% call page_layout("Companies", "Manage your company relationships", buttons=entity_buttons, summary_data=entity_stats) %}
 
-<div x-data="createEntityManager(getCompanyConfig('{{ today if today else '' }}'))" class="space-y-6">
-
-    <!-- Bulk Actions Bar -->
-    {{ bulk_actions_bar('company', 'companies', 
-         {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
-
-    <!-- Enhanced Filters -->
-    {{ entity_filter_controls }}
-
-    <!-- Dynamic Entity Section -->
-    <div id="company-content">
-        {{ dynamic_entity_section() }}
-    </div>
-
-    <!-- Entity Cards Cache -->
-    <div style="display: none;" id="company-cards-cache">
-        {% for company in companies %}
-            <div id="company-card-{{ company.id }}">
-                {{ expandable_card('company', company, company.id,
-                    expansion_enabled=true,
-                    badge_content=company_header_content(company),
-                    title_content=company_title_content(company),
-                    metadata_content=company_metadata_content(company),
-                    action_buttons=action_buttons_row('company', company.id)) }}
+<div class="space-y-6">
+    <!-- HTMX-Based Filters -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <form hx-get="{{ url_for('companies.content') }}" 
+              hx-target="#company-content"
+              hx-trigger="change, submit"
+              hx-indicator="#loading-indicator"
+              class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            
+            <!-- Group By -->
+            <div>
+                <label for="group_by" class="block text-sm font-medium text-gray-700 mb-1">Group by</label>
+                <select name="group_by" id="group_by" 
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="industry" {{ 'selected' if group_by == 'industry' else '' }}>Industry</option>
+                    <option value="size" {{ 'selected' if group_by == 'size' else '' }}>Size</option>
+                </select>
             </div>
-        {% endfor %}
+
+            <!-- Sort By -->
+            <div>
+                <label for="sort_by" class="block text-sm font-medium text-gray-700 mb-1">Sort by</label>
+                <select name="sort_by" id="sort_by" 
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="name" {{ 'selected' if sort_by == 'name' else '' }}>Name</option>
+                    <option value="industry" {{ 'selected' if sort_by == 'industry' else '' }}>Industry</option>
+                </select>
+            </div>
+
+            <!-- Sort Direction -->
+            <div>
+                <label for="sort_direction" class="block text-sm font-medium text-gray-700 mb-1">Order</label>
+                <select name="sort_direction" id="sort_direction" 
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="asc" {{ 'selected' if sort_direction == 'asc' else '' }}>Ascending</option>
+                    <option value="desc" {{ 'selected' if sort_direction == 'desc' else '' }}>Descending</option>
+                </select>
+            </div>
+
+            <!-- Industry Filter -->
+            <div>
+                <label for="primary_filter" class="block text-sm font-medium text-gray-700 mb-1">Industries</label>
+                <select name="primary_filter" id="primary_filter" multiple
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <!-- Will be populated with actual industry options -->
+                    <option value="Technology">Technology</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Manufacturing">Manufacturing</option>
+                    <option value="Retail">Retail</option>
+                </select>
+            </div>
+        </form>
     </div>
 
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="htmx-indicator">
+        <div class="flex items-center justify-center p-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2 text-gray-600">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Dynamic Content Area -->
+    <div id="company-content" 
+         hx-get="{{ url_for('companies.content') }}?{{ request.query_string.decode('utf-8') }}"
+         hx-trigger="load">
+        <!-- Content will be loaded here via HTMX -->
+        <div class="flex items-center justify-center p-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2 text-gray-600">Loading companies...</span>
+        </div>
+    </div>
 </div>
 
 {% endcall %}
@@ -97,14 +142,10 @@
 {% endblock %}
 
 {% block data_attributes %}
-data-companies="{{ companies_data | tojson | forceescape }}"
-data-contacts="{{ contacts | tojson | forceescape }}"
-data-opportunities="{{ opportunities | tojson | forceescape }}"
+{# No longer need data attributes since using HTMX #}
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
-<script src="{{ url_for('static', filename='js/entities/companies.js') }}"></script>
+<!-- Minimal scripts for modal functionality only -->
+<script src="{{ url_for('static', filename='js/components/modals/modal-manager.js') }}"></script>
 {% endblock %}
