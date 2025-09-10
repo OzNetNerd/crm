@@ -121,7 +121,7 @@
         "email": "",
         "phone": "",
         "role": "",
-        "company": null
+        "company_id": ""
     },
     "fields": [
         {
@@ -129,6 +129,30 @@
             "name": "name",
             "label": "Full Name",
             "placeholder": "Contact name"
+        },
+        {
+            "type": "grid",
+            "columns": 2,
+            "fields": [
+                {
+                    "type": "text",
+                    "name": "email",
+                    "label": "Email",
+                    "placeholder": "Contact email"
+                },
+                {
+                    "type": "text",
+                    "name": "phone",
+                    "label": "Phone",
+                    "placeholder": "Contact phone number"
+                }
+            ]
+        },
+        {
+            "type": "text",
+            "name": "role",
+            "label": "Role",
+            "placeholder": "Job title or role"
         }
     ]
 } %}
@@ -136,13 +160,15 @@
 {# Company Detail Modal Configuration #}
 {% set company_detail_config = {
     "title": "Company Details",
+    "title_singular": "Company",
     "show_notes": true,
     "default_values": {
         "name": "",
         "industry": "",
+        "size": "",
         "website": "",
-        "contacts": [],
-        "opportunities": []
+        "phone": "",
+        "address": ""
     },
     "fields": [
         {
@@ -150,6 +176,66 @@
             "name": "name",
             "label": "Company Name",
             "placeholder": "Company name"
+        },
+        {
+            "type": "grid",
+            "columns": 2,
+            "fields": [
+                {
+                    "type": "select",
+                    "name": "industry",
+                    "label": "Industry",
+                    "options": [
+                        {"value": "", "label": "Select industry"},
+                        {"value": "technology", "label": "Technology"},
+                        {"value": "finance", "label": "Finance"},
+                        {"value": "healthcare", "label": "Healthcare"},
+                        {"value": "manufacturing", "label": "Manufacturing"},
+                        {"value": "retail", "label": "Retail"},
+                        {"value": "education", "label": "Education"},
+                        {"value": "consulting", "label": "Consulting"},
+                        {"value": "other", "label": "Other"}
+                    ]
+                },
+                {
+                    "type": "select",
+                    "name": "size",
+                    "label": "Company Size",
+                    "options": [
+                        {"value": "", "label": "Select size"},
+                        {"value": "startup", "label": "Startup (1-10)"},
+                        {"value": "small", "label": "Small (11-50)"},
+                        {"value": "medium", "label": "Medium (51-200)"},
+                        {"value": "large", "label": "Large (201-1000)"},
+                        {"value": "enterprise", "label": "Enterprise (1000+)"}
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "grid",
+            "columns": 2,
+            "fields": [
+                {
+                    "type": "text",
+                    "name": "website",
+                    "label": "Website",
+                    "placeholder": "https://company.com"
+                },
+                {
+                    "type": "text",
+                    "name": "phone",
+                    "label": "Phone",
+                    "placeholder": "Company phone number"
+                }
+            ]
+        },
+        {
+            "type": "textarea",
+            "name": "address",
+            "label": "Address",
+            "rows": 2,
+            "placeholder": "Company address"
         }
     ]
 } %}
@@ -162,9 +248,9 @@
         "name": "",
         "value": "",
         "stage": "",
-        "probability": 0,
+        "probability": "",
         "expected_close_date": "",
-        "company": null
+        "company_id": ""
     },
     "fields": [
         {
@@ -172,6 +258,49 @@
             "name": "name",
             "label": "Opportunity Name",
             "placeholder": "Opportunity name"
+        },
+        {
+            "type": "grid",
+            "columns": 2,
+            "fields": [
+                {
+                    "type": "text",
+                    "name": "value",
+                    "label": "Value ($)",
+                    "placeholder": "Opportunity value"
+                },
+                {
+                    "type": "select",
+                    "name": "stage",
+                    "label": "Stage",
+                    "options": [
+                        {"value": "", "label": "Select stage"},
+                        {"value": "lead", "label": "Lead"},
+                        {"value": "qualified", "label": "Qualified"},
+                        {"value": "proposal", "label": "Proposal"},
+                        {"value": "negotiation", "label": "Negotiation"},
+                        {"value": "closed_won", "label": "Closed Won"},
+                        {"value": "closed_lost", "label": "Closed Lost"}
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "grid",
+            "columns": 2,
+            "fields": [
+                {
+                    "type": "text",
+                    "name": "probability",
+                    "label": "Probability (%)",
+                    "placeholder": "0-100"
+                },
+                {
+                    "type": "date",
+                    "name": "expected_close_date",
+                    "label": "Expected Close Date"
+                }
+            ]
         }
     ]
 } %}
