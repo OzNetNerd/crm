@@ -10,7 +10,7 @@ from sqlalchemy import text, or_, and_
 
 from .embedding_service import get_embedding_service
 from .ollama_client import get_ollama_client
-from chatbot.models import Company, Contact, Task, Opportunity, Meeting, ExtractedInsight, Embedding
+from chatbot.models import Company, Stakeholder, Task, Opportunity, Meeting, ExtractedInsight, Embedding
 
 logger = logging.getLogger(__name__)
 
@@ -236,10 +236,10 @@ class RAGEngine:
                     })
             
             elif intent == "contact_info":
-                contacts = db_session.query(Contact).join(Company).filter(
+                contacts = db_session.query(Stakeholder).join(Company).filter(
                     or_(
-                        Contact.name.ilike(f"%{query}%"),
-                        Contact.role.ilike(f"%{query}%"),
+                        Stakeholder.name.ilike(f"%{query}%"),
+                        Stakeholder.role.ilike(f"%{query}%"),
                         Company.name.ilike(f"%{query}%")
                     )
                 ).limit(5).all()

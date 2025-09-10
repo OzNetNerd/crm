@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime
 
 from database_simple import get_sync_session
-from models import Company, Contact, Task, Opportunity, Meeting, ChatHistory
+from models import Company, Stakeholder, Task, Opportunity, Meeting, ChatHistory
 
 app = FastAPI(title="CRM Chatbot Service", version="1.0.0")
 

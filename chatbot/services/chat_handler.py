@@ -9,7 +9,7 @@ import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 
-from chatbot.models import Company, Contact, Task, Opportunity, Meeting, ChatHistory
+from chatbot.models import Company, Stakeholder, Task, Opportunity, Meeting, ChatHistory
 from chatbot.services.ollama_client import get_ollama_client
 from chatbot.services.qdrant_service import get_qdrant_service
 
@@ -259,7 +259,7 @@ class ChatHandler:
         """Handle contact-related queries"""
         try:
             result = await db_session.execute(
-                select(Contact).join(Company).limit(5)
+                select(Stakeholder).join(Company).limit(5)
             )
             contacts = result.scalars().all()
             
