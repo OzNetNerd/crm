@@ -37,7 +37,7 @@ def style_task_description(description):
         opportunity_name = match.group(2)
         company_name = match.group(3)
         
-        return Markup(f'{action} for <span class="text-opportunity-name">{opportunity_name}</span> - <span class="text-company-name">{company_name}</span>')
+        return Markup(f'{action} for <span class="text-entity-base text-color-opportunity">{opportunity_name}</span> - <span class="text-entity-base text-color-company">{company_name}</span>')
     
     # Try entity pattern (could be company or opportunity)
     match = re.match(entity_pattern, description)
@@ -48,9 +48,9 @@ def style_task_description(description):
         # Heuristic: if entity name has multiple words and looks like a company name, style as company
         # Otherwise, assume it's an opportunity name
         if any(word in entity_name.lower() for word in ['solutions', 'corp', 'inc', 'ltd', 'llc', 'company', 'technologies']):
-            return Markup(f'{action} for <span class="text-company-name">{entity_name}</span>')
+            return Markup(f'{action} for <span class="text-entity-base text-color-company">{entity_name}</span>')
         else:
-            return Markup(f'{action} for <span class="text-opportunity-name">{entity_name}</span>')
+            return Markup(f'{action} for <span class="text-entity-base text-color-opportunity">{entity_name}</span>')
     
     # Try contact pattern
     match = re.match(contact_pattern, description)
@@ -58,7 +58,7 @@ def style_task_description(description):
         action = match.group(1)
         contact_name = match.group(2)
         
-        return Markup(f'{action} with <span class="text-stakeholder-name">{contact_name}</span>')
+        return Markup(f'{action} with <span class="text-entity-base text-color-stakeholder">{contact_name}</span>')
     
     # If no pattern matches, return the original description
     return description

@@ -103,30 +103,30 @@
     text-overflow: ellipsis; /* truncate */
 }
 
-/* Entity-specific styling for consistent color coding */
-.text-company-name {
-    color: #475569; /* slate-600 - professional blue-gray for companies */
-    font-weight: 500; /* font-medium */
-}
-.text-stakeholder-name {
-    color: #374151; /* gray-700 - warm charcoal for stakeholders/contacts */
-    font-weight: 500; /* font-medium */
-}
-.text-opportunity-name {
-    color: #4338ca; /* indigo-600 - rich indigo for opportunities */
-    font-weight: 500; /* font-medium */
+/* DRY Entity Styling - Base class with color modifiers */
+.text-entity-base {
+    font-size: 1.125rem; /* text-lg - consistent large size */
+    font-weight: 600; /* font-semibold - prominent text */
 }
 
-/* Deal amount styling - matches heading size */
-.text-deal-amount {
-    font-size: 0.875rem; /* text-sm - matches text-label-primary */
-    font-weight: 600; /* font-semibold */
-    color: #059669; /* text-green-600 */
+/* Color-only modifier classes for semantic entity types */
+.text-color-company {
+    color: #475569; /* slate-600 - professional blue-gray for companies */
 }
-.text-deal-amount-lg {
-    font-size: 1.125rem; /* text-lg */
-    font-weight: 600; /* font-semibold */
+.text-color-stakeholder {
+    color: #374151; /* gray-700 - warm charcoal for stakeholders/contacts */
 }
+.text-color-opportunity {
+    color: #4338ca; /* indigo-600 - rich indigo for opportunities */
+}
+.text-color-default {
+    color: #111827; /* text-gray-900 - default text color */
+}
+.text-color-deal {
+    color: #059669; /* green-600 - success green for deal amounts */
+}
+
+
 .text-label-dark { 
     font-size: 0.875rem; /* text-sm */
     font-weight: 500; /* font-medium */
