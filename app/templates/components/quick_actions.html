@@ -3,15 +3,17 @@
 {% macro quick_actions_buttons(buttons) %}
 <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
     {% for button in buttons %}
+    {% set entity_type = button.label.split(' ')[1].lower() if button.label.split(' ')|length > 1 else 'default' %}
+    {% set btn_class = 'btn-new-' + entity_type %}
     {% if button.onclick %}
         <button onclick="{{ button.onclick }}" 
-                class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-{{ button.color }}-600 rounded-lg hover:bg-{{ button.color }}-700 focus:outline-none focus:ring-2 focus:ring-{{ button.color }}-500 focus:ring-offset-2 transition-all duration-200 hover:scale-105">
+                class="flex items-center gap-2 {{ btn_class }}">
             {{ button.icon }}
             {{ button.label }}
         </button>
     {% else %}
         <a href="{{ button.url }}" 
-           class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-{{ button.color }}-600 rounded-lg hover:bg-{{ button.color }}-700 focus:outline-none focus:ring-2 focus:ring-{{ button.color }}-500 focus:ring-offset-2 transition-all duration-200 hover:scale-105">
+           class="flex items-center gap-2 {{ btn_class }}">
             {{ button.icon }}
             {{ button.label }}
         </a>
@@ -25,19 +27,16 @@
     {
         'label': 'New Task',
         'onclick': 'openNewTaskModal()',
-        'color': 'blue',
         'icon': plus_icon('w-4 h-4')
     },
     {
         'label': 'New Company',
-        'url': '/companies/new',
-        'color': 'green',
+        'onclick': 'openNewCompanyModal()',
         'icon': building_office_icon('w-4 h-4')
     },
     {
         'label': 'New Opportunity',
-        'url': '/opportunities/new',
-        'color': 'yellow',
+        'onclick': 'openNewOpportunityModal()',
         'icon': currency_dollar_icon('w-4 h-4')
     }
 ]) }}
@@ -50,7 +49,6 @@
     {
         'label': 'New Company',
         'onclick': 'openNewCompanyModal()',
-        'color': 'blue',
         'icon': plus_icon('w-4 h-4')
     }
 ]) }}
@@ -61,7 +59,6 @@
     {
         'label': 'New Contact',
         'onclick': 'openNewContactModal()',
-        'color': 'blue',
         'icon': plus_icon('w-4 h-4')
     }
 ]) }}
@@ -72,7 +69,6 @@
     {
         'label': 'New Opportunity',
         'onclick': 'openNewOpportunityModal()',
-        'color': 'blue',
         'icon': plus_icon('w-4 h-4')
     }
 ]) }}
@@ -83,7 +79,6 @@
     {
         'label': 'New Task',
         'onclick': 'openNewTaskModal()',
-        'color': 'blue',
         'icon': plus_icon('w-4 h-4')
     }
 ]) }}
