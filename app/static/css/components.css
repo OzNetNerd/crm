@@ -453,7 +453,8 @@
 .multiselect-dropdown {
     position: absolute;
     top: 100%;
-    left: 0;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 50;
     background-color: white;
     border: 1px solid #d1d5db;
