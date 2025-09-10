@@ -133,10 +133,10 @@
             </div>
         {% endfor %}
     {% elif entity_type == 'contacts' %}
-        {% from "components/contact_card.html" import render_contact %}
+        {% from "components/stakeholder_card.html" import render_stakeholder %}
         {% for contact in entities %}
             <div id="contact-card-{{ contact.id }}">
-                {{ render_contact(contact) }}
+                {{ render_stakeholder(contact) }}
             </div>
         {% endfor %}
     {% endif %}

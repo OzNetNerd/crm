@@ -127,8 +127,10 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/features/data-initializer.js') }}"></script>
 <script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
+<script src="{{ url_for('static', filename='js/entities/opportunities.js') }}"></script>
 
 {{ include_common_modals() }}
 {% endblock %}
