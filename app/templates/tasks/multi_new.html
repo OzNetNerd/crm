@@ -43,16 +43,16 @@
                         {'value': 'company', 'label': 'Company'},
                         {'value': 'contact', 'label': 'Contact'},
                         {'value': 'opportunity', 'label': 'Opportunity'}
-                    ], label='Related To', classes='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500', on_change='updateEntityOptions()') }}
+                    ], label='Related To', classes='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500', on_change='updateEntityOptions()', min_width='w-full') }}
                     <input type="hidden" name="entity_type" :value="entityType">
                 </div>
                 
-                <div id="entity_select_container" style="display: none;">
-                    <label for="entity_id" class="block text-sm font-medium text-gray-700">Select Entity</label>
-                    <select id="entity_id" name="entity_id"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">Select...</option>
-                    </select>
+                <div id="entity_select_container" x-data="{ entityId: '' }" style="display: none;">
+                    {{ universal_dropdown('entityId', [{'value': '', 'label': 'Select...'}], 
+                                         label='Select Entity',
+                                         classes='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
+                                         min_width='w-full') }}
+                    <input type="hidden" name="entity_id" :value="entityId">
                 </div>
                 
                 <div x-data="{ dependencyType: 'parallel' }">

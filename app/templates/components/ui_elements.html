@@ -1037,7 +1037,7 @@
     sort_direction_model=None,
     classes='px-3 py-2 border border-gray-300 rounded-md text-sm',
     show_chevron=true,
-    min_width='min-w-[120px]'
+    min_width='min-w-0 w-auto max-w-xs'
 ) %}
 
 {# Set smart defaults #}
@@ -1074,7 +1074,7 @@
      
     {# Button - varies by type #}
     <button type="button" 
-            class="select-custom {{ classes }} {{ min_width }}" 
+            class="select-custom {{ classes }} {{ min_width }} whitespace-nowrap overflow-hidden text-ellipsis" 
             @click="open = !open"
             {% if type == 'single' %}x-cloak{% endif %}>
         
@@ -1257,9 +1257,9 @@
     <div class="flex flex-col space-y-4">
         <!-- First row: Group by, Sort by, and Filters -->
         <div class="flex flex-wrap items-center gap-6">
-            {{ universal_dropdown('groupBy', group_options, label='Group by:', on_change='updateFilters()') }}
+            {{ universal_dropdown('groupBy', group_options, label='Group by:', on_change='updateFilters()', min_width='min-w-[140px]') }}
             
-            {{ universal_dropdown('sortBy', sort_options, label='Sort by:', sort_direction_model='sortDirection', on_change='updateFilters()') }}
+            {{ universal_dropdown('sortBy', sort_options, label='Sort by:', sort_direction_model='sortDirection', on_change='updateFilters()', min_width='min-w-[140px]') }}
             
             {% if primary_filter_options or secondary_filter_options or entity_filter_options %}
             <label class="text-label-dark">Filters:</label>

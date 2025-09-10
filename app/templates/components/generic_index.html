@@ -34,7 +34,7 @@
     <div class="card-padded-lg filter-section-enhanced">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:gap-6">
             <div class="flex flex-wrap items-center gap-6">
-                {{ universal_dropdown('groupBy', entity_config.filter_options.group_options, label='Group by:', on_change='updateFilters()') }}
+                {{ universal_dropdown('groupBy', entity_config.filter_options.group_options, label='Group by:', on_change='updateFilters()', min_width='min-w-[140px]') }}
                 
                 {% if entity_config.filter_options.show_completed is defined %}
                 <label class="flex items-center">
@@ -52,7 +52,7 @@
             </div>
             
             <div class="flex items-center gap-6">
-                {{ universal_dropdown('sortBy', entity_config.filter_options.sort_options, label='Sort by:', sort_direction_model='sortDirection', on_change='updateFilters()') }}
+                {{ universal_dropdown('sortBy', entity_config.filter_options.sort_options, label='Sort by:', sort_direction_model='sortDirection', on_change='updateFilters()', min_width='min-w-[140px]') }}
                 
                 {{ generic_filter_multiselect('primaryFilter', 
                     entity_config.filter_options.primary_filter.options,
