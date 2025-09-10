@@ -123,32 +123,38 @@ def update_task(task_id):
 def reschedule_task(task_id):
     from datetime import timedelta
 
-    task = Task.query.get_or_404(task_id)
-    data = request.get_json()
-    days = data.get("days", 1)
-    
-    print(f"DEBUG: ===== RESCHEDULE REQUEST =====")
-    print(f"DEBUG: Task ID: {task_id}")
-    print(f"DEBUG: Request JSON: {data}")
-    print(f"DEBUG: Days parameter: {days}")
-    print(f"DEBUG: Current due_date: {task.due_date}")
-    print(f"DEBUG: Task description: {task.description}")
-    
-    old_due_date = task.due_date
+    try:
+        task = Task.query.get_or_404(task_id)
+        data = request.get_json()
+        days = data.get("days", 1)
+        
+        print(f"DEBUG: ===== RESCHEDULE REQUEST =====")
+        print(f"DEBUG: Task ID: {task_id}")
+        print(f"DEBUG: Request JSON: {data}")
+        print(f"DEBUG: Days parameter: {days}")
+        print(f"DEBUG: Current due_date: {task.due_date}")
+        print(f"DEBUG: Task description: {task.description}")
+        
+        old_due_date = task.due_date
 
-    if task.due_date:
-        task.due_date = task.due_date + timedelta(days=days)
-    else:
-        task.due_date = date.today() + timedelta(days=days)
+        if task.due_date:
+            task.due_date = task.due_date + timedelta(days=days)
+        else:
+            task.due_date = date.today() + timedelta(days=days)
 
-    print(f"DEBUG: OLD due_date: {old_due_date}")
-    print(f"DEBUG: NEW due_date: {task.due_date}")
-    print(f"DEBUG: ===========================")
+        print(f"DEBUG: OLD due_date: {old_due_date}")
+        print(f"DEBUG: NEW due_date: {task.due_date}")
+        print(f"DEBUG: ===========================")
 
-    db.session.commit()
+        db.session.commit()
 
-    return jsonify({
-        "status": "success", 
-        "message": f"Task rescheduled by {days} days",
-        "due_date": task.due_date.isoformat() if task.due_date else None
-    })
+        return jsonify({
+            "status": "success", 
+            "message": f"Task rescheduled by {days} days",
+            "due_date": task.due_date.isoformat() if task.due_date else None
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"DEBUG: ERROR in reschedule: {str(e)}")
+        return jsonify({"error": str(e)}), 500
