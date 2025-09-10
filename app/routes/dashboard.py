@@ -48,7 +48,12 @@ def index():
     }
 
     # Recent activity (last 5 items)
-    recent_tasks = Task.query.filter(Task.status != "complete").order_by(Task.created_at.desc()).limit(5).all()
+    recent_tasks = (
+        Task.query.filter(Task.status != "complete")
+        .order_by(Task.created_at.desc())
+        .limit(5)
+        .all()
+    )
     recent_notes = Note.query.order_by(Note.created_at.desc()).limit(3).all()
     recent_opportunities = (
         Opportunity.query.order_by(Opportunity.created_at.desc()).limit(3).all()
@@ -127,14 +132,14 @@ def reschedule_task(task_id):
         task = Task.query.get_or_404(task_id)
         data = request.get_json()
         days = data.get("days", 1)
-        
-        print(f"DEBUG: ===== RESCHEDULE REQUEST =====")
+
+        print("DEBUG: ===== RESCHEDULE REQUEST =====")
         print(f"DEBUG: Task ID: {task_id}")
         print(f"DEBUG: Request JSON: {data}")
         print(f"DEBUG: Days parameter: {days}")
         print(f"DEBUG: Current due_date: {task.due_date}")
         print(f"DEBUG: Task description: {task.description}")
-        
+
         old_due_date = task.due_date
 
         if task.due_date:
@@ -144,16 +149,18 @@ def reschedule_task(task_id):
 
         print(f"DEBUG: OLD due_date: {old_due_date}")
         print(f"DEBUG: NEW due_date: {task.due_date}")
-        print(f"DEBUG: ===========================")
+        print("DEBUG: ===========================")
 
         db.session.commit()
 
-        return jsonify({
-            "status": "success", 
-            "message": f"Task rescheduled by {days} days",
-            "due_date": task.due_date.isoformat() if task.due_date else None
-        })
-        
+        return jsonify(
+            {
+                "status": "success",
+                "message": f"Task rescheduled by {days} days",
+                "due_date": task.due_date.isoformat() if task.due_date else None,
+            }
+        )
+
     except Exception as e:
         db.session.rollback()
         print(f"DEBUG: ERROR in reschedule: {str(e)}")

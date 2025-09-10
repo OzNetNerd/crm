@@ -19,7 +19,7 @@ find_free_port() {
 # Function to cleanup background processes on exit
 cleanup() {
     echo "🛑 Shutting down services..."
-    if [ ! -z "$CHATBOT_PID" ]; then
+    if [ -n "$CHATBOT_PID" ]; then
         kill $CHATBOT_PID 2>/dev/null
         echo "   Stopped chatbot service (PID: $CHATBOT_PID)"
     fi

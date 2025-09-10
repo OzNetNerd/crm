@@ -17,7 +17,10 @@ def get_task(task_id):
         "priority": task.priority,
         "status": task.status,
         "next_step_type": task.next_step_type,
-        "linked_entities": [{"type": entity["type"], "id": entity["id"], "name": entity["name"]} for entity in task.linked_entities],
+        "linked_entities": [
+            {"type": entity["type"], "id": entity["id"], "name": entity["name"]}
+            for entity in task.linked_entities
+        ],
         "company_name": task.company_name,
         "opportunity_name": task.opportunity_name,
         "entity_name": task.entity_name,
@@ -121,12 +124,12 @@ def reschedule_task(task_id):
     try:
         task = Task.query.get_or_404(task_id)
         data = request.get_json()
-        
+
         if not data:
             return jsonify({"error": "Request body is required"}), 400
-            
+
         days_adjustment = data.get("days_adjustment", 0)
-        
+
         if task.due_date:
             task.due_date = task.due_date + timedelta(days=days_adjustment)
         else:
@@ -134,11 +137,13 @@ def reschedule_task(task_id):
 
         db.session.commit()
 
-        return jsonify({
-            "status": "success",
-            "message": f"Task rescheduled by {days_adjustment} days",
-            "due_date": task.due_date.isoformat() if task.due_date else None
-        })
+        return jsonify(
+            {
+                "status": "success",
+                "message": f"Task rescheduled by {days_adjustment} days",
+                "due_date": task.due_date.isoformat() if task.due_date else None,
+            }
+        )
 
     except Exception as e:
         db.session.rollback()

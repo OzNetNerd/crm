@@ -32,6 +32,7 @@ This system automatically generates CSS classes based on button labels for consi
 ### Usage in Templates
 
 **Before (Manual):**
+
 ```jinja
 {
     'label': 'New Company',
@@ -41,6 +42,7 @@ This system automatically generates CSS classes based on button labels for consi
 ```
 
 **After (Automatic):**
+
 ```jinja
 {
     'label': 'New Company',  # Color derived from "Company"
@@ -51,6 +53,7 @@ This system automatically generates CSS classes based on button labels for consi
 ### Macro Logic
 
 The `quick_actions_buttons` macro extracts the entity type from the label:
+
 - "New Task" → `btn-new-task`
 - "New Company" → `btn-new-company`  
 - "New Opportunity" → `btn-new-opportunity`
@@ -58,6 +61,7 @@ The `quick_actions_buttons` macro extracts the entity type from the label:
 ### Adding New Entity Types
 
 1. Add CSS class in `components.css`:
+
    ```css
    .btn-new-meeting {
        @apply bg-indigo-600 hover:bg-indigo-700 /* ... rest of styles */;

@@ -17,8 +17,11 @@ from app.routes.teams import teams_bp
 from app.utils.template_filters import register_template_filters
 from app.models import Company, Stakeholder, Task, Opportunity
 from app.utils.template_globals import (
-    get_field_options, get_sortable_fields, get_groupable_fields,
-    PRIORITY_OPTIONS, SIZE_OPTIONS
+    get_field_options,
+    get_sortable_fields,
+    get_groupable_fields,
+    PRIORITY_OPTIONS,
+    SIZE_OPTIONS,
 )
 
 
@@ -52,7 +55,7 @@ def get_database_path():
                 print(f"DEBUG: Using database path: {db_path}")
                 return db_path
         current = current.parent
-    
+
     # No git repository found - this is a configuration error
     raise RuntimeError(
         "No git repository found. The application must be run from within a git repository. "
@@ -83,19 +86,19 @@ def create_app():
 
     # Register custom template filters
     register_template_filters(app)
-    
+
     # Register clean template functions - no more string hacks!
-    app.jinja_env.globals['get_field_options'] = get_field_options
-    app.jinja_env.globals['get_sortable_fields'] = get_sortable_fields 
-    app.jinja_env.globals['get_groupable_fields'] = get_groupable_fields
-    app.jinja_env.globals['PRIORITY_OPTIONS'] = PRIORITY_OPTIONS
-    app.jinja_env.globals['SIZE_OPTIONS'] = SIZE_OPTIONS
-    
+    app.jinja_env.globals["get_field_options"] = get_field_options
+    app.jinja_env.globals["get_sortable_fields"] = get_sortable_fields
+    app.jinja_env.globals["get_groupable_fields"] = get_groupable_fields
+    app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
+    app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
+
     # Make model classes available to templates
-    app.jinja_env.globals['Company'] = Company
-    app.jinja_env.globals['Stakeholder'] = Stakeholder 
-    app.jinja_env.globals['Task'] = Task
-    app.jinja_env.globals['Opportunity'] = Opportunity
+    app.jinja_env.globals["Company"] = Company
+    app.jinja_env.globals["Stakeholder"] = Stakeholder
+    app.jinja_env.globals["Task"] = Task
+    app.jinja_env.globals["Opportunity"] = Opportunity
 
     with app.app_context():
         db.create_all()

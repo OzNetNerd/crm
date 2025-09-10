@@ -11,14 +11,10 @@ from shared.database_config import DATABASE_URI
 # Create sync engine for now (will upgrade to async later)
 sync_engine = create_engine(
     DATABASE_URI,
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URI else {}
+    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URI else {},
 )
 
-SyncSessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=sync_engine
-)
+SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
 
 
 # Dependency for FastAPI routes
@@ -33,7 +29,7 @@ def get_sync_session():
 # For testing
 if __name__ == "__main__":
     print(f"Database URI: {DATABASE_URI}")
-    
+
     # Test connection
     try:
         with SyncSessionLocal() as session:

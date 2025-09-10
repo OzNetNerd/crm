@@ -13,7 +13,7 @@ from shared.database_config import DATABASE_URI, ASYNC_DATABASE_URI
 async_engine = create_async_engine(
     ASYNC_DATABASE_URI,
     echo=False,  # Set to True for SQL debugging
-    connect_args={"check_same_thread": False} if "sqlite" in ASYNC_DATABASE_URI else {}
+    connect_args={"check_same_thread": False} if "sqlite" in ASYNC_DATABASE_URI else {},
 )
 
 AsyncSessionLocal = sessionmaker(
@@ -21,20 +21,16 @@ AsyncSessionLocal = sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
     autoflush=False,
-    autocommit=False
+    autocommit=False,
 )
 
 # Sync engine for compatibility (if needed)
 sync_engine = create_engine(
     DATABASE_URI,
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URI else {}
+    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URI else {},
 )
 
-SyncSessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=sync_engine
-)
+SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
 
 
 # Dependency for FastAPI routes

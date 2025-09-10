@@ -47,7 +47,7 @@ class Task(db.Model):
     def entity_name(self):
         """Get primary entity name for backward compatibility"""
         entities = self.linked_entities
-        return entities[0]['name'] if entities else None
+        return entities[0]["name"] if entities else None
 
     # Parent-child task relationships
     parent_task = db.relationship(
@@ -60,42 +60,44 @@ class Task(db.Model):
         lazy="select",
     )
 
-
     @property
     def opportunity_value(self):
         """Get opportunity value from linked opportunities"""
         for entity in self.linked_entities:
-            if entity['type'] == 'opportunity' and entity['entity']:
-                return entity['entity'].value
+            if entity["type"] == "opportunity" and entity["entity"]:
+                return entity["entity"].value
         return None
 
     @property
     def company_name(self):
         """Get company name from any linked entity"""
         for entity in self.linked_entities:
-            if entity['type'] == 'company':
-                return entity['name']
-            elif entity['type'] == 'contact' and entity['entity']:
-                return entity['entity'].company.name if entity['entity'].company else None
-            elif entity['type'] == 'opportunity' and entity['entity']:
-                return entity['entity'].company.name if entity['entity'].company else None
+            if entity["type"] == "company":
+                return entity["name"]
+            elif entity["type"] == "contact" and entity["entity"]:
+                return (
+                    entity["entity"].company.name if entity["entity"].company else None
+                )
+            elif entity["type"] == "opportunity" and entity["entity"]:
+                return (
+                    entity["entity"].company.name if entity["entity"].company else None
+                )
         return None
-
 
     @property
     def opportunity_name(self):
         """Get opportunity name from linked opportunities"""
         for entity in self.linked_entities:
-            if entity['type'] == 'opportunity':
-                return entity['name']
+            if entity["type"] == "opportunity":
+                return entity["name"]
         return None
 
     @property
     def opportunity_stage(self):
         """Get opportunity stage from linked opportunities"""
         for entity in self.linked_entities:
-            if entity['type'] == 'opportunity' and entity['entity']:
-                return entity['entity'].stage
+            if entity["type"] == "opportunity" and entity["entity"]:
+                return entity["entity"].stage
         return None
 
     @property
@@ -105,11 +107,11 @@ class Task(db.Model):
         opp_name = self.opportunity_name
         if opp_name:
             return opp_name
-            
+
         # Then check for contact with opportunities
         for entity in self.linked_entities:
-            if entity['type'] == 'contact' and entity['entity']:
-                contact = entity['entity']
+            if entity["type"] == "contact" and entity["entity"]:
+                contact = entity["entity"]
                 if contact.opportunities:
                     return contact.opportunities[0].name
         return None
@@ -121,11 +123,11 @@ class Task(db.Model):
         opp_value = self.opportunity_value
         if opp_value:
             return opp_value
-            
-        # Then check for contact with opportunities  
+
+        # Then check for contact with opportunities
         for entity in self.linked_entities:
-            if entity['type'] == 'contact' and entity['entity']:
-                contact = entity['entity']
+            if entity["type"] == "contact" and entity["entity"]:
+                contact = entity["entity"]
                 if contact.opportunities:
                     return contact.opportunities[0].value
         return None
@@ -166,13 +168,11 @@ class Task(db.Model):
 
         # Force fresh query to avoid stale relationship data
         child_tasks = Task.query.filter(Task.parent_task_id == self.id).all()
-        
+
         if not child_tasks:
             return 0
 
-        completed_count = sum(
-            1 for child in child_tasks if child.status == "complete"
-        )
+        completed_count = sum(1 for child in child_tasks if child.status == "complete")
         return int((completed_count / len(child_tasks)) * 100)
 
     @property
@@ -192,41 +192,48 @@ class Task(db.Model):
         # Return empty list if task has no ID yet
         if not self.id:
             return []
-            
+
         # Query the junction table for this task's linked entities
         linked = db.session.execute(
-            db.text("""
+            db.text(
+                """
                 SELECT entity_type, entity_id 
                 FROM task_entities 
                 WHERE task_id = :task_id
-            """),
-            {"task_id": self.id}
+            """
+            ),
+            {"task_id": self.id},
         ).fetchall()
-        
+
         entities = []
         for entity_type, entity_id in linked:
             # Get the actual entity object
             entity = self._get_entity_by_type_and_id(entity_type, entity_id)
             if entity:
-                entities.append({
-                    'type': entity_type,
-                    'id': entity_id,
-                    'name': entity.name,
-                    'entity': entity
-                })
-        
+                entities.append(
+                    {
+                        "type": entity_type,
+                        "id": entity_id,
+                        "name": entity.name,
+                        "entity": entity,
+                    }
+                )
+
         return entities
 
     def _get_entity_by_type_and_id(self, entity_type, entity_id):
         """Helper method to get entity by type and id"""
         if entity_type == "company":
             from .company import Company
+
             return Company.query.get(entity_id)
         elif entity_type == "stakeholder":
             from .stakeholder import Stakeholder
+
             return Stakeholder.query.get(entity_id)
         elif entity_type == "opportunity":
             from .opportunity import Opportunity
+
             return Opportunity.query.get(entity_id)
         return None
 
@@ -234,36 +241,42 @@ class Task(db.Model):
         """Add a linked entity to this task"""
         # Check if already linked
         existing = db.session.execute(
-            db.text("""
+            db.text(
+                """
                 SELECT 1 FROM task_entities 
                 WHERE task_id = :task_id AND entity_type = :entity_type AND entity_id = :entity_id
-            """),
-            {"task_id": self.id, "entity_type": entity_type, "entity_id": entity_id}
+            """
+            ),
+            {"task_id": self.id, "entity_type": entity_type, "entity_id": entity_id},
         ).fetchone()
-        
+
         if not existing:
             db.session.execute(
-                db.text("""
+                db.text(
+                    """
                     INSERT INTO task_entities (task_id, entity_type, entity_id, created_at)
                     VALUES (:task_id, :entity_type, :entity_id, :created_at)
-                """),
+                """
+                ),
                 {
                     "task_id": self.id,
                     "entity_type": entity_type,
                     "entity_id": entity_id,
-                    "created_at": datetime.utcnow()
-                }
+                    "created_at": datetime.utcnow(),
+                },
             )
             db.session.commit()
 
     def remove_linked_entity(self, entity_type, entity_id):
         """Remove a linked entity from this task"""
         db.session.execute(
-            db.text("""
+            db.text(
+                """
                 DELETE FROM task_entities 
                 WHERE task_id = :task_id AND entity_type = :entity_type AND entity_id = :entity_id
-            """),
-            {"task_id": self.id, "entity_type": entity_type, "entity_id": entity_id}
+            """
+            ),
+            {"task_id": self.id, "entity_type": entity_type, "entity_id": entity_id},
         )
         db.session.commit()
 
@@ -272,59 +285,59 @@ class Task(db.Model):
         # Clear existing links
         db.session.execute(
             db.text("DELETE FROM task_entities WHERE task_id = :task_id"),
-            {"task_id": self.id}
+            {"task_id": self.id},
         )
-        
+
         # Add new links
         for entity in entities:
             db.session.execute(
-                db.text("""
+                db.text(
+                    """
                     INSERT INTO task_entities (task_id, entity_type, entity_id, created_at)
                     VALUES (:task_id, :entity_type, :entity_id, :created_at)
-                """),
+                """
+                ),
                 {
                     "task_id": self.id,
-                    "entity_type": entity['type'],
-                    "entity_id": entity['id'],
-                    "created_at": datetime.utcnow()
-                }
+                    "entity_type": entity["type"],
+                    "entity_id": entity["id"],
+                    "created_at": datetime.utcnow(),
+                },
             )
         db.session.commit()
 
     def to_dict(self):
         """Convert task to dictionary for JSON serialization"""
         return {
-            'id': self.id,
-            'description': self.description,
-            'due_date': self.due_date.isoformat() if self.due_date else None,
-            'priority': self.priority,
-            'status': self.status,
-            'next_step_type': self.next_step_type,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
-            'entity_name': self.entity_name,
-            'task_type': self.task_type,
-            'parent_task_id': self.parent_task_id,
-            'sequence_order': self.sequence_order,
-            'dependency_type': self.dependency_type,
-            'is_overdue': self.is_overdue,
-            'opportunity_value': self.opportunity_value,
-            'company_name': self.company_name,
-            'opportunity_name': self.opportunity_name,
-            'opportunity_stage': self.opportunity_stage,
-            'stakeholder_opportunity_name': self.stakeholder_opportunity_name,
-            'stakeholder_opportunity_value': self.stakeholder_opportunity_value,
-            'task_type_badge': self.task_type_badge,
-            'can_start': self.can_start,
-            'completion_percentage': self.completion_percentage,
-            'linked_entities': [
-                {
-                    'type': entity['type'],
-                    'id': entity['id'],
-                    'name': entity['name']
-                }
+            "id": self.id,
+            "description": self.description,
+            "due_date": self.due_date.isoformat() if self.due_date else None,
+            "priority": self.priority,
+            "status": self.status,
+            "next_step_type": self.next_step_type,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
+            "entity_name": self.entity_name,
+            "task_type": self.task_type,
+            "parent_task_id": self.parent_task_id,
+            "sequence_order": self.sequence_order,
+            "dependency_type": self.dependency_type,
+            "is_overdue": self.is_overdue,
+            "opportunity_value": self.opportunity_value,
+            "company_name": self.company_name,
+            "opportunity_name": self.opportunity_name,
+            "opportunity_stage": self.opportunity_stage,
+            "stakeholder_opportunity_name": self.stakeholder_opportunity_name,
+            "stakeholder_opportunity_value": self.stakeholder_opportunity_value,
+            "task_type_badge": self.task_type_badge,
+            "can_start": self.can_start,
+            "completion_percentage": self.completion_percentage,
+            "linked_entities": [
+                {"type": entity["type"], "id": entity["id"], "name": entity["name"]}
                 for entity in self.linked_entities
-            ]
+            ],
         }
 
     def __repr__(self):

@@ -38,11 +38,13 @@ Comprehensive compliance assessment identified **4 immediate code quality violat
 ### ADRs Created
 
 ✅ **ADR-001: Task Architecture with Parent/Child Relationships**
+
 - Documented polymorphic entity linking design
 - Covered parent/child task relationships and dependency types
 - Rationale for hybrid approach over flat structure or graph database
 
 ✅ **ADR-002: RESTful Resource Hierarchy API Design Pattern**  
+
 - Documented shift from generic entity routes to resource hierarchy
 - Covered REST compliance and consistency with existing patterns
 - Migration plan for API refactoring
@@ -58,17 +60,20 @@ The following recent commits were assessed and **do not require ADRs**:
 ## Prioritized Remediation Plan
 
 ### Priority 1: Immediate Fixes (< 5 minutes)
+
 1. **Fix ruff f-string violation** in `main.py:89`
 2. **Fix black formatting** in `main.py`  
 3. **Remove unused import** in `app/models/task.py`
 4. **Quote variable** in `run.sh`
 
 ### Priority 2: Quality Improvements (Medium term)
+
 1. **Add type hints** to Flask route functions (mypy reported 52 type errors)
 2. **Add docstrings** to model classes and key functions
 3. **Consider mypy configuration** for Flask/SQLAlchemy type checking
 
 ### Priority 3: Documentation Maintenance (Ongoing)
+
 1. **Review ADRs quarterly** for status updates
 2. **Document future architectural decisions** using established ADR process
 3. **Update API_REFACTOR.md** when implementing ADR-002 changes
@@ -76,11 +81,13 @@ The following recent commits were assessed and **do not require ADRs**:
 ## Implementation Recommendations
 
 ### Immediate Action Items
+
 - Create feature branch or worktree for fixes (main branch protected)
 - Run compliance tools before commits: `ruff --fix`, `black`, `shellcheck`
 - Consider pre-commit hooks for automated compliance checking
 
 ### Long-term Quality Strategy
+
 - **Establish baseline metrics:** Track ruff/mypy violation counts over time
 - **Implement progressive typing:** Add type hints to new code, gradually improve existing
 - **Documentation culture:** Create ADRs for technology choices, API changes, schema modifications

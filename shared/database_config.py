@@ -27,7 +27,7 @@ def get_database_path():
                 db_path = f"sqlite:///{current}/instance/crm.db"
                 return db_path
         current = current.parent
-    
+
     # No git repository found - this is a configuration error
     raise RuntimeError(
         "No git repository found. The application must be run from within a git repository. "

@@ -1,15 +1,19 @@
 from flask import Blueprint, request, jsonify, render_template_string
-from app.models import db, Task, Stakeholder, Company, Opportunity, Note, User
+from app.models import db, Task, Stakeholder, Company, Opportunity
 from app.utils.route_helpers import GenericAPIHandler
 from app.utils.form_configs import FormConfigManager, DynamicChoiceProvider
-from app.forms.entity_forms import CompanyForm, StakeholderForm, OpportunityForm, NoteForm
-from datetime import datetime
+from app.forms.entity_forms import (
+    CompanyForm,
+    StakeholderForm,
+    OpportunityForm,
+    NoteForm,
+)
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 # Create generic API handlers
 task_api = GenericAPIHandler(Task, "task")
-stakeholder_api = GenericAPIHandler(Stakeholder, "stakeholder")  
+stakeholder_api = GenericAPIHandler(Stakeholder, "stakeholder")
 company_api = GenericAPIHandler(Company, "company")
 opportunity_api = GenericAPIHandler(Opportunity, "opportunity")
 
@@ -19,73 +23,76 @@ opportunity_api = GenericAPIHandler(Opportunity, "opportunity")
 # Single source of truth for all form configurations
 # ==============================================================================
 
+
 @api_bp.route("/form-config/<entity_type>")
 def get_form_config(entity_type):
     """
     Get dynamic form configuration for any entity type.
-    
+
     This endpoint eliminates duplication between backend forms and frontend
     template configs by generating configurations directly from WTForms.
     """
     try:
         # Map entity types to form classes
         form_classes = {
-            'company': CompanyForm,
-            'stakeholder': StakeholderForm,
-            'opportunity': OpportunityForm,
-            'note': NoteForm
+            "company": CompanyForm,
+            "stakeholder": StakeholderForm,
+            "opportunity": OpportunityForm,
+            "note": NoteForm,
         }
-        
+
         form_class = form_classes.get(entity_type)
         if not form_class:
-            return jsonify({'error': f'Unknown entity type: {entity_type}'}), 400
-        
+            return jsonify({"error": f"Unknown entity type: {entity_type}"}), 400
+
         # Get context from query parameters for dynamic choices
         context = {
-            'company_id': request.args.get('company_id'),
-            'user_id': request.args.get('user_id'),
+            "company_id": request.args.get("company_id"),
+            "user_id": request.args.get("user_id"),
         }
-        
+
         # Generate configuration using DRY approach
         config = FormConfigManager.get_form_config(form_class, context)
-        
+
         return jsonify(config)
-        
+
     except Exception as e:
-        return jsonify({'error': f'Failed to generate form config: {str(e)}'}), 500
+        return jsonify({"error": f"Failed to generate form config: {str(e)}"}), 500
 
 
 @api_bp.route("/choices/<choice_type>")
 def get_dynamic_choices(choice_type):
     """
     Get dynamic choices for select fields.
-    
+
     Supports real-time choice population and filtering based on context.
     """
     try:
         # Get filter parameters
-        company_id = request.args.get('company_id', type=int)
-        
+        company_id = request.args.get("company_id", type=int)
+
         # Route to appropriate choice provider
         choice_methods = {
-            'companies': DynamicChoiceProvider.get_company_choices,
-            'users': DynamicChoiceProvider.get_user_choices,
-            'stakeholders': lambda: DynamicChoiceProvider.get_stakeholder_choices(company_id),
-            'meddpicc_roles': DynamicChoiceProvider.get_meddpicc_role_choices,
-            'industries': DynamicChoiceProvider.get_industry_choices,
-            'opportunity_stages': DynamicChoiceProvider.get_opportunity_stage_choices,
-            'company_sizes': DynamicChoiceProvider.get_company_size_choices,
+            "companies": DynamicChoiceProvider.get_company_choices,
+            "users": DynamicChoiceProvider.get_user_choices,
+            "stakeholders": lambda: DynamicChoiceProvider.get_stakeholder_choices(
+                company_id
+            ),
+            "meddpicc_roles": DynamicChoiceProvider.get_meddpicc_role_choices,
+            "industries": DynamicChoiceProvider.get_industry_choices,
+            "opportunity_stages": DynamicChoiceProvider.get_opportunity_stage_choices,
+            "company_sizes": DynamicChoiceProvider.get_company_size_choices,
         }
-        
+
         choice_method = choice_methods.get(choice_type)
         if not choice_method:
-            return jsonify({'error': f'Unknown choice type: {choice_type}'}), 400
-        
+            return jsonify({"error": f"Unknown choice type: {choice_type}"}), 400
+
         choices = choice_method()
-        return jsonify({'choices': choices})
-        
+        return jsonify({"choices": choices})
+
     except Exception as e:
-        return jsonify({'error': f'Failed to get choices: {str(e)}'}), 500
+        return jsonify({"error": f"Failed to get choices: {str(e)}"}), 500
 
 
 @api_bp.route("/tasks/<int:task_id>")
@@ -100,19 +107,19 @@ def get_stakeholder_details(stakeholder_id):
     return stakeholder_api.get_details(stakeholder_id)
 
 
-
 @api_bp.route("/companies")
 def get_companies():
     """Get all companies for form dropdowns"""
     try:
         companies = Company.query.order_by(Company.name).all()
-        return jsonify([{
-            'id': company.id,
-            'name': company.name,
-            'industry': company.industry
-        } for company in companies])
+        return jsonify(
+            [
+                {"id": company.id, "name": company.name, "industry": company.industry}
+                for company in companies
+            ]
+        )
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 
 @api_bp.route("/stakeholders")
@@ -120,16 +127,22 @@ def get_stakeholders():
     """Get all stakeholders for form dropdowns"""
     try:
         stakeholders = Stakeholder.query.order_by(Stakeholder.name).all()
-        return jsonify([{
-            'id': stakeholder.id,
-            'name': stakeholder.name,
-            'job_title': stakeholder.job_title,
-            'company_name': stakeholder.company.name if stakeholder.company else None,
-            'meddpicc_roles': stakeholder.get_meddpicc_role_names()
-        } for stakeholder in stakeholders])
+        return jsonify(
+            [
+                {
+                    "id": stakeholder.id,
+                    "name": stakeholder.name,
+                    "job_title": stakeholder.job_title,
+                    "company_name": (
+                        stakeholder.company.name if stakeholder.company else None
+                    ),
+                    "meddpicc_roles": stakeholder.get_meddpicc_role_names(),
+                }
+                for stakeholder in stakeholders
+            ]
+        )
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
+        return jsonify({"error": str(e)}), 500
 
 
 @api_bp.route("/opportunities")
@@ -137,16 +150,21 @@ def get_opportunities():
     """Get all opportunities for form dropdowns"""
     try:
         opportunities = Opportunity.query.order_by(Opportunity.name).all()
-        return jsonify([{
-            'id': opportunity.id,
-            'name': opportunity.name,
-            'stage': opportunity.stage,
-            'company_name': opportunity.company.name if opportunity.company else None
-        } for opportunity in opportunities])
+        return jsonify(
+            [
+                {
+                    "id": opportunity.id,
+                    "name": opportunity.name,
+                    "stage": opportunity.stage,
+                    "company_name": (
+                        opportunity.company.name if opportunity.company else None
+                    ),
+                }
+                for opportunity in opportunities
+            ]
+        )
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
+        return jsonify({"error": str(e)}), 500
 
 
 @api_bp.route("/companies/<int:company_id>")
@@ -164,14 +182,17 @@ def get_opportunity_details(opportunity_id):
 @api_bp.route("/tasks/<int:task_id>", methods=["PUT"])
 def update_task(task_id):
     """Update task details"""
-    return task_api.update_entity(task_id, ["description", "due_date", "priority", "status", "next_step_type"])
+    return task_api.update_entity(
+        task_id, ["description", "due_date", "priority", "status", "next_step_type"]
+    )
 
 
 @api_bp.route("/stakeholders/<int:stakeholder_id>", methods=["PUT"])
 def update_stakeholder(stakeholder_id):
     """Update stakeholder details"""
-    return stakeholder_api.update_entity(stakeholder_id, ["name", "job_title", "email", "phone"])
-
+    return stakeholder_api.update_entity(
+        stakeholder_id, ["name", "job_title", "email", "phone"]
+    )
 
 
 @api_bp.route("/companies/<int:company_id>", methods=["PUT"])
@@ -183,7 +204,9 @@ def update_company(company_id):
 @api_bp.route("/opportunities/<int:opportunity_id>", methods=["PUT"])
 def update_opportunity(opportunity_id):
     """Update opportunity details"""
-    return opportunity_api.update_entity(opportunity_id, ["name", "value", "probability", "expected_close_date", "stage"])
+    return opportunity_api.update_entity(
+        opportunity_id, ["name", "value", "probability", "expected_close_date", "stage"]
+    )
 
 
 # POST endpoints for entity creation
@@ -192,46 +215,57 @@ def create_task():
     """Create new task with support for linked entities"""
     try:
         data = request.get_json()
-        
+
         # Handle task creation for single tasks
         if data.get("task_type") == "single" or not data.get("task_type"):
             # Create single task
             task_data = {}
-            allowed_fields = ["description", "due_date", "priority", "status", "next_step_type", "task_type"]
-            
+            allowed_fields = [
+                "description",
+                "due_date",
+                "priority",
+                "status",
+                "next_step_type",
+                "task_type",
+            ]
+
             for field in allowed_fields:
                 if field in data:
                     if field == "due_date" and data[field]:
                         from datetime import datetime
-                        task_data[field] = datetime.strptime(data[field], "%Y-%m-%d").date()
+
+                        task_data[field] = datetime.strptime(
+                            data[field], "%Y-%m-%d"
+                        ).date()
                     else:
                         task_data[field] = data[field]
-            
+
             # Set defaults
             task_data.setdefault("task_type", "single")
             task_data.setdefault("priority", "medium")
             task_data.setdefault("status", "todo")
-            
+
             task = Task(**task_data)
             db.session.add(task)
             db.session.flush()  # Get task ID
-            
+
             # Handle linked entities if provided
             linked_entities = data.get("linked_entities", [])
             if isinstance(linked_entities, str):
                 import json
+
                 linked_entities = json.loads(linked_entities)
-            
+
             if linked_entities:
                 task.set_linked_entities(linked_entities)
-            
+
             db.session.commit()
             return jsonify(task.to_dict()), 201
-            
+
         # Handle multi-task creation (parent with children)
         elif data.get("task_type") == "multi":
             from datetime import datetime
-            
+
             # Create parent task
             parent_task = Task(
                 description=data["description"],
@@ -245,19 +279,20 @@ def create_task():
                 task_type="parent",
                 dependency_type=data.get("dependency_type", "parallel"),
             )
-            
+
             db.session.add(parent_task)
             db.session.flush()
-            
+
             # Handle linked entities for parent task
             linked_entities = data.get("linked_entities", [])
             if isinstance(linked_entities, str):
                 import json
+
                 linked_entities = json.loads(linked_entities)
-            
+
             if linked_entities:
                 parent_task.set_linked_entities(linked_entities)
-            
+
             # Create child tasks
             child_tasks_data = data.get("child_tasks", [])
             for i, child_data in enumerate(child_tasks_data):
@@ -280,15 +315,15 @@ def create_task():
                         dependency_type=data.get("dependency_type", "parallel"),
                     )
                     db.session.add(child_task)
-                    
+
                     # Child tasks inherit parent's linked entities
                     if linked_entities:
                         db.session.flush()  # Ensure child task has ID
                         child_task.set_linked_entities(linked_entities)
-            
+
             db.session.commit()
             return jsonify(parent_task.to_dict()), 201
-            
+
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
@@ -297,20 +332,33 @@ def create_task():
 @api_bp.route("/stakeholders", methods=["POST"])
 def create_stakeholder():
     """Create new stakeholder"""
-    return stakeholder_api.create_entity(["name", "job_title", "email", "phone", "company_id"])
-
+    return stakeholder_api.create_entity(
+        ["name", "job_title", "email", "phone", "company_id"]
+    )
 
 
 @api_bp.route("/companies", methods=["POST"])
 def create_company():
     """Create new company"""
-    return company_api.create_entity(["name", "industry", "size", "website", "phone", "address"])
+    return company_api.create_entity(
+        ["name", "industry", "size", "website", "phone", "address"]
+    )
 
 
 @api_bp.route("/opportunities", methods=["POST"])
 def create_opportunity():
     """Create new opportunity"""
-    return opportunity_api.create_entity(["name", "value", "probability", "expected_close_date", "stage", "company_id", "contact_id"])
+    return opportunity_api.create_entity(
+        [
+            "name",
+            "value",
+            "probability",
+            "expected_close_date",
+            "stage",
+            "company_id",
+            "contact_id",
+        ]
+    )
 
 
 # DELETE endpoints for entity deletion
@@ -324,7 +372,6 @@ def delete_task(task_id):
 def delete_stakeholder(stakeholder_id):
     """Delete stakeholder"""
     return stakeholder_api.delete_entity(stakeholder_id)
-
 
 
 @api_bp.route("/companies/<int:company_id>", methods=["DELETE"])
@@ -344,22 +391,22 @@ def get_icon():
     """Get icon HTML from Jinja2 macro"""
     try:
         data = request.get_json()
-        macro_name = data.get('macro_name')
-        css_class = data.get('class', 'w-5 h-5')
-        
+        macro_name = data.get("macro_name")
+        css_class = data.get("class", "w-5 h-5")
+
         if not macro_name:
-            return jsonify({'error': 'macro_name is required'}), 400
-            
+            return jsonify({"error": "macro_name is required"}), 400
+
         # Template to call the macro
         template_str = f"""
         {{% from 'components/icons.html' import {macro_name} %}}
         {{{{ {macro_name}(class='{css_class}') }}}}
         """
-        
+
         # Render the macro
         icon_html = render_template_string(template_str.strip())
-        
-        return icon_html, 200, {'Content-Type': 'text/html'}
-        
+
+        return icon_html, 200, {"Content-Type": "text/html"}
+
     except Exception as e:
-        return jsonify({'error': f'Failed to render icon: {str(e)}'}), 500
+        return jsonify({"error": f"Failed to render icon: {str(e)}"}), 500
