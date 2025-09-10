@@ -1,5 +1,6 @@
 {% from "components/expandable_card.html" import expandable_card, action_buttons_row %}
 {% from "components/ui_elements.html" import pluralized_count %}
+{% from "components/icons.html" import plus_icon, clipboard_list_icon, currency_dollar_icon %}
 
 {# Company field configuration - clean, declarative setup #}
 {% set company_field_config = {
@@ -118,15 +119,15 @@
         <div class="quick-actions-grid">
             <button @click.stop="createTask('company', {{ company.id }})" 
                     class="quick-action-btn quick-action-btn-primary">
-                Add Task
+                {{ clipboard_list_icon('w-4 h-4 mr-1') }}Add Task
             </button>
             <button @click.stop="createStakeholder('company', {{ company.id }})" 
                     class="quick-action-btn quick-action-btn-secondary">
-                New Stakeholder
+                {{ plus_icon('w-4 h-4 mr-1') }}New Stakeholder
             </button>
             <button @click.stop="createOpportunity('company', {{ company.id }})" 
                     class="quick-action-btn quick-action-btn-accent">
-                New Opportunity
+                {{ plus_icon('w-4 h-4 mr-1') }}New Opportunity
             </button>
         </div>
         <div class="mt-2 flex flex-wrap gap-2">

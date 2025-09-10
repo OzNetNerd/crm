@@ -1,7 +1,7 @@
 {% extends "base/layout.html" %}
 
 {# DRY Common Imports - reduced from 15+ lines to this clean set #}
-{% from "components/icons.html" import building_office_icon, user_icon, chevron_right_icon, check_circle_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, phone_icon, envelope_icon %}
+{% from "components/icons.html" import plus_icon, clipboard_list_icon, building_office_icon, user_icon, chevron_right_icon, check_circle_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, phone_icon, envelope_icon %}
 {% from "components/ui_elements.html" import expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar, enhanced_filter_controls %}
 {% from "components/page_template.html" import page_layout %}
 
@@ -83,11 +83,11 @@
         <div class="quick-actions-grid">
             <button @click.stop="createTask({{ stakeholder.id }})" 
                     class="quick-action-btn quick-action-btn-primary">
-                Add Task
+                {{ clipboard_list_icon('w-4 h-4 mr-1') }}Add Task
             </button>
             <button @click.stop="createOpportunity({{ stakeholder.id }})" 
                     class="quick-action-btn quick-action-btn-secondary">
-                New Opportunity
+                {{ plus_icon('w-4 h-4 mr-1') }}New Opportunity
             </button>
             {% if stakeholder.opportunities %}
                 <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm">
@@ -134,7 +134,7 @@
         'label': 'New Stakeholder',
         'onclick': 'openNewStakeholderModal()',
         'color': 'blue',
-        'icon': user_icon("w-4 h-4")
+        'icon': plus_icon('w-4 h-4')
     }
 ] %}
 

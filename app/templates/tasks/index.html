@@ -4,6 +4,7 @@
 {% from "components/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
 {% from "components/expandable_card.html" import expandable_card, task_header_content, task_reschedule_buttons, action_buttons_row, task_title_content, task_metadata_content %}
 {% from "components/imports/entity_imports.html" import include_common_modals %}
+{% from "components/icons.html" import plus_icon %}
 
 {% block title %}All Tasks - CRM{% endblock %}
 
@@ -43,7 +44,7 @@
         'label': 'New Task',
         'onclick': 'openNewTaskModal()',
         'color': 'blue',
-        'icon': ''
+        'icon': plus_icon('w-4 h-4')
     }
 ] %}
 
@@ -65,7 +66,7 @@
         'label': 'New Task',
         'onclick': 'openNewTaskModal()',
         'color': 'blue',
-        'icon': ''
+        'icon': plus_icon('w-4 h-4')
     }
 ] %}
 

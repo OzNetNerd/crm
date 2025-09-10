@@ -4,6 +4,7 @@
 {% from "components/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
 {% from "components/expandable_card.html" import expandable_card, opportunity_header_content, opportunity_metadata_content, action_buttons_row %}
 {% from "components/imports/entity_imports.html" import include_common_modals %}
+{% from "components/icons.html" import plus_icon %}
 
 {% block title %}Opportunities - CRM{% endblock %}
 
@@ -43,7 +44,7 @@
         'label': 'New Opportunity',
         'onclick': 'openNewOpportunityModal()',
         'color': 'blue',
-        'icon': ''
+        'icon': plus_icon('w-4 h-4')
     }
 ] %}
 
@@ -76,7 +77,7 @@
         'label': 'New Opportunity',
         'onclick': 'openNewOpportunityModal()',
         'color': 'blue',
-        'icon': ''
+        'icon': plus_icon('w-4 h-4')
     }
 ] %}
 

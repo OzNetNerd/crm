@@ -1,6 +1,6 @@
 {% from "components/expandable_card.html" import expandable_card, action_buttons_row %}
 {% from "components/ui_elements.html" import pluralized_count %}
-{% from "components/icons.html" import envelope_icon, phone_icon %}
+{% from "components/icons.html" import plus_icon, clipboard_list_icon, envelope_icon, phone_icon %}
 {% from "components/list_section.html" import status_badge %}
 
 {# Stakeholder field configuration - clean, declarative setup #}
@@ -68,11 +68,11 @@
         <div class="quick-actions-grid">
             <button @click.stop="createTask({{ stakeholder.id }})" 
                     class="quick-action-btn quick-action-btn-primary">
-                Add Task
+                {{ clipboard_list_icon('w-4 h-4 mr-1') }}Add Task
             </button>
             <button @click.stop="createOpportunity({{ stakeholder.id }})" 
                     class="quick-action-btn quick-action-btn-secondary">
-                New Opportunity
+                {{ plus_icon('w-4 h-4 mr-1') }}New Opportunity
             </button>
             {% if stakeholder.opportunities %}
                 <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm">
