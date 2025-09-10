@@ -239,7 +239,7 @@ class RAGEngine:
                 contacts = db_session.query(Stakeholder).join(Company).filter(
                     or_(
                         Stakeholder.name.ilike(f"%{query}%"),
-                        Stakeholder.role.ilike(f"%{query}%"),
+                        Stakeholder.job_title.ilike(f"%{query}%"),
                         Company.name.ilike(f"%{query}%")
                     )
                 ).limit(5).all()
@@ -249,7 +249,7 @@ class RAGEngine:
                         "type": "contact",
                         "id": contact.id,
                         "title": contact.name,
-                        "content": f"Contact: {contact.name} ({contact.role or 'N/A'}) at {contact.company.name if contact.company else 'Unknown'}",
+                        "content": f"Contact: {contact.name} ({contact.job_title or 'N/A'}) at {contact.company.name if contact.company else 'Unknown'}",
                         "relevance_score": 0.8
                     })
             

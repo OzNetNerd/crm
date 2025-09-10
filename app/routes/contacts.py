@@ -45,7 +45,7 @@ def index():
         'name': contact.name,
         'email': contact.email,
         'phone': contact.phone,
-        'role': contact.role,
+        'role': contact.job_title,
         'company_id': contact.company_id,
         'company': {
             'id': contact.company.id,

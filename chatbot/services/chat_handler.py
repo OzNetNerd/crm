@@ -265,7 +265,7 @@ class ChatHandler:
             
             contact_list = [
                 f"• {c.name}" + 
-                (f" ({c.role})" if c.role else "") + 
+                (f" ({c.job_title})" if c.job_title else "") + 
                 (f" at {c.company.name}" if c.company else "")
                 for c in contacts
             ]

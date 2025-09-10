@@ -68,7 +68,7 @@ def get_filter_options(model_name, field_name, **kwargs):
     Returns:
         List of {'value': str, 'label': str} dictionaries
     """
-    from app.models import Company, Contact, Task, Opportunity
+    from app.models import Company, Stakeholder, Task, Opportunity
     
     model_map = {
         'Company': Company,
@@ -160,11 +160,11 @@ def get_sort_options(model_name, exclude_fields=None, custom_fields=None):
     Returns:
         List of {'value': str, 'label': str} dictionaries
     """
-    from app.models import Company, Contact, Task, Opportunity
+    from app.models import Company, Stakeholder, Task, Opportunity
     
     model_map = {
         'Company': Company,
-        'Contact': Contact,
+        'Contact': Stakeholder,
         'Task': Task, 
         'Opportunity': Opportunity
     }

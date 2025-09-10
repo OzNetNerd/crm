@@ -31,7 +31,7 @@ def index():
         'name': contact.name,
         'email': contact.email,
         'phone': contact.phone,
-        'role': contact.role,
+        'role': contact.job_title,
         'company_id': contact.company_id
     } for contact in contacts_objects]
     
