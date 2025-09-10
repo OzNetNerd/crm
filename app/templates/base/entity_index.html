@@ -34,8 +34,7 @@
 {% block title %}{{ entity_name }} - CRM{% endblock %}
 
 {% block content %}
-{# Force entity config block to execute first #}
-{% block entity_config %}{% endblock %}
+{# Entity config block will be executed by child templates #}
 
 {% call page_layout(entity_name, entity_description, buttons=entity_buttons, summary_data=entity_stats) %}
 

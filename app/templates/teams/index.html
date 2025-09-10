@@ -1,11 +1,13 @@
-{% extends "base/entity_index.html" %}
+{% extends "base/layout.html" %}
 
-{# Entity-specific imports #}
-{% block entity_imports %}
-{% from "components/expandable_card.html" import team_header_content, team_title_content, team_metadata_content, action_buttons_row %}
-{% endblock %}
+{% from "components/page_template.html" import page_layout %}
+{% from "components/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
+{% from "components/expandable_card.html" import expandable_card, team_header_content, team_title_content, team_metadata_content, action_buttons_row %}
+{% from "components/imports/entity_imports.html" import include_common_modals %}
 
-{% block entity_config %}
+{% block title %}Account Teams - CRM{% endblock %}
+
+{% block content %}
 {% set entity_name = "Account Teams" %}
 {% set entity_description = "Manage your account team members" %}
 {% set entity_type = "team" %}
@@ -55,9 +57,34 @@
     primary_filter_label='All Roles'
 ) }}
 {% endset %}
-{% endblock %}
 
-{% block entity_cards %}
+{% set entity_buttons = [
+    {
+        'label': 'New Team Member',
+        'onclick': 'openNewTeamMemberModal()',
+        'color': 'blue',
+        'icon': ''
+    }
+] %}
+
+{% call page_layout(entity_name, entity_description, buttons=entity_buttons, summary_data=entity_stats) %}
+
+<div x-data="createEntityManager(get{{ entity_type|title }}Config('{{ today if today else '' }}'))" class="space-y-6">
+
+    <!-- Bulk Actions Bar -->
+    {{ bulk_actions_bar(entity_type, entity_type + 's', 
+         {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
+
+    <!-- Enhanced Filters -->
+    {{ entity_filter_controls }}
+
+    <!-- Dynamic Entity Section -->
+    <div id="{{ entity_type }}-content">
+        {{ dynamic_entity_section() }}
+    </div>
+
+    <!-- Entity Cards Cache -->
+    <div style="display: none;" id="{{ entity_type }}-cards-cache">
 {% for member in team_members %}
     <div id="team-card-{{ member.id }}">
         {{ expandable_card('team', member, member.id,
@@ -68,14 +95,28 @@
             action_buttons=action_buttons_row('team', member.id)) }}
     </div>
 {% endfor %}
+    </div>
+
+</div>
+
+{% endcall %}
 {% endblock %}
 
-{% block entity_data_attributes %}
+{% block modals %}
+{% from "components/modals/confirmation.html" import confirmation_modal %}
+{{ confirmation_modal('team-confirmation-modal') }}
+{{ include_common_modals() }}
+{% endblock %}
+
+{% block data_attributes %}
 data-team-members="{{ team_data | tojson | forceescape }}"
 data-companies="{{ companies | tojson | forceescape }}"
 data-opportunities="{{ opportunities | tojson | forceescape }}"
 {% endblock %}
 
-{% block entity_scripts %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
+<script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
 <script src="{{ url_for('static', filename='js/entities/teams.js') }}"></script>
 {% endblock %}
