@@ -44,10 +44,81 @@ class Stakeholder(db.Model):
     __tablename__ = "stakeholders"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    job_title = db.Column(db.String(100))  # Their actual job: "VP Sales", "CTO", etc.
-    email = db.Column(db.String(255))
-    phone = db.Column(db.String(50))
+    name = db.Column(
+        db.String(255), 
+        nullable=False,
+        info={
+            'display_label': 'Full Name',
+            'sortable': True,
+            'required': True
+        }
+    )
+    job_title = db.Column(
+        db.String(100),
+        info={
+            'display_label': 'Job Title',
+            'groupable': True,
+            'sortable': True,
+            'common_roles': {
+                'ceo': {
+                    'label': 'CEO',
+                    'css_class': 'role-executive',
+                    'groupable': True,
+                    'sortable': True,
+                    'icon': 'star',
+                    'order': 1
+                },
+                'cto': {
+                    'label': 'CTO',
+                    'css_class': 'role-technical',
+                    'groupable': True,
+                    'sortable': True,
+                    'icon': 'cpu-chip',
+                    'order': 2
+                },
+                'vp_sales': {
+                    'label': 'VP Sales',
+                    'css_class': 'role-sales',
+                    'groupable': True,
+                    'sortable': True,
+                    'icon': 'chart-bar',
+                    'order': 3
+                },
+                'director': {
+                    'label': 'Director',
+                    'css_class': 'role-management',
+                    'groupable': True,
+                    'sortable': True,
+                    'icon': 'user-group',
+                    'order': 4
+                },
+                'manager': {
+                    'label': 'Manager',
+                    'css_class': 'role-management',
+                    'groupable': True,
+                    'sortable': True,
+                    'icon': 'briefcase',
+                    'order': 5
+                }
+            }
+        }
+    )  # Their actual job: "VP Sales", "CTO", etc.
+    email = db.Column(
+        db.String(255),
+        info={
+            'display_label': 'Email Address',
+            'sortable': True,
+            'contact_field': True
+        }
+    )
+    phone = db.Column(
+        db.String(50),
+        info={
+            'display_label': 'Phone Number',
+            'sortable': True,
+            'contact_field': True
+        }
+    )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Foreign key to company
@@ -152,6 +223,7 @@ class Stakeholder(db.Model):
             "company_id": self.company_id,
             "company_name": self.company.name if self.company else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
+            "contact_info_status": self.contact_info_status,
             "meddpicc_roles": self.get_meddpicc_role_names(),
             "relationship_owners": self.get_relationship_owners(),
             "opportunities": [
@@ -163,6 +235,21 @@ class Stakeholder(db.Model):
                 for opp in self.opportunities
             ],
         }
+    
+    @property
+    def contact_info_status(self):
+        """Calculate contact info completeness"""
+        has_email = bool(self.email)
+        has_phone = bool(self.phone)
+        
+        if has_email and has_phone:
+            return 'complete'
+        elif has_email:
+            return 'email_only'
+        elif has_phone:
+            return 'phone_only'
+        else:
+            return 'missing'
 
     def __repr__(self):
         return f"<Stakeholder {self.name} ({self.job_title}) at {self.company.name if self.company else 'Unknown'}>"

@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify, render_template_string
 from app.models import db, Task, Stakeholder, Company, Opportunity
 from app.utils.route_helpers import GenericAPIHandler
 from app.utils.form_configs import FormConfigManager, DynamicChoiceProvider
+from app.utils.model_introspection import ModelIntrospector, get_model_by_name, get_all_model_configs
+from app.utils.dynamic_form_builder import DynamicFormBuilder
 from app.forms.entity_forms import (
     CompanyForm,
     StakeholderForm,
@@ -93,6 +95,154 @@ def get_dynamic_choices(choice_type):
 
     except Exception as e:
         return jsonify({"error": f"Failed to get choices: {str(e)}"}), 500
+
+
+# ==============================================================================
+# MODEL INTROSPECTION API ENDPOINTS - SELF-DESCRIBING MODELS
+# Single source of truth for all model configurations
+# ==============================================================================
+
+
+@api_bp.route("/model-config")
+def get_all_model_configurations():
+    """
+    Get configuration for all models.
+    
+    Returns complete model configurations including choices, groupable fields,
+    sortable fields, and all metadata directly from the models themselves.
+    """
+    try:
+        configs = get_all_model_configs()
+        return jsonify(configs)
+    except Exception as e:
+        return jsonify({"error": f"Failed to get model configs: {str(e)}"}), 500
+
+
+@api_bp.route("/model-config/<model_name>")
+def get_model_configuration(model_name):
+    """
+    Get complete configuration for a specific model.
+    
+    Args:
+        model_name: Name of the model (e.g., 'Opportunity', 'Task', 'Company')
+        
+    Returns:
+        Complete model configuration including all field metadata
+    """
+    try:
+        model_class = get_model_by_name(model_name)
+        if not model_class:
+            return jsonify({"error": f"Unknown model: {model_name}"}), 404
+        
+        config = ModelIntrospector.get_model_config(model_class)
+        return jsonify(config)
+    except Exception as e:
+        return jsonify({"error": f"Failed to get model config: {str(e)}"}), 500
+
+
+@api_bp.route("/model-config/<model_name>/<field_name>")
+def get_field_configuration(model_name, field_name):
+    """
+    Get configuration for a specific model field.
+    
+    Args:
+        model_name: Name of the model
+        field_name: Name of the field
+        
+    Returns:
+        Field configuration including choices, CSS classes, icons, etc.
+    """
+    try:
+        model_class = get_model_by_name(model_name)
+        if not model_class:
+            return jsonify({"error": f"Unknown model: {model_name}"}), 404
+        
+        choices = ModelIntrospector.get_field_choices_with_metadata(model_class, field_name)
+        if not choices:
+            return jsonify({"error": f"Field {field_name} not found or has no choices"}), 404
+        
+        return jsonify({
+            "field_name": field_name,
+            "model_name": model_name,
+            "choices": choices,
+            "form_choices": ModelIntrospector.get_field_choices(model_class, field_name),
+            "ordered_choices": ModelIntrospector.get_ordered_choices(model_class, field_name)
+        })
+    except Exception as e:
+        return jsonify({"error": f"Failed to get field config: {str(e)}"}), 500
+
+
+@api_bp.route("/model-choices/<model_name>")
+def get_model_form_choices(model_name):
+    """
+    Get all form choices for a model in API-friendly format.
+    
+    Args:
+        model_name: Name of the model
+        
+    Returns:
+        All field choices formatted for frontend consumption
+    """
+    try:
+        model_class = get_model_by_name(model_name)
+        if not model_class:
+            return jsonify({"error": f"Unknown model: {model_name}"}), 404
+        
+        choices_data = DynamicFormBuilder.get_form_choices_api_data(model_class)
+        return jsonify({
+            "model_name": model_name,
+            "choices": choices_data
+        })
+    except Exception as e:
+        return jsonify({"error": f"Failed to get model choices: {str(e)}"}), 500
+
+
+@api_bp.route("/field-choices/<model_name>/<field_name>")
+def get_field_choices_api(model_name, field_name):
+    """
+    Get choices for a specific field in API format.
+    
+    Args:
+        model_name: Name of the model
+        field_name: Name of the field
+        
+    Returns:
+        Field choices with complete metadata for frontend use
+    """
+    try:
+        model_class = get_model_by_name(model_name)
+        if not model_class:
+            return jsonify({"error": f"Unknown model: {model_name}"}), 404
+        
+        choices_metadata = ModelIntrospector.get_field_choices_with_metadata(model_class, field_name)
+        if not choices_metadata:
+            return jsonify({"error": f"No choices found for {model_name}.{field_name}"}), 404
+        
+        # Format for API consumption
+        api_choices = [
+            {
+                'value': value,
+                'label': config['label'],
+                'css_class': config.get('css_class', ''),
+                'icon': config.get('icon', ''),
+                'description': config.get('description', ''),
+                'order': config.get('order', 999),
+                'groupable': config.get('groupable', False),
+                'sortable': config.get('sortable', True)
+            }
+            for value, config in choices_metadata.items()
+        ]
+        
+        # Sort by order
+        api_choices.sort(key=lambda x: x['order'])
+        
+        return jsonify({
+            "field_name": field_name,
+            "model_name": model_name,
+            "choices": api_choices
+        })
+    except Exception as e:
+        return jsonify({"error": f"Failed to get field choices: {str(e)}"}), 500
 
 
 @api_bp.route("/tasks/<int:task_id>")

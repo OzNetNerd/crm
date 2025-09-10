@@ -18,10 +18,137 @@ class Task(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.Text, nullable=False)
-    due_date = db.Column(db.Date)
-    priority = db.Column(db.String(10), default="medium")  # high/medium/low
-    status = db.Column(db.String(20), default="todo")  # todo/in-progress/complete
-    next_step_type = db.Column(db.String(20))  # meeting/demo/call/email
+    due_date = db.Column(
+        db.Date,
+        info={
+            'display_label': 'Due Date',
+            'groupable': True,
+            'sortable': True,
+            'date_groupings': {
+                'overdue': {'label': 'Overdue', 'css_class': 'date-overdue'},
+                'today': {'label': 'Due Today', 'css_class': 'date-today'},
+                'this_week': {'label': 'This Week', 'css_class': 'date-soon'},
+                'later': {'label': 'Later', 'css_class': 'date-future'},
+                'no_date': {'label': 'No Due Date', 'css_class': 'date-missing'}
+            }
+        }
+    )
+    priority = db.Column(
+        db.String(10), 
+        default="medium",
+        info={
+            'display_label': 'Priority',
+            'choices': {
+                'high': {
+                    'label': 'High',
+                    'css_class': 'priority-urgent',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Urgent priority',
+                    'icon': 'exclamation',
+                    'order': 1
+                },
+                'medium': {
+                    'label': 'Medium',
+                    'css_class': 'priority-normal',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Normal priority',
+                    'icon': 'minus',
+                    'order': 2
+                },
+                'low': {
+                    'label': 'Low',
+                    'css_class': 'priority-low',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Low priority',
+                    'icon': 'arrow-down',
+                    'order': 3
+                }
+            }
+        }
+    )  # high/medium/low
+    status = db.Column(
+        db.String(20), 
+        default="todo",
+        info={
+            'display_label': 'Status',
+            'choices': {
+                'todo': {
+                    'label': 'To Do',
+                    'css_class': 'status-todo',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Not started',
+                    'icon': 'circle',
+                    'order': 1
+                },
+                'in-progress': {
+                    'label': 'In Progress',
+                    'css_class': 'status-progress',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Currently working on',
+                    'icon': 'clock',
+                    'order': 2
+                },
+                'complete': {
+                    'label': 'Complete',
+                    'css_class': 'status-complete',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Finished',
+                    'icon': 'check-circle',
+                    'order': 3
+                }
+            }
+        }
+    )  # todo/in-progress/complete
+    next_step_type = db.Column(
+        db.String(20),
+        info={
+            'display_label': 'Next Step Type',
+            'choices': {
+                'call': {
+                    'label': 'Call',
+                    'css_class': 'step-call',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Phone call',
+                    'icon': 'phone',
+                    'order': 1
+                },
+                'email': {
+                    'label': 'Email',
+                    'css_class': 'step-email',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Send email',
+                    'icon': 'mail',
+                    'order': 2
+                },
+                'meeting': {
+                    'label': 'Meeting',
+                    'css_class': 'step-meeting',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'In-person or video meeting',
+                    'icon': 'users',
+                    'order': 3
+                },
+                'demo': {
+                    'label': 'Demo',
+                    'css_class': 'step-demo',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Product demonstration',
+                    'icon': 'presentation-chart-line',
+                    'order': 4
+                }
+            }
+        }
+    )  # meeting/demo/call/email
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime)
 
@@ -29,12 +156,69 @@ class Task(db.Model):
 
     # Multi Task support
     task_type = db.Column(
-        db.String(20), default="single"
+        db.String(20), 
+        default="single",
+        info={
+            'display_label': 'Task Type',
+            'choices': {
+                'single': {
+                    'label': 'Single Task',
+                    'css_class': 'type-single',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Standalone task',
+                    'icon': 'document',
+                    'order': 1
+                },
+                'parent': {
+                    'label': 'Parent Task',
+                    'css_class': 'type-parent',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Task with subtasks',
+                    'icon': 'folder',
+                    'order': 2
+                },
+                'child': {
+                    'label': 'Child Task',
+                    'css_class': 'type-child',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Subtask of parent',
+                    'icon': 'document-duplicate',
+                    'order': 3
+                }
+            }
+        }
     )  # 'single', 'parent', 'child'
     parent_task_id = db.Column(db.Integer, db.ForeignKey("tasks.id"))
     sequence_order = db.Column(db.Integer, default=0)  # For ordering child tasks
     dependency_type = db.Column(
-        db.String(20), default="parallel"
+        db.String(20), 
+        default="parallel",
+        info={
+            'display_label': 'Dependency Type',
+            'choices': {
+                'parallel': {
+                    'label': 'Parallel',
+                    'css_class': 'dep-parallel',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Can run simultaneously',
+                    'icon': 'arrows-right-left',
+                    'order': 1
+                },
+                'sequential': {
+                    'label': 'Sequential',
+                    'css_class': 'dep-sequential',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Must complete in order',
+                    'icon': 'arrow-right',
+                    'order': 2
+                }
+            }
+        }
     )  # 'sequential', 'parallel'
 
     @property
@@ -306,6 +490,30 @@ class Task(db.Model):
             )
         db.session.commit()
 
+    @classmethod
+    def get_priority_choices(cls):
+        """Get priority choices from model metadata"""
+        from app.utils.model_introspection import ModelIntrospector
+        return ModelIntrospector.get_field_choices(cls, 'priority')
+    
+    @classmethod
+    def get_status_choices(cls):
+        """Get status choices from model metadata"""
+        from app.utils.model_introspection import ModelIntrospector
+        return ModelIntrospector.get_field_choices(cls, 'status')
+    
+    @classmethod
+    def get_priority_css_class(cls, priority_value):
+        """Get CSS class for a priority value"""
+        from app.utils.model_introspection import ModelIntrospector
+        return ModelIntrospector.get_field_css_class(cls, 'priority', priority_value)
+    
+    @classmethod
+    def get_status_css_class(cls, status_value):
+        """Get CSS class for a status value"""
+        from app.utils.model_introspection import ModelIntrospector
+        return ModelIntrospector.get_field_css_class(cls, 'status', status_value)
+
     def to_dict(self):
         """Convert task to dictionary for JSON serialization"""
         return {
@@ -313,7 +521,9 @@ class Task(db.Model):
             "description": self.description,
             "due_date": self.due_date.isoformat() if self.due_date else None,
             "priority": self.priority,
+            "priority_css_class": self.get_priority_css_class(self.priority),
             "status": self.status,
+            "status_css_class": self.get_status_css_class(self.status),
             "next_step_type": self.next_step_type,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "completed_at": (

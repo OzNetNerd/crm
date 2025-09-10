@@ -5,9 +5,114 @@ class Company(db.Model):
     __tablename__ = "companies"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    industry = db.Column(db.String(100))
-    website = db.Column(db.String(255))
+    name = db.Column(
+        db.String(255), 
+        nullable=False,
+        info={
+            'display_label': 'Company Name',
+            'sortable': True,
+            'required': True
+        }
+    )
+    industry = db.Column(
+        db.String(100),
+        info={
+            'display_label': 'Industry',
+            'groupable': True,
+            'sortable': True,
+            'choices': {
+                'technology': {
+                    'label': 'Technology',
+                    'css_class': 'industry-technology',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Software and technology companies',
+                    'icon': 'computer-desktop',
+                    'order': 1
+                },
+                'healthcare': {
+                    'label': 'Healthcare',
+                    'css_class': 'industry-healthcare',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Medical and healthcare services',
+                    'icon': 'heart',
+                    'order': 2
+                },
+                'finance': {
+                    'label': 'Finance',
+                    'css_class': 'industry-finance',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Financial services and banking',
+                    'icon': 'currency-dollar',
+                    'order': 3
+                },
+                'manufacturing': {
+                    'label': 'Manufacturing',
+                    'css_class': 'industry-manufacturing',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Manufacturing and production',
+                    'icon': 'cog',
+                    'order': 4
+                },
+                'retail': {
+                    'label': 'Retail',
+                    'css_class': 'industry-retail',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Retail and e-commerce',
+                    'icon': 'shopping-bag',
+                    'order': 5
+                },
+                'education': {
+                    'label': 'Education',
+                    'css_class': 'industry-education',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Educational institutions',
+                    'icon': 'academic-cap',
+                    'order': 6
+                },
+                'consulting': {
+                    'label': 'Consulting',
+                    'css_class': 'industry-consulting',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Professional services and consulting',
+                    'icon': 'light-bulb',
+                    'order': 7
+                },
+                'energy': {
+                    'label': 'Energy',
+                    'css_class': 'industry-energy',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Energy and utilities',
+                    'icon': 'bolt',
+                    'order': 8
+                },
+                'other': {
+                    'label': 'Other',
+                    'css_class': 'industry-other',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Other industries',
+                    'icon': 'ellipsis-horizontal',
+                    'order': 99
+                }
+            }
+        }
+    )
+    website = db.Column(
+        db.String(255),
+        info={
+            'display_label': 'Website',
+            'sortable': True,
+            'url_field': True
+        }
+    )
 
     # Relationships
     stakeholders = db.relationship("Stakeholder", back_populates="company", lazy=True)
@@ -29,6 +134,31 @@ class Company(db.Model):
             }
             for assignment in team_assignments
         ]
+    
+    @classmethod
+    def get_industry_choices(cls):
+        """Get industry choices from model metadata"""
+        from app.utils.model_introspection import ModelIntrospector
+        return ModelIntrospector.get_field_choices(cls, 'industry')
+    
+    @classmethod
+    def get_industry_css_class(cls, industry_value):
+        """Get CSS class for an industry value"""
+        from app.utils.model_introspection import ModelIntrospector
+        return ModelIntrospector.get_field_css_class(cls, 'industry', industry_value)
+    
+    @property
+    def size_category(self):
+        """Calculate company size based on number of stakeholders"""
+        stakeholder_count = len(self.stakeholders) if self.stakeholders else 0
+        if stakeholder_count == 0:
+            return 'unknown'
+        elif stakeholder_count <= 10:
+            return 'small'
+        elif stakeholder_count <= 50:
+            return 'medium'
+        else:
+            return 'large'
 
     def to_dict(self):
         """Convert company to dictionary for JSON serialization"""
@@ -36,7 +166,9 @@ class Company(db.Model):
             "id": self.id,
             "name": self.name,
             "industry": self.industry,
+            "industry_css_class": self.get_industry_css_class(self.industry) if self.industry else '',
             "website": self.website,
+            "size_category": self.size_category,
             "stakeholders": [
                 {
                     "id": stakeholder.id,
