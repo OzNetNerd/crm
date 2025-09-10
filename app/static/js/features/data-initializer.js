@@ -14,7 +14,10 @@ document.addEventListener('DOMContentLoaded', function() {
         contacts: 'stakeholdersData', 
         opportunities: 'opportunitiesData',
         tasks: 'tasksData',
-        teamMembers: 'teamData'
+        teamMembers: 'teamData',
+        modelConfigs: 'modelConfigs',
+        opportunityConfig: 'opportunityConfig',
+        taskConfig: 'taskConfig'
     };
     
     Object.keys(datasets).forEach(key => {

@@ -7,12 +7,109 @@ class Opportunity(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
-    value = db.Column(db.Integer)  # Store monetary value in whole dollars
-    probability = db.Column(db.Integer, default=0)  # 0-100 percentage
-    expected_close_date = db.Column(db.Date)
+    value = db.Column(
+        db.Integer,
+        info={
+            'display_label': 'Deal Value',
+            'groupable': True,
+            'sortable': True,
+            'priority_ranges': [
+                (50000, 'high', 'High Value ($50K+)', 'priority-high'),
+                (10000, 'medium', 'Medium Value ($10K-$50K)', 'priority-medium'),
+                (0, 'low', 'Low Value (<$10K)', 'priority-low')
+            ]
+        }
+    )  # Store monetary value in whole dollars
+    probability = db.Column(
+        db.Integer, 
+        default=0,
+        info={
+            'display_label': 'Win Probability',
+            'groupable': True,
+            'sortable': True,
+            'unit': '%',
+            'min_value': 0,
+            'max_value': 100
+        }
+    )  # 0-100 percentage
+    expected_close_date = db.Column(
+        db.Date,
+        info={
+            'display_label': 'Expected Close Date',
+            'groupable': True,
+            'sortable': True,
+            'date_groupings': {
+                'overdue': {'label': 'Overdue', 'css_class': 'date-overdue'},
+                'this_week': {'label': 'This Week', 'css_class': 'date-soon'},
+                'this_month': {'label': 'This Month', 'css_class': 'date-current'},
+                'later': {'label': 'Later', 'css_class': 'date-future'},
+                'no_date': {'label': 'No Close Date', 'css_class': 'date-missing'}
+            }
+        }
+    )
     stage = db.Column(
-        db.String(50), default="prospect"
-    )  # prospect/qualified/proposal/negotiation/closed
+        db.String(50), 
+        default="prospect",
+        info={
+            'display_label': 'Pipeline Stage',
+            'choices': {
+                'prospect': {
+                    'label': 'Prospect',
+                    'css_class': 'status-prospect',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Initial contact made',
+                    'icon': 'user-plus',
+                    'order': 1
+                },
+                'qualified': {
+                    'label': 'Qualified',
+                    'css_class': 'status-qualified',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Meets our criteria',
+                    'icon': 'check-circle',
+                    'order': 2
+                },
+                'proposal': {
+                    'label': 'Proposal',
+                    'css_class': 'status-proposal',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Formal proposal submitted',
+                    'icon': 'document-text',
+                    'order': 3
+                },
+                'negotiation': {
+                    'label': 'Negotiation',
+                    'css_class': 'status-negotiating',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Terms discussion in progress',
+                    'icon': 'handshake',
+                    'order': 4
+                },
+                'closed-won': {
+                    'label': 'Closed Won',
+                    'css_class': 'status-won',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Deal successful',
+                    'icon': 'trophy',
+                    'order': 5
+                },
+                'closed-lost': {
+                    'label': 'Closed Lost',
+                    'css_class': 'status-lost',
+                    'groupable': True,
+                    'sortable': True,
+                    'description': 'Deal unsuccessful',
+                    'icon': 'x-circle',
+                    'order': 6
+                }
+            }
+        }
+    )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Foreign keys
@@ -21,6 +118,34 @@ class Opportunity(db.Model):
     @property
     def deal_age(self):
         return (datetime.utcnow() - self.created_at).days
+    
+    @property
+    def calculated_priority(self):
+        """Calculate priority based on deal value using model metadata"""
+        if not self.value:
+            return 'low'
+            
+        # Get priority ranges from model metadata
+        value_info = self.__class__.value.property.columns[0].info
+        priority_ranges = value_info.get('priority_ranges', [])
+        
+        for min_value, priority, label, css_class in priority_ranges:
+            if self.value >= min_value:
+                return priority
+                
+        return 'low'
+    
+    @classmethod
+    def get_stage_choices(cls):
+        """Get stage choices from model metadata"""
+        from app.utils.model_introspection import ModelIntrospector
+        return ModelIntrospector.get_field_choices(cls, 'stage')
+    
+    @classmethod
+    def get_stage_css_class(cls, stage_value):
+        """Get CSS class for a stage value"""
+        from app.utils.model_introspection import ModelIntrospector
+        return ModelIntrospector.get_field_css_class(cls, 'stage', stage_value)
 
     def get_stakeholders(self):
         """Get all stakeholders for this opportunity with their MEDDPICC roles"""
@@ -99,6 +224,8 @@ class Opportunity(db.Model):
                 else None
             ),
             "stage": self.stage,
+            "stage_css_class": self.get_stage_css_class(self.stage),
+            "calculated_priority": self.calculated_priority,
             "company_id": self.company_id,
             "company_name": self.company.name if self.company else None,
             "deal_age": self.deal_age,

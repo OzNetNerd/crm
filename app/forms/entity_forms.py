@@ -9,59 +9,49 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, Length, Optional, Email, NumberRange, URL
 from wtforms.widgets import TextArea
+from app.models import Company, Stakeholder, Opportunity
+from app.utils.dynamic_form_builder import DynamicFormBuilder
+from app.utils.model_introspection import ModelIntrospector
 
 
 class CompanyForm(FlaskForm):
-    name = StringField(
-        "Company Name",
-        validators=[DataRequired(), Length(min=1, max=255)],
-        render_kw={"placeholder": "Enter company name..."},
+    # Dynamic fields from model metadata
+    name = DynamicFormBuilder.build_string_field(
+        Company, 'name',
+        render_kw={"placeholder": "Enter company name..."}
     )
-
-    industry = StringField(
-        "Industry",
-        validators=[Optional(), Length(max=100)],
-        render_kw={"placeholder": "e.g., Technology, Healthcare, Finance..."},
+    
+    industry = DynamicFormBuilder.build_select_field(
+        Company, 'industry',
+        render_kw={"placeholder": "Select industry..."}
     )
-
-    website = StringField(
-        "Website",
-        validators=[
-            Optional(),
-            URL(message="Please enter a valid URL"),
-            Length(max=255),
-        ],
-        render_kw={"placeholder": "https://example.com"},
+    
+    website = DynamicFormBuilder.build_string_field(
+        Company, 'website',
+        render_kw={"placeholder": "https://example.com"}
     )
 
 
 class StakeholderForm(FlaskForm):
-    name = StringField(
-        "Full Name",
-        validators=[DataRequired(), Length(min=1, max=255)],
-        render_kw={"placeholder": "Enter stakeholder name..."},
+    # Dynamic fields from model metadata
+    name = DynamicFormBuilder.build_string_field(
+        Stakeholder, 'name',
+        render_kw={"placeholder": "Enter stakeholder name..."}
     )
 
-    job_title = StringField(
-        "Job Title",
-        validators=[Optional(), Length(max=100)],
-        render_kw={"placeholder": "e.g., CEO, VP Sales, CTO..."},
+    job_title = DynamicFormBuilder.build_string_field(
+        Stakeholder, 'job_title',
+        render_kw={"placeholder": "e.g., CEO, VP Sales, CTO..."}
     )
 
-    email = StringField(
-        "Email",
-        validators=[
-            Optional(),
-            Email(message="Please enter a valid email address"),
-            Length(max=255),
-        ],
-        render_kw={"placeholder": "stakeholder@company.com"},
+    email = DynamicFormBuilder.build_string_field(
+        Stakeholder, 'email',
+        render_kw={"placeholder": "stakeholder@company.com"}
     )
 
-    phone = StringField(
-        "Phone",
-        validators=[Optional(), Length(max=50)],
-        render_kw={"placeholder": "+1 (555) 123-4567"},
+    phone = DynamicFormBuilder.build_string_field(
+        Stakeholder, 'phone',
+        render_kw={"placeholder": "+1 (555) 123-4567"}
     )
 
     company_id = IntegerField(
@@ -72,6 +62,7 @@ class StakeholderForm(FlaskForm):
 
 
 class OpportunityForm(FlaskForm):
+    # Dynamic fields from model metadata
     name = StringField(
         "Opportunity Name",
         validators=[DataRequired(), Length(min=1, max=255)],
@@ -81,33 +72,23 @@ class OpportunityForm(FlaskForm):
     company_id = IntegerField(
         "Company", validators=[DataRequired(), NumberRange(min=1)]
     )
-    value = DecimalField(
-        "Value ($)",
-        validators=[Optional(), NumberRange(min=0)],
-        places=2,
-        render_kw={"placeholder": "0.00", "step": "0.01"},
+    
+    value = DynamicFormBuilder.build_integer_field(
+        Opportunity, 'value',
+        render_kw={"placeholder": "Enter deal value...", "step": "1000"}
     )
 
-    probability = IntegerField(
-        "Probability (%)",
-        validators=[Optional(), NumberRange(min=0, max=100)],
-        default=0,
-        render_kw={"placeholder": "0", "min": "0", "max": "100"},
+    probability = DynamicFormBuilder.build_integer_field(
+        Opportunity, 'probability',
+        render_kw={"placeholder": "Enter probability %"}
     )
 
-    expected_close_date = DateField("Expected Close Date", validators=[Optional()])
+    expected_close_date = DynamicFormBuilder.build_date_field(
+        Opportunity, 'expected_close_date'
+    )
 
-    stage = SelectField(
-        "Stage",
-        choices=[
-            ("prospect", "Prospect"),
-            ("qualified", "Qualified"),
-            ("proposal", "Proposal"),
-            ("negotiation", "Negotiation"),
-            ("closed", "Closed"),
-        ],
-        default="prospect",
-        validators=[DataRequired()],
+    stage = DynamicFormBuilder.build_select_field(
+        Opportunity, 'stage'
     )
 
 

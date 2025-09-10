@@ -26,6 +26,7 @@ from wtforms.validators import (
     NumberRange,
     URL,
 )
+# Removed constants import - now using model introspection
 
 
 class FormConfigManager:
@@ -252,68 +253,40 @@ class DynamicChoiceProvider:
 
     @staticmethod
     def get_meddpicc_role_choices() -> List[Dict[str, str]]:
-        """Get MEDDPICC role options - centralized definition"""
+        """Get MEDDPICC role options - using direct model introspection"""
+        from app.models import Stakeholder
+        from app.utils.model_introspection import ModelIntrospector
         return [
-            {"value": "metrics", "label": "Metrics - Quantifiable business value"},
-            {"value": "economic_buyer", "label": "Economic Buyer - Budget authority"},
-            {
-                "value": "decision_criteria",
-                "label": "Decision Criteria - Evaluation standards",
-            },
-            {
-                "value": "decision_process",
-                "label": "Decision Process - How decisions are made",
-            },
-            {
-                "value": "paper_process",
-                "label": "Paper Process - Procurement/legal process",
-            },
-            {
-                "value": "implicate_pain",
-                "label": "Implicate Pain - Problem identification",
-            },
-            {"value": "champion", "label": "Champion - Internal advocate"},
-            {"value": "competition", "label": "Competition - Competitive landscape"},
+            {"value": value, "label": label} 
+            for value, label in ModelIntrospector.get_field_choices(Stakeholder, 'meddpicc_role')
         ]
 
     @staticmethod
     def get_industry_choices() -> List[Dict[str, str]]:
-        """Get industry options - centralized and extensible"""
+        """Get industry options - using direct model introspection"""
+        from app.models import Company
+        from app.utils.model_introspection import ModelIntrospector
         return [
-            {"value": "", "label": "Select industry"},
-            {"value": "technology", "label": "Technology"},
-            {"value": "finance", "label": "Finance & Banking"},
-            {"value": "healthcare", "label": "Healthcare & Life Sciences"},
-            {"value": "manufacturing", "label": "Manufacturing"},
-            {"value": "retail", "label": "Retail & E-commerce"},
-            {"value": "education", "label": "Education"},
-            {"value": "consulting", "label": "Consulting & Professional Services"},
-            {"value": "energy", "label": "Energy & Utilities"},
-            {"value": "government", "label": "Government & Public Sector"},
-            {"value": "other", "label": "Other"},
+            {"value": value, "label": label} 
+            for value, label in ModelIntrospector.get_field_choices(Company, 'industry')
         ]
 
     @staticmethod
     def get_opportunity_stage_choices() -> List[Dict[str, str]]:
-        """Get opportunity stage options - single source of truth"""
-        return [
-            {"value": "", "label": "Select stage"},
-            {"value": "lead", "label": "Lead - Initial contact"},
-            {"value": "qualified", "label": "Qualified - Meets criteria"},
-            {"value": "proposal", "label": "Proposal - Formal proposal submitted"},
-            {"value": "negotiation", "label": "Negotiation - Terms discussion"},
-            {"value": "closed_won", "label": "Closed Won - Deal successful"},
-            {"value": "closed_lost", "label": "Closed Lost - Deal unsuccessful"},
+        """Get opportunity stage options using model metadata"""
+        from app.models import Opportunity
+        from app.utils.model_introspection import ModelIntrospector
+        
+        choices = ModelIntrospector.get_field_choices(Opportunity, 'stage')
+        return [{"value": "", "label": "Select stage"}] + [
+            {"value": value, "label": label} 
+            for value, label in choices
         ]
 
     @staticmethod
     def get_company_size_choices() -> List[Dict[str, str]]:
-        """Get company size options"""
+        """Get company size options - now using constants"""
         return [
-            {"value": "", "label": "Select size"},
-            {"value": "startup", "label": "Startup (1-10 employees)"},
-            {"value": "small", "label": "Small (11-50 employees)"},
-            {"value": "medium", "label": "Medium (51-200 employees)"},
-            {"value": "large", "label": "Large (201-1000 employees)"},
-            {"value": "enterprise", "label": "Enterprise (1000+ employees)"},
+            {"value": value, "label": label} 
+            for value, label in CompanySize.choices()
         ]

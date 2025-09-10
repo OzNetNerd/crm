@@ -135,6 +135,9 @@
 data-companies="{{ companies | tojson | forceescape }}"
 data-contacts="{{ contacts | tojson | forceescape }}"
 data-opportunities="{{ opportunities_data | tojson | forceescape }}"
+data-model-configs="{{ model_configs|tojson|e }}"
+data-opportunity-config="{{ model_configs.Opportunity|tojson|e }}"
+data-page-type="opportunity"
 {% endblock %}
 
 {% block scripts %}

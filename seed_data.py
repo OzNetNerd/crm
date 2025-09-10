@@ -10,7 +10,7 @@ Creates comprehensive realistic test data for all CRM entities with:
 import random
 from datetime import datetime, date, timedelta
 
-from app.models import db, Company, Contact, Opportunity, Task, Note
+from app.models import db, Company, Stakeholder, Opportunity, Task, Note
 from main import create_app
 
 # Enhanced sample data for comprehensive testing
@@ -144,7 +144,7 @@ CONTACT_NAMES = [
     "Grace Bennett",
 ]
 
-ROLES = [
+JOB_TITLES = [
     "CEO",
     "CTO",
     "VP of Sales",
@@ -298,18 +298,37 @@ SUBTASK_TEMPLATES = {
     ],
 }
 
-STAGES = [
-    "prospect",
-    "qualified",
-    "proposal",
-    "negotiation",
-    "closed-won",
-    "closed-lost",
-]
-PRIORITIES = ["high", "medium", "low"]
-STATUSES = ["todo", "in-progress", "complete"]
-NEXT_STEP_TYPES = ["meeting", "demo", "call", "email"]
-DEPENDENCY_TYPES = ["sequential", "parallel"]
+# Dynamic choices from model metadata - removed hardcoded lists
+
+def get_opportunity_stages():
+    """Get opportunity stages from model metadata"""
+    from app.models import Opportunity
+    from app.utils.model_introspection import ModelIntrospector
+    return [choice[0] for choice in ModelIntrospector.get_field_choices(Opportunity, 'stage')]
+
+def get_task_priorities():
+    """Get task priorities from model metadata"""
+    from app.models import Task
+    from app.utils.model_introspection import ModelIntrospector
+    return [choice[0] for choice in ModelIntrospector.get_field_choices(Task, 'priority')]
+
+def get_task_statuses():
+    """Get task statuses from model metadata"""
+    from app.models import Task
+    from app.utils.model_introspection import ModelIntrospector
+    return [choice[0] for choice in ModelIntrospector.get_field_choices(Task, 'status')]
+
+def get_next_step_types():
+    """Get next step types from model metadata"""
+    from app.models import Task
+    from app.utils.model_introspection import ModelIntrospector
+    return [choice[0] for choice in ModelIntrospector.get_field_choices(Task, 'next_step_type')]
+
+def get_dependency_types():
+    """Get dependency types from model metadata"""
+    from app.models import Task
+    from app.utils.model_introspection import ModelIntrospector
+    return [choice[0] for choice in ModelIntrospector.get_field_choices(Task, 'dependency_type')]
 
 
 def generate_deal_value():
@@ -343,7 +362,7 @@ def create_companies():
 
 
 def create_contacts(companies):
-    """Create sample contacts for companies with better distribution"""
+    """Create sample stakeholders for companies with better distribution"""
     contacts = []
     used_names = set()
 
@@ -373,9 +392,9 @@ def create_contacts(companies):
             has_email = random.random() > 0.1  # 90% have email
             has_phone = random.random() > 0.2  # 80% have phone
 
-            contact = Contact(
+            contact = Stakeholder(
                 name=name,
-                role=random.choice(ROLES),
+                job_title=random.choice(JOB_TITLES),
                 email=email if has_email else None,
                 phone=(
                     f"+1-{random.randint(100,999)}-{random.randint(100,999)}-{random.randint(1000,9999)}"
@@ -412,16 +431,16 @@ def create_opportunities(companies, contacts):
                 probability=random.randint(10, 95),
                 expected_close_date=date.today()
                 + timedelta(days=random.randint(15, 365)),
-                stage=random.choice(STAGES),
+                stage=random.choice(get_opportunity_stages()),
                 company_id=company.id,
                 created_at=datetime.now() - timedelta(days=random.randint(1, 120)),
             )
 
-            # Associate with 1-3 contacts from the company
+            # Associate with 1-3 stakeholders from the company
             if company_contacts:
                 num_contacts = min(random.randint(1, 3), len(company_contacts))
                 selected_contacts = random.sample(company_contacts, num_contacts)
-                opportunity.contacts.extend(selected_contacts)
+                opportunity.stakeholders.extend(selected_contacts)
 
             opportunities.append(opportunity)
             db.session.add(opportunity)
@@ -442,7 +461,7 @@ def create_comprehensive_tasks(companies, contacts, opportunities):
     for company in companies:
         entities.append(("company", company.id, company.name))
     for contact in contacts:
-        entities.append(("contact", contact.id, contact.name))
+        entities.append(("stakeholder", contact.id, contact.name))
     for opportunity in opportunities:
         entities.append(("opportunity", opportunity.id, opportunity.name))
 
@@ -480,9 +499,9 @@ def create_comprehensive_tasks(companies, contacts, opportunities):
         task = Task(
             description=description,
             due_date=due_date,
-            priority=random.choice(PRIORITIES),
+            priority=random.choice(get_task_priorities()),
             status=status,
-            next_step_type=random.choice(NEXT_STEP_TYPES),
+            next_step_type=random.choice(get_next_step_types()),
             entity_type=entity_type,
             entity_id=entity_id,
             task_type="single",
@@ -513,9 +532,9 @@ def create_comprehensive_tasks(companies, contacts, opportunities):
         task = Task(
             description=description,
             due_date=date.today() + timedelta(days=random.randint(-30, 60)),
-            priority=random.choice(PRIORITIES),
-            status=random.choice(STATUSES),
-            next_step_type=random.choice(NEXT_STEP_TYPES),
+            priority=random.choice(get_task_priorities()),
+            status=random.choice(get_task_statuses()),
+            next_step_type=random.choice(get_next_step_types()),
             entity_type=primary_entity_type,
             entity_id=primary_entity_id,
             task_type="single",
@@ -557,15 +576,15 @@ def create_comprehensive_tasks(companies, contacts, opportunities):
         parent_days_offset = random.randint(10, 120)
         parent_due_date = date.today() + timedelta(days=parent_days_offset)
 
-        dependency_type = random.choice(DEPENDENCY_TYPES)
-        parent_status = random.choice(["todo", "in-progress"])
+        dependency_type = random.choice(get_dependency_types())
+        parent_status = random.choice([s for s in get_task_statuses() if s != "complete"])
 
         parent_task = Task(
             description=parent_description,
             due_date=parent_due_date,
-            priority=random.choice(PRIORITIES),
+            priority=random.choice(get_task_priorities()),
             status=parent_status,
-            next_step_type=random.choice(NEXT_STEP_TYPES),
+            next_step_type=random.choice(get_next_step_types()),
             entity_type=entity_type,
             entity_id=entity_id,
             task_type="parent",
@@ -608,18 +627,18 @@ def create_comprehensive_tasks(companies, contacts, opportunities):
                 # Child status based on parent status and sequence
                 if parent_status == "in-progress":
                     if dependency_type == "sequential" and j < num_children // 2:
-                        child_status = random.choice(["complete", "in-progress"])
+                        child_status = random.choice([s for s in get_task_statuses() if s in ["complete", "in-progress"]])
                     else:
-                        child_status = random.choice(["todo", "in-progress"])
+                        child_status = random.choice([s for s in get_task_statuses() if s in ["todo", "in-progress"]])
                 else:
-                    child_status = "todo"
+                    child_status = [s for s in get_task_statuses() if s == "todo"][0]
 
                 child_task = Task(
                     description=child_description,
                     due_date=child_due_date,
                     priority=parent_task.priority,  # Inherit parent priority
                     status=child_status,
-                    next_step_type=random.choice(NEXT_STEP_TYPES),
+                    next_step_type=random.choice(get_next_step_types()),
                     entity_type=entity_type,
                     entity_id=entity_id,
                     task_type="child",
@@ -675,7 +694,7 @@ def create_notes(companies, contacts, opportunities, tasks):
     for company in companies:
         entities.append(("company", company.id))
     for contact in contacts:
-        entities.append(("contact", contact.id))
+        entities.append(("stakeholder", contact.id))
     for opportunity in opportunities:
         entities.append(("opportunity", opportunity.id))
     for task in tasks[:20]:  # Limit to first 20 tasks to avoid too many notes
@@ -700,7 +719,7 @@ def create_notes(companies, contacts, opportunities, tasks):
     ]
 
     # Create 2-3 notes for each entity type
-    notes_per_entity_type = {"company": 2, "contact": 1, "opportunity": 3, "task": 1}
+    notes_per_entity_type = {"company": 2, "stakeholder": 1, "opportunity": 3, "task": 1}
 
     for entity_type, entity_id in entities:
         target_count = notes_per_entity_type.get(entity_type, 1)
