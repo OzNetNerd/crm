@@ -100,19 +100,40 @@ def detail(task_id):
 @tasks_bp.route("/new", methods=["GET", "POST"])
 def new():
     if request.method == "POST":
-        return task_handler.handle_create(
-            description="description",
-            due_date=lambda data: parse_date_field(data, "due_date"),
-            priority=lambda data: data.get("priority", "medium"),
-            status=lambda data: data.get("status", "todo"),
-            next_step_type=lambda data: data.get("next_step_type"),
-            entity_type=lambda data: data.get("entity_type"),
-            entity_id=lambda data: parse_int_field(data, "entity_id"),
-            task_type=lambda data: data.get("task_type", "single"),
-            parent_task_id=lambda data: parse_int_field(data, "parent_task_id"),
-            sequence_order=lambda data: parse_int_field(data, "sequence_order", 0),
-            dependency_type=lambda data: data.get("dependency_type", "parallel")
-        )
+        try:
+            data = request.get_json()
+            
+            # Create the task with basic fields
+            task = Task(
+                description=data["description"],
+                due_date=(
+                    datetime.strptime(data["due_date"], "%Y-%m-%d").date()
+                    if data.get("due_date")
+                    else None
+                ),
+                priority=data.get("priority", "medium"),
+                status=data.get("status", "todo"),
+                next_step_type=data.get("next_step_type"),
+                task_type=data.get("task_type", "single"),
+                parent_task_id=parse_int_field(data, "parent_task_id"),
+                sequence_order=parse_int_field(data, "sequence_order", 0),
+                dependency_type=data.get("dependency_type", "parallel")
+            )
+            
+            db.session.add(task)
+            db.session.flush()  # Get the task ID
+            
+            # Handle linked entities
+            linked_entities = data.get("linked_entities", [])
+            if linked_entities:
+                task.set_linked_entities(linked_entities)
+            
+            db.session.commit()
+            return jsonify({"status": "success", "task_id": task.id})
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"status": "error", "message": str(e)}), 500
 
     entity_data = get_entity_data_for_forms()
     return render_template(
@@ -182,52 +203,63 @@ def new_multi():
 
     # Handle JSON requests (from JavaScript)
     elif request.is_json and request.method == "POST":
-        data = request.get_json()
+        try:
+            data = request.get_json()
 
-        # Create parent task
-        parent_task = Task(
-            description=data["description"],
-            due_date=(
-                datetime.strptime(data["due_date"], "%Y-%m-%d").date()
-                if data.get("due_date")
-                else None
-            ),
-            priority=data.get("priority", "medium"),
-            status="todo",
-            entity_type=data.get("entity_type"),
-            entity_id=data.get("entity_id"),
-            task_type="parent",
-            dependency_type=data.get("dependency_type", "parallel"),
-        )
+            # Create parent task
+            parent_task = Task(
+                description=data["description"],
+                due_date=(
+                    datetime.strptime(data["due_date"], "%Y-%m-%d").date()
+                    if data.get("due_date")
+                    else None
+                ),
+                priority=data.get("priority", "medium"),
+                status="todo",
+                task_type="parent",
+                dependency_type=data.get("dependency_type", "parallel"),
+            )
 
-        db.session.add(parent_task)
-        db.session.flush()
+            db.session.add(parent_task)
+            db.session.flush()  # Get the parent task ID
+            
+            # Handle linked entities for parent task
+            linked_entities = data.get("linked_entities", [])
+            if linked_entities:
+                parent_task.set_linked_entities(linked_entities)
 
-        # Create child tasks
-        child_tasks_data = data.get("child_tasks", [])
-        for i, child_data in enumerate(child_tasks_data):
-            if child_data.get("description"):
-                child_task = Task(
-                    description=child_data["description"],
-                    due_date=(
-                        datetime.strptime(child_data["due_date"], "%Y-%m-%d").date()
-                        if child_data.get("due_date")
-                        else None
-                    ),
-                    priority=child_data.get("priority", "medium"),
-                    status="todo",
-                    next_step_type=child_data.get("next_step_type"),
-                    entity_type=data.get("entity_type"),
-                    entity_id=data.get("entity_id"),
-                    task_type="child",
-                    parent_task_id=parent_task.id,
-                    sequence_order=i,
-                    dependency_type=data.get("dependency_type", "parallel"),
-                )
-                db.session.add(child_task)
+            # Create child tasks
+            child_tasks_data = data.get("child_tasks", [])
+            for i, child_data in enumerate(child_tasks_data):
+                if child_data.get("description"):
+                    child_task = Task(
+                        description=child_data["description"],
+                        due_date=(
+                            datetime.strptime(child_data["due_date"], "%Y-%m-%d").date()
+                            if child_data.get("due_date")
+                            else None
+                        ),
+                        priority=child_data.get("priority", "medium"),
+                        status="todo",
+                        next_step_type=child_data.get("next_step_type"),
+                        task_type="child",
+                        parent_task_id=parent_task.id,
+                        sequence_order=i,
+                        dependency_type=data.get("dependency_type", "parallel"),
+                    )
+                    db.session.add(child_task)
+                    db.session.flush()  # Get child task ID
+                    
+                    # Handle linked entities for child task (inherit from parent)
+                    if linked_entities:
+                        child_task.set_linked_entities(linked_entities)
 
-        db.session.commit()
-        return jsonify({"status": "success", "task_id": parent_task.id})
+            db.session.commit()
+            return jsonify({"status": "success", "task_id": parent_task.id})
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"status": "error", "message": str(e)}), 500
 
     return render_template(
         "tasks/multi_new.html",
