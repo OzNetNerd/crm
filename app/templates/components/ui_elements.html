@@ -991,6 +991,204 @@
 {% endmacro %}
 
 {#
+  Universal Dropdown - Unified macro for all dropdown types
+  
+  This macro replaces all individual dropdown macros (dropdown_select, generic_group_dropdown, 
+  generic_sort_dropdown, dropdown_multiselect) with a single, parameter-driven implementation.
+  
+  Parameters:
+  - model (required): Alpine.js model binding (e.g., 'groupBy', 'opportunity.stage', 'selectedItems')
+  - options (required): Array of options as [{'value': 'val', 'label': 'Label'}] or simple strings
+  - label (optional): Label text to display above dropdown
+  - label_class (optional): CSS classes for label (default: 'text-label-dark')
+  - type (optional): 'single' or 'multi' (default: 'single')
+  - placeholder (optional): Placeholder text (default: 'Select...' for single, auto for multi)
+  - on_change (optional): JavaScript callback function (default: '' for forms, 'updateFilters()' for filters)
+  - with_search (optional): Include search functionality for multi-select (default: false)
+  - sort_direction_model (optional): Model for sort direction (for sort dropdowns)
+  - classes (optional): Additional CSS classes for button
+  - show_chevron (optional): Show dropdown arrow (default: true)
+  - min_width (optional): Minimum width class (default: 'min-w-[120px]')
+  
+  Usage Examples:
+  Form Select:
+  {{ universal_dropdown('opportunity.stage', get_filter_options('Opportunity', 'stage'), label='Stage:') }}
+  
+  Filter Dropdown:
+  {{ universal_dropdown('groupBy', get_group_options('Company'), label='Group by:', on_change='updateFilters()') }}
+  
+  Sort Dropdown:
+  {{ universal_dropdown('sortBy', get_sort_options('Task'), label='Sort by:', 
+                        sort_direction_model='sortDirection', on_change='updateFilters()') }}
+  
+  Multi-Select Filter:
+  {{ universal_dropdown('priorityFilter', get_priority_options('Task'), label='Priority:', 
+                        type='multi', placeholder='All Priorities', with_search=true, on_change='updateFilters()') }}
+#}
+{% macro universal_dropdown(
+    model, 
+    options, 
+    label=None,
+    label_class='text-label-dark',
+    type='single',
+    placeholder=None,
+    on_change='',
+    with_search=false,
+    sort_direction_model=None,
+    classes='px-3 py-2 border border-gray-300 rounded-md text-sm',
+    show_chevron=true,
+    min_width='min-w-[120px]'
+) %}
+
+{# Set smart defaults #}
+{%- if not placeholder -%}
+    {%- if type == 'multi' -%}
+        {%- set placeholder = 'Select...' -%}
+    {%- else -%}
+        {%- set placeholder = 'Select...' -%}
+    {%- endif -%}
+{%- endif -%}
+
+{# Add filter styling for filter dropdowns #}
+{%- if on_change and 'updateFilters' in on_change -%}
+    {%- set classes = classes + ' bg-white hover:bg-gray-50 flex items-center justify-between' -%}
+{%- endif -%}
+
+{# Render optional label #}
+{% if label %}
+<label class="{{ label_class }}">{{ label }}</label>
+{% endif %}
+
+<div class="multiselect-custom" 
+     x-data="{ 
+         open: false{% if with_search %},
+         searchTerm: ''{% endif %}{% if type == 'multi' %},
+         init() {
+             // Ensure multi-select model is initialized as an array
+             if (!{{ model }}) {
+                 {{ model }} = [];
+             }
+         }{% endif %}
+     }" 
+     @click.away="open = false">
+     
+    {# Button - varies by type #}
+    <button type="button" 
+            class="select-custom {{ classes }} {{ min_width }}" 
+            @click="open = !open"
+            {% if type == 'single' %}x-cloak{% endif %}>
+        
+        {% if type == 'single' %}
+            {# Single Select Button Text #}
+            <span x-text="
+                {% for option in options %}
+                {% if option is mapping %}
+                {{ model }} === '{{ option.value }}' ? '{{ option.label }}' :
+                {% else %}
+                {{ model }} === '{{ option }}' ? '{{ option|title }}' :
+                {% endif %}
+                {% endfor %}
+                '{{ options[0].label if options[0] is mapping else options[0]|title }}'
+            ">{{ options[0].label if options[0] is mapping else options[0]|title }}</span>
+            
+        {% elif type == 'multi' %}
+            {# Multi Select Button Text #}
+            <span x-text="{{ model }}.length === 0 ? '{{ placeholder }}' : {{ model }}.length + ' selected'">{{ placeholder }}</span>
+        {% endif %}
+        
+        {% if show_chevron %}
+        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+        {% endif %}
+    </button>
+    
+    {# Dropdown Content #}
+    <div x-show="open" 
+         {% if type == 'single' %}x-cloak{% endif %}
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="transform opacity-0 scale-95"
+         x-transition:enter-end="transform opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-75"
+         x-transition:leave-start="transform opacity-100 scale-100"
+         x-transition:leave-end="transform opacity-0 scale-95"
+         class="multiselect-dropdown">
+        
+        {% if type == 'multi' %}
+        {# Multi-select header with search and controls #}
+        <div class="multiselect-header">
+            {% if with_search %}
+            <input type="text" 
+                   x-model="searchTerm" 
+                   class="multiselect-search" 
+                   placeholder="Search..."
+                   @click.stop>
+            {% endif %}
+            <div class="multiselect-controls">
+                <span class="multiselect-control-btn" 
+                      @click="{{ model }} = [{% for option in options %}'{{ option.value if option is mapping else option }}'{% if not loop.last %}, {% endif %}{% endfor %}]{% if on_change %}; {{ on_change }}{% endif %}">Select All</span>
+                <span class="multiselect-control-btn" 
+                      @click="{{ model }} = []{% if on_change %}; {{ on_change }}{% endif %}">Deselect All</span>
+            </div>
+        </div>
+        {% endif %}
+        
+        {# Options list #}
+        <div class="multiselect-options">
+            {% for option in options %}
+            <div class="multiselect-option" 
+                 {% if with_search %}x-show="!searchTerm || '{{ option.label if option is mapping else option }}'.toLowerCase().includes(searchTerm.toLowerCase())"{% endif %}
+                 @click="
+                 {% if type == 'single' %}
+                     {# Single select logic #}
+                     {% if sort_direction_model %}
+                         {# Sort dropdown with direction toggle #}
+                         if ({{ model }} === '{{ option.value if option is mapping else option }}') { 
+                             {{ sort_direction_model }} = {{ sort_direction_model }} === 'asc' ? 'desc' : 'asc'; 
+                         } else { 
+                             {{ model }} = '{{ option.value if option is mapping else option }}'; 
+                         }
+                     {% else %}
+                         {# Regular single select #}
+                         {{ model }} = '{{ option.value if option is mapping else option }}';
+                     {% endif %}
+                     {% if on_change %}{{ on_change }};{% endif %}
+                     open = false;
+                 {% elif type == 'multi' %}
+                     {# Multi select logic #}
+                     const value = '{{ option.value if option is mapping else option }}';
+                     const index = {{ model }}.indexOf(value);
+                     if (index === -1) {
+                         {{ model }}.push(value);
+                     } else {
+                         {{ model }}.splice(index, 1);
+                     }
+                     {% if on_change %}{{ on_change }};{% endif %}
+                 {% endif %}
+                 ">
+                 
+                {% if type == 'multi' %}
+                <input type="checkbox" 
+                       class="multiselect-checkbox"
+                       :checked="{{ model }}.includes('{{ option.value if option is mapping else option }}')"
+                       @click.stop>
+                {% endif %}
+                
+                <span>{{ option.label if option is mapping else option|title }}</span>
+                
+                {% if sort_direction_model %}
+                <span x-show="{{ model }} === '{{ option.value if option is mapping else option }}'" 
+                      x-text="{{ sort_direction_model }} === 'asc' ? '↑' : '↓'" 
+                      class="ml-auto text-gray-500"></span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{#
   Helper macro for status color determination - eliminates if/elif chains
 #}
 {% macro get_status_color(status, color_map=None) %}
@@ -1059,11 +1257,9 @@
     <div class="flex flex-col space-y-4">
         <!-- First row: Group by, Sort by, and Filters -->
         <div class="flex flex-wrap items-center gap-6">
-            <label class="text-label-dark">Group by:</label>
-            {{ generic_group_dropdown('groupBy', group_options) }}
+            {{ universal_dropdown('groupBy', group_options, label='Group by:', on_change='updateFilters()') }}
             
-            <label class="text-label-dark">Sort by:</label>
-            {{ generic_sort_dropdown('sortBy', 'sortDirection', sort_options) }}
+            {{ universal_dropdown('sortBy', sort_options, label='Sort by:', sort_direction_model='sortDirection', on_change='updateFilters()') }}
             
             {% if primary_filter_options or secondary_filter_options or entity_filter_options %}
             <label class="text-label-dark">Filters:</label>

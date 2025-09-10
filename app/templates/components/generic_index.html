@@ -13,7 +13,7 @@
   {% set entity_type = 'tasks' %}
   {% include "components/generic_index.html" %}
 #}
-{% from "components/ui_elements.html" import expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar %}
+{% from "components/ui_elements.html" import expand_collapse_controls, universal_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar %}
 
 {# Load entity-specific configuration #}
 {% include "components/index_configs.html" %}
@@ -34,9 +34,7 @@
     <div class="card-padded-lg filter-section-enhanced">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:gap-6">
             <div class="flex flex-wrap items-center gap-6">
-                <label class="text-label-dark">Group by:</label>
-                
-                {{ generic_group_dropdown('groupBy', entity_config.filter_options.group_options) }}
+                {{ universal_dropdown('groupBy', entity_config.filter_options.group_options, label='Group by:', on_change='updateFilters()') }}
                 
                 {% if entity_config.filter_options.show_completed is defined %}
                 <label class="flex items-center">
@@ -54,9 +52,7 @@
             </div>
             
             <div class="flex items-center gap-6">
-                <label class="text-label-dark">Sort by:</label>
-                
-                {{ generic_sort_dropdown('sortBy', 'sortDirection', entity_config.filter_options.sort_options) }}
+                {{ universal_dropdown('sortBy', entity_config.filter_options.sort_options, label='Sort by:', sort_direction_model='sortDirection', on_change='updateFilters()') }}
                 
                 {{ generic_filter_multiselect('primaryFilter', 
                     entity_config.filter_options.primary_filter.options,
