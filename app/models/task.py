@@ -377,17 +377,12 @@ class Task(db.Model):
         if not self.id:
             return []
 
-        # Query the junction table for this task's linked entities
-        linked = db.session.execute(
-            db.text(
-                """
-                SELECT entity_type, entity_id 
-                FROM task_entities 
-                WHERE task_id = :task_id
-            """
-            ),
-            {"task_id": self.id},
-        ).fetchall()
+        # Query the junction table for this task's linked entities using ORM
+        linked = (
+            db.session.query(task_entities.c.entity_type, task_entities.c.entity_id)
+            .filter(task_entities.c.task_id == self.id)
+            .all()
+        )
 
         entities = []
         for entity_type, entity_id in linked:
@@ -423,71 +418,51 @@ class Task(db.Model):
 
     def add_linked_entity(self, entity_type, entity_id):
         """Add a linked entity to this task"""
-        # Check if already linked
-        existing = db.session.execute(
-            db.text(
-                """
-                SELECT 1 FROM task_entities 
-                WHERE task_id = :task_id AND entity_type = :entity_type AND entity_id = :entity_id
-            """
-            ),
-            {"task_id": self.id, "entity_type": entity_type, "entity_id": entity_id},
-        ).fetchone()
+        # Check if already linked using ORM
+        existing = (
+            db.session.query(task_entities)
+            .filter(task_entities.c.task_id == self.id)
+            .filter(task_entities.c.entity_type == entity_type)
+            .filter(task_entities.c.entity_id == entity_id)
+            .first()
+        )
 
         if not existing:
-            db.session.execute(
-                db.text(
-                    """
-                    INSERT INTO task_entities (task_id, entity_type, entity_id, created_at)
-                    VALUES (:task_id, :entity_type, :entity_id, :created_at)
-                """
-                ),
-                {
-                    "task_id": self.id,
-                    "entity_type": entity_type,
-                    "entity_id": entity_id,
-                    "created_at": datetime.utcnow(),
-                },
+            # Insert new entity link using ORM
+            insert_stmt = task_entities.insert().values(
+                task_id=self.id,
+                entity_type=entity_type,
+                entity_id=entity_id,
+                created_at=datetime.utcnow()
             )
+            db.session.execute(insert_stmt)
             db.session.commit()
 
     def remove_linked_entity(self, entity_type, entity_id):
         """Remove a linked entity from this task"""
-        db.session.execute(
-            db.text(
-                """
-                DELETE FROM task_entities 
-                WHERE task_id = :task_id AND entity_type = :entity_type AND entity_id = :entity_id
-            """
-            ),
-            {"task_id": self.id, "entity_type": entity_type, "entity_id": entity_id},
+        delete_stmt = task_entities.delete().where(
+            (task_entities.c.task_id == self.id) &
+            (task_entities.c.entity_type == entity_type) &
+            (task_entities.c.entity_id == entity_id)
         )
+        db.session.execute(delete_stmt)
         db.session.commit()
 
     def set_linked_entities(self, entities):
         """Set the linked entities for this task (replaces all existing links)"""
         # Clear existing links
-        db.session.execute(
-            db.text("DELETE FROM task_entities WHERE task_id = :task_id"),
-            {"task_id": self.id},
-        )
+        delete_stmt = task_entities.delete().where(task_entities.c.task_id == self.id)
+        db.session.execute(delete_stmt)
 
         # Add new links
         for entity in entities:
-            db.session.execute(
-                db.text(
-                    """
-                    INSERT INTO task_entities (task_id, entity_type, entity_id, created_at)
-                    VALUES (:task_id, :entity_type, :entity_id, :created_at)
-                """
-                ),
-                {
-                    "task_id": self.id,
-                    "entity_type": entity["type"],
-                    "entity_id": entity["id"],
-                    "created_at": datetime.utcnow(),
-                },
+            insert_stmt = task_entities.insert().values(
+                task_id=self.id,
+                entity_type=entity["type"],
+                entity_id=entity["id"],
+                created_at=datetime.utcnow()
             )
+            db.session.execute(insert_stmt)
         db.session.commit()
 
     @classmethod

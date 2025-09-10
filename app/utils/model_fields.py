@@ -97,12 +97,16 @@ def get_task_entity_types():
     Returns:
         List of {'value': str, 'label': str} dictionaries
     """
-    from app.models import db
+    from app.models.task import task_entities
+    from sqlalchemy import distinct
 
-    # Get distinct entity types from task_entities junction table
-    distinct_types = db.session.execute(
-        db.text("SELECT DISTINCT entity_type FROM task_entities ORDER BY entity_type")
-    ).fetchall()
+    # Get distinct entity types from task_entities junction table using ORM
+    distinct_types = (
+        db.session.query(distinct(task_entities.c.entity_type))
+        .filter(task_entities.c.entity_type.isnot(None))
+        .order_by(task_entities.c.entity_type)
+        .all()
+    )
 
     # Map to proper labels
     type_labels = {

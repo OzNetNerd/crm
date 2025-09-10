@@ -142,58 +142,41 @@ class Stakeholder(db.Model):
 
     def get_meddpicc_role_names(self):
         """Get list of MEDDPICC role names for this stakeholder"""
-        result = db.session.execute(
-            db.text(
-                """
-                SELECT meddpicc_role FROM stakeholder_meddpicc_roles 
-                WHERE stakeholder_id = :stakeholder_id
-                ORDER BY meddpicc_role
-            """
-            ),
-            {"stakeholder_id": self.id},
-        ).fetchall()
+        result = (
+            db.session.query(stakeholder_meddpicc_roles.c.meddpicc_role)
+            .filter(stakeholder_meddpicc_roles.c.stakeholder_id == self.id)
+            .order_by(stakeholder_meddpicc_roles.c.meddpicc_role)
+            .all()
+        )
         return [row[0] for row in result]
 
     def add_meddpicc_role(self, role_name):
         """Add a MEDDPICC role to this stakeholder"""
-        # Check if already exists
-        existing = db.session.execute(
-            db.text(
-                """
-                SELECT 1 FROM stakeholder_meddpicc_roles 
-                WHERE stakeholder_id = :stakeholder_id AND meddpicc_role = :role_name
-            """
-            ),
-            {"stakeholder_id": self.id, "role_name": role_name},
-        ).fetchone()
+        # Check if already exists using ORM
+        existing = (
+            db.session.query(stakeholder_meddpicc_roles)
+            .filter(stakeholder_meddpicc_roles.c.stakeholder_id == self.id)
+            .filter(stakeholder_meddpicc_roles.c.meddpicc_role == role_name)
+            .first()
+        )
 
         if not existing:
-            db.session.execute(
-                db.text(
-                    """
-                    INSERT INTO stakeholder_meddpicc_roles (stakeholder_id, meddpicc_role, created_at)
-                    VALUES (:stakeholder_id, :role_name, :created_at)
-                """
-                ),
-                {
-                    "stakeholder_id": self.id,
-                    "role_name": role_name,
-                    "created_at": datetime.utcnow(),
-                },
+            # Insert new role using ORM
+            insert_stmt = stakeholder_meddpicc_roles.insert().values(
+                stakeholder_id=self.id,
+                meddpicc_role=role_name,
+                created_at=datetime.utcnow()
             )
+            db.session.execute(insert_stmt)
             db.session.commit()
 
     def remove_meddpicc_role(self, role_name):
         """Remove a MEDDPICC role from this stakeholder"""
-        db.session.execute(
-            db.text(
-                """
-                DELETE FROM stakeholder_meddpicc_roles 
-                WHERE stakeholder_id = :stakeholder_id AND meddpicc_role = :role_name
-            """
-            ),
-            {"stakeholder_id": self.id, "role_name": role_name},
+        delete_stmt = stakeholder_meddpicc_roles.delete().where(
+            (stakeholder_meddpicc_roles.c.stakeholder_id == self.id) &
+            (stakeholder_meddpicc_roles.c.meddpicc_role == role_name)
         )
+        db.session.execute(delete_stmt)
         db.session.commit()
 
     def get_relationship_owners(self):
