@@ -7,7 +7,7 @@ from typing import Dict, Any, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from chatbot.models import Company, Stakeholder, Task, Meeting
+from chatbot.models import Company, Stakeholder, Task
 from chatbot.services.ollama_client import get_ollama_client
 from chatbot.services.qdrant_service import get_qdrant_service
 
@@ -109,7 +109,6 @@ class ChatHandler:
             contacts = []
             opportunities = []
             tasks = []
-            meetings = []
             notes = []
 
             for doc in similar_docs:
@@ -133,8 +132,6 @@ class ChatHandler:
                     opportunities.append(entity_data)
                 elif entity_type == "task":
                     tasks.append(entity_data)
-                elif entity_type == "meeting":
-                    meetings.append(entity_data)
                 elif entity_type == "note":
                     notes.append(entity_data)
 
@@ -147,8 +144,6 @@ class ChatHandler:
                 context["opportunities"] = opportunities[:2]  # Reduced from 3 to 2
             if tasks:
                 context["tasks"] = tasks[:2]  # Reduced from 3 to 2
-            if meetings:
-                context["meetings"] = meetings[:1]  # Reduced from 2 to 1
             if notes:
                 context["notes"] = notes[:1]  # Reduced from 2 to 1
 
@@ -169,15 +164,15 @@ class ChatHandler:
         """Setup pre-cached responses for common queries"""
         self.response_cache = {
             "hello": {
-                "response": "Hello! I'm your CRM assistant. I can help you find information about companies, contacts, tasks, and meetings. What would you like to know?",
+                "response": "Hello! I'm your CRM assistant. I can help you find information about companies, contacts, and tasks. What would you like to know?",
                 "context": {},
             },
             "help": {
-                "response": "I can help you with:\n• **Companies** - View your business clients and prospects\n• **Contacts** - Find people and their roles\n• **Tasks** - Check pending work and deadlines\n• **Meetings** - Review recent discussions\n\nJust ask me something like 'show me companies' or 'what tasks are pending?'",
+                "response": "I can help you with:\n• **Companies** - View your business clients and prospects\n• **Contacts** - Find people and their roles\n• **Tasks** - Check pending work and deadlines\n\nJust ask me something like 'show me companies' or 'what tasks are pending?'",
                 "context": {},
             },
             "what can you do": {
-                "response": "I'm your CRM assistant! I can help you:\n• Find companies by industry or name\n• Look up contacts and their details\n• Show pending tasks and priorities\n• Review meeting history and analysis\n\nTry asking: 'What companies do we have?' or 'Show me high priority tasks'",
+                "response": "I'm your CRM assistant! I can help you:\n• Find companies by industry or name\n• Look up contacts and their details\n• Show pending tasks and priorities\n\nTry asking: 'What companies do we have?' or 'Show me high priority tasks'",
                 "context": {},
             },
         }
@@ -220,8 +215,6 @@ class ChatHandler:
             return await self._handle_contact_query(user_message, db_session)
         elif any(word in message_lower for word in ["task", "tasks", "todo"]):
             return await self._handle_task_query(user_message, db_session)
-        elif any(word in message_lower for word in ["meeting", "meetings"]):
-            return await self._handle_meeting_query(user_message, db_session)
         else:
             return await self._handle_general_query(user_message, db_session)
 
@@ -334,42 +327,6 @@ class ChatHandler:
             "response_metadata": {"query_type": "task", "processing_time": 0.1},
         }
 
-    async def _handle_meeting_query(
-        self, message: str, db_session: AsyncSession
-    ) -> Dict[str, Any]:
-        """Handle meeting-related queries"""
-        try:
-            result = await db_session.execute(select(Meeting).limit(5))
-            meetings = result.scalars().all()
-
-            if meetings:
-                meeting_list = [
-                    f"• {m.title}"
-                    + (f" with {m.company.name}" if m.company else "")
-                    + f" ({m.analysis_status})"
-                    for m in meetings
-                ]
-
-                response = "Here are recent meetings:\n" + "\n".join(meeting_list)
-                if len(meetings) == 5:
-                    response += "\n\n(Showing first 5 results)"
-            else:
-                response = "No meetings found in the system yet."
-
-            context_used = {
-                "query_type": "meeting_list",
-                "meetings_found": len(meetings),
-            }
-
-        except Exception as e:
-            response = f"Sorry, I encountered an error retrieving meeting information: {str(e)}"
-            context_used = {"error": str(e)}
-
-        return {
-            "response": response,
-            "context_used": context_used,
-            "response_metadata": {"query_type": "meeting", "processing_time": 0.1},
-        }
 
     async def _handle_general_query(
         self, message: str, db_session: AsyncSession
@@ -382,13 +339,11 @@ class ChatHandler:
 • **Companies** - Ask about companies in your CRM
 • **Contacts** - Find people and their roles  
 • **Tasks** - View pending tasks and deadlines
-• **Meetings** - Check recent meetings and analysis
 
 Try asking something like:
 - "Show me companies"
 - "What tasks are pending?"
 - "List recent contacts"
-- "Any meetings this week?"
 
 What would you like to know?"""
 

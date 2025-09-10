@@ -5,10 +5,7 @@ from app.models import (
     Company,
     Opportunity,
 )
-from app.utils.route_helpers import BaseRouteHandler
-
 teams_bp = Blueprint("teams", __name__)
-team_handler = BaseRouteHandler(User, "teams")
 
 
 @teams_bp.route("/")
@@ -130,17 +127,3 @@ def index():
     )
 
 
-@teams_bp.route("/<int:member_id>")
-def detail(member_id):
-    member = User.query.get_or_404(member_id)
-    return render_template("teams/detail.html", member=member)
-
-
-@teams_bp.route("/new", methods=["GET", "POST"])
-def new():
-    if request.method == "POST":
-        return team_handler.handle_create(
-            name="name", email="email", job_title="job_title"
-        )
-
-    return render_template("teams/new.html")

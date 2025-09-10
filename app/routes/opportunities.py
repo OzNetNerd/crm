@@ -1,15 +1,8 @@
 from datetime import date
 from flask import Blueprint, render_template, request, jsonify
 from app.models import Opportunity, Company, Stakeholder, Note, db
-from app.utils.route_helpers import (
-    BaseRouteHandler,
-    parse_date_field,
-    parse_int_field,
-    get_entity_data_for_forms,
-)
 
 opportunities_bp = Blueprint("opportunities", __name__)
-opportunity_handler = BaseRouteHandler(Opportunity, "opportunities")
 
 
 @opportunities_bp.route("/")
@@ -110,34 +103,11 @@ def index():
 
 
 @opportunities_bp.route("/<int:opportunity_id>")
-def detail(opportunity_id):
+def show(opportunity_id):
     opportunity = Opportunity.query.get_or_404(opportunity_id)
     return render_template("opportunities/detail.html", opportunity=opportunity)
 
 
-@opportunities_bp.route("/new", methods=["GET", "POST"])
-def new():
-    if request.method == "POST":
-
-        def parse_company_id(data):
-            company_id = parse_int_field(data, "company_id")
-            if company_id is None:
-                return jsonify({"error": "Invalid company ID"}), 400
-            return company_id
-
-        return opportunity_handler.handle_create(
-            name="name",
-            company_id=parse_company_id,
-            value=lambda data: parse_int_field(data, "value"),
-            probability=lambda data: parse_int_field(data, "probability", 0),
-            expected_close_date=lambda data: parse_date_field(
-                data, "expected_close_date"
-            ),
-            stage=lambda data: data.get("stage", "prospect"),
-        )
-
-    entity_data = get_entity_data_for_forms()
-    return render_template("opportunities/new.html", companies=entity_data["companies"])
 
 
 @opportunities_bp.route("/<int:opportunity_id>", methods=["DELETE"])

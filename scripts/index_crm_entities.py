@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script to index all CRM entities into Qdrant for semantic search.
-This script extracts text from companies, contacts, opportunities, tasks, meetings, and notes.
+This script extracts text from companies, contacts, opportunities, tasks, and notes.
 """
 
 import sys
@@ -19,10 +19,9 @@ from flask import Flask  # noqa: E402
 from app.models import (  # noqa: E402
     db,
     Company,
-    Contact,
+    Stakeholder,
     Opportunity,
     Task,
-    Meeting,
     Note,
 )
 from chatbot.services.qdrant_service import get_qdrant_service  # noqa: E402
