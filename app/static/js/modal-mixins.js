@@ -79,7 +79,17 @@ function createModalMixin(options = {}) {
  */
 function createCRUDMixin(entityType, defaultEntity = {}, options = {}) {
     const entityKey = entityType.toLowerCase();
-    const apiEndpoint = `/api/${entityKey}s`;
+    
+    // Proper pluralization for entity types
+    function pluralize(word) {
+        const irregulars = {
+            'company': 'companies',
+            'opportunity': 'opportunities'
+        };
+        return irregulars[word] || `${word}s`;
+    }
+    
+    const apiEndpoint = `/api/${pluralize(entityKey)}`;
     
     // Ensure defaultEntity is a valid object
     if (!defaultEntity || typeof defaultEntity !== 'object') {
