@@ -1,18 +1,16 @@
-{% extends "base/layout.html" %}
-
-{# DRY Common Imports - reduced from 15+ lines to this clean set #}
-{% from "components/icons.html" import building_office_icon, user_icon, chevron_right_icon, check_circle_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid %}
-{% from "components/ui_elements.html" import expand_collapse_controls, generic_group_dropdown, generic_sort_dropdown, generic_filter_multiselect, dynamic_entity_section, bulk_actions_bar, enhanced_filter_controls %}
-{% from "components/page_template.html" import page_layout %}
+{% extends "base/entity_index.html" %}
 
 {# Entity-specific imports #}
-{% from "components/company_card.html" import render_company %}
-{% from "components/imports/entity_imports.html" import include_common_modals %}
+{% block entity_imports %}
+{% from "components/expandable_card.html" import company_header_content, company_title_content, company_metadata_content, action_buttons_row %}
+{% endblock %}
 
-{% block title %}Companies - CRM{% endblock %}
+{% block entity_config %}
+{% set entity_name = "Companies" %}
+{% set entity_description = "Manage your company relationships" %}
+{% set entity_type = "company" %}
 
-{% block content %}
-{% set company_stats = {
+{% set entity_stats = {
     'title': 'Company Overview',
     'stats': [
         {
@@ -31,14 +29,14 @@
             'color_class': 'text-purple-600'
         },
         {
-            'value': companies|selectattr('contacts')|list|length,
-            'label': 'Active Relationships',
-            'color_class': 'text-orange-600'
+            'value': companies|map(attribute='opportunities')|map('length')|sum if companies|selectattr('opportunities')|list else 0,
+            'label': 'Total Opportunities',
+            'color_class': 'text-yellow-600'
         }
     ]
 } %}
 
-{% set company_buttons = [
+{% set entity_buttons = [
     {
         'label': 'New Company',
         'onclick': 'openNewCompanyModal()',
@@ -47,70 +45,37 @@
     }
 ] %}
 
-{% call page_layout("Companies", "Manage your company relationships", buttons=company_buttons, summary_data=company_stats) %}
-
-<div x-data="createEntityManager(getCompanyConfig('{{ today }}'))" class="space-y-6">
-
-    <!-- Bulk Actions Bar -->
-    {{ bulk_actions_bar('company', 'companies', 
-         {'label': 'Create Tasks', 'onclick': 'bulkCreateTasks(selectedItems)', 'color': 'green'},
-         {'label': 'Delete Selected', 'onclick': 'bulkDelete(selectedItems)', 'color': 'red'}) }}
-
-    <!-- Enhanced Filters and Controls with Generic DRY Components -->
-    {{ enhanced_filter_controls(
-        group_options=get_groupable_fields(Company),
-        sort_options=get_sortable_fields(Company),
-        show_completed_label='Show Incomplete Info',
-        show_completed_name='show_incomplete',
-        primary_filter_options=PRIORITY_OPTIONS,
-        primary_filter_label='All Company Info',
-        secondary_filter_options=get_field_options(Company, 'industry'),
-        secondary_filter_label='All Industries',
-        entity_filter_options=SIZE_OPTIONS,
-        entity_filter_label='All Sizes'
-    ) }}
-
-    <!-- Dynamic Client-Side Company Grouping -->
-    <div id="companies-content">
-        {{ dynamic_entity_section() }}
-    </div>
-
-    <!-- Default view when no companies -->
-    {% if not companies %}
-        <div class="card p-12 text-center">
-            <p class="text-gray-500 mb-4">No companies found</p>
-            <button onclick="openNewCompanyModal()" 
-                    class="btn-primary">
-                Add Your First Company
-            </button>
-        </div>
-    {% endif %}
-
-    <!-- Hidden pre-rendered company cards for client-side use -->
-    <div style="display: none;" id="company-cards-cache">
-        {% for company in companies %}
-            <div id="company-card-{{ company.id }}">
-                {{ render_company(company) }}
-            </div>
-        {% endfor %}
-    </div>
-
-</div>
-
-{% endcall %}
+{% set entity_filter_controls %}
+{{ enhanced_filter_controls(
+    group_options=get_groupable_fields(Company),
+    sort_options=get_sortable_fields(Company),
+    show_completed_label='Show All',
+    show_completed_name='show_all',
+    primary_filter_options=get_field_options(Company, 'industry'),
+    primary_filter_label='All Industries'
+) }}
+{% endset %}
 {% endblock %}
 
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
-<script src="{{ url_for('static', filename='js/entities/companies.js') }}"></script>
-
-{{ include_common_modals() }}
+{% block entity_cards %}
+{% for company in companies %}
+    <div id="company-card-{{ company.id }}">
+        {{ expandable_card('company', company, company.id,
+            expansion_enabled=true,
+            badge_content=company_header_content(company),
+            title_content=company_title_content(company),
+            metadata_content=company_metadata_content(company),
+            action_buttons=action_buttons_row('company', company.id)) }}
+    </div>
+{% endfor %}
 {% endblock %}
 
-{% block data_attributes %}
+{% block entity_data_attributes %}
 data-companies="{{ companies_data | tojson | forceescape }}"
 data-contacts="{{ contacts | tojson | forceescape }}"
 data-opportunities="{{ opportunities | tojson | forceescape }}"
+{% endblock %}
+
+{% block entity_scripts %}
+<script src="{{ url_for('static', filename='js/entities/companies.js') }}"></script>
 {% endblock %}
