@@ -11,8 +11,6 @@ from .task import Task as Task  # noqa: E402
 from .user import User, CompanyAccountTeam, OpportunityAccountTeam  # noqa: E402
 
 # LLM-related models
-from .meeting import Meeting as Meeting  # noqa: E402
-from .extracted_insight import ExtractedInsight as ExtractedInsight  # noqa: E402
 from .chat_history import ChatHistory as ChatHistory  # noqa: E402
 from .embedding import Embedding as Embedding  # noqa: E402
 
@@ -26,8 +24,6 @@ __all__ = [
     "User",
     "CompanyAccountTeam",
     "OpportunityAccountTeam",
-    "Meeting",
-    "ExtractedInsight",
     "ChatHistory",
     "Embedding",
 ]

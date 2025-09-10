@@ -105,14 +105,10 @@ def index():
     )
 
 
-@tasks_bp.route("/<int:task_id>")
-def detail(task_id):
-    task = Task.query.get_or_404(task_id)
-    return render_template("tasks/detail.html", task=task)
 
 
 @tasks_bp.route("/new", methods=["GET", "POST"])
-def new():
+def create():
     if request.method == "POST":
         try:
             data = request.get_json()
@@ -159,7 +155,7 @@ def new():
 
 
 @tasks_bp.route("/multi/new", methods=["GET", "POST"])
-def new_multi():
+def create_multi():
     """Create a new Multi Task with child tasks using WTF form validation"""
     form = MultiTaskForm()
 

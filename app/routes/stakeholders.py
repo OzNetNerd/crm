@@ -1,10 +1,7 @@
 from datetime import date
 from flask import Blueprint, render_template, request
 from app.models import Stakeholder, Company, Opportunity
-from app.utils.route_helpers import BaseRouteHandler, get_entity_data_for_forms
-
 stakeholders_bp = Blueprint("stakeholders", __name__)
-stakeholder_handler = BaseRouteHandler(Stakeholder, "stakeholders")
 
 
 @stakeholders_bp.route("/")
@@ -82,22 +79,3 @@ def index():
     )
 
 
-@stakeholders_bp.route("/<int:contact_id>")
-def detail(contact_id):
-    contact = Stakeholder.query.get_or_404(contact_id)
-    return render_template("stakeholders/detail.html", contact=contact)
-
-
-@stakeholders_bp.route("/new", methods=["GET", "POST"])
-def new():
-    if request.method == "POST":
-        return stakeholder_handler.handle_create(
-            name="name",
-            role="role",
-            email="email",
-            phone="phone",
-            company_id="company_id",
-        )
-
-    entity_data = get_entity_data_for_forms()
-    return render_template("stakeholders/new.html", companies=entity_data["companies"])
