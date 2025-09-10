@@ -1,6 +1,6 @@
 from datetime import date
 from flask import Blueprint, render_template, request
-from app.models import Company, Contact, Opportunity
+from app.models import Company, Stakeholder, Opportunity
 from app.utils.route_helpers import BaseRouteHandler
 
 companies_bp = Blueprint("companies", __name__)
@@ -22,7 +22,7 @@ def index():
     companies = Company.query.all()
     
     # Get all contacts and opportunities for global data
-    contacts_objects = Contact.query.all()
+    contacts_objects = Stakeholder.query.all()
     opportunities_objects = Opportunity.query.all()
     
     # Convert to JSON-serializable format for JavaScript

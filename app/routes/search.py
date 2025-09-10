@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy import or_
-from app.models import Task, Company, Contact, Opportunity
+from app.models import Task, Company, Stakeholder, Opportunity
 
 search_bp = Blueprint("search", __name__)
 
@@ -43,12 +43,12 @@ def search():
     if entity_type in ["all", "contacts"]:
         if query:
             contacts = (
-                Contact.query.join(Company)
+                Stakeholder.query.join(Company)
                 .filter(
                     or_(
-                        Contact.name.ilike(f"%{query}%"),
-                        Contact.email.ilike(f"%{query}%"),
-                        Contact.role.ilike(f"%{query}%"),
+                        Stakeholder.name.ilike(f"%{query}%"),
+                        Stakeholder.email.ilike(f"%{query}%"),
+                        Stakeholder.role.ilike(f"%{query}%"),
                     )
                 )
                 .limit(limit)
@@ -56,7 +56,7 @@ def search():
             )
         else:
             # Return all contacts when no query
-            contacts = Contact.query.join(Company).limit(limit).all()
+            contacts = Stakeholder.query.join(Company).limit(limit).all()
 
         for contact in contacts:
             results.append(
@@ -165,11 +165,11 @@ def autocomplete():
     elif entity_type == "contact":
         if query:
             contacts = (
-                Contact.query.filter(Contact.name.ilike(f"%{query}%")).limit(limit).all()
+                Stakeholder.query.filter(Stakeholder.name.ilike(f"%{query}%")).limit(limit).all()
             )
         else:
             # Return all contacts when no query
-            contacts = Contact.query.limit(limit).all()
+            contacts = Stakeholder.query.limit(limit).all()
 
         suggestions = [
             {

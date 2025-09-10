@@ -1,6 +1,6 @@
 from datetime import datetime, date, timedelta
 from flask import Blueprint, render_template, request, jsonify
-from app.models import db, Task, Company, Contact, Opportunity, Note
+from app.models import db, Task, Company, Stakeholder, Opportunity, Note
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -57,7 +57,7 @@ def index():
     # Key metrics
     metrics = {
         "total_companies": Company.query.count(),
-        "total_contacts": Contact.query.count(),
+        "total_contacts": Stakeholder.query.count(),
         "total_opportunities": Opportunity.query.count(),
         "total_tasks": Task.query.count(),
     }

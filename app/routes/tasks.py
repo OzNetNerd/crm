@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
-from app.models import db, Task, Company, Contact, Opportunity
+from app.models import db, Task, Company, Stakeholder, Opportunity
 from app.forms import MultiTaskForm
 from app.utils.route_helpers import BaseRouteHandler, parse_date_field, parse_int_field, get_entity_data_for_forms
 
@@ -67,7 +67,7 @@ def index():
         {"id": c.id, "name": c.name} for c in Company.query.order_by(Company.name).all()
     ]
     contacts_data = [
-        {"id": c.id, "name": c.name} for c in Contact.query.order_by(Contact.name).all()
+        {"id": c.id, "name": c.name} for c in Stakeholder.query.order_by(Stakeholder.name).all()
     ]
     opportunities_data = [
         {"id": o.id, "name": o.name}
@@ -160,8 +160,6 @@ def new_multi():
                 due_date=form.due_date.data,
                 priority=form.priority.data,
                 status="todo",
-                entity_type=form.entity_type.data if form.entity_type.data else None,
-                entity_id=form.entity_id.data if form.entity_id.data else None,
                 task_type="parent",
                 dependency_type=form.dependency_type.data,
             )
@@ -182,10 +180,6 @@ def new_multi():
                             if child_form.next_step_type.data
                             else None
                         ),
-                        entity_type=(
-                            form.entity_type.data if form.entity_type.data else None
-                        ),
-                        entity_id=form.entity_id.data if form.entity_id.data else None,
                         task_type="child",
                         parent_task_id=parent_task.id,
                         sequence_order=i,

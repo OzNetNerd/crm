@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template_string
-from app.models import db, Task, Contact, Company, Opportunity, Note
+from app.models import db, Task, Stakeholder, Company, Opportunity, Note
 from app.utils.route_helpers import GenericAPIHandler
 from datetime import datetime
 
@@ -7,7 +7,7 @@ api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 # Create generic API handlers
 task_api = GenericAPIHandler(Task, "task")
-contact_api = GenericAPIHandler(Contact, "contact")  
+contact_api = GenericAPIHandler(Stakeholder, "contact")  
 company_api = GenericAPIHandler(Company, "company")
 opportunity_api = GenericAPIHandler(Opportunity, "opportunity")
 
@@ -42,7 +42,7 @@ def get_companies():
 def get_contacts():
     """Get all contacts for form dropdowns"""
     try:
-        contacts = Contact.query.order_by(Contact.name).all()
+        contacts = Stakeholder.query.order_by(Stakeholder.name).all()
         return jsonify([{
             'id': contact.id,
             'name': contact.name,
@@ -117,7 +117,7 @@ def create_task():
         if data.get("task_type") == "single" or not data.get("task_type"):
             # Create single task
             task_data = {}
-            allowed_fields = ["description", "due_date", "priority", "status", "next_step_type", "entity_type", "entity_id", "task_type"]
+            allowed_fields = ["description", "due_date", "priority", "status", "next_step_type", "task_type"]
             
             for field in allowed_fields:
                 if field in data:
@@ -162,8 +162,6 @@ def create_task():
                 ),
                 priority=data.get("priority", "medium"),
                 status="todo",
-                entity_type=data.get("entity_type"),
-                entity_id=data.get("entity_id"),
                 task_type="parent",
                 dependency_type=data.get("dependency_type", "parallel"),
             )
