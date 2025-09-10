@@ -53,30 +53,15 @@
 
     <!-- Enhanced Filters and Controls with Generic DRY Components -->
     {{ enhanced_filter_controls(
-        group_options=[
-            {'value': 'industry', 'label': 'Industry'},
-            {'value': 'size', 'label': 'Company Size'},
-            {'value': 'contacts', 'label': 'Contact Count'},
-            {'value': 'opportunities', 'label': 'Opportunities'}
-        ],
+        group_options=get_group_options('Company'),
         sort_options=get_sort_options('Company'),
         show_completed_label='Show Incomplete Info',
         show_completed_name='show_incomplete',
-        primary_filter_options=[
-            {'value': 'has_industry', 'label': 'Has Industry'},
-            {'value': 'has_website', 'label': 'Has Website'},
-            {'value': 'has_contacts', 'label': 'Has Contacts'},
-            {'value': 'missing_info', 'label': 'Missing Info'}
-        ],
+        primary_filter_options=get_priority_options('Company'),
         primary_filter_label='All Company Info',
         secondary_filter_options=get_filter_options('Company', 'industry'),
         secondary_filter_label='All Industries',
-        entity_filter_options=[
-            {'value': 'small', 'label': 'Small (1-50)'},
-            {'value': 'medium', 'label': 'Medium (51-500)'},
-            {'value': 'large', 'label': 'Large (500+)'},
-            {'value': 'unknown', 'label': 'Unknown Size'}
-        ],
+        entity_filter_options=get_size_options(),
         entity_filter_label='All Sizes'
     ) }}
 
