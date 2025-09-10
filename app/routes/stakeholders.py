@@ -40,19 +40,7 @@ def index():
         'company_id': opp.company_id
     } for opp in opportunities_objects]
     
-    stakeholders_data = [{
-        'id': stakeholder.id,
-        'name': stakeholder.name,
-        'email': stakeholder.email,
-        'phone': stakeholder.phone,
-        'job_title': stakeholder.job_title,
-        'company_id': stakeholder.company_id,
-        'company': {
-            'id': stakeholder.company.id,
-            'name': stakeholder.company.name,
-            'industry': stakeholder.company.industry
-        } if stakeholder.company else None
-    } for stakeholder in stakeholders]
+    stakeholders_data = [stakeholder.to_dict() for stakeholder in stakeholders]
     
     today = date.today()
     
@@ -83,7 +71,7 @@ def detail(contact_id):
 @stakeholders_bp.route("/new", methods=["GET", "POST"])
 def new():
     if request.method == "POST":
-        return contact_handler.handle_create(
+        return stakeholder_handler.handle_create(
             name="name",
             role="role", 
             email="email",

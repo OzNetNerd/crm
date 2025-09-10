@@ -34,22 +34,14 @@ class User(db.Model):
     
     def get_owned_stakeholder_relationships(self):
         """Get all stakeholders this user owns relationships with"""
-        result = db.session.execute(
-            db.text("""
-                SELECT s.id, s.name, s.job_title
-                FROM stakeholders s
-                JOIN stakeholder_relationship_owners sro ON s.id = sro.stakeholder_id
-                WHERE sro.user_id = :user_id
-                ORDER BY s.name
-            """),
-            {"user_id": self.id}
-        ).fetchall()
+        # Use ORM relationship and sort by name
+        sorted_stakeholders = sorted(self.owned_stakeholder_relationships, key=lambda s: s.name)
         
         return [{
-            'stakeholder_id': row[0],
-            'stakeholder_name': row[1],
-            'stakeholder_job_title': row[2]
-        } for row in result]
+            'stakeholder_id': stakeholder.id,
+            'stakeholder_name': stakeholder.name,
+            'stakeholder_job_title': stakeholder.job_title
+        } for stakeholder in sorted_stakeholders]
 
     def __repr__(self):
         return f"<User {self.name} - {self.job_title}>"

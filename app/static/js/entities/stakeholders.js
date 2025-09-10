@@ -18,7 +18,7 @@ window.bulkDelete = function(selectedIds) {
             
             if (response.ok) {
                 // Remove contact from local data
-                window.contactsData = window.contactsData.filter(c => c.id.toString() !== contactId.toString());
+                window.stakeholdersData = window.stakeholdersData.filter(c => c.id.toString() !== contactId.toString());
             }
         } catch (error) {
             console.error('Error deleting contact:', error);

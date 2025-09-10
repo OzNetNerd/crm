@@ -15,23 +15,15 @@ class Company(db.Model):
 
     def get_account_team(self):
         """Get account team members assigned to this company"""
-        result = db.session.execute(
-            db.text("""
-                SELECT u.id, u.name, u.email, u.job_title
-                FROM users u
-                JOIN company_account_teams cat ON u.id = cat.user_id
-                WHERE cat.company_id = :company_id
-                ORDER BY u.job_title, u.name
-            """),
-            {"company_id": self.id}
-        ).fetchall()
-        
+        # Use the ORM relationship and sort by job_title, name
+        team_assignments = sorted(self.account_team_assignments, 
+                                key=lambda x: (x.user.job_title or '', x.user.name))
         return [{
-            'id': row[0],
-            'name': row[1],
-            'email': row[2],
-            'job_title': row[3]
-        } for row in result]
+            'id': assignment.user.id,
+            'name': assignment.user.name,
+            'email': assignment.user.email,
+            'job_title': assignment.user.job_title
+        } for assignment in team_assignments]
 
     def to_dict(self):
         """Convert company to dictionary for JSON serialization"""
