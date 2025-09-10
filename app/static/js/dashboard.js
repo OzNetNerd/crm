@@ -415,6 +415,11 @@ window.editTask = function(taskId) {
     openTaskDetailModal(taskId);
 };
 
+window.editOpportunity = function(opportunityId) {
+    // Use the existing opportunity edit modal
+    openEditOpportunityModal(opportunityId);
+};
+
 window.deleteTask = function(taskId) {
     window.showConfirmationModal({
         title: 'Delete Task',

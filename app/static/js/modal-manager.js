@@ -115,7 +115,7 @@ function openOpportunityDetailModal(opportunityId) {
 }
 
 function openEditOpportunityModal(opportunityId) {
-    window.modalManager.openModal('opportunity', 'edit', opportunityId);
+    window.modalManager.openModal('opportunity', 'detail', opportunityId);
 }
 
 // Entity action functions (create tasks/opportunities for entities)

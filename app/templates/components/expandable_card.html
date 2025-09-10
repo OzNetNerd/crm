@@ -486,8 +486,7 @@
         {'type': 'complete', 'icon': check_icon("w-4 h-4"), 'onclick': 'completeTask(' + entity_id|string + ')', 'title': 'Complete task', 'classes': 'text-success-hover hover:bg-green-50'}
     ],
     'opportunity': [
-        {'type': 'delete', 'icon': '×', 'onclick': 'deleteOpportunity(' + entity_id|string + ')', 'title': 'Delete opportunity', 'classes': 'text-danger-hover hover:bg-red-50'},
-        {'type': 'view', 'icon': check_icon("w-4 h-4"), 'onclick': 'openOpportunityModal(' + entity_id|string + ')', 'title': 'View opportunity', 'classes': 'text-info-hover hover:bg-blue-50'}
+        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'onclick': 'editOpportunity(' + entity_id|string + ')', 'title': 'Edit opportunity', 'classes': 'text-info-hover hover:bg-blue-50'}
     ],
     'contact': [
         {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'onclick': 'openContactModal(' + entity_id|string + ')', 'title': 'Edit contact', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
