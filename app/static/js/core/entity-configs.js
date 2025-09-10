@@ -11,6 +11,12 @@
  * Used with createEntityManager() to handle opportunities
  */
 function getOpportunityConfig(today) {
+    // Get model configuration from backend-pushed data
+    const modelConfig = window.modelConfigs?.opportunity || {};
+    
+    // Build dynamic configuration using ModelConfigFactory  
+    const factoryConfig = ModelConfigFactory.buildEntityConfig('opportunity', modelConfig);
+    
     return {
         // Data source
         entityName: 'opportunity',
@@ -33,58 +39,17 @@ function getOpportunityConfig(today) {
         secondaryFilterField: 'stage',
         entityFilterField: 'company_name',
         
-        // Completion logic
-        isCompleted: (opportunity) => ['closed-won', 'closed-lost'].includes(opportunity.stage),
+        // Completion logic - from model metadata
+        isCompleted: factoryConfig.isCompleted || ((opportunity) => false),
 
-        // Priority calculation based on deal value
-        priorityLogic: (opportunity) => {
-            if (!opportunity.value) return 'low';
-            if (opportunity.value >= 50000) return 'high';
-            if (opportunity.value >= 10000) return 'medium';
-            return 'low';
-        },
+        // Priority calculation - from model metadata
+        priorityLogic: factoryConfig.priorityLogic || ((opportunity) => 'low'),
 
-        // Grouping options
+        // Grouping options - now dynamic from model metadata
         groupOptions: {
             'stage': {
                 field: 'stage',
-                groups: [
-                    { 
-                        key: 'prospect', 
-                        title: 'Prospect', 
-                        containerClass: 'card-success', 
-                        headerClass: 'text-status-success', 
-                        headerBgClass: 'border-b border-green-200 px-6 py-4 bg-green-50 hover:bg-green-100', 
-                        badgeClass: 'badge-green',
-                        icon: ''
-                    },
-                    { 
-                        key: 'qualified', 
-                        title: 'Qualified', 
-                        containerClass: 'card-info', 
-                        headerClass: 'text-status-info', 
-                        headerBgClass: 'border-b border-blue-200 px-6 py-4 bg-blue-50 hover:bg-blue-100', 
-                        badgeClass: 'badge-blue',
-                        icon: ''
-                    },
-                    { 
-                        key: 'proposal', 
-                        title: 'Proposal', 
-                        containerClass: 'card-warning', 
-                        headerClass: 'text-status-warning', 
-                        headerBgClass: 'border-b border-yellow-200 px-6 py-4 bg-yellow-50 hover:bg-yellow-100', 
-                        badgeClass: 'badge-yellow',
-                        icon: ''
-                    },
-                    { 
-                        key: 'negotiation', 
-                        title: 'Negotiation', 
-                        containerClass: 'card-orange', 
-                        headerClass: 'text-status-warning', 
-                        headerBgClass: 'border-b border-orange-200 px-6 py-4 bg-orange-50 hover:bg-orange-100', 
-                        badgeClass: 'badge-orange',
-                        icon: ''                    }
-                ]
+                groups: factoryConfig.stageGroups || []
             },
             'close_date': {
                 field: 'expected_close_date',

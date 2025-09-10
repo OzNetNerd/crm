@@ -84,6 +84,10 @@ def create_app():
 
     # Register custom template filters
     register_template_filters(app)
+    
+    # Register context processors for global template data
+    from app.context_processors import inject_model_configs
+    app.context_processor(inject_model_configs)
 
     # Register clean template functions - no more string hacks!
     app.jinja_env.globals["get_field_options"] = get_field_options

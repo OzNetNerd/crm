@@ -58,12 +58,13 @@ class DynamicFormBuilder:
             # Set display label
             label = kwargs.get('label', info.get('display_label', field_name.replace('_', ' ').title()))
             
-            # Set validators
-            validators = []
-            if info.get('required', False):
-                validators.append(DataRequired())
-            else:
-                validators.append(OptionalValidator())
+            # Set validators - merge with any provided in kwargs
+            validators = kwargs.pop('validators', [])
+            if not validators:
+                if info.get('required', False):
+                    validators.append(DataRequired())
+                else:
+                    validators.append(OptionalValidator())
                 
             # Add empty choice if optional
             if not info.get('required', False) and choices:
