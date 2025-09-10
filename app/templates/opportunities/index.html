@@ -99,12 +99,7 @@
             {'value': 'low', 'label': 'Low (<$10K)'}
         ],
         primary_filter_label='All Priorities',
-        secondary_filter_options=[
-            {'value': 'prospect', 'label': 'Prospect'},
-            {'value': 'qualified', 'label': 'Qualified'},
-            {'value': 'proposal', 'label': 'Proposal'},
-            {'value': 'negotiation', 'label': 'Negotiation'}
-        ],
+        secondary_filter_options=get_filter_options('Opportunity', 'stage'),
         secondary_filter_label='All Stages',
         entity_filter_options=company_options,
         entity_filter_label='All Companies',

@@ -59,13 +59,7 @@
             {'value': 'contacts', 'label': 'Contact Count'},
             {'value': 'opportunities', 'label': 'Opportunities'}
         ],
-        sort_options=[
-            {'value': 'name', 'label': 'Name'},
-            {'value': 'industry', 'label': 'Industry'},
-            {'value': 'contacts_count', 'label': 'Contact Count'},
-            {'value': 'opportunities_count', 'label': 'Opportunity Count'},
-            {'value': 'created_at', 'label': 'Date Added'}
-        ],
+        sort_options=get_sort_options('Company'),
         show_completed_label='Show Incomplete Info',
         show_completed_name='show_incomplete',
         primary_filter_options=[
@@ -75,14 +69,7 @@
             {'value': 'missing_info', 'label': 'Missing Info'}
         ],
         primary_filter_label='All Company Info',
-        secondary_filter_options=[
-            {'value': 'technology', 'label': 'Technology'},
-            {'value': 'finance', 'label': 'Finance'},
-            {'value': 'healthcare', 'label': 'Healthcare'},
-            {'value': 'manufacturing', 'label': 'Manufacturing'},
-            {'value': 'retail', 'label': 'Retail'},
-            {'value': 'consulting', 'label': 'Consulting'}
-        ],
+        secondary_filter_options=get_filter_options('Company', 'industry'),
         secondary_filter_label='All Industries',
         entity_filter_options=[
             {'value': 'small', 'label': 'Small (1-50)'},

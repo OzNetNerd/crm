@@ -75,19 +75,9 @@
             {'value': 'missing', 'label': 'Missing Info'}
         ],
         primary_filter_label='All Contact Info',
-        secondary_filter_options=[
-            {'value': 'technology', 'label': 'Technology'},
-            {'value': 'finance', 'label': 'Finance'},
-            {'value': 'healthcare', 'label': 'Healthcare'},
-            {'value': 'manufacturing', 'label': 'Manufacturing'}
-        ],
+        secondary_filter_options=get_filter_options('Contact', 'industry'),
         secondary_filter_label='All Industries',
-        entity_filter_options=[
-            {'value': 'ceo', 'label': 'CEO'},
-            {'value': 'manager', 'label': 'Manager'},
-            {'value': 'director', 'label': 'Director'},
-            {'value': 'developer', 'label': 'Developer'}
-        ],
+        entity_filter_options=get_filter_options('Contact', 'role'),
         entity_filter_label='All Roles'
     ) }}
 
