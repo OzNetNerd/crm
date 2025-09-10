@@ -106,11 +106,14 @@
     {% if card_type == 'task' %}
     // Task-specific reschedule state
     pendingDays: 0,
+    savedDueDate: '{{ entity.due_date.isoformat() if entity.due_date else '' }}', // Current saved date
     
     getNewDueDate() {
-        if (!{{ 'true' if entity.due_date else 'false' }}) return '';
+        if (!this.savedDueDate && !{{ 'true' if entity.due_date else 'false' }}) return '';
         
-        const originalDate = new Date('{{ entity.due_date.isoformat() if entity.due_date else '' }}');
+        // Use savedDueDate if available, otherwise fall back to template date
+        const dateToUse = this.savedDueDate || '{{ entity.due_date.isoformat() if entity.due_date else '' }}';
+        const originalDate = new Date(dateToUse);
         const adjustedDate = new Date(originalDate);
         adjustedDate.setDate(adjustedDate.getDate() + this.pendingDays);
         
@@ -170,8 +173,13 @@
             });
             
             if (response.ok) {
+                const result = await response.json();
+                // Update the saved date so display shows correct value
+                if (result.due_date) {
+                    this.savedDueDate = result.due_date;
+                }
                 this.cancelChanges();
-                // Date will update on next page load - no refresh needed
+                // Frontend display will now show updated date
             } else {
                 const errorText = await response.text();
                 console.error('Failed to reschedule task:', errorText);
