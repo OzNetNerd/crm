@@ -222,9 +222,9 @@ class Task(db.Model):
         if entity_type == "company":
             from .company import Company
             return Company.query.get(entity_id)
-        elif entity_type == "contact":
-            from .contact import Contact
-            return Contact.query.get(entity_id)
+        elif entity_type == "stakeholder":
+            from .stakeholder import Stakeholder
+            return Stakeholder.query.get(entity_id)
         elif entity_type == "opportunity":
             from .opportunity import Opportunity
             return Opportunity.query.get(entity_id)

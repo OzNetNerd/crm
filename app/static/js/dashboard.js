@@ -209,7 +209,7 @@ class TaskManager {
             { headerText: 'No Due Date', selector: '[x-show="expandedSections[\'no_date\']"]' },
             // Entity sections
             { headerText: 'Company Tasks', selector: '[x-show="expandedSections[\'company\']"]' },
-            { headerText: 'Contact Tasks', selector: '[x-show="expandedSections[\'contact\']"]' },
+            { headerText: 'Stakeholder Tasks', selector: '[x-show="expandedSections[\'contact\']"]' },
             { headerText: 'Opportunity Tasks', selector: '[x-show="expandedSections[\'opportunity\']"]' },
             { headerText: 'General Tasks', selector: '[x-show="expandedSections[\'unrelated\']"]' }
         ];

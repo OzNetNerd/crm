@@ -3,7 +3,7 @@ Entity management utilities for CRM
 Provides reusable functions for entity relationships, stakeholder management, and teams
 """
 
-from app.models import db, Company, Contact, Opportunity, User, Task
+from app.models import db, Company, Stakeholder, Opportunity, User, Task
 
 
 class EntityManager:
@@ -13,7 +13,7 @@ class EntityManager:
     def get_all_entities_for_selection():
         """Get all entities formatted for form selection dropdowns"""
         companies = Company.query.order_by(Company.name).all()
-        contacts = Contact.query.order_by(Contact.name).all()  
+        contacts = Stakeholder.query.order_by(Stakeholder.name).all()  
         opportunities = Opportunity.query.order_by(Opportunity.name).all()
         
         return {
@@ -27,8 +27,8 @@ class EntityManager:
         """Get entity object by type and ID - used across the application"""
         if entity_type == "company":
             return Company.query.get(entity_id)
-        elif entity_type == "contact":
-            return Contact.query.get(entity_id)
+        elif entity_type == "stakeholder":
+            return Stakeholder.query.get(entity_id)
         elif entity_type == "opportunity":
             return Opportunity.query.get(entity_id)
         elif entity_type == "user":
@@ -83,7 +83,7 @@ class StakeholderManager:
     @staticmethod
     def assign_stakeholder(contact_id, opportunity_id, role, is_primary=False):
         """Assign a contact as stakeholder to an opportunity"""
-        contact = Contact.query.get(contact_id)
+        contact = Stakeholder.query.get(contact_id)
         if contact:
             contact.set_stakeholder_role(opportunity_id, role, is_primary)
             return True

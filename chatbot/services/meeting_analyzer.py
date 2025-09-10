@@ -9,7 +9,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from .ollama_client import get_ollama_client, ExtractionResult
-from chatbot.models import Meeting, ExtractedInsight, Company, Contact, Task
+from chatbot.models import Meeting, ExtractedInsight, Company, Stakeholder, Task
 
 logger = logging.getLogger(__name__)
 
@@ -212,8 +212,8 @@ class MeetingAnalyzer:
         for attendee in attendees:
             if isinstance(attendee, dict) and attendee.get('name'):
                 # Check if contact already exists
-                existing = db_session.query(Contact).filter(
-                    Contact.name.ilike(f"%{attendee['name']}%")
+                existing = db_session.query(Stakeholder).filter(
+                    Stakeholder.name.ilike(f"%{attendee['name']}%")
                 ).first()
                 
                 if not existing:

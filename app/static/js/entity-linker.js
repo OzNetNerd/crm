@@ -81,7 +81,7 @@ function createEntityLinker(fieldName, placeholder = "Search entities...", selec
         getEntityTypeDisplay(type) {
             const typeMap = {
                 company: 'Company',
-                contact: 'Contact', 
+                contact: 'Stakeholder', 
                 opportunity: 'Opportunity',
                 task: 'Task'
             };

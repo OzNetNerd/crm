@@ -162,7 +162,7 @@ def autocomplete():
             for company in companies
         ]
 
-    elif entity_type == "contact":
+    elif entity_type == "stakeholder":
         if query:
             contacts = (
                 Stakeholder.query.filter(Stakeholder.name.ilike(f"%{query}%")).limit(limit).all()

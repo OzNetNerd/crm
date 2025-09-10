@@ -10,10 +10,10 @@ async function toggleChildTask(childTaskId) {
     // This would typically make an API call to update the task status
 }
 
-// Contact modal handlers
-function initializeContactModal() {
-    // Contact-specific modal initialization
-    console.log("Contact modal initialized");
+// Stakeholder modal handlers
+function initializeStakeholderModal() {
+    // Stakeholder-specific modal initialization
+    console.log("Stakeholder modal initialized");
 }
 
 // Company modal handlers  
@@ -96,7 +96,7 @@ function openModal(modalId, data = {}) {
 // Export functions for use in other modules
 window.modalHandlers = {
     toggleChildTask,
-    initializeContactModal,
+    initializeStakeholderModal,
     initializeCompanyModal, 
     initializeOpportunityModal,
     createTaskForOpportunity,

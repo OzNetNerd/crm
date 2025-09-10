@@ -26,7 +26,7 @@
             'title': 'Quick Actions',
             'actions': [
                 {'label': 'Add Task', 'onclick': 'createTask(\'company\', ' + '{{ company.id }}' + ')', 'style': 'primary'},
-                {'label': 'New Contact', 'onclick': 'createContact(\'company\', ' + '{{ company.id }}' + ')', 'style': 'secondary'},
+                {'label': 'New Stakeholder', 'onclick': 'createStakeholder(\'company\', ' + '{{ company.id }}' + ')', 'style': 'secondary'},
                 {'label': 'New Opportunity', 'onclick': 'createOpportunity(\'company\', ' + '{{ company.id }}' + ')', 'style': 'accent'}
             ],
             'stats': [
@@ -82,9 +82,9 @@
                     class="quick-action-btn quick-action-btn-primary">
                 Add Task
             </button>
-            <button @click.stop="createContact('company', {{ company.id }})" 
+            <button @click.stop="createStakeholder('company', {{ company.id }})" 
                     class="quick-action-btn quick-action-btn-secondary">
-                New Contact
+                New Stakeholder
             </button>
             <button @click.stop="createOpportunity('company', {{ company.id }})" 
                     class="quick-action-btn quick-action-btn-accent">

@@ -43,8 +43,8 @@ function createTaskForCompany(companyId) {
     createTask('company', companyId);
 }
 
-function createContactForCompany(companyId) {
-    createContact('company', companyId);
+function createStakeholderForCompany(companyId) {
+    createStakeholder('company', companyId);
 }
 
 function createOpportunityForCompany(companyId) {

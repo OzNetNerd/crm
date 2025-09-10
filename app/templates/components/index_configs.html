@@ -47,7 +47,7 @@
             'entity_filter': {
                 'options': [
                     {'value': 'company', 'label': 'Company'},
-                    {'value': 'contact', 'label': 'Contact'},
+                    {'value': 'contact', 'label': 'Stakeholder'},
                     {'value': 'opportunity', 'label': 'Opportunity'},
                     {'value': 'unrelated', 'label': 'General'}
                 ],
@@ -109,7 +109,7 @@
         }
     } %}
 
-{# Contact Index Configuration #}
+{# Stakeholder Index Configuration #}
 {% elif entity_type == 'contacts' %}
     {% set entity_config = {
         'entity_type': 'contacts',
@@ -122,7 +122,7 @@
                 {'value': 'company', 'label': 'Company'},
                 {'value': 'industry', 'label': 'Industry'},
                 {'value': 'role', 'label': 'Role'},
-                {'value': 'contact_info', 'label': 'Contact Info'}
+                {'value': 'contact_info', 'label': 'Stakeholder Info'}
             ],
             'show_completed': {'model': 'showCompleted', 'name': 'show_incomplete', 'label': 'Show Incomplete Info'},
             'sort_options': [
@@ -139,7 +139,7 @@
                     {'value': 'phone_only', 'label': 'Phone Only'},
                     {'value': 'missing', 'label': 'Missing Info'}
                 ],
-                'placeholder': 'All Contact Info'
+                'placeholder': 'All Stakeholder Info'
             },
             'secondary_filter': {
                 'options': [
@@ -162,8 +162,8 @@
         },
         'empty_state': {
             'message': 'No contacts found',
-            'action_text': 'Add Your First Contact',
-            'action_onclick': 'openNewContactModal()'
+            'action_text': 'Add Your First Stakeholder',
+            'action_onclick': 'openNewStakeholderModal()'
         }
     } %}
 

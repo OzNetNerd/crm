@@ -22,7 +22,7 @@
         },
         {
             'value': companies|map(attribute='contacts')|map('length')|sum if companies|selectattr('contacts')|list else 0,
-            'label': 'Total Contacts',
+            'label': 'Total Stakeholders',
             'color_class': 'text-purple-600'
         },
         {

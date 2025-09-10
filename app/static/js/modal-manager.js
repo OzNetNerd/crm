@@ -67,20 +67,20 @@ function openEditTaskModal(taskId) {
     window.modalManager.openModal('task', 'edit', taskId);
 }
 
-// Contact-related modal functions
-function openNewContactModal() {
+// Stakeholder-related modal functions
+function openNewStakeholderModal() {
     window.modalManager.openModal('contact', 'new');
 }
 
-function openContactModal(contactId) {
+function openStakeholderModal(contactId) {
     window.modalManager.openModal('contact', 'detail', contactId);
 }
 
-function openContactDetailModal(contactId) {
+function openStakeholderDetailModal(contactId) {
     window.modalManager.openModal('contact', 'detail', contactId);
 }
 
-function openEditContactModal(contactId) {
+function openEditStakeholderModal(contactId) {
     window.modalManager.openModal('contact', 'edit', contactId);
 }
 
@@ -172,7 +172,7 @@ function deleteTask(taskId) {
     return deleteEntity('task', taskId, 'Are you sure you want to delete this task?');
 }
 
-function deleteContact(contactId) {
+function deleteStakeholder(contactId) {
     return deleteEntity('contact', contactId, 'Are you sure you want to delete this contact?');
 }
 

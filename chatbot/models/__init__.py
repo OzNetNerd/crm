@@ -13,7 +13,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from app.models import (
     db,
     Company,
-    Contact, 
+    Stakeholder, 
     Note,
     Opportunity,
     Task,
@@ -27,7 +27,7 @@ from app.models import (
 __all__ = [
     "db",
     "Company",
-    "Contact", 
+    "Stakeholder", 
     "Note",
     "Opportunity",
     "Task",

@@ -148,7 +148,7 @@ class ColorSchemeManager {
                 negotiation: this.colorSchemes[3] // orange
             },
             
-            // Contact info status colors
+            // Stakeholder info status colors
             contactInfo: {
                 complete: this.colorSchemes[1], // green
                 email_only: this.colorSchemes[0], // blue

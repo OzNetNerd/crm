@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 
 from database import get_async_session
-from models import Company, Contact, Task, Opportunity, Meeting, ChatHistory
+from models import Company, Stakeholder, Task, Opportunity, Meeting, ChatHistory
 from services.chat_handler import ChatHandler
 
 app = FastAPI(title="CRM Chatbot Service", version="1.0.0")
