@@ -209,6 +209,47 @@ def get_group_options(model_name, exclude_fields=None, custom_fields=None):
     return get_sort_options(model_name, exclude_fields, custom_fields)
 
 
+def get_grouping_options(model_name):
+    """
+    Get semantic grouping options for different models.
+    These are business-logic based groupings, not just database fields.
+    
+    Args:
+        model_name: String name of the model
+        
+    Returns:
+        List of {'value': str, 'label': str} dictionaries
+    """
+    grouping_configs = {
+        'Opportunity': [
+            {'value': 'stage', 'label': 'Pipeline Stage'},
+            {'value': 'close_date', 'label': 'Close Date'},
+            {'value': 'value', 'label': 'Deal Value'},
+            {'value': 'company', 'label': 'Company'}
+        ],
+        'Contact': [
+            {'value': 'company', 'label': 'Company'},
+            {'value': 'industry', 'label': 'Industry'},
+            {'value': 'role', 'label': 'Role'},
+            {'value': 'contact_info', 'label': 'Contact Info'}
+        ],
+        'Company': [
+            {'value': 'industry', 'label': 'Industry'},
+            {'value': 'size', 'label': 'Company Size'},
+            {'value': 'contacts', 'label': 'Contact Count'},
+            {'value': 'opportunities', 'label': 'Opportunities'}
+        ],
+        'Task': [
+            {'value': 'status', 'label': 'Status'},
+            {'value': 'due_date', 'label': 'Due Date'},
+            {'value': 'priority', 'label': 'Priority'},
+            {'value': 'entity', 'label': 'Related To'}
+        ]
+    }
+    
+    return grouping_configs.get(model_name, [])
+
+
 def get_priority_options(model_name):
     """
     Get priority/quality filter options for different models.
