@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.models import db, Task, Note
+from datetime import timedelta, date
 
 tasks_api_bp = Blueprint("tasks_api", __name__)
 
@@ -109,6 +110,36 @@ def create_task_note(task_id):
             ),
             201,
         )
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@tasks_api_bp.route("/<int:task_id>/reschedule", methods=["PUT"])
+def reschedule_task(task_id):
+    """Reschedule a task by adjusting its due date"""
+    try:
+        task = Task.query.get_or_404(task_id)
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({"error": "Request body is required"}), 400
+            
+        days_adjustment = data.get("days_adjustment", 0)
+        
+        if task.due_date:
+            task.due_date = task.due_date + timedelta(days=days_adjustment)
+        else:
+            task.due_date = date.today() + timedelta(days=days_adjustment)
+
+        db.session.commit()
+
+        return jsonify({
+            "status": "success",
+            "message": f"Task rescheduled by {days_adjustment} days",
+            "due_date": task.due_date.isoformat() if task.due_date else None
+        })
 
     except Exception as e:
         db.session.rollback()

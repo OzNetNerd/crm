@@ -106,6 +106,90 @@
     {% if card_type == 'task' %}
     // Task-specific reschedule state
     pendingDays: 0,
+    savedDueDate: '{{ entity.due_date.isoformat() if entity.due_date else '' }}', // Current saved date
+    
+    getNewDueDate() {
+        if (!this.savedDueDate && !{{ 'true' if entity.due_date else 'false' }}) return '';
+        
+        // Use savedDueDate if available, otherwise fall back to template date
+        const dateToUse = this.savedDueDate || '{{ entity.due_date.isoformat() if entity.due_date else '' }}';
+        const originalDate = new Date(dateToUse);
+        const adjustedDate = new Date(originalDate);
+        adjustedDate.setDate(adjustedDate.getDate() + this.pendingDays);
+        
+        // Format as dd/mm/yy
+        const day = String(adjustedDate.getDate()).padStart(2, '0');
+        const month = String(adjustedDate.getMonth() + 1).padStart(2, '0');
+        const year = String(adjustedDate.getFullYear()).slice(-2);
+        const formattedDate = `${day}/${month}/${year}`;
+        
+        // Calculate days difference from today
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        adjustedDate.setHours(0, 0, 0, 0);
+        const diffTime = adjustedDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        let dateText = formattedDate;
+        if (diffDays < 0) {
+            dateText += ` • ${Math.abs(diffDays)} days ago`;
+        } else if (diffDays > 0) {
+            dateText += ` • ${diffDays} days to go`;
+        } else {
+            dateText += ` • Today`;
+        }
+        
+        // Add pending days indicator if there are changes
+        if (this.pendingDays !== 0) {
+            const sign = this.pendingDays > 0 ? '+' : '';
+            dateText += ` (${sign}${this.pendingDays} days)`;
+        }
+        
+        return dateText;
+    },
+    
+    adjustDays(days) {
+        this.pendingDays += days;
+        this.isEditing = true;
+        this.showSaveButtons = true;
+    },
+    
+    cancelChanges() {
+        this.pendingDays = 0;
+        this.isEditing = false;
+        this.showSaveButtons = false;
+    },
+    
+    async saveReschedule(taskId, days) {
+        if (this.pendingDays === 0) return;
+        
+        try {
+            const response = await fetch(`/tasks/${taskId}/reschedule`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    days: this.pendingDays
+                })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                // Update the saved date so display shows correct value
+                if (result.due_date) {
+                    this.savedDueDate = result.due_date;
+                }
+                this.cancelChanges();
+                // Frontend display will now show updated date
+            } else {
+                const errorText = await response.text();
+                console.error('Failed to reschedule task:', errorText);
+                alert('Failed to reschedule task');
+            }
+        } catch (error) {
+            console.error('Error rescheduling task:', error);
+            alert('Failed to reschedule task');
+        }
+    },
     {% endif %}
     
     // Notes functionality (always define to prevent errors)
@@ -458,7 +542,7 @@
     {{ task.next_step_type }}
     {% endif %}
     {% if task.due_date %}
-    • Due: {{ task.due_date.strftime('%m/%d/%y') }}
+    • Due: <span x-text="getNewDueDate ? getNewDueDate() : '{{ task.due_date.strftime('%d/%m/%y') }}'">{{ task.due_date.strftime('%d/%m/%y') }}</span>
     {% endif %}
     {% if task.is_overdue %}
     • <span class="text-badge-overdue">OVERDUE</span>
@@ -511,22 +595,22 @@
 {% macro task_reschedule_buttons(task_id) %}
 <div class="relative flex-shrink-0">
     <div class="flex items-center space-x-1">
-        <button @click.stop="console.log('Reschedule -1w for task {{ task_id }}')" 
+        <button @click.stop="adjustDays(-7)" 
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule -1 week">
             -1w
         </button>
-        <button @click.stop="console.log('Reschedule -1d for task {{ task_id }}')" 
+        <button @click.stop="adjustDays(-1)" 
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule -1 day">
             -1d
         </button>
-        <button @click.stop="console.log('Reschedule +1d for task {{ task_id }}')" 
+        <button @click.stop="adjustDays(1)" 
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule +1 day">
             +1d
         </button>
-        <button @click.stop="console.log('Reschedule +1w for task {{ task_id }}')" 
+        <button @click.stop="adjustDays(7)" 
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule +1 week">
             +1w

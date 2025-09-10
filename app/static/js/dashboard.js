@@ -110,11 +110,15 @@ class TaskManager {
             });
             
             if (response.ok) {
+                const result = await response.json();
+                
                 if (showNotification) {
                     const dayText = days === 1 ? 'day' : 'days';
                     this.showNotification(`Task rescheduled by ${days} ${dayText}`, 'success');
                 }
-                setTimeout(() => location.reload(), 500);
+                
+                // Quick refresh to show updated data - simple and reliable
+                setTimeout(() => location.reload(), 200);
             } else {
                 throw new Error('Failed to reschedule task');
             }
