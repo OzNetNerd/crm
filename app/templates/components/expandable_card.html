@@ -79,6 +79,7 @@
     'task': 'ring-2 ring-gray-200 bg-gray-50',
     'opportunity': 'ring-2 ring-blue-200 bg-blue-50',
     'contact': 'ring-2 ring-green-200 bg-green-50',
+    'stakeholder': 'ring-2 ring-green-200 bg-green-50',
     'company': 'ring-2 ring-blue-200 bg-blue-50'
 } -%}
 {%- set notes_enabled = card_type == 'task' -%}
@@ -491,6 +492,10 @@
     'contact': [
         {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'onclick': 'openStakeholderModal(' + entity_id|string + ')', 'title': 'Edit contact', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
         {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'onclick': 'deleteStakeholder(' + entity_id|string + ')', 'title': 'Delete contact', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
+    ],
+    'stakeholder': [
+        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'onclick': 'openStakeholderModal(' + entity_id|string + ')', 'title': 'Edit stakeholder', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
+        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'onclick': 'deleteStakeholder(' + entity_id|string + ')', 'title': 'Delete stakeholder', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
     ]
 } -%}
 
