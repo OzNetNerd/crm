@@ -3,14 +3,12 @@ from wtforms import (
     StringField,
     TextAreaField,
     SelectField,
-    SelectMultipleField,
     DecimalField,
     DateField,
     IntegerField,
 )
 from wtforms.validators import DataRequired, Length, Optional, Email, NumberRange, URL
 from wtforms.widgets import TextArea
-from app.utils.form_configs import DynamicChoiceProvider
 
 
 class CompanyForm(FlaskForm):

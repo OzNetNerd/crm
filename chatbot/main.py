@@ -1,23 +1,22 @@
+import os
+import json
 import uvicorn
+from datetime import datetime
+from typing import List, Dict
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import List, Dict, Any
-import json
-import uuid
-from datetime import datetime
 
 from database import get_async_session
-from models import Company, Stakeholder, Task, Opportunity, Meeting, ChatHistory
+from models import Company, ChatHistory
 from services.chat_handler import ChatHandler
 
 app = FastAPI(title="CRM Chatbot Service", version="1.0.0")
 
-# Mount static files
-import os
 current_dir = os.path.dirname(__file__)
 static_dir = os.path.join(current_dir, "static")
 templates_dir = os.path.join(current_dir, "templates")
@@ -66,81 +65,86 @@ async def test_database(session: AsyncSession = Depends(get_async_session)):
         # Test basic query
         result = await session.execute(select(Company).limit(5))
         companies = result.scalars().all()
-        
+
         return {
             "status": "success",
             "message": "Database connection working",
             "sample_data": {
                 "companies_count": len(companies),
-                "companies": [{"id": c.id, "name": c.name} for c in companies]
-            }
+                "companies": [{"id": c.id, "name": c.name} for c in companies],
+            },
         }
     except Exception as e:
-        return {
-            "status": "error",
-            "message": f"Database connection failed: {str(e)}"
-        }
+        return {"status": "error", "message": f"Database connection failed: {str(e)}"}
 
 
 @app.websocket("/ws/chat/{session_id}")
 async def websocket_endpoint(
-    websocket: WebSocket, 
+    websocket: WebSocket,
     session_id: str,
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
 ):
     await manager.connect(websocket, session_id)
-    
+
     try:
         while True:
             # Receive message from client
             data = await websocket.receive_text()
             message_data = json.loads(data)
             user_message = message_data.get("message", "")
-            
+
             if not user_message.strip():
                 continue
-                
+
             # Process message through ChatHandler
             try:
                 response_data = await chat_handler.process_message(
-                    user_message=user_message,
-                    session_id=session_id,
-                    db_session=session
+                    user_message=user_message, session_id=session_id, db_session=session
                 )
-                
+
                 if response_data.get("type") == "stream":
                     # Handle streaming response
                     stream = response_data["stream"]
                     full_response = ""
-                    
+
                     async for chunk in stream:
                         if chunk["type"] == "chunk":
                             # Send streaming chunk to client
-                            await manager.send_personal_message({
-                                "type": "streaming_chunk",
-                                "text": chunk["text"],
-                                "timestamp": datetime.utcnow().isoformat()
-                            }, websocket)
-                            
+                            await manager.send_personal_message(
+                                {
+                                    "type": "streaming_chunk",
+                                    "text": chunk["text"],
+                                    "timestamp": datetime.utcnow().isoformat(),
+                                },
+                                websocket,
+                            )
+
                         elif chunk["type"] == "complete":
                             full_response = chunk.get("response", "")
-                            
+
                             # Add to conversation history
-                            if hasattr(chat_handler, 'conversation_history') and session_id in chat_handler.conversation_history:
-                                chat_handler.conversation_history[session_id].append({
-                                    "role": "assistant",
-                                    "content": full_response
-                                })
+                            if (
+                                hasattr(chat_handler, "conversation_history")
+                                and session_id in chat_handler.conversation_history
+                            ):
+                                chat_handler.conversation_history[session_id].append(
+                                    {"role": "assistant", "content": full_response}
+                                )
                                 # Keep only last 10 messages
-                                chat_handler.conversation_history[session_id] = chat_handler.conversation_history[session_id][-10:]
-                            
+                                chat_handler.conversation_history[session_id] = (
+                                    chat_handler.conversation_history[session_id][-10:]
+                                )
+
                             # Send completion signal
-                            await manager.send_personal_message({
-                                "type": "streaming_complete",
-                                "timestamp": datetime.utcnow().isoformat(),
-                                "processing_time": chunk.get("processing_time", 0)
-                            }, websocket)
-                            
+                            await manager.send_personal_message(
+                                {
+                                    "type": "streaming_complete",
+                                    "timestamp": datetime.utcnow().isoformat(),
+                                    "processing_time": chunk.get("processing_time", 0),
+                                },
+                                websocket,
+                            )
+
                             # Save to chat history
                             chat_history = ChatHistory(
                                 session_id=session_id,
@@ -150,24 +154,26 @@ async def websocket_endpoint(
                                 response_metadata={
                                     "query_type": "llm_streaming",
                                     "processing_time": chunk.get("processing_time", 0),
-                                    "model_used": chunk.get("model_used", "unknown")
-                                }
+                                    "model_used": chunk.get("model_used", "unknown"),
+                                },
                             )
-                            
+
                             session.add(chat_history)
                             await session.commit()
                             break
-                            
+
                 else:
                     # Invalid response type - this should not happen
-                    raise RuntimeError(f"Invalid response type received: {response_data}")
-                
+                    raise RuntimeError(
+                        f"Invalid response type received: {response_data}"
+                    )
+
             except Exception as e:
                 # Close the websocket connection on errors instead of sending fallback responses
                 print(f"Chat processing failed: {e}")
                 manager.disconnect(websocket)
                 raise
-            
+
     except WebSocketDisconnect:
         manager.disconnect(websocket)
     except Exception as e:
@@ -178,7 +184,8 @@ async def websocket_endpoint(
 @app.get("/chat-widget")
 async def get_chat_widget():
     """Serve the chat widget for embedding in CRM"""
-    return HTMLResponse("""
+    return HTMLResponse(
+        """
     <!DOCTYPE html>
     <html>
     <head>
@@ -332,13 +339,9 @@ async def get_chat_widget():
         </script>
     </body>
     </html>
-    """)
+    """
+    )
 
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host="127.0.0.1",
-        port=8001,
-        reload=True
-    )
+    uvicorn.run("main:app", host="127.0.0.1", port=8001, reload=True)

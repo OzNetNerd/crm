@@ -9,7 +9,6 @@ from wtforms import (
     FormField,
 )
 from wtforms.validators import DataRequired, Length, Optional, NumberRange
-from datetime import date
 
 
 class TaskForm(FlaskForm):
@@ -54,9 +53,12 @@ class TaskForm(FlaskForm):
 
     # Multi-entity selection - JSON string of selected entities
     linked_entities = StringField(
-        "Linked Entities", 
+        "Linked Entities",
         validators=[Optional()],
-        render_kw={"data-entity-selector": "true", "placeholder": "Select companies, contacts, or opportunities"}
+        render_kw={
+            "data-entity-selector": "true",
+            "placeholder": "Select companies, contacts, or opportunities",
+        },
     )
 
     task_type = SelectField(
@@ -93,16 +95,25 @@ class TaskForm(FlaskForm):
         if self.linked_entities.data:
             try:
                 import json
+
                 entities = json.loads(self.linked_entities.data)
                 if not isinstance(entities, list):
                     self.linked_entities.errors.append("Linked entities must be a list")
                     return False
                 for entity in entities:
-                    if not isinstance(entity, dict) or 'type' not in entity or 'id' not in entity:
-                        self.linked_entities.errors.append("Each linked entity must have 'type' and 'id' fields")
+                    if (
+                        not isinstance(entity, dict)
+                        or "type" not in entity
+                        or "id" not in entity
+                    ):
+                        self.linked_entities.errors.append(
+                            "Each linked entity must have 'type' and 'id' fields"
+                        )
                         return False
             except json.JSONDecodeError:
-                self.linked_entities.errors.append("Invalid JSON format for linked entities")
+                self.linked_entities.errors.append(
+                    "Invalid JSON format for linked entities"
+                )
                 return False
 
         # If task_type is child, parent_task_id must be provided
@@ -181,9 +192,12 @@ class MultiTaskForm(FlaskForm):
 
     # Multi-entity selection for parent task
     linked_entities = StringField(
-        "Linked Entities", 
+        "Linked Entities",
         validators=[Optional()],
-        render_kw={"data-entity-selector": "true", "placeholder": "Select companies, contacts, or opportunities"}
+        render_kw={
+            "data-entity-selector": "true",
+            "placeholder": "Select companies, contacts, or opportunities",
+        },
     )
 
     dependency_type = SelectField(
@@ -208,16 +222,25 @@ class MultiTaskForm(FlaskForm):
         if self.linked_entities.data:
             try:
                 import json
+
                 entities = json.loads(self.linked_entities.data)
                 if not isinstance(entities, list):
                     self.linked_entities.errors.append("Linked entities must be a list")
                     return False
                 for entity in entities:
-                    if not isinstance(entity, dict) or 'type' not in entity or 'id' not in entity:
-                        self.linked_entities.errors.append("Each linked entity must have 'type' and 'id' fields")
+                    if (
+                        not isinstance(entity, dict)
+                        or "type" not in entity
+                        or "id" not in entity
+                    ):
+                        self.linked_entities.errors.append(
+                            "Each linked entity must have 'type' and 'id' fields"
+                        )
                         return False
             except json.JSONDecodeError:
-                self.linked_entities.errors.append("Invalid JSON format for linked entities")
+                self.linked_entities.errors.append(
+                    "Invalid JSON format for linked entities"
+                )
                 return False
 
         # Ensure at least 2 child tasks

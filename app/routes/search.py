@@ -108,7 +108,9 @@ def search():
     if entity_type in ["all", "tasks"]:
         if query:
             tasks = (
-                Task.query.filter(Task.description.ilike(f"%{query}%")).limit(limit).all()
+                Task.query.filter(Task.description.ilike(f"%{query}%"))
+                .limit(limit)
+                .all()
             )
         else:
             # Return all tasks when no query
@@ -151,7 +153,9 @@ def autocomplete():
     if entity_type == "company":
         if query:
             companies = (
-                Company.query.filter(Company.name.ilike(f"%{query}%")).limit(limit).all()
+                Company.query.filter(Company.name.ilike(f"%{query}%"))
+                .limit(limit)
+                .all()
             )
         else:
             # Return all companies when no query
@@ -165,7 +169,9 @@ def autocomplete():
     elif entity_type == "stakeholder":
         if query:
             contacts = (
-                Stakeholder.query.filter(Stakeholder.name.ilike(f"%{query}%")).limit(limit).all()
+                Stakeholder.query.filter(Stakeholder.name.ilike(f"%{query}%"))
+                .limit(limit)
+                .all()
             )
         else:
             # Return all contacts when no query

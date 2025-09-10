@@ -1,14 +1,12 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import text
-from typing import List, Dict, Any
+from typing import List, Dict
 import json
-import uuid
 from datetime import datetime
 
 from database_simple import get_sync_session
-from models import Company, Stakeholder, Task, Opportunity, Meeting, ChatHistory
+from models import Company
 
 app = FastAPI(title="CRM Chatbot Service", version="1.0.0")
 
@@ -47,49 +45,48 @@ def test_database(session: Session = Depends(get_sync_session)):
     try:
         # Test basic query
         companies = session.query(Company).limit(5).all()
-        
+
         return {
             "status": "success",
             "message": "Database connection working",
             "sample_data": {
                 "companies_count": len(companies),
-                "companies": [{"id": c.id, "name": c.name} for c in companies]
-            }
+                "companies": [{"id": c.id, "name": c.name} for c in companies],
+            },
         }
     except Exception as e:
-        return {
-            "status": "error",
-            "message": f"Database connection failed: {str(e)}"
-        }
+        return {"status": "error", "message": f"Database connection failed: {str(e)}"}
 
 
 @app.websocket("/ws/chat/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
     await manager.connect(websocket, session_id)
-    
+
     try:
         while True:
             # Receive message from client
             data = await websocket.receive_text()
             message_data = json.loads(data)
             user_message = message_data.get("message", "")
-            
+
             if not user_message.strip():
                 continue
-            
+
             # Simple response for now
-            bot_response = f"I received: '{user_message}'. Full chatbot functionality coming soon!"
-            
+            bot_response = (
+                f"I received: '{user_message}'. Full chatbot functionality coming soon!"
+            )
+
             # Send response to client
             response_data = {
                 "type": "bot_response",
                 "message": bot_response,
                 "timestamp": datetime.utcnow().isoformat(),
-                "session_id": session_id
+                "session_id": session_id,
             }
-            
+
             await manager.send_personal_message(response_data, websocket)
-            
+
     except WebSocketDisconnect:
         manager.disconnect(websocket)
     except Exception as e:
@@ -100,7 +97,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
 @app.get("/chat-widget")
 def get_chat_widget():
     """Serve the chat widget for embedding in CRM"""
-    return HTMLResponse("""
+    return HTMLResponse(
+        """
     <!DOCTYPE html>
     <html>
     <head>
@@ -209,14 +207,11 @@ def get_chat_widget():
         </script>
     </body>
     </html>
-    """)
+    """
+    )
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "main_simple:app",
-        host="127.0.0.1",
-        port=8001,
-        reload=True
-    )
+
+    uvicorn.run("main_simple:app", host="127.0.0.1", port=8001, reload=True)

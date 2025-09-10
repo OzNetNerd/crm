@@ -13,26 +13,26 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from app.models import (
     db,
     Company,
-    Stakeholder, 
+    Stakeholder,
     Note,
     Opportunity,
     Task,
     Meeting,
     ExtractedInsight,
     ChatHistory,
-    Embedding
+    Embedding,
 )
 
 # Re-export for chatbot use
 __all__ = [
     "db",
     "Company",
-    "Stakeholder", 
+    "Stakeholder",
     "Note",
     "Opportunity",
     "Task",
     "Meeting",
     "ExtractedInsight",
     "ChatHistory",
-    "Embedding"
+    "Embedding",
 ]

@@ -10,16 +10,18 @@ from app.models import db
 def cleanup_legacy_task_columns():
     """Remove legacy entity_type and entity_id columns from tasks table"""
     print("🧹 Cleaning up legacy task entity columns")
-    
+
     app = create_app()
-    
+
     with app.app_context():
         try:
             # SQLite doesn't support DROP COLUMN, so we'll create a new table and migrate
             print("🔄 Creating new tasks table without legacy columns")
-            
+
             # Create new table structure
-            db.session.execute(db.text("""
+            db.session.execute(
+                db.text(
+                    """
                 CREATE TABLE tasks_new (
                     id INTEGER PRIMARY KEY,
                     description TEXT NOT NULL,
@@ -35,12 +37,16 @@ def cleanup_legacy_task_columns():
                     dependency_type VARCHAR(20) DEFAULT 'parallel',
                     FOREIGN KEY (parent_task_id) REFERENCES tasks(id)
                 )
-            """))
-            
+            """
+                )
+            )
+
             print("🔄 Migrating task data to new structure")
-            
-            # Copy data from old table to new table  
-            db.session.execute(db.text("""
+
+            # Copy data from old table to new table
+            db.session.execute(
+                db.text(
+                    """
                 INSERT INTO tasks_new (
                     id, description, due_date, priority, status, next_step_type,
                     created_at, completed_at, task_type, parent_task_id, 
@@ -51,18 +57,20 @@ def cleanup_legacy_task_columns():
                     created_at, completed_at, task_type, parent_task_id,
                     sequence_order, dependency_type
                 FROM tasks
-            """))
-            
+            """
+                )
+            )
+
             print("🔄 Replacing old tasks table")
-            
+
             # Drop old table and rename new one
             db.session.execute(db.text("DROP TABLE tasks"))
             db.session.execute(db.text("ALTER TABLE tasks_new RENAME TO tasks"))
-            
+
             db.session.commit()
             print("✅ Successfully cleaned up legacy task columns")
             return True
-            
+
         except Exception as e:
             print(f"❌ Failed to clean up legacy columns: {e}")
             db.session.rollback()

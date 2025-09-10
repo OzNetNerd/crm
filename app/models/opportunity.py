@@ -26,15 +26,18 @@ class Opportunity(db.Model):
         """Get all stakeholders for this opportunity with their MEDDPICC roles"""
         # Use the ORM relationship and sort by name
         sorted_stakeholders = sorted(self.stakeholders, key=lambda s: s.name)
-        
-        return [{
-            'id': stakeholder.id,
-            'name': stakeholder.name,
-            'job_title': stakeholder.job_title,
-            'email': stakeholder.email,
-            'phone': stakeholder.phone,
-            'meddpicc_roles': stakeholder.get_meddpicc_role_names()  # Use existing method
-        } for stakeholder in sorted_stakeholders]
+
+        return [
+            {
+                "id": stakeholder.id,
+                "name": stakeholder.name,
+                "job_title": stakeholder.job_title,
+                "email": stakeholder.email,
+                "phone": stakeholder.phone,
+                "meddpicc_roles": stakeholder.get_meddpicc_role_names(),  # Use existing method
+            }
+            for stakeholder in sorted_stakeholders
+        ]
 
     def get_full_account_team(self):
         """Get full account team including inherited company team and opportunity-specific assignments"""
@@ -42,61 +45,74 @@ class Opportunity(db.Model):
         company_team = []
         if self.company:
             for assignment in self.company.account_team_assignments:
-                company_team.append({
-                    'id': assignment.user.id,
-                    'name': assignment.user.name,
-                    'email': assignment.user.email,
-                    'job_title': assignment.user.job_title,
-                    'source': 'company'
-                })
-        
+                company_team.append(
+                    {
+                        "id": assignment.user.id,
+                        "name": assignment.user.name,
+                        "email": assignment.user.email,
+                        "job_title": assignment.user.job_title,
+                        "source": "company",
+                    }
+                )
+
         # Get opportunity-specific account team members using ORM
         opp_team = []
         for assignment in self.account_team_assignments:
-            opp_team.append({
-                'id': assignment.user.id,
-                'name': assignment.user.name,
-                'email': assignment.user.email,
-                'job_title': assignment.user.job_title,
-                'source': 'opportunity'
-            })
-        
+            opp_team.append(
+                {
+                    "id": assignment.user.id,
+                    "name": assignment.user.name,
+                    "email": assignment.user.email,
+                    "job_title": assignment.user.job_title,
+                    "source": "opportunity",
+                }
+            )
+
         # Combine teams and deduplicate (user might be on both company and opportunity teams)
         all_team = {}
         for member in company_team + opp_team:
-            user_id = member['id']
+            user_id = member["id"]
             if user_id not in all_team:
                 all_team[user_id] = member
-            elif all_team[user_id]['source'] == 'company' and member['source'] == 'opportunity':
+            elif (
+                all_team[user_id]["source"] == "company"
+                and member["source"] == "opportunity"
+            ):
                 # Upgrade source to opportunity if they're on both
-                all_team[user_id]['source'] = 'both'
-        
+                all_team[user_id]["source"] = "both"
+
         # Sort by job_title, name and return
-        return sorted(all_team.values(), key=lambda x: (x['job_title'] or '', x['name']))
+        return sorted(
+            all_team.values(), key=lambda x: (x["job_title"] or "", x["name"])
+        )
 
     def to_dict(self):
         """Convert opportunity to dictionary for JSON serialization"""
         return {
-            'id': self.id,
-            'name': self.name,
-            'value': float(self.value) if self.value else None,
-            'probability': self.probability,
-            'expected_close_date': self.expected_close_date.isoformat() if self.expected_close_date else None,
-            'stage': self.stage,
-            'company_id': self.company_id,
-            'company_name': self.company.name if self.company else None,
-            'deal_age': self.deal_age,
-            'created_at': self.created_at.isoformat(),
-            'stakeholders': [
+            "id": self.id,
+            "name": self.name,
+            "value": float(self.value) if self.value else None,
+            "probability": self.probability,
+            "expected_close_date": (
+                self.expected_close_date.isoformat()
+                if self.expected_close_date
+                else None
+            ),
+            "stage": self.stage,
+            "company_id": self.company_id,
+            "company_name": self.company.name if self.company else None,
+            "deal_age": self.deal_age,
+            "created_at": self.created_at.isoformat(),
+            "stakeholders": [
                 {
-                    'id': stakeholder['id'],
-                    'name': stakeholder['name'],
-                    'job_title': stakeholder['job_title'],
-                    'email': stakeholder['email'],
-                    'meddpicc_roles': stakeholder['meddpicc_roles']
+                    "id": stakeholder["id"],
+                    "name": stakeholder["name"],
+                    "job_title": stakeholder["job_title"],
+                    "email": stakeholder["email"],
+                    "meddpicc_roles": stakeholder["meddpicc_roles"],
                 }
                 for stakeholder in self.get_stakeholders()
-            ]
+            ],
         }
 
     def __repr__(self):
