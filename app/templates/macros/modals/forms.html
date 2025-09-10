@@ -1,0 +1,129 @@
+{# Entity Form Modals - Combined forms for all entity types #}
+
+{# Import required macros #}
+{% from "macros/base/forms.html" import text_input, textarea_input, select_input, date_input %}
+{% from "macros/modals/base.html" import base_modal, modal_header, modal_body, modal_footer %}
+
+{# Company Forms #}
+{% macro company_new_modal() %}
+{% call base_modal('companyModal', 'showCompanyModal') %}
+    {{ modal_header('New Company', 'showCompanyModal') }}
+    
+    {% call modal_body() %}
+        <form @submit.prevent="submitCompanyForm()" class="space-y-4">
+            {{ text_input('name', 'Company Name', 'newCompany.name', 'Enter company name', required=true) }}
+            {{ text_input('website', 'Website', 'newCompany.website', 'https://example.com') }}
+            {{ text_input('phone', 'Phone', 'newCompany.phone', '(555) 123-4567') }}
+            {{ text_input('email', 'Email', 'newCompany.email', 'contact@company.com') }}
+            {{ textarea_input('address', 'Address', 'newCompany.address', 'Enter full address', rows=3) }}
+            {{ select_input('industry', 'Industry', 'newCompany.industry', industries, empty_option="Select Industry") }}
+            {{ textarea_input('notes', 'Notes', 'newCompany.notes', 'Additional notes...', rows=3) }}
+        </form>
+    {% endcall %}
+    
+    {% call modal_footer() %}
+        <button @click="showCompanyModal = false" 
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 mr-2">
+            Cancel
+        </button>
+        <button @click="submitCompanyForm()" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            Create Company
+        </button>
+    {% endcall %}
+{% endcall %}
+{% endmacro %}
+
+{# Opportunity Forms #}
+{% macro opportunity_new_modal() %}
+{% call base_modal('opportunityModal', 'showOpportunityModal') %}
+    {{ modal_header('New Opportunity', 'showOpportunityModal') }}
+    
+    {% call modal_body() %}
+        <form @submit.prevent="submitOpportunityForm()" class="space-y-4">
+            {{ text_input('name', 'Opportunity Name', 'newOpportunity.name', 'Enter opportunity name', required=true) }}
+            {{ select_input('company_id', 'Company', 'newOpportunity.company_id', companies, required=true, empty_option="Select Company") }}
+            {{ text_input('value', 'Value ($)', 'newOpportunity.value', '0', type='number') }}
+            {{ select_input('stage', 'Stage', 'newOpportunity.stage', stages, required=true, empty_option="Select Stage") }}
+            {{ text_input('probability', 'Probability (%)', 'newOpportunity.probability', '50', type='number') }}
+            {{ date_input('expected_close_date', 'Expected Close Date', 'newOpportunity.expected_close_date') }}
+            {{ textarea_input('description', 'Description', 'newOpportunity.description', 'Opportunity details...', rows=3) }}
+            {{ textarea_input('notes', 'Notes', 'newOpportunity.notes', 'Additional notes...', rows=3) }}
+        </form>
+    {% endcall %}
+    
+    {% call modal_footer() %}
+        <button @click="showOpportunityModal = false" 
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 mr-2">
+            Cancel
+        </button>
+        <button @click="submitOpportunityForm()" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            Create Opportunity
+        </button>
+    {% endcall %}
+{% endcall %}
+{% endmacro %}
+
+{# Stakeholder Forms #}
+{% macro stakeholder_new_modal() %}
+{% call base_modal('stakeholderModal', 'showStakeholderModal') %}
+    {{ modal_header('New Stakeholder', 'showStakeholderModal') }}
+    
+    {% call modal_body() %}
+        <form @submit.prevent="submitStakeholderForm()" class="space-y-4">
+            {{ text_input('first_name', 'First Name', 'newStakeholder.first_name', 'John', required=true) }}
+            {{ text_input('last_name', 'Last Name', 'newStakeholder.last_name', 'Doe', required=true) }}
+            {{ select_input('company_id', 'Company', 'newStakeholder.company_id', companies, required=true, empty_option="Select Company") }}
+            {{ text_input('title', 'Job Title', 'newStakeholder.title', 'CEO, Manager, etc.') }}
+            {{ text_input('email', 'Email', 'newStakeholder.email', 'john@company.com') }}
+            {{ text_input('phone', 'Phone', 'newStakeholder.phone', '(555) 123-4567') }}
+            {{ select_input('role', 'Role', 'newStakeholder.role', roles, empty_option="Select Role") }}
+            {{ textarea_input('notes', 'Notes', 'newStakeholder.notes', 'Additional notes...', rows=3) }}
+        </form>
+    {% endcall %}
+    
+    {% call modal_footer() %}
+        <button @click="showStakeholderModal = false" 
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 mr-2">
+            Cancel
+        </button>
+        <button @click="submitStakeholderForm()" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            Create Stakeholder
+        </button>
+    {% endcall %}
+{% endcall %}
+{% endmacro %}
+
+{# Task Forms #}
+{% macro task_new_modal() %}
+{% call base_modal('taskModal', 'showTaskModal') %}
+    {{ modal_header('New Task', 'showTaskModal') }}
+    
+    {% call modal_body() %}
+        <form @submit.prevent="submitTaskForm()" class="space-y-4">
+            {{ text_input('title', 'Task Title', 'newTask.title', 'Enter task title', required=true) }}
+            {{ textarea_input('description', 'Description', 'newTask.description', 'Task description...', rows=3) }}
+            {{ select_input('priority', 'Priority', 'newTask.priority', priorities, required=true, empty_option="Select Priority") }}
+            {{ select_input('status', 'Status', 'newTask.status', statuses, required=true, empty_option="Select Status") }}
+            {{ date_input('due_date', 'Due Date', 'newTask.due_date') }}
+            {{ select_input('assigned_to', 'Assigned To', 'newTask.assigned_to', team_members, empty_option="Unassigned") }}
+            {{ select_input('company_id', 'Related Company', 'newTask.company_id', companies, empty_option="No Company") }}
+            {{ select_input('opportunity_id', 'Related Opportunity', 'newTask.opportunity_id', opportunities, empty_option="No Opportunity") }}
+            {{ textarea_input('notes', 'Notes', 'newTask.notes', 'Additional notes...', rows=3) }}
+        </form>
+    {% endcall %}
+    
+    {% call modal_footer() %}
+        <button @click="showTaskModal = false" 
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 mr-2">
+            Cancel
+        </button>
+        <button @click="submitTaskForm()" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            Create Task
+        </button>
+    {% endcall %}
+{% endcall %}
+{% endmacro %}

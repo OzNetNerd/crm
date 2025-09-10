@@ -1,5 +1,5 @@
 {# HTMX Content Partial for Tasks - Now DRY with macro-based sections #}
-{% from "components/task_sections.html" import render_status_sections, render_priority_sections, render_due_date_sections, render_entity_sections %}
+{% from "macros/task_sections.html" import render_status_sections, render_priority_sections, render_due_date_sections, render_entity_sections %}
 
 {# Alpine.js data for expand/collapse state #}
 <div x-data="{ 

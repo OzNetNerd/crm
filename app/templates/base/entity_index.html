@@ -10,10 +10,10 @@
 #}
 
 {# Universal imports - used by ALL entity pages #}
-{% from "components/page_template.html" import page_layout %}
-{% from "components/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
-{% from "components/expandable_card.html" import expandable_card %}
-{% from "components/imports/entity_imports.html" import include_common_modals %}
+{% from "macros/page_template.html" import page_layout %}
+{% from "macros/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
+{% from "macros/expandable_card.html" import expandable_card %}
+{% from "macros/imports/entity_imports.html" import include_common_modals %}
 
 {# Entity-specific configuration blocks - each entity overrides these #}
 {% block entity_config %}
@@ -66,7 +66,7 @@
 {% endblock %}
 
 {% block modals %}
-{% from "components/modals/confirmation.html" import confirmation_modal %}
+{% from "macros/modals/confirmation.html" import confirmation_modal %}
 {{ confirmation_modal(entity_type + '-confirmation-modal') }}
 {{ include_common_modals() }}
 {% endblock %}

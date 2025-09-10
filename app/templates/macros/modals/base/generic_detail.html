@@ -1,0 +1,137 @@
+{% from "macros/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
+{% from "macros/modals/base/notes_section.html" import notes_section %}
+
+{% macro generic_detail_modal(entity_type, config) %}
+<div x-data="{
+        ...createCRUDMixin('{{ entity_type }}', {}, {}),
+        ...createNotesMixin('{{ entity_type }}'),
+        
+        {% if config.tabs %}
+        activeTab: '{{ config.tabs[0].key }}',
+        
+        switchTab(tab) {
+            this.activeTab = tab;
+        },
+        {% endif %}
+        
+        async load{{ entity_type|title }}(id) {
+            await this.loadEntity(id);
+            this.openModal();
+        },
+        
+        async save{{ entity_type|title }}Details() {
+            return await this.saveEntity();
+        }
+     }" 
+     @open-detail-{{ entity_type }}-modal.window="load{{ entity_type|title }}($event.detail.id)"
+     @close-modal.window="closeModal()">
+
+    {% call base_modal(entity_type + '-detail-modal', backdrop_click_close=false) %}
+        {{ modal_header(config.title) }}
+        
+        <div x-show="loading" class="text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+        
+        <div x-show="!loading && {{ entity_type }}" class="modal-body modal-content-spacing">
+            {% if config.tabs %}
+            <!-- Tab Navigation -->
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8">
+                    {% for tab in config.tabs %}
+                    <button @click="activeTab = '{{ tab.key }}'" 
+                            {% if tab.condition %}x-show="{{ tab.condition }}"{% endif %}
+                            :class="activeTab === '{{ tab.key }}' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                        {{ tab.label }}
+                        {% if tab.badge %}
+                        <span class="ml-1 bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs" x-text="{{ tab.badge }}"></span>
+                        {% endif %}
+                    </button>
+                    {% endfor %}
+                </nav>
+            </div>
+            {% endif %}
+            
+            {% if config.tabs %}
+                {% for tab in config.tabs %}
+                <div x-show="activeTab === '{{ tab.key }}'" class="space-y-4">
+                    {% if tab.key == 'details' %}
+                        {{ render_detail_fields(entity_type, config.fields) }}
+                    {% elif tab.key == 'notes' %}
+                        {{ notes_section(entity_type) }}
+                    {% else %}
+                        {{ tab.content | safe }}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                {{ render_detail_fields(entity_type, config.fields) }}
+                
+                {% if config.show_notes %}
+                {{ notes_section(entity_type) }}
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        {{ modal_footer(save_action="save" + entity_type|title + "Details()", save_text="Save Changes") }}
+    {% endcall %}
+</div>
+{% endmacro %}
+
+{% macro render_detail_fields(entity_type, fields) %}
+    {% for field in fields %}
+        {% if field.type == 'text' %}
+            <div>
+                <label class="text-form-label">{{ field.label }}</label>
+                <input type="text" x-model="{{ entity_type }}.{{ field.name }}" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="{{ field.placeholder | default('') }}">
+            </div>
+        {% elif field.type == 'textarea' %}
+            <div>
+                <label class="text-form-label">{{ field.label }}</label>
+                <textarea x-model="{{ entity_type }}.{{ field.name }}" 
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          rows="{{ field.rows | default(3) }}"></textarea>
+            </div>
+        {% elif field.type == 'select' %}
+            <div>
+                <label class="text-form-label">{{ field.label }}</label>
+                <select x-model="{{ entity_type }}.{{ field.name }}" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    {% for option in field.options %}
+                    <option value="{{ option.value if option is mapping else option }}">
+                        {{ option.label if option is mapping else option|title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% elif field.type == 'date' %}
+            <div>
+                <label class="text-form-label">{{ field.label }}</label>
+                <input type="date" x-model="{{ entity_type }}.{{ field.name }}" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+        {% elif field.type == 'grid' %}
+            <div class="grid grid-cols-{{ field.columns | default(2) }} gap-4">
+                {% for subfield in field.fields %}
+                    <div>{{ render_detail_fields(entity_type, [subfield]) }}</div>
+                {% endfor %}
+            </div>
+        {% elif field.type == 'related_list' %}
+            <div x-show="{{ entity_type }}.{{ field.name }} && {{ entity_type }}.{{ field.name }}.length > 0">
+                <label class="text-form-label mb-2 block">{{ field.label }}</label>
+                <div class="space-y-2 max-h-32 overflow-y-auto">
+                    <template x-for="{{ field.item_name }} in {{ entity_type }}.{{ field.name }}" :key="{{ field.item_name }}.id">
+                        <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                            {{ field.template | safe }}
+                        </div>
+                    </template>
+                </div>
+            </div>
+        {% elif field.type == 'custom' %}
+            {{ field.template | safe }}
+        {% endif %}
+    {% endfor %}
+{% endmacro %}

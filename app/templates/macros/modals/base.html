@@ -1,0 +1,120 @@
+{# Modal Base Components - Core modal functionality and structure #}
+
+{% macro base_modal(modal_id, show_var="show", backdrop_click_close=true) %}
+<div x-show="{{ show_var }}" 
+     x-cloak 
+     x-transition:enter="modal-fade-enter"
+     x-transition:enter-end="modal-fade-enter-to"
+     x-transition:leave="modal-fade-leave"
+     x-transition:leave-end="modal-fade-leave-to"
+     class="modal-overlay"
+     aria-labelledby="{{ modal_id }}-title" 
+     role="dialog" 
+     aria-modal="true">
+    
+    <div class="modal-container">
+        <div x-show="{{ show_var }}" 
+             x-transition:enter="modal-fade-enter"
+             x-transition:enter-end="modal-fade-enter-to"
+             x-transition:leave="modal-fade-leave"
+             x-transition:leave-end="modal-fade-leave-to"
+             class="modal-backdrop"
+             {% if backdrop_click_close %}@click="{{ show_var }} = false"{% endif %}></div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+        
+        <div x-show="{{ show_var }}"
+             x-transition:enter="modal-scale-enter"
+             x-transition:enter-end="modal-scale-enter-to"
+             x-transition:leave="modal-scale-leave"
+             x-transition:leave-end="modal-scale-leave-to"
+             class="modal-content"
+             @click.stop>
+            
+            {{ caller() }}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro modal_header(title, show_var="show") %}
+<div class="modal-header">
+    <h3 class="modal-title" id="modal-title">
+        {{ title }}
+    </h3>
+    <button @click="{{ show_var }} = false" class="modal-close-button">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </button>
+</div>
+{% endmacro %}
+
+{% macro modal_body(classes="") %}
+<div class="modal-body {{ classes }}">
+    {{ caller() }}
+</div>
+{% endmacro %}
+
+{% macro modal_footer(align="right") %}
+<div class="modal-footer {% if align == 'center' %}justify-center{% elif align == 'left' %}justify-start{% else %}justify-end{% endif %}">
+    {{ caller() }}
+</div>
+{% endmacro %}
+
+{# Notes Section - Common notes display for entities #}
+{% macro notes_section(notes, show_empty=true) %}
+<div class="notes-section">
+    <h4 class="text-sm font-medium text-gray-900 mb-2">Notes</h4>
+    {% if notes and notes.strip() %}
+        <div class="bg-gray-50 rounded-md p-3">
+            <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ notes }}</p>
+        </div>
+    {% elif show_empty %}
+        <div class="bg-gray-50 rounded-md p-3">
+            <p class="text-sm text-gray-500 italic">No notes available</p>
+        </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Generic Detail Modal - Reusable detail display #}
+{% macro generic_detail_modal(modal_id, title, entity, fields, show_var="show") %}
+{% call base_modal(modal_id, show_var) %}
+    {{ modal_header(title, show_var) }}
+    
+    {% call modal_body() %}
+        <div class="space-y-4">
+            {% for field in fields %}
+                <div>
+                    <label class="text-sm font-medium text-gray-500">{{ field.label }}</label>
+                    <div class="mt-1 text-sm text-gray-900">
+                        {% if field.type == 'date' and entity[field.key] %}
+                            {{ entity[field.key].strftime('%B %d, %Y') }}
+                        {% elif field.type == 'currency' and entity[field.key] %}
+                            ${{ "{:,.0f}".format(entity[field.key]) }}
+                        {% elif field.type == 'percentage' and entity[field.key] is not none %}
+                            {{ entity[field.key] }}%
+                        {% elif entity[field.key] %}
+                            {{ entity[field.key] }}
+                        {% else %}
+                            <span class="text-gray-400">Not specified</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            
+            {% if entity.notes %}
+                {{ notes_section(entity.notes) }}
+            {% endif %}
+        </div>
+    {% endcall %}
+    
+    {% call modal_footer() %}
+        <button @click="{{ show_var }} = false" 
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+            Close
+        </button>
+    {% endcall %}
+{% endcall %}
+{% endmacro %}

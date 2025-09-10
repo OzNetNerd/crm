@@ -1,10 +1,10 @@
 {% extends "base/layout.html" %}
 
-{% from "components/page_template.html" import page_layout %}
-{% from "components/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
-{% from "components/expandable_card.html" import expandable_card, opportunity_header_content, opportunity_metadata_content, action_buttons_row %}
-{% from "components/imports/entity_imports.html" import include_common_modals %}
-{% from "components/icons.html" import plus_icon %}
+{% from "macros/page_template.html" import page_layout %}
+{% from "macros/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
+{% from "macros/expandable_card.html" import expandable_card, opportunity_header_content, opportunity_metadata_content, action_buttons_row %}
+{% from "macros/imports/entity_imports.html" import include_common_modals %}
+{% from "macros/icons.html" import plus_icon %}
 
 {% block title %}Opportunities - CRM{% endblock %}
 
@@ -127,7 +127,7 @@
 {% endblock %}
 
 {% block modals %}
-{% from "components/modals/confirmation.html" import confirmation_modal %}
+{% from "macros/modals/confirmation.html" import confirmation_modal %}
 {{ confirmation_modal('opportunity-confirmation-modal') }}
 {{ include_common_modals() }}
 {% endblock %}

@@ -1,0 +1,30 @@
+{# Modal Imports - Modal-specific imports #}
+
+{# Base Modal Components #}
+{% from "macros/modals/base.html" import 
+    base_modal,
+    modal_header,
+    modal_body,
+    modal_footer,
+    notes_section,
+    generic_detail_modal
+%}
+
+{# Dialog Modals #}
+{% from "macros/modals/dialogs.html" import 
+    confirmation_modal
+%}
+
+{# Entity Form Modals #}
+{% from "macros/modals/forms.html" import 
+    company_new_modal,
+    opportunity_new_modal,
+    stakeholder_new_modal,
+    task_new_modal
+%}
+
+{# Modal Configurations #}
+{% from "macros/modals/configs.html" import 
+    entity_modal_configs,
+    get_entity_modal_config
+%}

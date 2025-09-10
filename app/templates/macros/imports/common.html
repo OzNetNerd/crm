@@ -1,0 +1,69 @@
+{# Common Imports - DRY consolidation of frequently used imports #}
+
+{# Common Icons - used across all templates #}
+{% from "macros/base/icons.html" import 
+    building_office_icon,
+    user_icon,
+    chevron_right_icon,
+    check_circle_icon_solid,
+    exclamation_triangle_icon,
+    exclamation_circle_icon_solid,
+    currency_dollar_icon,
+    clipboard_list_icon,
+    bolt_icon,
+    fire_icon_solid,
+    calendar_days_icon,
+    calendar_icon,
+    chart_bar_icon,
+    question_mark_circle_icon,
+    phone_icon,
+    envelope_icon,
+    clock_icon
+%}
+
+{# Base Components #}
+{% from "macros/base/buttons.html" import 
+    action_button,
+    enhanced_button,
+    entity_link_button
+%}
+
+{% from "macros/base/forms.html" import 
+    text_input,
+    textarea_input,
+    select_input,
+    date_input
+%}
+
+{% from "macros/base/layout.html" import page_layout %}
+
+{# UI Controls #}
+{% from "macros/ui/controls.html" import 
+    expand_collapse_controls,
+    view_mode_toggle,
+    bulk_selection_checkbox,
+    select_all_checkbox,
+    search_input,
+    loading_spinner,
+    empty_state,
+    pluralized_count
+%}
+
+{% from "macros/ui/progress.html" import progress_bar %}
+
+{# Modal Components #}
+{% from "macros/modals/base.html" import 
+    base_modal,
+    modal_header,
+    modal_body,
+    modal_footer,
+    notes_section,
+    generic_detail_modal
+%}
+
+{# Widget Components #}
+{% from "macros/widgets/filters.html" import 
+    dropdown_select,
+    dropdown_multiselect,
+    generic_filter_controls
+%}

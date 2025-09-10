@@ -1,0 +1,696 @@
+{#
+  Expandable Card Component - DRY base component for all entity cards
+  
+  Creates a standardized card layout matching the opportunity card structure.
+  Eliminates code duplication between task_card, opportunity_card, and contact_card.
+  
+  Parameters:
+  - card_type (required): 'task' | 'opportunity' | 'contact'
+  - entity (required): Entity object (task, opportunity, or contact)
+  - entity_id (required): Unique ID of the entity
+  - expansion_enabled (optional): Enable expansion functionality (default: true)
+  - progress_config (optional): Progress bar configuration object
+  - bulk_selection_enabled (optional): Show bulk selection checkbox (default: true)
+  - group_key (optional): Group identifier for expand/collapse all events
+  - card_classes (optional): Additional CSS classes for the card
+  - badge_content (optional): Badge/status content for header
+  - title_content (required): Main title/name content
+  - value_content (optional): Value content (deal amount, etc.)
+  - secondary_info (optional): Secondary info (company, stakeholder)
+  - metadata_content (optional): Metadata text content
+  - action_buttons (optional): Action buttons HTML
+  - expanded_content (optional): Content shown when expanded
+  
+  Progress Config Object:
+  {
+    'enabled': true,
+    'type': 'completion' | 'probability' | 'custom',
+    'value': number,
+    'max_value': number (optional, default 100),
+    'color_scheme': 'blue' | 'green' | 'yellow' | 'red' (optional, default 'blue'),
+    'label': string (optional)
+  }
+  
+  Usage:
+  {{ expandable_card('opportunity', opportunity, opportunity.id, 
+       badge_content=opportunity_header_content(opportunity),
+       title_content=opportunity.name,
+       value_content='$' + "{:,.0f}".format(opportunity.value),
+       secondary_info='<span class="text-entity-base text-color-company">' + opportunity.company.name + '</span>',
+       metadata_content=opportunity_metadata_content(opportunity),
+       action_buttons=action_buttons_row('opportunity', opportunity.id),
+       progress_config={'enabled': true, 'type': 'probability', 'value': opportunity.probability},
+       expanded_content=opportunity_expanded_content(opportunity)) }}
+#}
+{% from "macros/ui_elements.html" import bulk_selection_checkbox, pluralized_count %}
+{% from "macros/progress_bar.html" import progress_bar %}
+
+
+{#
+  Universal Field Renderer - Simplified approach for now
+  
+  We'll use the simplest working approach first, then optimize later.
+  The goal was to eliminate if/elif chains in templates, but sometimes
+  a small chain in infrastructure code is acceptable to keep the API clean.
+#}
+{% macro render_field(entity, field_config) %}
+{%- if field_config.type == 'text' -%}
+    {{ field_config.get('prefix', '') }}{{ entity[field_config.field] }}
+{%- elif field_config.type == 'count' -%}
+    {{ pluralized_count(entity[field_config.field]|length, field_config.label) }}
+{%- elif field_config.type == 'link' -%}
+    {%- if entity[field_config.field] -%}
+    <a href="{{ entity[field_config.field] }}" target="_blank" class="text-link hover:text-link-hover" onclick="event.stopPropagation()">{{ entity[field_config.field] }}</a>
+    {%- else -%}
+    <span class="text-gray-500">No link provided</span>
+    {%- endif -%}
+{%- elif field_config.type == 'badge' -%}
+    <span class="badge-standard badge-{{ field_config.style }}">{{ entity[field_config.field] }}</span>
+{%- elif field_config.type == 'date' -%}
+    {{ entity[field_config.field].strftime(field_config.get('format', '%m/%d/%y')) if entity[field_config.field] }}
+{%- else -%}
+    {{ entity[field_config.field] }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro expandable_card(card_type, entity, entity_id, expansion_enabled=true, progress_config=none, bulk_selection_enabled=true, group_key='', card_classes='', field_config={}, badge_content='', title_content='', value_content='', secondary_info='', metadata_content='', action_buttons='', expanded_content='') %}
+{%- set base_classes = card_type + '-card card-padded relative mb-3' -%}
+{%- set color_classes = {
+    'task': 'ring-2 ring-gray-200 bg-gray-50',
+    'opportunity': 'ring-2 ring-blue-200 bg-blue-50',
+    'contact': 'ring-2 ring-green-200 bg-green-50',
+    'stakeholder': 'ring-2 ring-green-200 bg-green-50',
+    'company': 'ring-2 ring-blue-200 bg-blue-50'
+} -%}
+{%- set notes_enabled = card_type == 'task' -%}
+
+<div class="{{ base_classes }} {{ color_classes.get(card_type, '') }} {{ card_classes }}" data-{{ card_type }}-id="{{ entity_id }}" x-data="{ 
+    // Core expansion state
+    expanded: false,
+    
+    // Notes and comments (always define to prevent undefined errors)
+    newComment: '',
+    editingCommentId: null,
+    editingCommentText: '',
+    notes: [],
+    notesLoaded: false,
+    saving: false,
+    show: false,
+    {% if notes_enabled %}
+    showNotesInput: false,
+    {% endif %}
+    
+    // Generic editing state
+    isEditing: false,
+    showSaveButtons: false,
+    
+    {% if card_type == 'task' %}
+    // Task-specific reschedule state
+    pendingDays: 0,
+    savedDueDate: '{{ entity.due_date.isoformat() if entity.due_date else '' }}', // Current saved date
+    
+    getNewDueDate() {
+        if (!this.savedDueDate && !{{ 'true' if entity.due_date else 'false' }}) return '';
+        
+        // Use savedDueDate if available, otherwise fall back to template date
+        const dateToUse = this.savedDueDate || '{{ entity.due_date.isoformat() if entity.due_date else '' }}';
+        const originalDate = new Date(dateToUse);
+        const adjustedDate = new Date(originalDate);
+        adjustedDate.setDate(adjustedDate.getDate() + this.pendingDays);
+        
+        // Format as dd/mm/yy
+        const day = String(adjustedDate.getDate()).padStart(2, '0');
+        const month = String(adjustedDate.getMonth() + 1).padStart(2, '0');
+        const year = String(adjustedDate.getFullYear()).slice(-2);
+        const formattedDate = `${day}/${month}/${year}`;
+        
+        // Calculate days difference from today
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        adjustedDate.setHours(0, 0, 0, 0);
+        const diffTime = adjustedDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        let dateText = formattedDate;
+        if (diffDays < 0) {
+            dateText += ` • ${Math.abs(diffDays)} days ago`;
+        } else if (diffDays > 0) {
+            dateText += ` • ${diffDays} days to go`;
+        } else {
+            dateText += ` • Today`;
+        }
+        
+        // Add pending days indicator if there are changes
+        if (this.pendingDays !== 0) {
+            const sign = this.pendingDays > 0 ? '+' : '';
+            dateText += ` (${sign}${this.pendingDays} days)`;
+        }
+        
+        return dateText;
+    },
+    
+    adjustDays(days) {
+        this.pendingDays += days;
+        this.isEditing = true;
+        this.showSaveButtons = true;
+    },
+    
+    cancelChanges() {
+        this.pendingDays = 0;
+        this.isEditing = false;
+        this.showSaveButtons = false;
+    },
+    
+    async saveReschedule(taskId, days) {
+        if (this.pendingDays === 0) return;
+        
+        try {
+            const response = await fetch(`/tasks/${taskId}/reschedule`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    days: this.pendingDays
+                })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                // Update the saved date so display shows correct value
+                if (result.due_date) {
+                    this.savedDueDate = result.due_date;
+                }
+                this.cancelChanges();
+                // Frontend display will now show updated date
+            } else {
+                const errorText = await response.text();
+                console.error('Failed to reschedule task:', errorText);
+                alert('Failed to reschedule task');
+            }
+        } catch (error) {
+            console.error('Error rescheduling task:', error);
+            alert('Failed to reschedule task');
+        }
+    },
+    {% endif %}
+    
+    // Notes functionality (always define to prevent errors)
+    async loadNotes() {
+        {% if not notes_enabled %}return;{% endif %}
+        if (this.notesLoaded) return;
+        
+        try {
+            const response = await fetch(`/api/{{ card_type }}s/{{ entity_id }}/notes`);
+            if (response.ok) {
+                this.notes = await response.json();
+                this.notesLoaded = true;
+            } else {
+                console.error('Failed to load notes');
+            }
+        } catch (error) {
+            console.error('Error loading notes:', error);
+        }
+    },
+    
+    startEditComment(commentId, currentText) {
+        {% if not notes_enabled %}return;{% endif %}
+        this.editingCommentId = commentId;
+        this.editingCommentText = currentText;
+    },
+    
+    cancelEditComment() {
+        {% if not notes_enabled %}return;{% endif %}
+        this.editingCommentId = null;
+        this.editingCommentText = '';
+    },
+    
+    async saveEditComment() {
+        {% if not notes_enabled %}return;{% endif %}
+        if (!this.editingCommentText.trim()) return;
+        
+        try {
+            const response = await fetch(`/api/notes/${this.editingCommentId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: this.editingCommentText
+                })
+            });
+            
+            if (response.ok) {
+                const noteIndex = this.notes.findIndex(note => note.id === this.editingCommentId);
+                if (noteIndex !== -1) {
+                    this.notes[noteIndex].content = this.editingCommentText;
+                }
+                this.editingCommentId = null;
+                this.editingCommentText = '';
+            } else {
+                alert('Failed to update comment');
+            }
+        } catch (error) {
+            console.error('Error updating comment:', error);
+            alert('Failed to update comment');
+        }
+    },
+    
+    async deleteComment(commentId) {
+        {% if not notes_enabled %}return;{% endif %}
+        if (!confirm('Are you sure you want to delete this comment?')) return;
+        
+        try {
+            const response = await fetch(`/api/notes/${commentId}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                this.notes = this.notes.filter(note => note.id !== commentId);
+            } else {
+                alert('Failed to delete comment');
+            }
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            alert('Failed to delete comment');
+        }
+    },
+    
+    async submitComment() {
+        {% if not notes_enabled %}return;{% endif %}
+        if (!this.newComment.trim()) return;
+        
+        try {
+            const response = await fetch(`/api/{{ card_type }}s/{{ entity_id }}/notes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: this.newComment,
+                    is_internal: true
+                })
+            });
+            
+            if (response.ok) {
+                const newNote = await response.json();
+                if (!this.notes) this.notes = [];
+                this.notes.unshift(newNote);
+                this.newComment = '';
+            } else {
+                alert('Failed to add comment');
+            }
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            alert('Failed to add comment');
+        }
+    }
+}" @click="expanded = !expanded{% if notes_enabled %}; if (expanded) loadNotes(){% endif %}" :class="{ '{{ color_classes.get(card_type, '') }}': expanded || isEditing }">
+    
+{# Build content from field_config when provided #}
+{% if field_config %}
+    {% if field_config.badge_field and not badge_content %}
+        {% set badge_content = render_field(entity, {'field': field_config.badge_field, 'type': 'badge', 'style': field_config.badge_style}) %}
+    {% endif %}
+    
+    {% if field_config.title_field and not title_content %}
+        {% set title_content = entity[field_config.title_field] %}
+    {% endif %}
+    
+    {% if field_config.value_field and not value_content %}
+        {% set value_content = entity[field_config.value_field] %}
+    {% endif %}
+    
+    {% if field_config.secondary_fields and not secondary_info %}
+        {% set secondary_content %}
+            {% for field in field_config.secondary_fields %}
+                {{ render_field(entity, field) }}{% if not loop.last %} • {% endif %}
+            {% endfor %}
+        {% endset %}
+        {% set secondary_info = secondary_content %}
+    {% endif %}
+    
+    {% if field_config.metadata_fields and not metadata_content %}
+        {% set metadata_content_build %}
+            {% for field in field_config.metadata_fields %}
+                {{ render_field(entity, field) }}{% if not loop.last %} • {% endif %}
+            {% endfor %}
+        {% endset %}
+        {% set metadata_content = metadata_content_build %}
+    {% endif %}
+{% endif %}
+    
+    {% if bulk_selection_enabled %}
+    <!-- Bulk selection checkbox -->
+    <div class="absolute top-2 left-2">
+        {{ bulk_selection_checkbox(entity_id) }}
+    </div>
+    {% endif %}
+    
+    <!-- Card Header Content -->
+    <div class="{% if bulk_selection_enabled %}ml-6{% endif %}">
+        
+        <!-- Header row with badge, title, and value -->
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center space-x-2 flex-grow">
+                {% if badge_content %}
+                {{ badge_content|safe }}
+                {% endif %}
+                <h3 class="{{ 'text-entity-base text-color-opportunity' if card_type == 'opportunity' else 'text-entity-base text-color-default' }}">{{ title_content|safe }}</h3>
+                {% if value_content %}
+                <div class="{{ 'text-entity-base text-color-deal' if card_type == 'opportunity' else 'text-label-primary' }}">
+                    {{ value_content|safe }}
+                </div>
+                {% endif %}
+            </div>
+            {% if card_type == 'task' %}
+            <!-- Task-specific reschedule buttons -->
+            {{ task_reschedule_buttons(entity_id) }}
+            {% endif %}
+        </div>
+
+        <!-- Secondary info (company, stakeholder, etc.) -->
+        {% if secondary_info %}
+        <div class="mb-2">
+            <div class="text-secondary">
+                {{ secondary_info|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Metadata and actions -->
+        <div class="flex items-center justify-between">
+            <div class="text-metadata">
+                {% if metadata_content %}
+                {{ metadata_content|safe }}
+                {% endif %}
+            </div>
+            
+            <!-- Action buttons -->
+            {% if action_buttons %}
+            {{ action_buttons|safe }}
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if progress_config and progress_config.enabled %}
+    <!-- Progress Bar Section -->
+    <div class="mt-3 {% if bulk_selection_enabled %}ml-6{% endif %}">
+        {{ progress_bar(
+            progress_config.type, 
+            progress_config.value,
+            max_value=progress_config.get('max_value', 100),
+            color_scheme=progress_config.get('color_scheme', 'blue'),
+            label=progress_config.get('label', ''),
+            size=progress_config.get('size', 'md')
+        ) }}
+    </div>
+    {% endif %}
+    
+    {% if expansion_enabled and (expanded_content or notes_enabled) %}
+    <!-- Expanded Content Section -->
+    <div x-show="expanded" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="mt-4 pt-4 border-t border-gray-100">
+        
+        {% if expanded_content %}
+        {{ expanded_content|safe }}
+        {% endif %}
+        
+        {% if notes_enabled %}
+        {% from "macros/card_state_manager.html" import notes_section %}
+        <div class="space-y-3">
+            <h4 class="text-sm font-medium text-gray-900">Comments & Notes</h4>
+            {{ notes_section() }}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+</div>
+{% endmacro %}
+
+{#
+  Opportunity Header Content - Standardized opportunity header badge
+  
+  Parameters:
+  - opportunity (required): Opportunity entity object
+  
+  Usage:
+  {{ opportunity_header_content(opportunity) }}
+#}
+{% macro opportunity_header_content(opportunity) %}
+{% from "macros/list_section.html" import status_badge %}
+{{ status_badge(opportunity.stage, 'green' if opportunity.stage == 'Prospect' else 'blue') }}
+{% endmacro %}
+
+{#
+  Task Header Content - Standardized task header badge
+  
+  Parameters:
+  - task (required): Task entity object
+  
+  Usage:
+  {{ task_header_content(task) }}
+#}
+{% macro task_header_content(task) %}
+{% from "macros/list_section.html" import status_badge %}
+{% set priority_color = 'red' if task.priority == 'high' else
+                      'yellow' if task.priority == 'medium' else
+                      'green' %}
+{{ status_badge(task.priority, priority_color) }}
+{% endmacro %}
+
+{#
+  Action Buttons Row - Standardized action buttons for cards
+  
+  Parameters:
+  - entity_type (required): 'task' | 'opportunity' | 'contact'
+  - entity_id (required): Entity ID
+  - actions (optional): List of action configs
+  - disabled_condition (optional): Alpine.js condition for disabling
+  
+  Action Config:
+  {
+    'type': 'edit' | 'delete' | 'complete' | 'view' | 'custom',
+    'icon': 'icon_html',
+    'onclick': 'javascript_function',
+    'title': 'tooltip_text',
+    'classes': 'additional_css_classes'
+  }
+  
+  Usage:
+  {{ action_buttons_row('task', task.id, actions=[
+       {'type': 'edit', 'onclick': 'editTask(' + task.id|string + ')'},
+       {'type': 'delete', 'onclick': 'deleteTask(' + task.id|string + ')'} 
+     ]) }}
+#}
+{% macro action_buttons_row(entity_type, entity_id, actions=none, disabled_condition='') %}
+{% from "macros/icons.html" import pencil_icon, trash_icon, check_icon %}
+
+{%- set default_actions = {
+    'task': [
+        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'onclick': 'deleteTask(' + entity_id|string + ')', 'title': 'Delete task', 'classes': 'text-danger-hover hover:bg-red-50'},
+        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'onclick': 'editTask(' + entity_id|string + ')', 'title': 'Edit task', 'classes': 'text-info-hover hover:bg-blue-50'},
+        {'type': 'complete', 'icon': check_icon("w-4 h-4"), 'onclick': 'completeTask(' + entity_id|string + ')', 'title': 'Complete task', 'classes': 'text-success-hover hover:bg-green-50'}
+    ],
+    'opportunity': [
+        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'onclick': 'editOpportunity(' + entity_id|string + ')', 'title': 'Edit opportunity', 'classes': 'text-info-hover hover:bg-blue-50'}
+    ],
+    'contact': [
+        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'onclick': 'openStakeholderModal(' + entity_id|string + ')', 'title': 'Edit contact', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
+        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'onclick': 'deleteStakeholder(' + entity_id|string + ')', 'title': 'Delete contact', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
+    ],
+    'stakeholder': [
+        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'onclick': 'openStakeholderModal(' + entity_id|string + ')', 'title': 'Edit stakeholder', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
+        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'onclick': 'deleteStakeholder(' + entity_id|string + ')', 'title': 'Delete stakeholder', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
+    ]
+} -%}
+
+{%- set button_actions = actions or default_actions.get(entity_type, []) -%}
+
+<div class="flex items-center space-x-1" {% if disabled_condition %}:class="{ 'opacity-50 pointer-events-none': {{ disabled_condition }} }"{% endif %}>
+    {% for action in button_actions %}
+    <button @click.stop="{{ action.onclick }}" 
+            class="px-2 py-1 rounded text-action-sm transition-colors duration-200 {{ action.classes }}" 
+            title="{{ action.title }}">
+        {{ action.icon|safe }}
+    </button>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+{#
+  Task Title Content - Task description with badges
+  
+  Parameters:
+  - task (required): Task entity object
+  
+  Usage:
+  {{ task_title_content(task) }}
+#}
+{% macro task_title_content(task) %}
+{{ task.description | style_task_description }}
+{% if task.next_step_type %}
+    <span class="text-badge-tag">{{ task.next_step_type }}</span>
+{% endif %}
+{% if task.is_overdue %}
+    <span class="text-badge-overdue">OVERDUE</span>
+{% endif %}
+{% endmacro %}
+
+{#
+  Task Metadata Content - Standardized task metadata layout
+  
+  Parameters:
+  - task (required): Task entity object
+  
+  Usage:
+  {{ task_metadata_content(task) }}
+#}
+{% macro task_metadata_content(task) %}
+<span class="text-gray-500">
+    {% if task.next_step_type %}
+    {{ task.next_step_type }}
+    {% endif %}
+    {% if task.due_date %}
+    • Due: <span x-text="getNewDueDate ? getNewDueDate() : '{{ task.due_date.strftime('%d/%m/%y') }}'">{{ task.due_date.strftime('%d/%m/%y') }}</span>
+    {% endif %}
+    {% if task.is_overdue %}
+    • <span class="text-badge-overdue">OVERDUE</span>
+    {% endif %}
+</span>
+{% endmacro %}
+
+{#
+  Opportunity Metadata Content - Standardized opportunity metadata layout
+  
+  Parameters:
+  - opportunity (required): Opportunity entity object
+  
+  Usage:
+  {{ opportunity_metadata_content(opportunity) }}
+#}
+{% macro opportunity_metadata_content(opportunity) %}
+<span class="text-gray-500">
+    <span class="text-gray-500">
+        Close: {{ opportunity.close_date.strftime('%d/%m/%y') if opportunity.close_date else 'TBD' }}
+        {% if opportunity.days_until_close %}
+            • {{ opportunity.days_until_close }} days to go
+        {% endif %}
+    </span>
+</span>
+ • 
+<div class="text-metadata">
+    {% if opportunity.company %}
+        <span class="text-entity-base text-color-company">{{ opportunity.company.name }}</span> • 
+    {% endif %}
+    <span class="text-entity-base text-color-opportunity">{{ opportunity.name }}</span> • 
+    {{ opportunity.stage }} • 
+    <span class="text-entity-base text-color-deal">${{ "{:,.0f}".format(opportunity.value) if opportunity.value else '0' }}</span> • 
+    {% if opportunity.contact %}
+        <span class="text-entity-base text-color-stakeholder">{{ opportunity.contact.name }}</span> • 
+    {% endif %}
+    {{ opportunity.created_at.strftime('%d') if opportunity.created_at else '0' }} days old
+</div>
+{% endmacro %}
+
+{#
+  Task Reschedule Buttons - Reschedule functionality for tasks
+  
+  Parameters:
+  - task_id (required): Task ID for the reschedule actions
+  
+  Usage:
+  {{ task_reschedule_buttons(task.id) }}
+#}
+{% macro task_reschedule_buttons(task_id) %}
+<div class="relative flex-shrink-0">
+    <div class="flex items-center space-x-1">
+        <button @click.stop="adjustDays(-7)" 
+                class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
+                title="Reschedule -1 week">
+            -1w
+        </button>
+        <button @click.stop="adjustDays(-1)" 
+                class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
+                title="Reschedule -1 day">
+            -1d
+        </button>
+        <button @click.stop="adjustDays(1)" 
+                class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
+                title="Reschedule +1 day">
+            +1d
+        </button>
+        <button @click.stop="adjustDays(7)" 
+                class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
+                title="Reschedule +1 week">
+            +1w
+        </button>
+    </div>
+    
+    <!-- Save/Cancel buttons (overlay below with absolute positioning) -->
+    <div class="absolute top-full left-0 right-0 mt-2 flex items-center justify-center space-x-1" 
+         x-show="showSaveButtons" 
+         style="display: none;"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 transform scale-95"
+         x-transition:enter-end="opacity-100 transform scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 transform scale-100"
+         x-transition:leave-end="opacity-0 transform scale-95">
+        <button @click.stop="saveReschedule({{ task_id }}, pendingDays)" 
+                class="px-3 py-1 rounded bg-blue-600 text-white text-xs hover:bg-blue-700 transition-colors duration-200" 
+                title="Save changes">
+            Save
+        </button>
+        <button @click.stop="cancelChanges()" 
+                class="px-3 py-1 rounded border text-gray-600 text-xs hover:bg-gray-50 transition-colors duration-200" 
+                title="Cancel changes">
+            Cancel
+        </button>
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  Company Helper Functions - for DRY entity system
+#}
+{% macro company_header_content(company) %}
+{% if company.industry %}
+    <span class="badge-standard badge-blue">{{ company.industry }}</span>
+{% endif %}
+{% endmacro %}
+
+{% macro company_title_content(company) %}
+{{ company.name }}
+{% endmacro %}
+
+{% macro company_metadata_content(company) %}
+<div class="text-sm text-gray-500 flex items-center space-x-4">
+    {% if company.contacts %}
+        <span>{{ company.contacts|length }} contact{{ 's' if company.contacts|length != 1 else '' }}</span>
+    {% endif %}
+    {% if company.opportunities %}  
+        <span>{{ company.opportunities|length }} opportunit{{ 'ies' if company.opportunities|length != 1 else 'y' }}</span>
+    {% endif %}
+    <span>{{ company.created_at.strftime('%m/%d/%y') if company.created_at else 'N/A' }}</span>
+</div>
+{% endmacro %}
+
+{#
+  Team Helper Functions - for DRY entity system  
+#}
+{% macro team_header_content(member) %}
+{% if member.job_title %}
+    <span class="badge-standard badge-blue">{{ member.job_title }}</span>
+{% endif %}
+{% endmacro %}
+
+{% macro team_title_content(member) %}
+{{ member.name }}
+{% endmacro %}
+
+{% macro team_metadata_content(member) %}
+<div class="text-sm text-gray-500 flex items-center space-x-4">
+    {% if member.email %}
+        <span>{{ member.email }}</span>
+    {% endif %}
+    {% if member.company %}
+        <span>{{ member.company.name }}</span>
+    {% endif %}
+    <span>{{ member.created_at.strftime('%m/%d/%y') if member.created_at else 'N/A' }}</span>
+</div>
+{% endmacro %}

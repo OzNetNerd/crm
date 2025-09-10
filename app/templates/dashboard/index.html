@@ -1,11 +1,11 @@
 {% extends "base/layout.html" %}
-{% from "components/imports/entity_imports.html" import include_common_modals %}
-{% from "components/metric_card.html" import metric_card, stat_card, overview_section %}
-{% from "components/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
-{% from "components/page_template.html" import simple_page_header %}
-{% from "components/quick_actions.html" import default_dashboard_actions %}
-{% from "components/metadata_display.html" import standard_card_metadata %}
-{% from "components/icons.html" import plus_icon, building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon %}
+{% from "macros/imports/entities.html" import include_common_modals %}
+{% from "macros/widgets/metrics.html" import metric_card, stat_card, overview_section %}
+{% from "macros/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
+{% from "macros/base/layout.html" import simple_page_header %}
+{% from "macros/quick_actions.html" import default_dashboard_actions %}
+{% from "macros/metadata_display.html" import standard_card_metadata %}
+{% from "macros/base/icons.html" import plus_icon, building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon %}
 
 {# Use standard metadata macro for consistency #}
 {% macro task_metadata(task) %}

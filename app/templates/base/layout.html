@@ -63,7 +63,7 @@
     {% block modals %}{% endblock %}
     
     <!-- Chat Widget -->
-    {% include 'components/chat_widget.html' %}
+    {% include 'macros/chat_widget.html' %}
     
     <!-- Data container for clean server-to-client data passing -->
     <div id="app-data" style="display: none;"
@@ -75,14 +75,14 @@
     <script src="{{ url_for('static', filename='js/core/config-factory.js') }}"></script>
     <script src="{{ url_for('static', filename='js/utils/icon-utility.js') }}"></script>
     <script src="{{ url_for('static', filename='js/features/validation.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/components/modals/modal-utils.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/components/modals/modal-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/macros/modals/modal-utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/macros/modals/modal-manager.js') }}"></script>
     <script src="{{ url_for('static', filename='js/features/search.js') }}"></script>
     <script src="{{ url_for('static', filename='js/features/data-initializer.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/components/crud-operations.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/components/filters/entity-filter-manager.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/components/entity-linker.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/components/cards/card-state-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/macros/crud-operations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/macros/filters/entity-filter-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/macros/entity-linker.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/macros/cards/card-state-manager.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

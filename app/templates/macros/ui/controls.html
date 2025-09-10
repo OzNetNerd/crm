@@ -1,0 +1,231 @@
+{# UI Controls - Interactive UI elements like search, selection, and navigation #}
+
+{#
+  Pluralized Count - Smart count display with automatic pluralization
+  
+  Parameters:
+  - count (required): Number to display
+  - singular (required): Singular form of the noun (e.g., 'opportunity')
+  - plural (optional): Plural form if different from singular + 's' (e.g., 'opportunities')
+  - short (optional): Use abbreviated form (e.g., 'opp' instead of 'opportunity')
+  - show_zero (optional): Show count even when zero (default: true)
+  
+  Usage:
+  {{ pluralized_count(contact.opportunities|length, 'opportunity', short=true) }}
+  {{ pluralized_count(company.contacts|length, 'contact') }}
+  {{ pluralized_count(items|length, 'item', 'items') }}
+#}
+{% macro pluralized_count(count, singular, plural=None, short=false, show_zero=false) %}
+{%- if count > 0 or show_zero -%}
+    {%- set display_singular = singular -%}
+    {%- if plural -%}
+        {%- set display_plural = plural -%}
+    {%- elif singular == 'opportunity' -%}
+        {%- set display_plural = 'opportunities' -%}
+    {%- else -%}
+        {%- set display_plural = singular + 's' -%}
+    {%- endif -%}
+    
+    {%- if short -%}
+        {%- if singular == 'opportunity' -%}
+            {%- set display_singular = 'opp' -%}
+            {%- set display_plural = 'opps' -%}
+        {%- endif -%}
+    {%- endif -%}
+    
+    {{ count }} {{ display_singular if count == 1 else display_plural }}
+{%- endif -%}
+{% endmacro %}
+
+{#
+  Expand/Collapse Controls - Controls for expanding/collapsing sections
+  
+  Parameters:
+  - target_sections (required): Sections to control
+  - additional_classes (optional): Extra CSS classes
+  
+  Usage:
+  {{ expand_collapse_controls(['tasks', 'opportunities']) }}
+#}
+{% macro expand_collapse_controls(target_sections, additional_classes='') %}
+<div class="flex space-x-2 {{ additional_classes }}">
+    <button @click="{{ target_sections|join('.forEach(s => expandedSections[s] = true); ') }}.forEach(s => expandedSections[s] = true)"
+            class="text-sm text-blue-600 hover:text-blue-800">
+        Expand All
+    </button>
+    <span class="text-gray-300">|</span>
+    <button @click="{{ target_sections|join('.forEach(s => expandedSections[s] = false); ') }}.forEach(s => expandedSections[s] = false)"
+            class="text-sm text-blue-600 hover:text-blue-800">
+        Collapse All
+    </button>
+</div>
+{% endmacro %}
+
+{#
+  View Mode Toggle - Toggle between grid and list view
+  
+  Parameters:
+  - current_mode (optional): Current view mode ('grid' or 'list')
+  - grid_icon (optional): Custom grid icon HTML
+  - list_icon (optional): Custom list icon HTML
+  
+  Usage:
+  {{ view_mode_toggle('grid') }}
+#}
+{% macro view_mode_toggle(current_mode='grid', grid_icon=None, list_icon=None) %}
+<div class="flex rounded-md shadow-sm">
+    <button @click="viewMode = 'grid'"
+            :class="viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+            class="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+        {% if grid_icon %}
+            {{ grid_icon|safe }}
+        {% else %}
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+        {% endif %}
+        <span class="ml-1">Grid</span>
+    </button>
+    <button @click="viewMode = 'list'"
+            :class="viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+            class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 border-l-0 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+        {% if list_icon %}
+            {{ list_icon|safe }}
+        {% else %}
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+        {% endif %}
+        <span class="ml-1">List</span>
+    </button>
+</div>
+{% endmacro %}
+
+{#
+  Bulk Selection Checkbox - Checkbox for bulk selection
+  
+  Parameters:
+  - item_id (required): Unique identifier for the item
+  - model (optional): Alpine.js model name (default: 'selectedItems')
+  - additional_classes (optional): Extra CSS classes
+  
+  Usage:
+  {{ bulk_selection_checkbox(company.id) }}
+  {{ bulk_selection_checkbox(contact.id, 'selectedStakeholders') }}
+#}
+{% macro bulk_selection_checkbox(item_id, model='selectedItems', additional_classes='') %}
+<input type="checkbox" 
+       x-model="{{ model }}" 
+       value="{{ item_id }}"
+       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded {{ additional_classes }}"
+       @click.stop>
+{% endmacro %}
+
+{#
+  Select All Checkbox - Master checkbox for bulk selection
+  
+  Parameters:
+  - total_items (required): Total number of items that can be selected
+  - model (optional): Alpine.js model name (default: 'selectedItems')
+  - label (optional): Label text for the checkbox
+  
+  Usage:
+  {{ select_all_checkbox(companies|length) }}
+  {{ select_all_checkbox(contacts|length, 'selectedStakeholders', 'Select all contacts') }}
+#}
+{% macro select_all_checkbox(total_items, model='selectedItems', label='Select all') %}
+<label class="flex items-center space-x-2">
+    <input type="checkbox"
+           :checked="{{ model }}.length === {{ total_items }} && {{ total_items }} > 0"
+           :indeterminate="{{ model }}.length > 0 && {{ model }}.length < {{ total_items }}"
+           @change="{{ model }} = $event.target.checked ? allItemIds : []"
+           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+    <span class="text-sm text-gray-700">{{ label }}</span>
+</label>
+{% endmacro %}
+
+{#
+  Search Input - Consistent search input with icon
+  
+  Parameters:
+  - placeholder (optional): Placeholder text
+  - model (optional): Alpine.js model binding
+  - additional_classes (optional): Extra CSS classes
+  
+  Usage:
+  {{ search_input('Search companies...', 'searchTerm') }}
+#}
+{% macro search_input(placeholder='Search...', model='searchTerm', additional_classes='') %}
+<div class="relative">
+    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+    </div>
+    <input type="text" 
+           x-model="{{ model }}"
+           class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm {{ additional_classes }}"
+           placeholder="{{ placeholder }}">
+    <div x-show="{{ model }}.length > 0" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+        <button @click="{{ model }} = ''" class="text-gray-400 hover:text-gray-600">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  Loading Spinner - Consistent loading indicator
+  
+  Parameters:
+  - size (optional): Size class ('sm', 'md', 'lg')
+  - text (optional): Loading text to display
+  
+  Usage:
+  {{ loading_spinner('md', 'Loading companies...') }}
+#}
+{% macro loading_spinner(size='md', text='') %}
+{%- set size_classes = {'sm': 'h-4 w-4', 'md': 'h-6 w-6', 'lg': 'h-8 w-8'} -%}
+<div class="flex items-center justify-center space-x-2">
+    <svg class="animate-spin {{ size_classes[size] or size_classes['md'] }} text-blue-600" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    {% if text %}
+    <span class="text-sm text-gray-600">{{ text }}</span>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{#
+  Empty State - Consistent empty state display
+  
+  Parameters:
+  - title (required): Empty state title
+  - description (optional): Empty state description
+  - action_button (optional): Action button HTML
+  - icon (optional): Icon HTML
+  
+  Usage:
+  {{ empty_state('No companies found', 'Try adjusting your search criteria') }}
+#}
+{% macro empty_state(title, description='', action_button='', icon='') %}
+<div class="text-center py-12">
+    {% if icon %}
+    <div class="mx-auto mb-4">
+        {{ icon|safe }}
+    </div>
+    {% endif %}
+    <h3 class="mt-2 text-sm font-medium text-gray-900">{{ title }}</h3>
+    {% if description %}
+    <p class="mt-1 text-sm text-gray-500">{{ description }}</p>
+    {% endif %}
+    {% if action_button %}
+    <div class="mt-6">
+        {{ action_button|safe }}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
