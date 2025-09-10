@@ -14,7 +14,6 @@ from chatbot.models import (
     Company,
     Stakeholder,
     Task,
-    Meeting,
 )
 
 logger = logging.getLogger(__name__)
@@ -325,29 +324,6 @@ class RAGEngine:
                         }
                     )
 
-            elif intent == "meeting_info":
-                meetings = (
-                    db_session.query(Meeting)
-                    .filter(
-                        or_(
-                            Meeting.title.ilike(f"%{query}%"),
-                            Meeting.transcript.ilike(f"%{query}%"),
-                        )
-                    )
-                    .limit(3)
-                    .all()
-                )
-
-                for meeting in meetings:
-                    results.append(
-                        {
-                            "type": "meeting",
-                            "id": meeting.id,
-                            "title": meeting.title,
-                            "content": f"Meeting: {meeting.title}, Status: {meeting.analysis_status}",
-                            "relevance_score": 0.9,
-                        }
-                    )
 
         except Exception as e:
             logger.error(f"Direct database search failed: {e}")

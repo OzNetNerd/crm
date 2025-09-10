@@ -67,7 +67,7 @@ Be precise and only extract information that is clearly stated.""",
                 purpose="conversation",
                 temperature=0.7,  # Higher temperature for natural conversation
                 max_tokens=1024,
-                system_prompt="""You are a helpful CRM assistant. You have access to information about companies, contacts, tasks, opportunities, and meetings. 
+                system_prompt="""You are a helpful CRM assistant. You have access to information about companies, contacts, tasks, and opportunities. 
 
 Provide helpful, accurate responses based on the context provided. If you don't have enough information, say so clearly. Be conversational but professional.
 
@@ -113,93 +113,6 @@ Focus on helping users understand their CRM data and providing actionable insigh
             logger.error(f"Failed to load model {model_name}: {e}")
             return False
 
-    async def extract_meeting_insights(
-        self, transcript: str, meeting_title: str = "Meeting"
-    ) -> ExtractionResult:
-        """Extract structured insights from meeting transcript"""
-
-        start_time = datetime.now()
-        model_config = self.models["extraction"]
-
-        prompt = f"""
-Meeting Title: {meeting_title}
-
-Transcript:
-{transcript}
-
-Extract the following information as JSON:
-{{
-    "attendees": [
-        {{"name": "string", "role": "string", "sentiment": "positive|neutral|negative"}}
-    ],
-    "technologies_mentioned": ["string"],
-    "action_items": [
-        {{"task": "string", "assignee": "string", "deadline": "YYYY-MM-DD or null"}}
-    ],
-    "key_decisions": ["string"],
-    "sentiment_analysis": {{
-        "overall": "positive|neutral|negative",
-        "concerns": ["string"]
-    }},
-    "topics_discussed": ["string"],
-    "summary": "Brief meeting summary"
-}}
-
-Respond with valid JSON only:
-"""
-
-        try:
-            response_text = await self._generate(
-                model=model_config.name,
-                prompt=prompt,
-                system=model_config.system_prompt,
-                temperature=model_config.temperature,
-                max_tokens=model_config.max_tokens,
-            )
-
-            # Try to parse JSON response
-            try:
-                # Clean up response (remove any markdown formatting)
-                clean_response = response_text.strip()
-                if clean_response.startswith("```json"):
-                    clean_response = clean_response[7:-3].strip()
-                elif clean_response.startswith("```"):
-                    clean_response = clean_response[3:-3].strip()
-
-                extracted_data = json.loads(clean_response)
-
-                processing_time = (datetime.now() - start_time).total_seconds()
-
-                # Calculate confidence based on completeness and structure
-                confidence_score = self._calculate_extraction_confidence(extracted_data)
-
-                return ExtractionResult(
-                    success=True,
-                    extracted_data=extracted_data,
-                    confidence_score=confidence_score,
-                    processing_time=processing_time,
-                    model_used=model_config.name,
-                )
-
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse JSON from extraction: {e}")
-                logger.error(f"Raw response: {response_text}")
-
-                return ExtractionResult(
-                    success=False,
-                    error_message=f"Invalid JSON response: {str(e)}",
-                    processing_time=(datetime.now() - start_time).total_seconds(),
-                    model_used=model_config.name,
-                )
-
-        except Exception as e:
-            logger.error(f"Extraction failed: {e}")
-            return ExtractionResult(
-                success=False,
-                error_message=str(e),
-                processing_time=(datetime.now() - start_time).total_seconds(),
-                model_used=model_config.name,
-            )
 
     async def generate_chat_response(
         self,

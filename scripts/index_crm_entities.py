@@ -99,19 +99,6 @@ def extract_task_text(task: Task) -> str:
     return " ".join(parts)
 
 
-def extract_meeting_text(meeting: Meeting) -> str:
-    """Extract searchable text from a meeting"""
-    parts = [meeting.title]
-
-    if meeting.description:
-        parts.append(meeting.description)
-    if meeting.transcript:
-        parts.append(meeting.transcript)
-    if meeting.summary:
-        parts.append(meeting.summary)
-
-    return " ".join(parts)
-
 
 def extract_note_text(note: Note) -> str:
     """Extract searchable text from a note"""
@@ -279,45 +266,6 @@ def index_tasks(qdrant_service, db_session) -> int:
     return count
 
 
-def index_meetings(qdrant_service, db_session) -> int:
-    """Index all meetings"""
-    logger.info("Indexing meetings...")
-    count = 0
-
-    meetings = db_session.query(Meeting).all()
-
-    for meeting in meetings:
-        try:
-            text = extract_meeting_text(meeting)
-            doc_id = f"meeting_{meeting.id}"
-
-            metadata = {
-                "title": meeting.title,
-                "meeting_date": (
-                    meeting.meeting_date.isoformat() if meeting.meeting_date else None
-                ),
-                "duration_minutes": meeting.duration_minutes,
-                "created_at": (
-                    meeting.created_at.isoformat() if meeting.created_at else None
-                ),
-            }
-
-            success = qdrant_service.index_document(
-                doc_id=doc_id,
-                text=text,
-                entity_type="meeting",
-                entity_id=meeting.id,
-                metadata=metadata,
-            )
-
-            if success:
-                count += 1
-
-        except Exception as e:
-            logger.error(f"Failed to index meeting {meeting.id}: {e}")
-
-    logger.info(f"Indexed {count} meetings")
-    return count
 
 
 def index_notes(qdrant_service, db_session) -> int:
@@ -382,7 +330,6 @@ def main():
         total_indexed += index_contacts(qdrant_service, db_session)
         total_indexed += index_opportunities(qdrant_service, db_session)
         total_indexed += index_tasks(qdrant_service, db_session)
-        total_indexed += index_meetings(qdrant_service, db_session)
         total_indexed += index_notes(qdrant_service, db_session)
 
         logger.info(f"Indexing complete! Total documents indexed: {total_indexed}")

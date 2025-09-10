@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy import or_
-from app.models import Task, Company, Stakeholder, Opportunity
+from app.models import Task, Company, Stakeholder, Opportunity, User
 
 search_bp = Blueprint("search", __name__)
 
@@ -206,6 +206,32 @@ def autocomplete():
                 "company": opportunity.company.name if opportunity.company else "",
             }
             for opportunity in opportunities
+        ]
+
+    elif entity_type == "user":
+        if query:
+            users = (
+                User.query.filter(
+                    or_(
+                        User.name.ilike(f"%{query}%"),
+                        User.job_title.ilike(f"%{query}%"),
+                    )
+                )
+                .limit(limit)
+                .all()
+            )
+        else:
+            # Return all users when no query
+            users = User.query.limit(limit).all()
+
+        suggestions = [
+            {
+                "id": user.id,
+                "name": user.name,
+                "type": "user",
+                "company": user.job_title if user.job_title else "",
+            }
+            for user in users
         ]
 
     return jsonify(suggestions)

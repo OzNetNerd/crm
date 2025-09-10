@@ -17,8 +17,6 @@ from app.models import (
     Note,
     Opportunity,
     Task,
-    Meeting,
-    ExtractedInsight,
     ChatHistory,
     Embedding,
 )
@@ -31,8 +29,6 @@ __all__ = [
     "Note",
     "Opportunity",
     "Task",
-    "Meeting",
-    "ExtractedInsight",
     "ChatHistory",
     "Embedding",
 ]
