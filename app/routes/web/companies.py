@@ -252,9 +252,7 @@ def index():
             'button_text': 'All Industries',
             'options': industry_options,
             'current_values': primary_filter,
-            'name': 'primary_filter',
-            'hx_target': '#company-content',
-            'hx_get': '/companies/content'
+            'name': 'primary_filter'
         }
     }
     

@@ -127,11 +127,11 @@
                                value="{{ option_value }}"
                                {% if option_value in (current_values or []) %}checked{% endif %}
                                class="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                               hx-trigger="change"
                                {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
                                {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
                                {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
-                               onchange="let c=document.querySelectorAll('#{{ dropdown_id }} input[type=checkbox]:checked').length; document.getElementById('{{ dropdown_id }}-label').textContent=c===0?'{{ button_text }}':c+' selected'">
+                               hx-trigger="change delay:1s"
+                               onchange="let container=this.closest('.dropdown-container'); let c=container.querySelectorAll('input[type=checkbox]:checked').length; container.querySelector('[id$=-label]').textContent=c===0?'{{ button_text }}':c+' selected'">
                         {{ option_label }}
                     </label>
                 {% endfor %}

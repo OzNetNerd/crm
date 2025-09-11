@@ -1247,7 +1247,7 @@ details > summary::-webkit-details-marker {
   {{ htmx_enhanced_filter_controls(...) }}
 #}
 {% from "macros/ui/controls.html" import css_dropdown %}
-{% from "macros/ui/dropdowns.html" import css_dropdown as unified_css_dropdown %}
+{% from "macros/ui/dropdowns.html" import css_dropdown %}
 {% macro htmx_enhanced_filter_controls(
     group_options, 
     sort_options,
@@ -1286,15 +1286,15 @@ details > summary::-webkit-details-marker {
             {% endif %}
             
             {% if primary_filter_options %}
-            {{ unified_css_dropdown(primary_filter_label, primary_filter_options, name='primary_filter', current_values=primary_filter_values) }}
+            {{ css_dropdown(primary_filter_label, primary_filter_options, name='primary_filter', current_values=primary_filter_values) }}
             {% endif %}
             
             {% if secondary_filter_options %}
-            {{ unified_css_dropdown(secondary_filter_label, secondary_filter_options, name='secondary_filter', current_values=secondary_filter_values) }}
+            {{ css_dropdown(secondary_filter_label, secondary_filter_options, name='secondary_filter', current_values=secondary_filter_values) }}
             {% endif %}
             
             {% if entity_filter_options %}
-            {{ unified_css_dropdown(entity_filter_label, entity_filter_options, name='entity_filter', current_values=entity_filter_values) }}
+            {{ css_dropdown(entity_filter_label, entity_filter_options, name='entity_filter', current_values=entity_filter_values) }}
             {% endif %}
         </div>
         
@@ -1341,13 +1341,13 @@ details > summary::-webkit-details-marker {
             {% for config_key, config in dropdown_configs.items() %}
                 {% if config_key != 'industry_filter' %}
                     <label class="text-label-dark">{{ config.button_text }}:</label>
-                    {{ unified_css_dropdown(**config) }}
+                    {{ css_dropdown(**config) }}
                 {% endif %}
             {% endfor %}
             
             {% if dropdown_configs.get('industry_filter') %}
             <label class="text-label-dark">Filters:</label>
-            {{ unified_css_dropdown(**dropdown_configs['industry_filter']) }}
+            {{ css_dropdown(**dropdown_configs['industry_filter']) }}
             {% endif %}
         </div>
         
