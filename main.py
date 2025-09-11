@@ -2,18 +2,8 @@ import argparse
 from pathlib import Path
 from flask import Flask
 from app.models import db
-from app.routes.dashboard import dashboard_bp
-from app.routes.companies import companies_bp
-from app.routes.stakeholders import stakeholders_bp
-from app.routes.opportunities import opportunities_bp
-from app.routes.tasks import tasks_bp
-from app.routes.tasks_api import tasks_api_bp
-from app.routes.search import search_bp
-from app.routes.api import api_bp
-from app.routes.api_notes import api_notes_bp
-from app.routes.notes import notes_bp
-from app.routes.teams import teams_bp
-from app.routes.modals import modals_bp
+from app.routes.api import register_api_blueprints
+from app.routes.web import register_web_blueprints
 from app.utils.template_filters import register_template_filters
 from app.models import Company, Stakeholder, Task, Opportunity, User
 from app.utils.template_globals import (
@@ -73,18 +63,9 @@ def create_app():
 
     db.init_app(app)
 
-    app.register_blueprint(dashboard_bp, url_prefix="/")
-    app.register_blueprint(companies_bp, url_prefix="/companies")
-    app.register_blueprint(stakeholders_bp, url_prefix="/stakeholders")
-    app.register_blueprint(opportunities_bp, url_prefix="/opportunities")
-    app.register_blueprint(tasks_bp, url_prefix="/tasks")
-    app.register_blueprint(tasks_api_bp, url_prefix="/api/tasks")
-    app.register_blueprint(search_bp, url_prefix="/")
-    app.register_blueprint(api_bp)
-    app.register_blueprint(api_notes_bp)
-    app.register_blueprint(notes_bp)
-    app.register_blueprint(teams_bp, url_prefix="/teams")
-    app.register_blueprint(modals_bp)
+    # Register API and web blueprints
+    register_api_blueprints(app)
+    register_web_blueprints(app)
 
     # Register custom template filters
     register_template_filters(app)

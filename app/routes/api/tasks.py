@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.models import db, Task, Note
 from datetime import timedelta, date
 
-tasks_api_bp = Blueprint("tasks_api", __name__)
+tasks_api_bp = Blueprint("tasks_api", __name__, url_prefix="/api/tasks")
 
 
 @tasks_api_bp.route("/<int:task_id>")
