@@ -311,7 +311,7 @@ class DropdownConfigGenerator:
             'stakeholders': Stakeholder,
             'teams': User  # Teams manage User entities
         }
-        return model_map.get(entity_name)
+        return model_map.get(entity_name.lower())
     
     @staticmethod
     def generate_entity_dropdown_configs(entity_name: str, 
