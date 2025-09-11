@@ -95,7 +95,7 @@ class DynamicFormBuilder:
         field_info = getattr(model_class, field_name, None)
         if field_info and hasattr(field_info.property, 'columns'):
             column = field_info.property.columns[0]
-            info = column.info
+            info = column.info or {}  # Handle empty info or {}  # Handle empty info
             
             # Set display label
             label = kwargs.get('label', info.get('display_label', field_name.replace('_', ' ').title()))
@@ -112,7 +112,7 @@ class DynamicFormBuilder:
                 validators.append(Length(max=column.type.length))
                 
             # Add email validator for email fields
-            if 'email' in field_name.lower() or info.get('contact_field') and 'email' in field_name:
+            if 'email' in field_name.lower() or (info.get('contact_field') and 'email' in field_name):
                 validators.append(Email())
                 
             # Add URL validator for URL fields
@@ -123,6 +123,16 @@ class DynamicFormBuilder:
             render_kw = kwargs.get('render_kw', {})
             if info.get('contact_field'):
                 render_kw.setdefault('placeholder', f'Enter {label.lower()}...')
+            
+            # Handle textarea fields (Text column type should be textarea)
+            if isinstance(column.type, db.Text):
+                from wtforms import TextAreaField
+                return TextAreaField(
+                    label=label,
+                    validators=validators,
+                    render_kw=render_kw,
+                    **{k: v for k, v in kwargs.items() if k not in ['label', 'render_kw']}
+                )
             
             return StringField(
                 label=label,
@@ -149,7 +159,7 @@ class DynamicFormBuilder:
         field_info = getattr(model_class, field_name, None)
         if field_info and hasattr(field_info.property, 'columns'):
             column = field_info.property.columns[0]
-            info = column.info
+            info = column.info or {}  # Handle empty info
             
             # Set display label
             label = kwargs.get('label', info.get('display_label', field_name.replace('_', ' ').title()))
@@ -201,7 +211,7 @@ class DynamicFormBuilder:
         field_info = getattr(model_class, field_name, None)
         if field_info and hasattr(field_info.property, 'columns'):
             column = field_info.property.columns[0]
-            info = column.info
+            info = column.info or {}  # Handle empty info
             
             # Set display label
             label = kwargs.get('label', info.get('display_label', field_name.replace('_', ' ').title()))
@@ -247,8 +257,8 @@ class DynamicFormBuilder:
                 column = attr.property.columns[0]
                 info = column.info
                 
-                # Skip fields without metadata or that are marked as non-form fields
-                if not info or info.get('form_exclude', False):
+                # Skip fields that are marked as non-form fields
+                if info and info.get('form_exclude', False):
                     continue
                 
                 # Skip system fields
