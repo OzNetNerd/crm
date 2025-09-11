@@ -1,3 +1,4 @@
+{% from 'macros/base/icons.html' import icon %}
 {# Modal Base Components - Core modal functionality and structure #}
 
 {% macro base_modal(modal_id, show_var="show", backdrop_click_close=true) %}
@@ -43,9 +44,7 @@
         {{ title }}
     </h3>
     <button @click="{{ show_var }} = false" class="modal-close-button">
-        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        {{ icon('x-mark', 'lg') }}
     </button>
 </div>
 {% endmacro %}
