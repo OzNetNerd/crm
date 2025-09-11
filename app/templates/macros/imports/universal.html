@@ -1,0 +1,139 @@
+{# Universal Imports - Single consolidated import file for ALL common template elements #}
+
+{# === CORE ICONS === #}
+{# All icons used across the application - available in all templates #}
+{% from "macros/base/icons.html" import 
+    building_office_icon,
+    user_icon,
+    chevron_right_icon,
+    check_circle_icon_solid,
+    exclamation_triangle_icon,
+    exclamation_circle_icon_solid,
+    currency_dollar_icon,
+    clipboard_list_icon,
+    bolt_icon,
+    fire_icon_solid,
+    calendar_days_icon,
+    calendar_icon,
+    chart_bar_icon,
+    question_mark_circle_icon,
+    phone_icon,
+    envelope_icon,
+    clock_icon,
+    plus_icon,
+    pencil_icon
+%}
+
+{# === CORE UI ELEMENTS === #}
+{# All UI components used across entity templates #}
+{% from "macros/ui_elements.html" import 
+    expand_collapse_controls,
+    generic_group_dropdown,
+    generic_sort_dropdown,
+    generic_filter_multiselect,
+    dynamic_entity_section,
+    bulk_actions_bar,
+    enhanced_filter_controls,
+    action_button,
+    enhanced_button,
+    bulk_selection_checkbox,
+    view_mode_toggle,
+    dropdown_select,
+    dropdown_multiselect,
+    htmx_enhanced_filter_controls,
+    loading_spinner
+%}
+
+{# === LAYOUT COMPONENTS === #}
+{# Page layout and structure macros #}
+{% from "macros/base/layout.html" import page_layout %}
+
+{# === CARD COMPONENTS === #}
+{# Expandable card system used by all entities #}
+{% from "macros/expandable_card.html" import 
+    expandable_card,
+    action_buttons_row
+%}
+
+{# === ENTITY-SPECIFIC CARD COMPONENTS === #}
+{# Company cards #}
+{% from "macros/expandable_card.html" import 
+    company_header_content,
+    company_title_content,
+    company_metadata_content
+%}
+
+{# Stakeholder cards #}
+{% from "macros/expandable_card.html" import 
+    stakeholder_header_content,
+    stakeholder_title_content,
+    stakeholder_metadata_content
+%}
+
+{# Opportunity cards #}
+{% from "macros/expandable_card.html" import 
+    opportunity_header_content,
+    opportunity_title_content,
+    opportunity_metadata_content
+%}
+
+{# Task cards #}
+{% from "macros/expandable_card.html" import 
+    task_header_content,
+    task_title_content,
+    task_metadata_content,
+    task_reschedule_buttons
+%}
+
+{# === MODAL IMPORTS === #}
+{# Modal system components #}
+{% from "macros/modals/base.html" import 
+    base_modal,
+    modal_header,
+    modal_body,
+    modal_footer,
+    notes_section,
+    generic_detail_modal
+%}
+
+{# Confirmation modals #}
+{% from "macros/modals/confirmation.html" import confirmation_modal %}
+
+{# Form modals #}
+{% from "macros/modals/forms.html" import 
+    company_new_modal,
+    opportunity_new_modal,
+    stakeholder_new_modal,
+    task_new_modal
+%}
+
+{# Modal configurations #}
+{% from "macros/modals/configs.html" import 
+    entity_modal_configs,
+    get_entity_modal_config
+%}
+
+{# === HELPER MACROS === #}
+{# Macro to make all imports available - call this to activate all imports #}
+{% macro activate_universal_imports() %}
+{# This macro establishes import context - all imports above are now available #}
+{% endmacro %}
+
+{# Common modals include macro - for modal blocks #}
+{% macro include_common_modals() %}
+{# Task Modals #}
+{% include "macros/modals/task/task_detail.html" %}
+{% include "macros/modals/task/task_new.html" %}
+
+{# Contact/Stakeholder Modals #}
+{% include "macros/modals/stakeholder/stakeholder_detail.html" %}
+{% include "macros/modals/stakeholder/stakeholder_new.html" %}
+
+{# Company Modals #}
+{% include "macros/modals/company/company_detail.html" %}
+{% include "macros/modals/company/company_new.html" %}
+
+{# Opportunity Modals #}
+{% include "macros/modals/opportunity/opportunity_detail.html" %}
+{% include "macros/modals/opportunity/opportunity_new.html" %}
+{% endmacro %}

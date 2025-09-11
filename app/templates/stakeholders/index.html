@@ -1,10 +1,11 @@
 {% extends "base/layout.html" %}
 
+{# Import core components #}
 {% from "macros/base/layout.html" import page_layout %}
-{% from "macros/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar, htmx_enhanced_filter_controls, loading_spinner %}
-{% from "macros/expandable_card.html" import expandable_card, stakeholder_header_content, stakeholder_title_content, stakeholder_metadata_content, action_buttons_row %}
-{% from "macros/imports/entity_imports.html" import include_common_modals %}
+{% from "macros/ui_elements.html" import htmx_enhanced_filter_controls, loading_spinner %}
 {% from "macros/base/icons.html" import plus_icon %}
+{% from "macros/imports/universal.html" import include_common_modals %}
+{% from "macros/modals/confirmation.html" import confirmation_modal %}
 
 {% block title %}Stakeholders - CRM{% endblock %}
 
@@ -48,7 +49,7 @@
 {% call page_layout("Stakeholders", "Manage your stakeholder relationships", buttons=entity_buttons, summary_data=entity_stats) %}
 
 <div class="space-y-6">
-    <!-- HTMX Enhanced Filter Controls - Pure CSS Components -->
+    <!-- HTMX Enhanced Filter Controls -->
     <form hx-get="{{ url_for('stakeholders.content') }}" 
           hx-target="#stakeholder-content"
           hx-trigger="change, submit"
@@ -93,7 +94,6 @@
 {% endblock %}
 
 {% block modals %}
-{% from "macros/modals/confirmation.html" import confirmation_modal %}
 {{ confirmation_modal('stakeholder-confirmation-modal') }}
 {{ include_common_modals() }}
 {% endblock %}

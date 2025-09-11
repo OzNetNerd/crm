@@ -1,10 +1,11 @@
 {% extends "base/layout.html" %}
 
+{# Import core components #}
 {% from "macros/base/layout.html" import page_layout %}
-{% from "macros/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar, htmx_enhanced_filter_controls, loading_spinner %}
-{% from "macros/expandable_card.html" import expandable_card, company_header_content, company_title_content, company_metadata_content, action_buttons_row %}
-{% from "macros/imports/entity_imports.html" import include_common_modals %}
+{% from "macros/ui_elements.html" import htmx_enhanced_filter_controls, loading_spinner %}
 {% from "macros/base/icons.html" import plus_icon %}
+{% from "macros/imports/universal.html" import include_common_modals %}
+{% from "macros/modals/confirmation.html" import confirmation_modal %}
 
 {% block title %}Companies - CRM{% endblock %}
 
@@ -45,21 +46,10 @@
     }
 ] %}
 
-{% set entity_filter_controls %}
-{{ enhanced_filter_controls(
-    group_options=get_groupable_fields(Company),
-    sort_options=get_sortable_fields(Company),
-    show_completed_label='Show All',
-    show_completed_name='show_all',
-    primary_filter_options=get_field_options(Company, 'industry'),
-    primary_filter_label='All Industries'
-) }}
-{% endset %}
-
 {% call page_layout("Companies", "Manage your company relationships", buttons=entity_buttons, summary_data=entity_stats) %}
 
 <div class="space-y-6">
-    <!-- HTMX Enhanced Filter Controls - Pure CSS Components -->
+    <!-- HTMX Enhanced Filter Controls -->
     <form hx-get="{{ url_for('companies.content') }}" 
           hx-target="#company-content"
           hx-trigger="change, submit"
@@ -98,7 +88,6 @@
 {% endblock %}
 
 {% block modals %}
-{% from "macros/modals/confirmation.html" import confirmation_modal %}
 {{ confirmation_modal('company-confirmation-modal') }}
 {{ include_common_modals() }}
 {% endblock %}

@@ -902,6 +902,29 @@
     box-shadow: 0 0 0 2px #eab308, 0 0 0 4px rgba(234, 179, 8, 0.5);
 }
 
+.btn-new-stakeholder {
+    background-color: #ca8a04; /* yellow-600 */
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    transform: scale(1);
+}
+
+.btn-new-stakeholder:hover {
+    background-color: #a16207; /* yellow-700 */
+    transform: scale(1.05);
+}
+
+.btn-new-stakeholder:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #eab308, 0 0 0 4px rgba(234, 179, 8, 0.5);
+}
+
 
 /* Universal button classes for consistent styling */
 .btn-primary {
@@ -1144,4 +1167,17 @@
 
 .contact-method-phone:hover {
     color: #166534; /* hover:text-green-800 */
+}
+
+/* HTMX Loading Indicators - Prevent layout shifts */
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request .htmx-indicator {
+    display: block;
+}
+
+.htmx-request.htmx-indicator {
+    display: block;
 }

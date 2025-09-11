@@ -1330,14 +1330,16 @@
 document.addEventListener('click', function(event) {
     const isDropdownButton = event.target.closest('[onclick*="classList.toggle"]');
     const isInsideDropdown = event.target.closest('.absolute');
+    const isSearchRelated = event.target.closest('#global-search') || event.target.closest('#search-results');
     
-    if (!isDropdownButton && !isInsideDropdown) {
-        document.querySelectorAll('.absolute.hidden').forEach(dropdown => {
+    if (!isDropdownButton && !isInsideDropdown && !isSearchRelated) {
+        // Only close dropdown-type elements, not search results
+        document.querySelectorAll('.absolute.hidden:not(#search-results)').forEach(dropdown => {
             if (!dropdown.classList.contains('hidden')) {
                 dropdown.classList.add('hidden');
             }
         });
-        document.querySelectorAll('.absolute:not(.hidden)').forEach(dropdown => {
+        document.querySelectorAll('.absolute:not(.hidden):not(#search-results)').forEach(dropdown => {
             dropdown.classList.add('hidden');
         });
     }
