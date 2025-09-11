@@ -98,7 +98,7 @@
                 {%- set option_value = option.value if option is mapping else option -%}
                 {%- set option_label = option.label if option is mapping else option|title -%}
                 
-                <label onclick="this.querySelector('input').checked=true; this.querySelector('input').dispatchEvent(new Event('change'))">
+                <label>
                     <input type="radio" 
                            name="{{ name }}" 
                            value="{{ option_value }}"
@@ -108,7 +108,7 @@
                            {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
                            hx-trigger="change"
                            {% if option_value == current_value %}checked{% endif %}
-                           onchange="document.getElementById('{{ dropdown_id }}-label').textContent='{{ option_label }}'">
+>
                     <span class="block w-full text-left px-4 py-2 hover:bg-gray-100 peer-focus:bg-gray-100 cursor-pointer peer-checked:bg-blue-50 peer-checked:text-blue-700">
                         {{ option_label }}
                     </span>
@@ -121,7 +121,7 @@
                     {%- set option_value = option.value if option is mapping else option -%}
                     {%- set option_label = option.label if option is mapping else option|title -%}
                     
-                    <label class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" onclick="event.stopPropagation()">
+                    <label class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
                         <input type="checkbox" 
                                name="{{ name }}"
                                value="{{ option_value }}"
@@ -131,7 +131,7 @@
                                {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
                                {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
                                hx-trigger="change delay:1s"
-                               onchange="let container=this.closest('.dropdown-container'); let c=container.querySelectorAll('input[type=checkbox]:checked').length; container.querySelector('[id$=-label]').textContent=c===0?'{{ button_text }}':c+' selected'">
+>
                         {{ option_label }}
                     </label>
                 {% endfor %}
@@ -142,7 +142,7 @@
                 {%- set option_value = option.value if option is mapping else option -%}
                 {%- set option_label = option.label if option is mapping else option|title -%}
                 
-                <label onclick="this.querySelector('input').checked=true; this.querySelector('input').dispatchEvent(new Event('change'))">
+                <label>
                     <input type="radio" 
                            name="{{ name }}" 
                            value="{{ option_value }}"
@@ -151,7 +151,7 @@
                            {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
                            {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
                            hx-trigger="change"
-                           onchange="document.getElementById('{{ dropdown_id }}-label').textContent='{{ option_label }}'">
+>
                     <span class="block w-full text-left px-4 py-2 hover:bg-gray-100 peer-focus:bg-gray-100 cursor-pointer peer-checked:bg-blue-50 peer-checked:text-blue-700">
                         {{ option_label }}
                     </span>
