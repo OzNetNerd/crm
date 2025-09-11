@@ -200,6 +200,8 @@ def content():
 
 @tasks_bp.route("/")
 def index():
+    from app.utils.index_helpers import UniversalIndexHelper
+    
     # Get all context data for frontend-only filtering
     context = get_all_tasks_context()
 
@@ -225,37 +227,7 @@ def index():
         print(f"ERROR: Final JSON serialization failed: {e}")
         tasks = []
 
-    # Serialize objects for JSON use in templates
-    companies_data = [
-        {"id": c.id, "name": c.name} for c in Company.query.order_by(Company.name).all()
-    ]
-    contacts_data = [
-        {"id": c.id, "name": c.name}
-        for c in Stakeholder.query.order_by(Stakeholder.name).all()
-    ]
-    opportunities_data = [
-        {"id": o.id, "name": o.name}
-        for o in Opportunity.query.order_by(Opportunity.name).all()
-    ]
-
-    # Ultra-DRY dropdown and entity configuration generation
-    from app.utils.form_configs import DropdownConfigGenerator, EntityConfigGenerator
-    dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('tasks', context["group_by"], context["sort_by"], context["sort_direction"], context["primary_filter"])
-    
-    # Add entity filter using DRY entity types
-    ENTITY_TYPES = [
-        {'value': 'company', 'label': Company.__name__},
-        {'value': 'contact', 'label': 'Contact'},  # Legacy name for Stakeholder
-        {'value': 'opportunity', 'label': Opportunity.__name__}
-    ]
-    dropdown_configs['entity_filter'] = {
-        'button_text': 'All Entities',
-        'options': ENTITY_TYPES,
-        'current_values': context["entity_filter"],
-        'name': 'entity_filter'
-    }
-
-    # Entity stats for summary cards
+    # Custom entity stats for tasks
     all_tasks = context["all_tasks"]
     entity_stats = {
         'title': 'Task Summary',
@@ -282,18 +254,33 @@ def index():
             }
         ]
     }
-    
-    # Generate entity configuration using DRY system
-    entity_config = EntityConfigGenerator.generate_entity_page_config('tasks', Task)
 
-    return render_template(
-        "base/entity_index.html",
-        **entity_config,
-        entity_stats=entity_stats,
-        dropdown_configs=dropdown_configs,
-        tasks=tasks,
-        tasks_objects=context["all_tasks"],
+    # Get standardized context using universal helper, preserving existing params from context
+    base_context = UniversalIndexHelper.get_standardized_index_context(
+        entity_name='tasks',
+        default_group_by=context.get("group_by", "status"),
+        default_sort_by=context.get("sort_by", "due_date"),
+        additional_context={
+            'entity_stats': entity_stats,
+            'tasks': tasks,
+            'tasks_objects': context["all_tasks"],
+        }
     )
+    
+    # Add custom entity filter for tasks
+    ENTITY_TYPES = [
+        {'value': 'company', 'label': Company.__name__},
+        {'value': 'contact', 'label': 'Contact'},  # Legacy name for Stakeholder
+        {'value': 'opportunity', 'label': Opportunity.__name__}
+    ]
+    base_context['dropdown_configs']['entity_filter'] = {
+        'button_text': 'All Entities',
+        'options': ENTITY_TYPES,
+        'current_values': context["entity_filter"],
+        'name': 'entity_filter'
+    }
+
+    return render_template("base/entity_index.html", **base_context)
 
 
 
