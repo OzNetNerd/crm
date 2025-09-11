@@ -8,8 +8,11 @@ api_entities_bp = Blueprint("api_entities", __name__, url_prefix="/api")
 ENTITY_CONFIGS = EntityConfigGenerator.generate_all_configs()
 
 
-# Dynamically register GET detail endpoints
+# Dynamically register GET detail endpoints (skip tasks - handled by dedicated tasks API)
 for entity_name, config in ENTITY_CONFIGS.items():
+    if entity_name == "tasks":
+        continue  # Tasks have dedicated API in app.routes.api.tasks
+        
     route_param = config["route_param"]
     handler = config["handler"]
     
@@ -47,8 +50,11 @@ for entity_name, config in ENTITY_CONFIGS.items():
     api_entities_bp.route(f"/{entity_name}")(endpoint_func)
 
 
-# Dynamically register PUT endpoints for entity updates
+# Dynamically register PUT endpoints for entity updates (skip tasks - handled by dedicated tasks API)
 for entity_name, config in ENTITY_CONFIGS.items():
+    if entity_name == "tasks":
+        continue  # Tasks have dedicated API in app.routes.api.tasks
+        
     route_param = config["route_param"]
     handler = config["handler"]
     update_fields = config["update_fields"]
@@ -207,8 +213,11 @@ for entity_name, config in ENTITY_CONFIGS.items():
     api_entities_bp.route(f"/{entity_name}", methods=["POST"])(endpoint_func)
 
 
-# Dynamically register DELETE endpoints for entity deletion
+# Dynamically register DELETE endpoints for entity deletion (skip tasks - handled by dedicated tasks API if needed)
 for entity_name, config in ENTITY_CONFIGS.items():
+    if entity_name == "tasks":
+        continue  # Tasks don't currently have delete endpoint, but would be handled by dedicated API
+        
     route_param = config["route_param"]
     handler = config["handler"]
     
