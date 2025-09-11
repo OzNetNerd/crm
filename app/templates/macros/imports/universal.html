@@ -49,40 +49,11 @@
 {% from "macros/base/layout.html" import page_layout %}
 
 {# === CARD COMPONENTS === #}
-{# Expandable card system used by all entities #}
+{# New modular card system - single import for all entities #}
 {% from "macros/expandable_card.html" import 
+    auto_card,
     expandable_card,
     action_buttons_row
-%}
-
-{# === ENTITY-SPECIFIC CARD COMPONENTS === #}
-{# Company cards #}
-{% from "macros/expandable_card.html" import 
-    company_header_content,
-    company_title_content,
-    company_metadata_content
-%}
-
-{# Stakeholder cards #}
-{% from "macros/expandable_card.html" import 
-    stakeholder_header_content,
-    stakeholder_title_content,
-    stakeholder_metadata_content
-%}
-
-{# Opportunity cards #}
-{% from "macros/expandable_card.html" import 
-    opportunity_header_content,
-    opportunity_title_content,
-    opportunity_metadata_content
-%}
-
-{# Task cards #}
-{% from "macros/expandable_card.html" import 
-    task_header_content,
-    task_title_content,
-    task_metadata_content,
-    task_reschedule_buttons
 %}
 
 {# === MODAL IMPORTS === #}
