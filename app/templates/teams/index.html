@@ -42,7 +42,9 @@
 {% set entity_buttons = [
     {
         'label': 'New Team Member',
-        'onclick': 'openNewTeamMemberModal()',
+        'hx_get': '/modals/TeamMember/create',
+        'hx_target': 'body',
+        'hx_swap': 'beforeend',
         'color': 'blue',
         'icon': plus_icon('w-4 h-4')
     }
@@ -62,7 +64,9 @@
 {% set entity_buttons = [
     {
         'label': 'New Team Member',
-        'onclick': 'openNewTeamMemberModal()',
+        'hx_get': '/modals/TeamMember/create',
+        'hx_target': 'body',
+        'hx_swap': 'beforeend',
         'color': 'blue',
         'icon': plus_icon('w-4 h-4')
     }

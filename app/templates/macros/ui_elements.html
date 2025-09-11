@@ -35,7 +35,7 @@
   - id (optional): HTML id attribute
   
   Usage:
-  {{ enhanced_button('New Task', onclick='openNewTaskModal()', icon=plus_icon('w-4 h-4')) }}
+  {{ enhanced_button('New Task', url='/modals/Task/create', icon=plus_icon('w-4 h-4')) }}
   {{ enhanced_button('Edit', icon=pencil_icon('w-4 h-4'), style='secondary', size='sm') }}
 #}
 {% macro enhanced_button(text, onclick=None, url=None, icon='', style='primary', size='md', disabled=false, id=None) %}
