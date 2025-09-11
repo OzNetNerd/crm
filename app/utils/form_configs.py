@@ -363,19 +363,40 @@ class DropdownConfigGenerator:
         hx_target = f'#{singular}-content'
         hx_get = f'/{entity_name}/content'
         
+        # Generate dynamic button text based on current selection
+        group_button_text = 'Group by'
+        if group_by and group_options:
+            for option in group_options:
+                if option['value'] == group_by:
+                    group_button_text = f'Group by: {option["label"]}'
+                    break
+        elif group_options and not group_by:
+            # Default to first option if no selection
+            group_button_text = f'Group by: {group_options[0]["label"]}'
+            
+        sort_button_text = 'Sort by'
+        if sort_by and sort_options:
+            for option in sort_options:
+                if option['value'] == sort_by:
+                    sort_button_text = f'Sort by: {option["label"]}'
+                    break
+        elif sort_options and not sort_by:
+            # Default to first option if no selection
+            sort_button_text = f'Sort by: {sort_options[0]["label"]}'
+        
         return {
             'group_by': {
-                'button_text': 'Group by',
+                'button_text': group_button_text,
                 'options': group_options,
-                'current_value': group_by or '',
+                'current_value': group_by or (group_options[0]['value'] if group_options else ''),
                 'name': 'group_by',
                 'hx_target': hx_target,
                 'hx_get': hx_get
             },
             'sort_by': {
-                'button_text': 'Sort by',
+                'button_text': sort_button_text,
                 'options': sort_options, 
-                'current_value': sort_by or '',
+                'current_value': sort_by or (sort_options[0]['value'] if sort_options else ''),
                 'name': 'sort_by',
                 'hx_target': hx_target,
                 'hx_get': hx_get

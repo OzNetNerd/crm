@@ -17,10 +17,14 @@ class User(db.Model):
     }
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(255), unique=True)
-    job_title = db.Column(db.String(100))  # Single source of truth for role
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    name = db.Column(db.String(255), nullable=False, info={'sortable': True, 'label': 'Name'})
+    email = db.Column(db.String(255), unique=True, info={'sortable': True, 'label': 'Email'})
+    job_title = db.Column(db.String(100), info={
+        'sortable': True, 
+        'groupable': True,
+        'label': 'Job Title'
+    })  # Single source of truth for role
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, info={'sortable': True, 'label': 'Created At'})
 
     def to_dict(self):
         """Convert user to dictionary for JSON serialization"""
