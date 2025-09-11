@@ -22,22 +22,30 @@
 {% set dashboard_buttons = [
     {
         'label': 'New Task',
-        'onclick': 'openNewTaskModal()',
+        'hx_get': '/modals/Task/create',
+        'hx_target': 'body',
+        'hx_swap': 'beforeend',
         'icon': plus_icon('w-4 h-4')
     },
     {
         'label': 'New Company',
-        'onclick': 'openNewCompanyModal()',
+        'hx_get': '/modals/Company/create',
+        'hx_target': 'body',
+        'hx_swap': 'beforeend',
         'icon': plus_icon('w-4 h-4')
     },
     {
         'label': 'New Stakeholder',
-        'onclick': 'openNewStakeholderModal()',
+        'hx_get': '/modals/Stakeholder/create',
+        'hx_target': 'body',
+        'hx_swap': 'beforeend',
         'icon': plus_icon('w-4 h-4')
     },
     {
         'label': 'New Opportunity',
-        'onclick': 'openNewOpportunityModal()',
+        'hx_get': '/modals/Opportunity/create',
+        'hx_target': 'body',
+        'hx_swap': 'beforeend',
         'icon': plus_icon('w-4 h-4')
     }
 ] %}

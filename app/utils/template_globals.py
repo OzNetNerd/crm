@@ -1,6 +1,7 @@
 """Clean template global functions - no more string-based hacks."""
 
 from app.models import db, Company, Stakeholder, Task, Opportunity
+from app.utils.model_introspection import ModelIntrospector, get_model_by_name
 from sqlalchemy import distinct
 
 
@@ -91,3 +92,20 @@ SIZE_OPTIONS = [
     {"value": "large", "label": "Large"},
     {"value": "enterprise", "label": "Enterprise"},
 ]
+
+
+def get_model_form_fields(model_name):
+    """
+    Get form field definitions for a model by name.
+    
+    Args:
+        model_name: String name of the model (e.g., 'Task', 'Company')
+        
+    Returns:
+        List of form field definitions with name, type, label, choices, etc.
+    """
+    model_class = get_model_by_name(model_name)
+    if not model_class:
+        return []
+    
+    return ModelIntrospector.get_form_fields(model_class)

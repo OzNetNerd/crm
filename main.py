@@ -13,12 +13,14 @@ from app.routes.api import api_bp
 from app.routes.api_notes import api_notes_bp
 from app.routes.notes import notes_bp
 from app.routes.teams import teams_bp
+from app.routes.modals import modals_bp
 from app.utils.template_filters import register_template_filters
 from app.models import Company, Stakeholder, Task, Opportunity
 from app.utils.template_globals import (
     get_field_options,
     get_sortable_fields,
     get_groupable_fields,
+    get_model_form_fields,
     PRIORITY_OPTIONS,
     SIZE_OPTIONS,
 )
@@ -81,6 +83,7 @@ def create_app():
     app.register_blueprint(api_notes_bp)
     app.register_blueprint(notes_bp)
     app.register_blueprint(teams_bp, url_prefix="/teams")
+    app.register_blueprint(modals_bp)
 
     # Register custom template filters
     register_template_filters(app)
@@ -93,6 +96,7 @@ def create_app():
     app.jinja_env.globals["get_field_options"] = get_field_options
     app.jinja_env.globals["get_sortable_fields"] = get_sortable_fields
     app.jinja_env.globals["get_groupable_fields"] = get_groupable_fields
+    app.jinja_env.globals["get_model_form_fields"] = get_model_form_fields
     app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
     app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
 

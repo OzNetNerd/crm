@@ -22,19 +22,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     Object.keys(datasets).forEach(key => {
         const dataAttr = dataContainer.dataset[key];
-        if (dataAttr) {
+        if (dataAttr && dataAttr.trim() !== '') {
             try {
-                window[datasets[key]] = JSON.parse(dataAttr);
-                console.log(`Successfully parsed ${key}:`, window[datasets[key]].length, 'items');
+                const parsed = JSON.parse(dataAttr);
+                window[datasets[key]] = parsed || [];
+                console.log(`Successfully parsed ${key}:`, Array.isArray(window[datasets[key]]) ? window[datasets[key]].length : 'object', 'items');
             } catch (e) {
-                console.error(`Failed to parse ${key} data:`, e);
+                console.error(`Failed to parse ${key} data:`, e, 'Raw data:', dataAttr.substring(0, 100) + '...');
                 window[datasets[key]] = [];
             }
         } else {
-            // Initialize empty arrays to prevent undefined errors only if the data doesn't exist as window variables
+            // Initialize empty arrays/objects to prevent undefined errors only if the data doesn't exist as window variables
             if (!window[datasets[key]]) {
-                console.log(`No data attribute found for ${key} and no window variable, initializing empty array`);
-                window[datasets[key]] = [];
+                // Use appropriate default based on expected type
+                const defaultValue = key.includes('Config') ? {} : [];
+                window[datasets[key]] = defaultValue;
+                // Only log when debugging is needed
+                if (dataAttr) {
+                    console.log(`Empty data attribute for ${key}, initialized as:`, typeof defaultValue);
+                }
             }
         }
     });

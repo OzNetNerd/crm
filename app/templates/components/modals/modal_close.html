@@ -1,0 +1,14 @@
+{#
+  HTMX Modal Close Response
+  
+  This template sends JavaScript to close the modal and remove it from DOM.
+  Used as response to successful form submissions or cancel actions.
+#}
+<script>
+// Close modal and remove from DOM
+document.querySelector('.modal-overlay')?.remove();
+// Trigger refresh of the page content if needed
+if (window.htmxModalClosed) {
+    window.htmxModalClosed();
+}
+</script>
