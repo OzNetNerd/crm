@@ -1,6 +1,6 @@
 """Clean template global functions - no more string-based hacks."""
 
-from app.models import db, Company, Stakeholder, Task, Opportunity
+from app.models import db, Company, Stakeholder, Task, Opportunity, User
 from app.utils.model_introspection import ModelIntrospector, get_model_by_name
 from sqlalchemy import distinct
 
@@ -43,6 +43,10 @@ def get_sortable_fields(model_class, exclude=None):
     elif model_class == Stakeholder:
         options.append({"value": "name", "label": "Name"})
         options.append({"value": "company_name", "label": "Company"})
+    elif model_class == User:
+        options.append({"value": "name", "label": "Name"})
+        options.append({"value": "email", "label": "Email"})
+        options.append({"value": "job_title", "label": "Job Title"})
 
     return sorted(options, key=lambda x: x["label"])
 
@@ -72,6 +76,10 @@ def get_groupable_fields(model_class):
             {"value": "status", "label": "Status"},
             {"value": "priority", "label": "Priority"},
             {"value": "entity_type", "label": "Entity Type"},
+        ]
+    elif model_class == User:
+        options = [
+            {"value": "job_title", "label": "Job Title"},
         ]
 
     return options
@@ -109,3 +117,8 @@ def get_model_form_fields(model_name):
         return []
     
     return ModelIntrospector.get_form_fields(model_class)
+
+
+def get_model_config(model_class):
+    """Get complete model configuration for templates."""
+    return ModelIntrospector.get_model_config(model_class)

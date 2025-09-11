@@ -15,12 +15,13 @@ from app.routes.notes import notes_bp
 from app.routes.teams import teams_bp
 from app.routes.modals import modals_bp
 from app.utils.template_filters import register_template_filters
-from app.models import Company, Stakeholder, Task, Opportunity
+from app.models import Company, Stakeholder, Task, Opportunity, User
 from app.utils.template_globals import (
     get_field_options,
     get_sortable_fields,
     get_groupable_fields,
     get_model_form_fields,
+    get_model_config,
     PRIORITY_OPTIONS,
     SIZE_OPTIONS,
 )
@@ -97,6 +98,7 @@ def create_app():
     app.jinja_env.globals["get_sortable_fields"] = get_sortable_fields
     app.jinja_env.globals["get_groupable_fields"] = get_groupable_fields
     app.jinja_env.globals["get_model_form_fields"] = get_model_form_fields
+    app.jinja_env.globals["get_model_config"] = get_model_config
     app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
     app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
 
@@ -105,6 +107,7 @@ def create_app():
     app.jinja_env.globals["Stakeholder"] = Stakeholder
     app.jinja_env.globals["Task"] = Task
     app.jinja_env.globals["Opportunity"] = Opportunity
+    app.jinja_env.globals["User"] = User
 
     with app.app_context():
         db.create_all()
