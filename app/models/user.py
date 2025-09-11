@@ -6,6 +6,15 @@ class User(db.Model):
     """User model for account team members - single source of truth for job titles"""
 
     __tablename__ = "users"
+    
+    __entity_config__ = {
+        'display_name': 'Teams',
+        'display_name_singular': 'Team Member',
+        'description': 'Manage your team members',
+        'icon': 'users',
+        'endpoint_name': 'teams',
+        'modal_path': '/modals/User'
+    }
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)

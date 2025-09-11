@@ -27,6 +27,15 @@ task_entities = db.Table(
 @create_model_choice_methods(['priority', 'status'])
 class Task(db.Model):
     __tablename__ = "tasks"
+    
+    __entity_config__ = {
+        'display_name': 'Tasks',
+        'display_name_singular': 'Task',
+        'description': 'Manage your tasks and projects',
+        'icon': 'clipboard-list',
+        'endpoint_name': 'tasks',
+        'modal_path': '/modals/Task'
+    }
 
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.Text, nullable=False)

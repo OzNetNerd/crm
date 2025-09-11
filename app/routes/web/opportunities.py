@@ -111,56 +111,18 @@ def index():
     opportunities = Opportunity.query.join(Company).all()
     today = date.today()
 
-    # Ultra-DRY one-line dropdown generation using pure model introspection
-    from app.utils.form_configs import DropdownConfigGenerator
+    # Ultra-DRY dropdown and entity configuration generation
+    from app.utils.form_configs import DropdownConfigGenerator, EntityConfigGenerator
     dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('opportunities', group_by, sort_by, sort_direction, primary_filter)
-
-    # Entity stats for summary cards
-    total_value = sum(o.value or 0 for o in opportunities)
-    entity_stats = {
-        'title': 'Pipeline Summary',
-        'stats': [
-            {
-                'value': f"${total_value:,}",
-                'label': 'Total Pipeline Value',
-                'color_class': 'text-green-600'
-            },
-            {
-                'value': len(opportunities),
-                'label': 'Total Opportunities',
-                'color_class': 'text-blue-600'
-            },
-            {
-                'value': len([o for o in opportunities if o.stage == 'closed-won']),
-                'label': 'Closed Won',
-                'color_class': 'text-emerald-600'
-            },
-            {
-                'value': len(set(o.company.name for o in opportunities if o.company)),
-                'label': 'Companies in Pipeline',
-                'color_class': 'text-purple-600'
-            }
-        ]
-    }
     
-    # Entity buttons for header actions
-    entity_buttons = [
-        {
-            'label': 'New Opportunity',
-            'onclick': 'openNewOpportunityModal()',
-            'icon': 'plus',
-            'classes': 'btn-primary'
-        }
-    ]
+    # Generate entity configuration using DRY system
+    entity_config = EntityConfigGenerator.generate_entity_page_config('opportunities', Opportunity)
+    entity_stats = EntityConfigGenerator.generate_entity_stats('opportunities', opportunities, Opportunity)
 
     return render_template(
         "base/entity_index.html",
-        entity_name="Opportunities",
-        entity_description="Manage your sales opportunities",
-        entity_type="opportunity",
-        entity_endpoint="opportunities",
+        **entity_config,
         entity_stats=entity_stats,
-        entity_buttons=entity_buttons,
         dropdown_configs=dropdown_configs,
         opportunities=opportunities,
     )
@@ -307,6 +269,6 @@ def create():
             ]
         )
 
-    # GET request - render template (if needed)
-    companies = Company.query.all()
-    return render_template("opportunities/new.html", companies=companies)
+    # GET request - redirect to index (modal creation handled by HTMX)
+    from flask import redirect, url_for
+    return redirect(url_for('opportunities.index'))
