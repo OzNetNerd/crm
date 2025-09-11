@@ -1,346 +1,32 @@
 {% from 'macros/base/icons.html' import icon %}
 {# Common UI Elements - Reusable macros for consistent interface components #}
 
-{#
-  Action Button - Standardized clickable action button with consistent styling
-  
-  Parameters:
-  - onclick (required): JavaScript function call to execute on click
-  - icon (optional): Symbol or text to display (default: '')
-  - classes (optional): CSS classes for styling (default: standard gray styling)
-  - id (optional): HTML id attribute
-  
-  Usage:
-  {{ action_button('openStakeholderModal(' + contact.id|string + ')') }}
-  {{ action_button('openModal()', '⋯', 'text-blue-400 hover:text-blue-600') }}
-#}
-{% macro action_button(onclick, icon='', classes='text-gray-400 hover:text-gray-600', id=None) %}
-<button onclick="{{ onclick }}" 
-        class="{{ classes }}"
-        {% if id %}id="{{ id }}"{% endif %}>
-    {{ icon }}
-</button>
-{% endmacro %}
+{# action_button removed - use the one from macros/base/buttons.html instead #}
 
-{#
-  Enhanced Button - Modern button with icon and text support
-  
-  Parameters:
-  - text (required): Button text content
-  - onclick (optional): JavaScript function call to execute on click
-  - url (optional): URL for href (use instead of onclick for links)
-  - icon (optional): Icon HTML from icon macros
-  - style (optional): Button style ('primary', 'secondary', 'accent', 'danger', 'gray') - default: 'primary'
-  - size (optional): Button size ('sm', 'md', 'lg') - default: 'md'
-  - disabled (optional): Whether button is disabled - default: false
-  - id (optional): HTML id attribute
-  
-  Usage:
-  {{ enhanced_button('New Task', url='/modals/Task/create', icon=plus_icon('w-4 h-4')) }}
-  {{ enhanced_button('Edit', icon=pencil_icon('w-4 h-4'), style='secondary', size='sm') }}
-#}
-{% macro enhanced_button(text, onclick=None, url=None, icon='', style='primary', size='md', disabled=false, id=None) %}
-{%- set size_classes = {'sm': 'px-2 py-1 text-sm', 'md': 'px-4 py-2 text-sm', 'lg': 'px-6 py-3 text-base'} -%}
-{%- set style_classes = {
-  'primary': 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-  'secondary': 'bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500', 
-  'accent': 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
-  'danger': 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-  'gray': 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500'
-} -%}
+{# enhanced_button removed - use the one from macros/base/buttons.html instead #}
 
-{% if url %}
-<a href="{{ url }}" 
-   class="inline-flex items-center gap-2 {{ size_classes[size] or size_classes['md'] }} font-medium rounded-md shadow-sm {{ style_classes[style] or style_classes['primary'] }} focus:outline-none focus:ring-2 focus:ring-offset-2 {{ 'opacity-50 cursor-not-allowed' if disabled }}"
-   {% if id %}id="{{ id }}"{% endif %}
-   {% if disabled %}aria-disabled="true"{% endif %}>
-    {{ icon|safe }}{{ text }}
-</a>
-{% else %}
-<button {% if onclick %}onclick="{{ onclick }}"{% endif %} 
-        class="inline-flex items-center gap-2 {{ size_classes[size] or size_classes['md'] }} font-medium rounded-md shadow-sm {{ style_classes[style] or style_classes['primary'] }} focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        {% if id %}id="{{ id }}"{% endif %}
-        {% if disabled %}disabled{% endif %}>
-    {{ icon|safe }}{{ text }}
-</button>
-{% endif %}
-{% endmacro %}
+{# pluralized_count removed - use the one from macros/ui/controls.html instead #}
 
-{#
-  Pluralized Count - Smart count display with automatic pluralization
-  
-  Parameters:
-  - count (required): Number to display
-  - singular (required): Singular form of the noun (e.g., 'opportunity')
-  - plural (optional): Plural form if different from singular + 's' (e.g., 'opportunities')
-  - short (optional): Use abbreviated form (e.g., 'opp' instead of 'opportunity')
-  - show_zero (optional): Show count even when zero (default: true)
-  
-  Usage:
-  {{ pluralized_count(contact.opportunities|length, 'opportunity', short=true) }}
-  {{ pluralized_count(company.contacts|length, 'contact') }}
-  {{ pluralized_count(items|length, 'item', 'items') }}
-#}
-{% macro pluralized_count(count, singular, plural=None, short=false, show_zero=false) %}
-{%- if count > 0 or show_zero -%}
-    {%- set display_singular = singular -%}
-    {%- if plural -%}
-        {%- set display_plural = plural -%}
-    {%- else -%}
-        {%- set plural_map = {
-            'opportunity': 'opportunities',
-            'company': 'companies', 
-            'category': 'categories',
-            'activity': 'activities',
-            'entity': 'entities',
-            'priority': 'priorities'
-        } -%}
-        {%- set display_plural = plural_map.get(singular, singular + 's') -%}
-    {%- endif -%}
-    
-    {%- if short -%}
-        {%- if singular == 'opportunity' -%}
-            {%- set display_singular = 'opp' -%}
-            {%- set display_plural = 'opps' -%}
-        {%- endif -%}
-    {%- endif -%}
-    
-    {{ count }} {{ display_singular if count == 1 else display_plural }}
-{%- endif -%}
-{% endmacro %}
+{# CSS expand/collapse controls moved to macros/ui/utilities.html #}
 
-{#
-  CSS Expand/Collapse Controls - Pure CSS/vanilla JS controls for details elements
-  
-  Parameters:
-  - data_group (optional): Group identifier for targeting specific details elements
-  - additional_classes (optional): Extra CSS classes for the container
-  
-  Usage:
-  {{ css_expand_collapse_controls() }}
-  {{ css_expand_collapse_controls('tasks', 'ml-4') }}
-#}
-{% macro css_expand_collapse_controls(data_group='', additional_classes='') %}
-<div class="flex items-center gap-4 border-l pl-4 {{ additional_classes }}">
-    <button onclick="document.querySelectorAll('details{% if data_group %}[data-group=&quot;{{ data_group }}&quot;]{% endif %}').forEach(d => d.open = true)"
-            class="text-secondary-dark hover:text-gray-900">Expand All</button>
-    <div class="border-l border-gray-300 h-5"></div>
-    <button onclick="document.querySelectorAll('details{% if data_group %}[data-group=&quot;{{ data_group }}&quot;]{% endif %}').forEach(d => d.open = false)"
-            class="text-secondary-dark hover:text-gray-900">Collapse All</button>
-</div>
-{% endmacro %}
+{# expand_collapse_controls legacy version removed - use css_expand_collapse_controls directly or the one from macros/ui/controls.html #}
 
-{#
-  Expand/Collapse Controls - Legacy Alpine.js version kept for compatibility
-  
-  Parameters:
-  - target_sections (required): Alpine.js data object name containing section states
-  - additional_classes (optional): Extra CSS classes for the container
-  
-  Usage:
-  {{ expand_collapse_controls('expandedSections') }}
-  {{ expand_collapse_controls('sectionStates', 'ml-4') }}
-#}
-{% macro expand_collapse_controls(target_sections, additional_classes='') %}
-{{ css_expand_collapse_controls('', additional_classes) }}
-{% endmacro %}
+{# CSS details section moved to macros/ui/sections.html #}
 
-{#
-  CSS Details Section - Native HTML details/summary expandable section
-  
-  Replaces Alpine.js x-show sections with native HTML details elements.
-  Styled to match existing card appearance.
-  
-  Parameters:
-  - section_key (required): Unique key for the section and data-group attribute
-  - title (required): Display title for the section
-  - icon_html (required): HTML for the icon (use icon macros)
-  - badge_html (required): HTML for the count badge
-  - border_color (required): Border color class name (e.g., 'blue', 'red')
-  - bg_color (required): Background color class name
-  - hover_color (required): Hover background color class name
-  - text_class (required): Text styling class
-  - open_by_default (optional): Whether section starts open (default: false)
-  - card_class (optional): CSS class for the container (default: 'card')
-  
-  Usage:
-  {% call css_details_section('todo', 'To Do', clipboard_icon("w-5 h-5 mr-1"), '<span class="badge-blue">5</span>', 'blue', 'blue', 'blue', 'text-status-header') %}
-    <!-- Section content here -->
-  {% endcall %}
-#}
-{% macro css_details_section(section_key, title, icon_html, badge_html, border_color, bg_color, hover_color, text_class, open_by_default=false, card_class='card') %}
-<details data-group="{{ section_key }}" class="{{ card_class }}" {% if open_by_default %}open{% endif %}>
-    <summary class="border-b border-{{ border_color }}-200 px-6 py-4 bg-{{ bg_color }}-50 cursor-pointer hover:bg-{{ hover_color }}-100 list-none">
-        <div class="flex items-center justify-between">
-            <h3 class="{{ text_class }}">
-                <span class="mr-2 transition-transform duration-200 inline-block details-chevron">
-                    {{ icon('chevron-right', 'sm') }}
-                </span>{{ icon_html|safe }} {{ title }}{{ badge_html|safe }}
-            </h3>
-        </div>
-    </summary>
-    <div class="p-6">
-        {{ caller() }}
-    </div>
-</details>
+{# Contact info badge components moved to macros/ui/badges.html #}
 
-<style>
-/* CSS for details chevron rotation */
-details[open] .details-chevron {
-    transform: rotate(90deg);
-}
-/* Remove default details marker */
-details > summary {
-    list-style: none;
-}
-details > summary::-webkit-details-marker {
-    display: none;
-}
-</style>
-{% endmacro %}
-
-{#
-  Stakeholder Info Badge - Display contact information status
-  
-  Parameters:
-  - contact (required): Stakeholder object with email and phone attributes
-  - additional_classes (optional): Extra CSS classes
-  
-  Usage:
-  {{ contact_info_badge(contact) }}
-#}
-{% macro contact_info_badge(contact, additional_classes='') %}
-{% set info_type = get_contact_info_type(contact) %}
-{% set badge_configs = get_contact_badge_configs() %}
-<span class="badge-standard badge-{{ badge_configs[info_type].color }} {{ additional_classes }}">{{ badge_configs[info_type].label }}</span>
-{% endmacro %}
-
-{% macro get_contact_info_type(contact) %}
-{%- if contact.email and contact.phone -%}complete
-{%- elif contact.email -%}email_only
-{%- elif contact.phone -%}phone_only
-{%- else -%}missing
-{%- endif -%}
-{% endmacro %}
-
-{% macro get_contact_badge_configs() %}
-{
-    'complete': {'color': 'green', 'label': 'Complete Info'},
-    'email_only': {'color': 'blue', 'label': 'Email Only'}, 
-    'phone_only': {'color': 'yellow', 'label': 'Phone Only'},
-    'missing': {'color': 'red', 'label': 'Missing Info'}
-}
-{% endmacro %}
-
-{#
-  Entity Link Button - Standardized link button for entity detail pages
-  
-  Parameters:
-  - url (required): URL to navigate to
-  - text (optional): Button text (default: 'View Details')
-  - classes (optional): CSS classes for styling
-  
-  Usage:
-  {{ entity_link_button(url_for('companies.detail', company_id=company.id)) }}
-  {{ entity_link_button('/contacts/' + contact.id|string, 'View Stakeholder') }}
-#}
-{% macro entity_link_button(url, text='View Details', classes='mt-3 block w-full text-center bg-gray-50 text-gray-700 py-2 rounded-md hover:bg-gray-100') %}
-<a href="{{ url }}" class="{{ classes }}">{{ text }}</a>
-{% endmacro %}
+{# Entity link button moved to macros/ui/utilities.html #}
 
 
-{#
-  Section Group Header - DRY implementation for consistent expandable section headers
-  
-  Parameters:
-  - section_key (required): Unique key for expand/collapse state
-  - title (required): Display title for the section
-  - icon_html (required): HTML for the icon (use icon macros)
-  - badge_html (required): HTML for the count badge
-  - border_color (required): Border color class name (e.g., 'blue', 'red')
-  - bg_color (required): Background color class name
-  - hover_color (required): Hover background color class name
-  - text_class (required): Text styling class
-  - with_buttons (optional): Show expand/collapse all buttons (default: true)
-  
-  Usage:
-  {{ section_group_header('todo', 'To Do', clipboard_icon("w-5 h-5 mr-1"), '<span class="badge-blue">5</span>', 'blue', 'blue', 'blue', 'text-status-header') }}
-#}
-{% macro section_group_header(section_key, title, icon_html, badge_html, border_color, bg_color, hover_color, text_class, with_buttons=true) %}
-{% from "macros/base/icons.html" import chevron_right_icon %}
-<div class="border-b border-{{ border_color }}-200 px-6 py-4 bg-{{ bg_color }}-50 cursor-pointer hover:bg-{{ hover_color }}-100" 
-     @click="expandedSections['{{ section_key }}'] = !expandedSections['{{ section_key }}']">
-    <div class="flex items-center justify-between">
-        <h3 class="{{ text_class }}">
-            <span class="mr-2 transition-transform duration-200" :class="expandedSections['{{ section_key }}'] ? 'rotate-90' : ''">
-                {{ chevron_right_icon("w-4 h-4") }}
-            </span>{{ icon_html|safe }} {{ title }}{{ badge_html|safe }}
-        </h3>
-        {% if with_buttons %}
-        <div class="flex items-center space-x-2 text-sm text-gray-500" x-show="expandedSections['{{ section_key }}']">
-            <button onclick="document.querySelectorAll('[data-group=\"{{ section_key }}\"] details').forEach(d => d.open = true)" class="hover:text-blue-600 transition-colors">Expand All</button>
-            <span>|</span>
-            <button onclick="document.querySelectorAll('[data-group=\"{{ section_key }}\"] details').forEach(d => d.open = false)" class="hover:text-blue-600 transition-colors">Collapse All</button>
-        </div>
-        {% endif %}
-    </div>
-</div>
-{% endmacro %}
+{# Section group header moved to macros/ui/sections.html #}
 
 
 
-{#
-  Badge Count Helper - DRY macro for task count badges with consistent formatting
-  
-  Parameters:
-  - filter_type (required): Type of filtering ('status', 'priority', 'due_date', 'entity', 'overdue', 'custom')
-  - filter_value (optional): Specific value to filter by (e.g., 'todo', 'high', 'company')
-  - color (required): Badge color class ('blue', 'red', 'green', etc.)
-  - tasks_list (optional): Tasks list to use (default: 'tasks')
-  - show_completed (optional): Whether to include completed tasks (default: varies by type)
-  - custom_count (optional): Pre-calculated count for complex filters
-  
-  Usage:
-  {{ badge_count_helper('status', 'todo', 'blue') }}
-  {{ badge_count_helper('priority', 'high', 'red') }}
-  {{ badge_count_helper('custom', color='gray', custom_count=custom_task_list|length) }}
-#}
-{% macro badge_count_helper(filter_type, filter_value=None, color='gray', tasks_list='tasks_objects', show_completed=None, custom_count=None) %}
-{%- if custom_count is not none -%}
-    {%- set count = custom_count -%}
-{%- elif filter_type == 'status' -%}
-    {%- set count = (tasks_objects|selectattr('status', 'equalto', filter_value)|list|length) -%}
-{%- elif filter_type == 'priority' -%}
-    {%- set count = (tasks_objects|selectattr('priority', 'equalto', filter_value)|list|length) -%}
-{%- elif filter_type == 'overdue' -%}
-    {%- set count = (tasks_objects|selectattr('is_overdue', 'equalto', True)|list|length) -%}
-{%- elif filter_type == 'due_today' -%}
-    {%- set count = (tasks_objects|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list|length) -%}
-{%- elif filter_type == 'no_date' -%}
-    {%- if show_completed -%}
-        {%- set count = (tasks_objects|selectattr('due_date', 'none')|list|length) -%}
-    {%- else -%}
-        {%- set count = (tasks_objects|selectattr('due_date', 'none')|selectattr('status', 'ne', 'complete')|list|length) -%}
-    {%- endif -%}
-{%- elif filter_type == 'entity' -%}
-    {%- if filter_value == 'unrelated' -%}
-        {%- if show_completed -%}
-            {%- set count = (tasks_objects|selectattr('entity_type', 'none')|list|length) -%}
-        {%- else -%}
-            {%- set count = (tasks_objects|selectattr('entity_type', 'none')|selectattr('status', 'ne', 'complete')|list|length) -%}
-        {%- endif -%}
-    {%- else -%}
-        {%- if show_completed -%}
-            {%- set count = (tasks_objects|selectattr('entity_type', 'equalto', filter_value)|list|length) -%}
-        {%- else -%}
-            {%- set count = (tasks_objects|selectattr('entity_type', 'equalto', filter_value)|selectattr('status', 'ne', 'complete')|list|length) -%}
-        {%- endif -%}
-    {%- endif -%}
-{%- else -%}
-    {%- set count = 0 -%}
-{%- endif -%}
-<span class="ml-2 badge-standard badge-{{ color }}">{{ count }}</span>
-{%- endmacro %}
+{# Badge count helper moved to macros/ui/badges.html #}
+
+{# Task section badge helper moved to macros/ui/badges.html #}
+
+{# Task filter helper moved to macros/ui/sections.html #}
 
 {#
   Task Section Group - DRY macro for complete task sections with filtering
@@ -375,14 +61,7 @@ details > summary::-webkit-details-marker {
         section_key,
         title,
         icon_html|safe, 
-        '<span class="ml-2 badge-standard badge-' + colors.badge_color + '">' + (
-            (tasks_objects|selectattr('status', 'equalto', filter_config.value)|list|length)|string if filter_config and filter_config.type == 'status' else
-            (tasks_objects|selectattr('priority', 'equalto', filter_config.value)|list|length)|string if filter_config and filter_config.type == 'priority' else
-            (tasks_objects|selectattr('is_overdue', 'equalto', True)|list|length)|string if filter_config and filter_config.type == 'overdue' else
-            (tasks_objects|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list|length)|string if filter_config and filter_config.type == 'due_today' else
-            (filter_config.custom_count|string if filter_config.custom_count is defined else '0') if filter_config and (filter_config.type == 'custom_due_week' or filter_config.type == 'custom_due_later') else
-            '0'
-        ) + '</span>',
+        task_section_badge(filter_config, colors.badge_color),
         colors.border_color,
         colors.bg_color,
         colors.hover_color, 
@@ -391,50 +70,15 @@ details > summary::-webkit-details-marker {
     <div class="p-6" x-show="expandedSections['{{ section_key }}']" x-cloak x-transition>
         {% set has_tasks = [] %}
         {% for task in tasks_objects %}
-            {% set show_task = false %}
-            {# Apply filtering logic based on filter_config #}
-            {%- if filter_config -%}
-                {%- if filter_config.type == 'status' and task.status == filter_config.value and task.task_type != 'child' -%}
-                    {% set show_task = true %}
-                {%- elif filter_config.type == 'priority' and task.priority == filter_config.value -%}
-                    {% set show_task = true %}
-                {%- elif filter_config.type == 'overdue' and task.is_overdue -%}
-                    {% set show_task = true %}
-                {%- elif filter_config.type == 'due_today' and task.due_date == today -%}
-                    {% set show_task = true %}
-                {%- elif filter_config.type == 'no_date' and not task.due_date -%}
-                    {% set show_task = true %}
-                {%- elif filter_config.type == 'entity' -%}
-                    {%- if filter_config.value == 'unrelated' and not task.entity_type -%}
-                        {% set show_task = true %}
-                    {%- elif task.entity_type == filter_config.value -%}
-                        {% set show_task = true %}
-                    {%- endif -%}
-                {%- elif filter_config.type == 'custom_due_week' and task.due_date and task.due_date > today and (task.due_date - today).days <= 7 -%}
-                    {% set show_task = true %}
-                {%- elif filter_config.type == 'custom_due_later' and task.due_date and (task.due_date - today).days > 7 -%}
-                    {% set show_task = true %}
-                {%- endif -%}
-            {%- endif -%}
-            
-            {% if show_task %}
+            {% if task_matches_filter(task, filter_config) == 'true' %}
                 {% set _ = has_tasks.append(task) %}
                 <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else "'unrelated'" }}, status: '{{ task.status }}'})" {% if additional_classes %}class="{{ additional_classes }}"{% endif %}>
-                    {% if task.task_type == 'parent' %}
-                        {% call expandable_card('task', task, task.id,
-                                               expansion_enabled=true,
-                                               group_key=section_key,
-                                               action_content=task_reschedule_buttons(task.id)) %}
-                            {{ task_header_content(task) }}
-                        {% endcall %}
-                    {% else %}
-                        {% call expandable_card('task', task, task.id,
-                                               expansion_enabled=true,
-                                               group_key=section_key,
-                                               action_content=task_reschedule_buttons(task.id)) %}
-                            {{ task_header_content(task) }}
-                        {% endcall %}
-                    {% endif %}
+                    {% call expandable_card('task', task, task.id,
+                                           expansion_enabled=true,
+                                           group_key=section_key,
+                                           action_content=task_reschedule_buttons(task.id)) %}
+                        {{ task_header_content(task) }}
+                    {% endcall %}
                 </div>
             {% endif %}
         {% endfor %}
@@ -445,503 +89,32 @@ details > summary::-webkit-details-marker {
 </div>
 {% endmacro %}
 
-{#
-  View Mode Toggle - Switch between grid and list views
-  
-  Parameters:
-  - current_mode (optional): Current view mode ('grid' or 'list')
-  - grid_icon (optional): Custom grid view icon
-  - list_icon (optional): Custom list view icon
-  
-  Usage:
-  {{ view_mode_toggle() }}
-  {{ view_mode_toggle('grid', custom_grid_icon, custom_list_icon) }}
-#}
-{% macro view_mode_toggle(current_mode='grid', grid_icon=None, list_icon=None) %}
-<div class="flex items-center bg-gray-100 rounded-md p-1">
-    <button @click="viewMode = 'grid'" 
-            :class="viewMode === 'grid' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'"
-            class="p-2 rounded transition-colors">
-        {% if grid_icon %}
-        {{ grid_icon|safe }}
-        {% else %}
-        {{ icon('squares-2x2', 'sm') }}
-        {% endif %}
-    </button>
-    <button @click="viewMode = 'list'" 
-            :class="viewMode === 'list' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'"
-            class="p-2 rounded transition-colors">
-        {% if list_icon %}
-        {{ list_icon|safe }}
-        {% else %}
-        {{ icon('list-bullet', 'sm') }}
-        {% endif %}
-    </button>
-</div>
-{% endmacro %}
+{# view_mode_toggle removed - use the one from macros/ui/controls.html instead #}
 
-{#
-  Bulk Selection Checkbox - Checkbox with consistent selection styling
-  
-  Parameters:
-  - item_id (required): Unique identifier for the item
-  - model (optional): Alpine.js model name (default: 'selectedItems')
-  - additional_classes (optional): Extra CSS classes
-  
-  Usage:
-  {{ bulk_selection_checkbox(company.id) }}
-  {{ bulk_selection_checkbox(contact.id, 'selectedStakeholders') }}
-#}
-{% macro bulk_selection_checkbox(item_id, model='selectedItems', additional_classes='') %}
-<input type="checkbox" 
-       x-model="{{ model }}" 
-       value="{{ item_id }}"
-       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded {{ additional_classes }}"
-       @click.stop>
-{% endmacro %}
+{# Bulk selection checkbox moved to macros/base/forms.html #}
 
-{#
-  Select All Checkbox - Master checkbox for bulk selection
-  
-  Parameters:
-  - total_items (required): Total number of items that can be selected
-  - model (optional): Alpine.js model name (default: 'selectedItems')
-  - label (optional): Label text for the checkbox
-  
-  Usage:
-  {{ select_all_checkbox(companies|length) }}
-  {{ select_all_checkbox(contacts|length, 'selectedStakeholders', 'Select all contacts') }}
-#}
-{% macro select_all_checkbox(total_items, model='selectedItems', label='Select all') %}
-<label class="flex items-center space-x-2">
-    <input type="checkbox"
-           :checked="{{ model }}.length === {{ total_items }} && {{ total_items }} > 0"
-           :indeterminate="{{ model }}.length > 0 && {{ model }}.length < {{ total_items }}"
-           @change="{{ model }} = $event.target.checked ? allItemIds : []"
-           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-    <span class="text-sm text-gray-700">{{ label }}</span>
-</label>
-{% endmacro %}
+{# Select all checkbox moved to macros/base/forms.html #}
 
-{#
-  Search Input - Consistent search input with icon
-  
-  Parameters:
-  - placeholder (optional): Placeholder text
-  - model (optional): Alpine.js model binding
-  - additional_classes (optional): Extra CSS classes
-  
-  Usage:
-  {{ search_input('Search companies...', 'searchTerm') }}
-#}
-{% macro search_input(placeholder='Search...', model='searchTerm', additional_classes='') %}
-<div class="relative">
-    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        {{ icon('magnifying-glass', 'md', 'text-gray-400') }}
-    </div>
-    <input type="text" 
-           x-model="{{ model }}"
-           class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm {{ additional_classes }}"
-           placeholder="{{ placeholder }}">
-    <div x-show="{{ model }}.length > 0" class="absolute inset-y-0 right-0 pr-3 flex items-center">
-        <button @click="{{ model }} = ''" class="text-gray-400 hover:text-gray-600">
-            {{ icon('x-mark', 'sm') }}
-        </button>
-    </div>
-</div>
-{% endmacro %}
+{# Search input moved to macros/base/forms.html #}
 
-{#
-  Loading Spinner - Consistent loading indicator
-  
-  Parameters:
-  - size (optional): Size class ('sm', 'md', 'lg')
-  - text (optional): Loading text to display
-  
-  Usage:
-  {{ loading_spinner('md', 'Loading companies...') }}
-#}
-{% macro loading_spinner(size='md', text='') %}
-{%- set size_classes = {'sm': 'h-4 w-4', 'md': 'h-6 w-6', 'lg': 'h-8 w-8'} -%}
-<div class="flex items-center justify-center space-x-2">
-    {{ icon('spinner', size or 'md', 'animate-spin text-blue-600') }}
-    {% if text %}
-    <span class="text-sm text-gray-600">{{ text }}</span>
-    {% endif %}
-</div>
-{% endmacro %}
+{# Loading spinner moved to macros/ui/utilities.html #}
 
-{#
-  Empty State - Consistent empty state display
-  
-  Parameters:
-  - title (required): Empty state title
-  - description (optional): Empty state description
-  - action_button (optional): HTML for action button
-  - icon (optional): Custom icon HTML
-  
-  Usage:
-  {{ empty_state('No companies found', 'Get started by adding your first company', '<button>Add Company</button>') }}
-#}
-{% macro empty_state(title, description='', action_button='', icon='') %}
-<div class="text-center py-12">
-    {% if icon %}
-    <div class="mx-auto h-12 w-12 text-gray-400 mb-4">
-        {{ icon|safe }}
-    </div>
-    {% else %}
-    {{ icon('document', 'xl', 'mx-auto text-gray-400 mb-4') }}
-    {% endif %}
-    
-    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ title }}</h3>
-    
-    {% if description %}
-    <p class="text-gray-500 mb-6">{{ description }}</p>
-    {% endif %}
-    
-    {% if action_button %}
-    {{ action_button|safe }}
-    {% endif %}
-</div>
-{% endmacro %}
+{# Empty state moved to macros/ui/utilities.html #}
 
-{#
-  Status Badge - Consistent status indicator
-  
-  Parameters:
-  - status (required): Status value
-  - color_map (optional): Dict mapping status to colors
-  - size (optional): Badge size ('sm', 'md', 'lg')
-  
-  Usage:
-  {{ status_badge(task.status) }}
-  {{ status_badge(company.status, {'active': 'green', 'inactive': 'red'}) }}
-#}
-{% macro status_badge(status, color_map=None, size='md') %}
-{%- set color = get_status_color(status, color_map) -%}
-
-{%- set size_classes = {'sm': 'px-2 py-1 text-xs', 'md': 'px-2.5 py-0.5 text-sm', 'lg': 'px-3 py-1 text-base'} -%}
-
-<span class="inline-flex items-center {{ size_classes[size] or size_classes['md'] }} font-medium rounded-full badge-{{ color }}">
-    {{ status|title }}
-</span>
-{% endmacro %}
+{# Status badge moved to macros/ui/badges.html #}
 
 {#
   GENERIC ENTITY MANAGER COMPONENTS - DRY multiselect system for all entity types
 #}
 
 
-{#
-  Dynamic Entity Section - Generic expandable section for entity grouping
-  
-  Parameters:
-  - Uses Alpine.js template with x-for to render dynamic sections
-  
-  Usage:
-  <!-- Used with Alpine.js x-for in the entity manager templates -->
-  {{ dynamic_entity_section() }}
-#}
-{% macro dynamic_entity_section() %}
-<template x-for="group in getGroupedEntities()" :key="group.key">
-    <div class="entity-section-spacing mb-6">
-        <!-- Group Section -->
-        <div :class="group.containerClass">
-            <!-- Group Header -->
-            <div :class="group.headerBgClass + ' cursor-pointer'"
-                 @click="toggleSection(group.key)">
-                <div class="flex items-center justify-between">
-                    <h3 :class="group.headerClass">
-                        <span class="mr-2 transition-transform duration-200" 
-                              :class="expandedSections[group.key] ? 'rotate-90' : ''">
-                            {{ icon('chevron-right', 'sm') }}
-                        </span>
-                        <span x-html="group.icon" class="w-5 h-5 mr-1"></span>
-                        <span x-text="group.title"></span>
-                        <span class="ml-2" 
-                              :class="'badge-standard ' + group.badgeClass" 
-                              x-text="group.entities.length"></span>
-                    </h3>
-                </div>
-            </div>
-            
-            <!-- Group Content -->
-            <div class="entity-group-content p-8" 
-                 x-show="expandedSections[group.key]" 
-                 x-cloak 
-                 x-transition>
-                <template x-if="group.entities.length > 0">
-                    <div class="space-y-4">
-                        <template x-for="entity in group.entities" :key="entity.id">
-                            <div x-html="renderEntityCard(entity, group.key)"></div>
-                        </template>
-                    </div>
-                </template>
-                <template x-if="group.entities.length === 0">
-                    <p class="text-empty-state">No matching items found</p>
-                </template>
-            </div>
-        </div>
-    </div>
-</template>
-{% endmacro %}
+{# Dynamic entity section moved to macros/ui/sections.html #}
 
-{#
-  Generic Bulk Actions Bar
-  
-  Displays a blue banner when items are selected for bulk operations.
-  Customizable for different entity types and actions.
-  
-  Parameters:
-  - entity_type: Singular name of entity type (e.g., 'task', 'opportunity')
-  - entity_plural: Plural name for display (e.g., 'tasks', 'opportunities')  
-  - primary_action: Primary bulk action config {label, onclick, color}
-  - secondary_action: Secondary bulk action config {label, onclick, color}
-  
-  Usage:
-  {{ bulk_actions_bar('task', 'tasks', 
-       {'label': 'Update Status', 'onclick': 'bulkUpdateStatus()', 'color': 'blue'},
-       {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
-#}
-{% macro bulk_actions_bar(entity_type, entity_plural, primary_action, secondary_action) %}
-<div x-show="selectedItems.length > 0" 
-     x-cloak 
-     x-transition
-     class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
-    <div class="flex items-center space-x-4">
-        <span class="text-blue-800 font-medium" x-text="`${selectedItems.length} {{ entity_plural }} selected`"></span>
-        
-        {% if primary_action %}
-        <button @click="{{ primary_action.onclick }}" 
-                class="bg-{{ primary_action.color }}-600 text-white px-3 py-1.5 rounded text-sm hover:bg-{{ primary_action.color }}-700">
-            {{ primary_action.label }}
-        </button>
-        {% endif %}
-        
-        {% if secondary_action %}
-        <button @click="{{ secondary_action.onclick }}" 
-                class="bg-{{ secondary_action.color }}-600 text-white px-3 py-1.5 rounded text-sm hover:bg-{{ secondary_action.color }}-700">
-            {{ secondary_action.label }}
-        </button>
-        {% endif %}
-    </div>
-    
-    <button @click="selectedItems = []" class="text-blue-600 hover:text-blue-800">
-        {{ icon('x-mark', 'md') }}
-    </button>
-</div>
-{% endmacro %}
+{# Bulk actions bar moved to macros/ui/utilities.html #}
 
-{#
-  Helper macro for status color determination - eliminates if/elif chains
-#}
-{% macro get_status_color(status, color_map=None) %}
-{%- if color_map -%}
-    {{ color_map.get(status, 'gray') }}
-{%- else -%}
-    {% set default_colors = get_default_status_colors() %}
-    {% set found_color = '' %}
-    {% for color_group, statuses in default_colors.items() %}
-        {% if status in statuses and not found_color %}
-            {% set found_color = color_group %}
-        {% endif %}
-    {% endfor %}
-    {{ found_color or 'gray' }}
-{%- endif -%}
-{% endmacro %}
+{# Status color helpers moved to macros/ui/badges.html #}
 
-{% macro get_default_status_colors() %}
-{
-    'green': ['complete', 'completed', 'done', 'active', 'open'],
-    'yellow': ['in-progress', 'in_progress', 'pending', 'working'],
-    'red': ['overdue', 'late', 'failed', 'error'],
-    'blue': ['todo', 'new', 'draft']
-}
-{% endmacro %}
-
-<<<<<<< HEAD
-{#
-  Enhanced Filter Controls Section - DRY component for all entity index pages
-  
-  Parameters:
-  - group_options (required): List of group options as [{'value': 'key', 'label': 'Display Name'}]
-  - sort_options (required): List of sort options as [{'value': 'key', 'label': 'Display Name'}]
-  - show_completed_label (optional): Label for show completed checkbox (default: 'Show Completed')
-  - show_completed_name (optional): Name attribute for checkbox (default: 'show_completed')
-  - primary_filter_options (optional): List of options for first filter dropdown
-  - primary_filter_label (optional): Label for first filter dropdown (default: 'All Filters')
-  - secondary_filter_options (optional): List of options for second filter dropdown  
-  - secondary_filter_label (optional): Label for second filter dropdown (default: 'All Filters')
-  - entity_filter_options (optional): List of options for entity filter dropdown
-  - entity_filter_label (optional): Label for entity filter dropdown (default: 'All Entities')
-  - entity_filter_search (optional): Enable search in entity filter (default: false)
-  
-  Usage:
-  {{ enhanced_filter_controls(
-      group_options=[{'value': 'stage', 'label': 'Pipeline Stage'}],
-      sort_options=[{'value': 'name', 'label': 'Name'}],
-      show_completed_label='Show Closed',
-      primary_filter_options=[{'value': 'high', 'label': 'High Priority'}],
-      primary_filter_label='All Priorities'
-  ) }}
-#}
-{% macro enhanced_filter_controls(
-    group_options, 
-    sort_options,
-    show_completed_label='Show Completed',
-    show_completed_name='show_completed',
-    primary_filter_options=None,
-    primary_filter_label='All Filters', 
-    secondary_filter_options=None,
-    secondary_filter_label='All Filters',
-    entity_filter_options=None,
-    entity_filter_label='All Entities',
-    entity_filter_search=false
-) %}
-<div class="card-padded-lg filter-section-enhanced">
-    <div class="flex flex-col space-y-4">
-        <!-- First row: Group by, Sort by, and Filters -->
-        <div class="flex flex-wrap items-center gap-6">
-            <label class="text-label-dark">Group by:</label>
-            {{ generic_group_dropdown('groupBy', group_options) }}
-            
-            <label class="text-label-dark">Sort by:</label>
-            {{ generic_sort_dropdown('sortBy', 'sortDirection', sort_options) }}
-            
-            {% if primary_filter_options or secondary_filter_options or entity_filter_options %}
-            <label class="text-label-dark">Filters:</label>
-            {% endif %}
-            
-            {% if primary_filter_options %}
-            {{ generic_filter_multiselect('primaryFilter', primary_filter_options, primary_filter_label, 'togglePrimaryFilter', 'getPrimaryFilterDisplayText') }}
-            {% endif %}
-            
-            {% if secondary_filter_options %}
-            {{ generic_filter_multiselect('secondaryFilter', secondary_filter_options, secondary_filter_label, 'toggleSecondaryFilter', 'getSecondaryFilterDisplayText') }}
-            {% endif %}
-            
-            {% if entity_filter_options %}
-            {{ generic_filter_multiselect('entityFilter', entity_filter_options, entity_filter_label, 'toggleEntityFilter', 'getEntityFilterDisplayText', with_search=entity_filter_search) }}
-            {% endif %}
-        </div>
-        
-        <!-- Second row: Show completed and Expand/Collapse controls -->
-        <div class="flex flex-wrap items-center gap-6">
-            <label class="flex items-center">
-                <input type="checkbox" 
-                       x-model="showCompleted"
-                       @change="updateFilters()"
-                       name="{{ show_completed_name }}"
-                       value="true"
-                       class="mr-2">
-                <span class="text-secondary-dark">{{ show_completed_label }}</span>
-            </label>
-
-            {{ css_expand_collapse_controls() }}
-        </div>
-    </div>
-</div>
-{% endmacro %}
-
-{#
-  Pure CSS HTMX Dropdown - Focus-based dropdown for HTMX forms
-  
-  Parameters:
-  - name (required): HTML name attribute for the form field
-  - current_value (required): Currently selected value
-  - options (required): List of {value, label} dictionaries
-  - label_text (optional): Label to display in the button
-  
-  Usage:
-  {{ htmx_dropdown('group_by', group_by, group_options, 'Group by') }}
-#}
-{% macro htmx_dropdown(name, current_value, options, label_text='Select') %}
-<div class="relative inline-block">
-    <button type="button" 
-            class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between min-w-[120px] group"
-            onclick="this.nextElementSibling.classList.toggle('hidden')">
-        <span>
-            {% set found = namespace(value=false) %}
-            {% for option in options %}
-                {% if option.value == current_value and not found.value %}
-                    {{ option.label }}
-                    {% set found.value = true %}
-                {% endif %}
-            {% endfor %}
-            {% if not found.value %}{{ label_text }}{% endif %}
-        </span>
-        {{ icon('chevron-down', 'sm', 'ml-2 transition-transform group-focus:rotate-180') }}
-    </button>
-    
-    <div class="absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-10 hidden transition-all duration-200 ease-out">
-        <div class="py-1">
-            {% for option in options %}
-            <button type="submit" 
-                    name="{{ name }}" 
-                    value="{{ option.value }}"
-                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option.value == current_value %}bg-blue-50 text-blue-700{% endif %}">
-                {{ option.label }}
-            </button>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-{% endmacro %}
-
-{#
-  Pure CSS HTMX Multiselect - Checkbox-based multiselect for HTMX forms
-  
-  Parameters:
-  - name (required): HTML name attribute for the form field
-  - current_values (required): List of currently selected values
-  - options (required): List of {value, label} dictionaries
-  - placeholder (optional): Placeholder text when nothing selected
-  
-  Usage:
-  {{ htmx_multiselect('priority_filter', priority_filter, priority_options, 'All Priorities') }}
-#}
-{% macro htmx_multiselect(name, current_values, options, placeholder='Select options') %}
-<div class="relative inline-block">
-    <button type="button" 
-            class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between min-w-[140px] group"
-            onclick="this.nextElementSibling.classList.toggle('hidden')">
-        <span class="truncate">
-            {% if current_values|length == 0 %}
-                {{ placeholder }}
-            {% elif current_values|length == 1 %}
-                {% set found = namespace(value=false) %}
-                {% for option in options %}
-                    {% if option.value in current_values and not found.value %}
-                        {{ option.label }}
-                        {% set found.value = true %}
-                    {% endif %}
-                {% endfor %}
-            {% else %}
-                {{ current_values|length }} selected
-            {% endif %}
-        </span>
-        {{ icon('chevron-down', 'sm', 'ml-2 transition-transform group-focus:rotate-180') }}
-    </button>
-    
-    <div class="absolute left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-20 hidden transition-all duration-200 ease-out">
-        <div class="py-1 max-h-48 overflow-y-auto">
-            {% for option in options %}
-            <label class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-                <input type="checkbox" 
-                       name="{{ name }}"
-                       value="{{ option.value }}"
-                       {% if option.value in current_values %}checked{% endif %}
-                       class="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                       onchange="this.form.dispatchEvent(new Event('change'))">
-                {{ option.label }}
-            </label>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-{% endmacro %}
-=======
->>>>>>> 689f569 (feat: fix grouping and sorting with unified dropdown system)
+{# Legacy enhanced_filter_controls, htmx_dropdown, and htmx_multiselect removed - these duplicated functionality from organized files #}
 
 {#
   HTMX Enhanced Filter Controls - Pure CSS version of enhanced_filter_controls
@@ -952,10 +125,29 @@ details > summary::-webkit-details-marker {
   Usage:
   {{ htmx_enhanced_filter_controls(...) }}
 #}
-<<<<<<< HEAD
-=======
 {% from "macros/ui/dropdowns.html" import css_dropdown %}
->>>>>>> 689f569 (feat: fix grouping and sorting with unified dropdown system)
+{% from "macros/ui/utilities.html" import css_expand_collapse_controls %}
+
+{#
+  HTMX Dropdown Helper - Reduces repetition in filter controls
+  
+  Parameters:
+  - label: Display label for dropdown
+  - options: List of dropdown options  
+  - name: Form field name
+  - current_value: Currently selected value
+  - current_values: Currently selected values (for multiselect)
+  - target: HTMX target (default: '#content')
+  - get_url: HTMX get URL (default: request.url)
+#}
+{% macro htmx_dropdown_helper(label, options, name, current_value=None, current_values=None, target='#content', get_url=None) %}
+{{ css_dropdown(label, options, name, 
+                current_value=current_value, 
+                current_values=current_values, 
+                hx_target=target, 
+                hx_get=get_url or request.url) }}
+{% endmacro %}
+
 {% macro htmx_enhanced_filter_controls(
     group_options, 
     sort_options,
@@ -980,29 +172,26 @@ details > summary::-webkit-details-marker {
         <!-- First row: Group by, Sort by, and Filters -->
         <div class="flex flex-wrap items-center gap-6">
             <label class="text-label-dark">Group by:</label>
-            {{ htmx_dropdown('group_by', group_by, group_options, 'Group by') }}
+            {{ htmx_dropdown_helper('Group by', group_options, 'group_by', current_value=group_by) }}
             
             <label class="text-label-dark">Sort by:</label>
-            {{ htmx_dropdown('sort_by', sort_by, sort_options, 'Sort by') }}
-            {{ htmx_dropdown('sort_direction', sort_direction, [
-                {'value': 'asc', 'label': 'Ascending'},
-                {'value': 'desc', 'label': 'Descending'}
-            ], 'Order') }}
+            {{ htmx_dropdown_helper('Sort by', sort_options, 'sort_by', current_value=sort_by) }}
+            {{ htmx_dropdown_helper('Order', [{'value': 'asc', 'label': 'Ascending'}, {'value': 'desc', 'label': 'Descending'}], 'sort_direction', current_value=sort_direction) }}
             
             {% if primary_filter_options or secondary_filter_options or entity_filter_options %}
             <label class="text-label-dark">Filters:</label>
             {% endif %}
             
             {% if primary_filter_options %}
-            {{ htmx_multiselect('primary_filter', primary_filter_values, primary_filter_options, primary_filter_label) }}
+            {{ htmx_dropdown_helper(primary_filter_label, primary_filter_options, 'primary_filter', current_values=primary_filter_values) }}
             {% endif %}
             
             {% if secondary_filter_options %}
-            {{ htmx_multiselect('secondary_filter', secondary_filter_values, secondary_filter_options, secondary_filter_label) }}
+            {{ htmx_dropdown_helper(secondary_filter_label, secondary_filter_options, 'secondary_filter', current_values=secondary_filter_values) }}
             {% endif %}
             
             {% if entity_filter_options %}
-            {{ htmx_multiselect('entity_filter', entity_filter_values, entity_filter_options, entity_filter_label) }}
+            {{ htmx_dropdown_helper(entity_filter_label, entity_filter_options, 'entity_filter', current_values=entity_filter_values) }}
             {% endif %}
         </div>
         
@@ -1025,6 +214,15 @@ details > summary::-webkit-details-marker {
     </div>
 </div>
 
+{{ dropdown_close_script() }}
+{% endmacro %}
+
+{#
+  Dropdown Close Script - Utility script for closing dropdowns on outside click
+  
+  Extracted to reduce inline JavaScript and improve reusability
+#}
+{% macro dropdown_close_script() %}
 <script>
 // Close all dropdowns when clicking outside
 document.addEventListener('click', function(event) {

@@ -17,7 +17,8 @@
   - Flexible field renderers for any data type
   - Complete backwards compatibility via adapter macros
 #}
-{% from "macros/ui_elements.html" import bulk_selection_checkbox, pluralized_count %}
+{% from "macros/base/forms.html" import bulk_selection_checkbox %}
+{% from "macros/ui/controls.html" import pluralized_count %}
 {% from "macros/ui/progress.html" import progress_bar %}
 {% from "macros/card_system.html" import auto_entity_card, render_field %}
 

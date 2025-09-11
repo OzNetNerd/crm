@@ -1,6 +1,6 @@
 {% from "macros/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
 {# Notes now use template components #}
-{% from "macros/ui_elements.html" import loading_spinner %}
+{% from "macros/ui/utilities.html" import loading_spinner %}
 
 {% macro generic_detail_modal(entity_type, config) %}
 <div x-data="{

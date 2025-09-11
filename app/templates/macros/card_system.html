@@ -17,7 +17,8 @@
   4. Configuration-driven approach for DRY code
 #}
 
-{% from "macros/ui_elements.html" import bulk_selection_checkbox, pluralized_count %}
+{% from "macros/base/forms.html" import bulk_selection_checkbox %}
+{% from "macros/ui/controls.html" import pluralized_count %}
 {% from "macros/ui/progress.html" import progress_bar %}
 
 {# ========== CORE CARD CONTAINER ========== #}

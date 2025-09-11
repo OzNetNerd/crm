@@ -1,0 +1,191 @@
+{% from 'macros/base/icons.html' import icon %}
+{# Section Components - Layout and expandable section elements #}
+
+{#
+  CSS Details Section - Native HTML details/summary expandable section
+  
+  Replaces Alpine.js x-show sections with native HTML details elements.
+  Styled to match existing card appearance.
+  
+  Parameters:
+  - section_key (required): Unique key for the section and data-group attribute
+  - title (required): Display title for the section
+  - icon_html (required): HTML for the icon (use icon macros)
+  - badge_html (required): HTML for the count badge
+  - border_color (required): Border color class name (e.g., 'blue', 'red')
+  - bg_color (required): Background color class name
+  - hover_color (required): Hover background color class name
+  - text_class (required): Text styling class
+  - open_by_default (optional): Whether section starts open (default: false)
+  - card_class (optional): CSS class for the container (default: 'card')
+  
+  Usage:
+  {% call css_details_section('todo', 'To Do', clipboard_icon("w-5 h-5 mr-1"), '<span class="badge-blue">5</span>', 'blue', 'blue', 'blue', 'text-status-header') %}
+    <!-- Section content here -->
+  {% endcall %}
+#}
+{% macro css_details_section(section_key, title, icon_html, badge_html, border_color, bg_color, hover_color, text_class, open_by_default=false, card_class='card') %}
+<details data-group="{{ section_key }}" class="{{ card_class }}" {% if open_by_default %}open{% endif %}>
+    <summary class="border-b border-{{ border_color }}-200 px-6 py-4 bg-{{ bg_color }}-50 cursor-pointer hover:bg-{{ hover_color }}-100 list-none">
+        <div class="flex items-center justify-between">
+            <h3 class="{{ text_class }}">
+                <span class="mr-2 transition-transform duration-200 inline-block details-chevron">
+                    {{ icon('chevron-right', 'sm') }}
+                </span>{{ icon_html|safe }} {{ title }}{{ badge_html|safe }}
+            </h3>
+        </div>
+    </summary>
+    <div class="p-6">
+        {{ caller() }}
+    </div>
+</details>
+
+<style>
+/* CSS for details chevron rotation */
+details[open] .details-chevron {
+    transform: rotate(90deg);
+}
+/* Remove default details marker */
+details > summary {
+    list-style: none;
+}
+details > summary::-webkit-details-marker {
+    display: none;
+}
+</style>
+{% endmacro %}
+
+{#
+  Section Group Header - DRY implementation for consistent expandable section headers
+  
+  Parameters:
+  - section_key (required): Unique key for expand/collapse state
+  - title (required): Display title for the section
+  - icon_html (required): HTML for the icon (use icon macros)
+  - badge_html (required): HTML for the count badge
+  - border_color (required): Border color class name (e.g., 'blue', 'red')
+  - bg_color (required): Background color class name
+  - hover_color (required): Hover background color class name
+  - text_class (required): Text styling class
+  - with_buttons (optional): Show expand/collapse all buttons (default: true)
+  
+  Usage:
+  {{ section_group_header('todo', 'To Do', clipboard_icon("w-5 h-5 mr-1"), '<span class="badge-blue">5</span>', 'blue', 'blue', 'blue', 'text-status-header') }}
+#}
+{% macro section_group_header(section_key, title, icon_html, badge_html, border_color, bg_color, hover_color, text_class, with_buttons=true) %}
+{% from "macros/base/icons.html" import chevron_right_icon %}
+<div class="border-b border-{{ border_color }}-200 px-6 py-4 bg-{{ bg_color }}-50 cursor-pointer hover:bg-{{ hover_color }}-100" 
+     @click="expandedSections['{{ section_key }}'] = !expandedSections['{{ section_key }}']">
+    <div class="flex items-center justify-between">
+        <h3 class="{{ text_class }}">
+            <span class="mr-2 transition-transform duration-200" :class="expandedSections['{{ section_key }}'] ? 'rotate-90' : ''">
+                {{ chevron_right_icon("w-4 h-4") }}
+            </span>{{ icon_html|safe }} {{ title }}{{ badge_html|safe }}
+        </h3>
+        {% if with_buttons %}
+        <div class="flex items-center space-x-2 text-sm text-gray-500" x-show="expandedSections['{{ section_key }}']">
+            <button onclick="document.querySelectorAll('[data-group=\"{{ section_key }}\"] details').forEach(d => d.open = true)" class="hover:text-blue-600 transition-colors">Expand All</button>
+            <span>|</span>
+            <button onclick="document.querySelectorAll('[data-group=\"{{ section_key }}\"] details').forEach(d => d.open = false)" class="hover:text-blue-600 transition-colors">Collapse All</button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  Dynamic Entity Section - Generic expandable section for entity grouping
+  
+  Parameters:
+  - Uses Alpine.js template with x-for to render dynamic sections
+  
+  Usage:
+  <!-- Used with Alpine.js x-for in the entity manager templates -->
+  {{ dynamic_entity_section() }}
+#}
+{% macro dynamic_entity_section() %}
+<template x-for="group in getGroupedEntities()" :key="group.key">
+    <div class="entity-section-spacing mb-6">
+        <!-- Group Section -->
+        <div :class="group.containerClass">
+            <!-- Group Header -->
+            <div :class="group.headerBgClass + ' cursor-pointer'"
+                 @click="toggleSection(group.key)">
+                <div class="flex items-center justify-between">
+                    <h3 :class="group.headerClass">
+                        <span class="mr-2 transition-transform duration-200" 
+                              :class="expandedSections[group.key] ? 'rotate-90' : ''">
+                            {{ icon('chevron-right', 'sm') }}
+                        </span>
+                        <span x-html="group.icon" class="w-5 h-5 mr-1"></span>
+                        <span x-text="group.title"></span>
+                        <span class="ml-2" 
+                              :class="'badge-standard ' + group.badgeClass" 
+                              x-text="group.entities.length"></span>
+                    </h3>
+                </div>
+            </div>
+            
+            <!-- Group Content -->
+            <div class="entity-group-content p-8" 
+                 x-show="expandedSections[group.key]" 
+                 x-cloak 
+                 x-transition>
+                <template x-if="group.entities.length > 0">
+                    <div class="space-y-4">
+                        <template x-for="entity in group.entities" :key="entity.id">
+                            <div x-html="renderEntityCard(entity, group.key)"></div>
+                        </template>
+                    </div>
+                </template>
+                <template x-if="group.entities.length === 0">
+                    <p class="text-empty-state">No matching items found</p>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>
+{% endmacro %}
+
+{#
+  Task Filter Helper - Check if task matches filter criteria
+  
+  Parameters:
+  - task (required): Task object to check
+  - filter_config (required): Filter configuration object
+  
+  Returns:
+  Boolean indicating if task matches filter
+  
+  Usage:
+  {% if task_matches_filter(task, filter_config) %}...{% endif %}
+#}
+{% macro task_matches_filter(task, filter_config) %}
+{%- if not filter_config -%}
+    false
+{%- elif filter_config.type == 'status' and task.status == filter_config.value and task.task_type != 'child' -%}
+    true
+{%- elif filter_config.type == 'priority' and task.priority == filter_config.value -%}
+    true
+{%- elif filter_config.type == 'overdue' and task.is_overdue -%}
+    true
+{%- elif filter_config.type == 'due_today' and task.due_date == today -%}
+    true
+{%- elif filter_config.type == 'no_date' and not task.due_date -%}
+    true
+{%- elif filter_config.type == 'entity' -%}
+    {%- if filter_config.value == 'unrelated' and not task.entity_type -%}
+        true
+    {%- elif task.entity_type == filter_config.value -%}
+        true
+    {%- else -%}
+        false
+    {%- endif -%}
+{%- elif filter_config.type == 'custom_due_week' and task.due_date and task.due_date > today and (task.due_date - today).days <= 7 -%}
+    true
+{%- elif filter_config.type == 'custom_due_later' and task.due_date and (task.due_date - today).days > 7 -%}
+    true
+{%- else -%}
+    false
+{%- endif -%}
+{% endmacro %}
