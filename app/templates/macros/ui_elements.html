@@ -1233,7 +1233,7 @@ details > summary::-webkit-details-marker {
   - placeholder (optional): Placeholder text when nothing selected
   
   Usage:
-  {{ htmx_multiselect('priority_filter', priority_filter, priority_options, 'All Priorities') }}
+  {{ unified_css_dropdown('All Priorities', priority_options, name='priority_filter', current_values=priority_filter) }}
 #}
 {# htmx_multiselect macro removed - replaced by unified css_dropdown #}
 
@@ -1286,15 +1286,15 @@ details > summary::-webkit-details-marker {
             {% endif %}
             
             {% if primary_filter_options %}
-            {{ htmx_multiselect('primary_filter', primary_filter_values, primary_filter_options, primary_filter_label) }}
+            {{ unified_css_dropdown(primary_filter_label, primary_filter_options, name='primary_filter', current_values=primary_filter_values) }}
             {% endif %}
             
             {% if secondary_filter_options %}
-            {{ htmx_multiselect('secondary_filter', secondary_filter_values, secondary_filter_options, secondary_filter_label) }}
+            {{ unified_css_dropdown(secondary_filter_label, secondary_filter_options, name='secondary_filter', current_values=secondary_filter_values) }}
             {% endif %}
             
             {% if entity_filter_options %}
-            {{ htmx_multiselect('entity_filter', entity_filter_values, entity_filter_options, entity_filter_label) }}
+            {{ unified_css_dropdown(entity_filter_label, entity_filter_options, name='entity_filter', current_values=entity_filter_values) }}
             {% endif %}
         </div>
         
