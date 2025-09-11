@@ -1,14 +1,9 @@
-{% extends "base/layout.html" %}
+{% extends "base/entity_index.html" %}
 
-{% from "macros/base/layout.html" import page_layout %}
-{% from "macros/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar, htmx_enhanced_filter_controls, loading_spinner %}
-{% from "macros/expandable_card.html" import expandable_card, task_header_content, task_reschedule_buttons, action_buttons_row, task_title_content, task_metadata_content %}
-{% from "macros/imports/entity_imports.html" import include_common_modals %}
-{% from "macros/base/icons.html" import plus_icon %}
+{# Task Index Template - Pure Configuration #}
 
-{% block title %}All Tasks - CRM{% endblock %}
-
-{% block content %}
+{% block entity_config %}
+{# Entity Configuration #}
 {% set entity_name = "All Tasks" %}
 {% set entity_description = "Manage all your tasks in one place" %}
 {% set entity_type = "task" %}
@@ -50,84 +45,35 @@
 ] %}
 
 {% set entity_filter_controls %}
-{{ enhanced_filter_controls(
-    group_options=get_groupable_fields(Task),
-    sort_options=get_sortable_fields(Task),
+{{ htmx_enhanced_filter_controls(
+    group_options=group_options,
+    sort_options=sort_options,
     show_completed_label='Show Completed',
     show_completed_name='show_completed',
-    primary_filter_options=PRIORITY_OPTIONS,
+    show_completed_value=show_completed,
+    primary_filter_options=priority_options,
     primary_filter_label='All Priorities',
-    entity_filter_options=get_field_options(Task, 'entity_type'),
-    entity_filter_label='All Entities'
+    primary_filter_values=priority_filter,
+    entity_filter_options=entity_type_options,
+    entity_filter_label='All Entities',
+    entity_filter_values=entity_filter,
+    group_by=group_by,
+    sort_by=sort_by,
+    sort_direction=sort_direction
 ) }}
 {% endset %}
-
-{% set entity_buttons = [
-    {
-        'label': 'New Task',
-        'hx_get': '/modals/Task/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': plus_icon('w-4 h-4')
-    }
-] %}
-
-{% call page_layout(entity_name, entity_description, buttons=entity_buttons, summary_data=entity_stats) %}
-
-<div class="space-y-6">
-    <!-- HTMX Enhanced Filter Controls - Pure CSS Components -->
-    <form hx-get="{{ url_for('tasks.content') }}" 
-          hx-target="#task-content"
-          hx-trigger="change, submit"
-          hx-indicator="#loading-indicator">
-        {{ htmx_enhanced_filter_controls(
-            group_options=group_options,
-            sort_options=sort_options,
-            show_completed_label='Show Completed',
-            show_completed_name='show_completed',
-            show_completed_value=show_completed,
-            primary_filter_options=priority_options,
-            primary_filter_label='All Priorities',
-            primary_filter_values=priority_filter,
-            entity_filter_options=entity_type_options,
-            entity_filter_label='All Entities',
-            entity_filter_values=entity_filter,
-            group_by=group_by,
-            sort_by=sort_by,
-            sort_direction=sort_direction
-        ) }}
-    </form>
-
-    <!-- Loading Indicator -->
-    <div id="loading-indicator" class="htmx-indicator">
-        <div class="p-4">
-            {{ loading_spinner('lg', 'Loading...') }}
-        </div>
-    </div>
-
-    <!-- Dynamic Content Area -->
-    <div id="task-content" 
-         hx-get="{{ url_for('tasks.content') }}?{{ request.query_string.decode('utf-8') }}"
-         hx-trigger="load">
-        <!-- Content will be loaded here via HTMX -->
-        <div class="p-8">
-            {{ loading_spinner('lg', 'Loading tasks...') }}
-        </div>
-    </div>
-</div>
-
-{% endcall %}
 {% endblock %}
 
 {% block modals %}
-{% from "macros/modals/confirmation.html" import confirmation_modal %}
 {{ confirmation_modal('task-confirmation-modal') }}
 {{ include_common_modals() }}
 {% endblock %}
 
 {% block data_attributes %}
-{# No longer need page-type for data initialization since using HTMX #}
+{# No longer need data attributes since using HTMX #}
 {% endblock %}
 
 {% block scripts %}
+{# Tasks JavaScript still needed for specific functionality #}
+<script src="{{ url_for('static', filename='js/features/tasks.js') }}"></script>
 {% endblock %}

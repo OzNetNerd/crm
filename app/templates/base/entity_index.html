@@ -40,26 +40,16 @@
     <!-- HTMX Enhanced Filter Controls -->
     <form hx-get="{{ url_for(entity_type + 's.content') }}" 
           hx-target="#{{ entity_type }}-content"
-          hx-trigger="change, submit"
-          hx-indicator="#loading-indicator">
+          hx-trigger="change, submit">
         {{ entity_filter_controls }}
     </form>
 
-    <!-- Loading Indicator -->
-    <div id="loading-indicator" class="htmx-indicator">
-        <div class="p-4">
-            {{ loading_spinner('lg', 'Loading...') }}
-        </div>
-    </div>
 
     <!-- Dynamic Content Area -->
     <div id="{{ entity_type }}-content" 
          hx-get="{{ url_for(entity_type + 's.content') }}?{{ request.query_string.decode('utf-8') }}"
          hx-trigger="load">
         <!-- Content will be loaded here via HTMX -->
-        <div class="p-8">
-            {{ loading_spinner('lg', 'Loading ' + entity_type + 's...') }}
-        </div>
     </div>
 </div>
 
