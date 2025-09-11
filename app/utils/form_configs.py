@@ -342,6 +342,20 @@ class DropdownConfigGenerator:
         ]
         
         # Get primary filterable field (first groupable field with choices)
+        # Plural mapping for proper English
+        plural_map = {
+            'opportunity': 'opportunities',
+            'company': 'companies', 
+            'category': 'categories',
+            'activity': 'activities',
+            'entity': 'entities',
+            'priority': 'priorities',
+            'industry': 'industries',
+            'stakeholder': 'stakeholders',
+            'task': 'tasks',
+            'note': 'notes'
+        }
+        
         filter_options = []
         filter_name = 'All Items'
         if group_fields:
@@ -349,7 +363,9 @@ class DropdownConfigGenerator:
             choices = ModelIntrospector.get_field_choices(model_class, primary_field)
             if choices:
                 filter_options = [{"value": value, "label": label} for value, label in choices]
-                filter_name = f'All {group_fields[0][1]}s'
+                field_label = group_fields[0][1]
+                plural_label = plural_map.get(field_label.lower(), field_label + 's')
+                filter_name = f'All {plural_label.title()}'
         
         # HTMX targets using proper singular mapping
         singular_map = {

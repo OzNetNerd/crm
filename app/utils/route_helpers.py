@@ -401,10 +401,26 @@ class EntityFilterManager:
         context = self.get_filtered_context(custom_filters, custom_sorting, custom_grouper, joins)
         
         # Add universal template configuration
+        # Plural mapping for proper English
+        plural_map = {
+            'opportunity': 'opportunities',
+            'company': 'companies', 
+            'category': 'categories',
+            'activity': 'activities',
+            'entity': 'entities',
+            'priority': 'priorities',
+            'industry': 'industries',
+            'stakeholder': 'stakeholders',
+            'task': 'tasks',
+            'note': 'notes'
+        }
+        
+        entity_plural = plural_map.get(self.entity_name, f"{self.entity_name}s")
+        
         context.update({
             'entity_type': self.entity_name,
             'entity_name_singular': self.entity_name,
-            'entity_name_plural': f"{self.entity_name}s",
+            'entity_name_plural': entity_plural,
             'card_config': ModelIntrospector.get_card_config(self.model_class),
             'model_class': self.model_class
         })
