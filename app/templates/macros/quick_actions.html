@@ -5,11 +5,11 @@
     {% for button in buttons %}
     {% set entity_type = button.label.split(' ')[1].lower() if button.label.split(' ')|length > 1 else 'default' %}
     {% set btn_class = 'btn-new-' + entity_type %}
-    {% if button.hx_get or button.hx_post %}
-        <button {% if button.hx_get %}hx-get="{{ button.hx_get }}"{% endif %}
-                {% if button.hx_post %}hx-post="{{ button.hx_post }}"{% endif %}
-                {% if button.hx_target %}hx-target="{{ button.hx_target }}"{% endif %}
-                {% if button.hx_swap %}hx-swap="{{ button.hx_swap }}"{% endif %}
+    {% if button['hx_get'] or button['hx_post'] %}
+        <button {% if button['hx_get'] %}hx-get="{{ button['hx_get'] }}"{% endif %}
+                {% if button['hx_post'] %}hx-post="{{ button['hx_post'] }}"{% endif %}
+                {% if button['hx_target'] %}hx-target="{{ button['hx_target'] }}"{% endif %}
+                {% if button['hx_swap'] %}hx-swap="{{ button['hx_swap'] }}"{% endif %}
                 class="flex items-center gap-2 {{ btn_class }}">
             {{ button.icon }}
             {{ button.label }}
@@ -21,7 +21,7 @@
             {{ button.label }}
         </button>
     {% else %}
-        <a href="{{ button.url }}" 
+        <a href="{{ button.url or '' }}" 
            class="flex items-center gap-2 {{ btn_class }}">
             {{ button.icon }}
             {{ button.label }}
