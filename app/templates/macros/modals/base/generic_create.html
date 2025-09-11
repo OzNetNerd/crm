@@ -1,15 +1,21 @@
 {% from "macros/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
 
-{% macro generic_new_modal(entity_type, config) %}
-<div id="{{ entity_type }}-new-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+{# Auto modal that uses Python configuration without needing wrapper files #}
+{% macro auto_create_modal(entity_type) %}
+    {% set config = modal_configs[entity_type] %}
+    {{ generic_create_modal(entity_type, config) }}
+{% endmacro %}
+
+{% macro generic_create_modal(entity_type, config) %}
+<div id="{{ entity_type }}-create-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
     <div class="modal-container">
-        <div class="modal-backdrop" onclick="closeModal('{{ entity_type }}-new-modal')"></div>
+        <div class="modal-backdrop" onclick="closeModal('{{ entity_type }}-create-modal')"></div>
         
         <div class="modal-content">
             <!-- Modal Header -->
             <div class="modal-header">
                 <h3 class="modal-title">{{ config.title }}</h3>
-                <button onclick="closeModal('{{ entity_type }}-new-modal')" class="modal-close-button">
+                <button onclick="closeModal('{{ entity_type }}-create-modal')" class="modal-close-button">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -18,15 +24,15 @@
             
             <!-- Modal Body with HTMX Form -->
             <div class="modal-body modal-content-spacing">
-                <form id="{{ entity_type }}-new-form"
+                <form id="{{ entity_type }}-create-form"
                       hx-post="{{ config.api_endpoint }}"
                       hx-trigger="submit"
                       hx-target="body"
                       hx-swap="beforeend"
-                      hx-on::before-request="showFormSaving('{{ entity_type }}-new-form')"
-                      hx-on::after-request="handleFormResponse('{{ entity_type }}-new-modal', event)">
+                      hx-on::before-request="showFormSaving('{{ entity_type }}-create-form')"
+                      hx-on::after-request="handleFormResponse('{{ entity_type }}-create-modal', event)">
                     
-                    {{ render_new_fields(entity_type, config.fields) }}
+                    {{ render_create_fields(entity_type, config.fields) }}
                     
                     <!-- Hidden fields for additional data -->
                     {% if config.additional_fields %}
@@ -39,10 +45,10 @@
             
             <!-- Modal Footer -->
             <div class="modal-footer">
-                <button onclick="closeModal('{{ entity_type }}-new-modal')" class="modal-cancel-button">
+                <button onclick="closeModal('{{ entity_type }}-create-modal')" class="modal-cancel-button">
                     Cancel
                 </button>
-                <button form="{{ entity_type }}-new-form" type="submit" class="modal-save-button">
+                <button form="{{ entity_type }}-create-form" type="submit" class="modal-save-button">
                     <span class="save-text">{{ config.save_text | default("Save") }}</span>
                     <span class="save-loading hidden">
                         <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -59,11 +65,11 @@
 
 <script>
 function openNewModal(entityType) {
-    const modal = document.getElementById(entityType + '-new-modal');
+    const modal = document.getElementById(entityType + '-create-modal');
     if (modal) {
         modal.classList.remove('hidden');
         // Reset form
-        const form = document.getElementById(entityType + '-new-form');
+        const form = document.getElementById(entityType + '-create-form');
         if (form) form.reset();
     }
 }
@@ -119,7 +125,7 @@ function handleFormResponse(modalId, event) {
 </script>
 {% endmacro %}
 
-{% macro render_new_fields(entity_type, fields) %}
+{% macro render_create_fields(entity_type, fields) %}
     {% for field in fields %}
         {% if field.type == 'text' %}
             <div class="form-group">
@@ -179,7 +185,7 @@ function handleFormResponse(modalId, event) {
         {% elif field.type == 'grid' %}
             <div class="modal-grid-{{ field.columns | default(2) }}">
                 {% for subfield in field.fields %}
-                    {{ render_new_fields(entity_type, [subfield]) }}
+                    {{ render_create_fields(entity_type, [subfield]) }}
                 {% endfor %}
             </div>
         {% elif field.type == 'custom' %}
