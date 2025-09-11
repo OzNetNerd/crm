@@ -258,3 +258,60 @@ DUE_DATE_GROUPINGS = {
     'later': {'label': 'Later', 'css_class': 'date-future'},
     'no_date': {'label': 'No Due Date', 'css_class': 'date-missing'}
 }
+
+
+def auto_serialize(model_instance, include_properties=None, field_transforms=None, exclude_fields=None):
+    """
+    Automatically serialize a SQLAlchemy model instance to dictionary.
+    
+    Args:
+        model_instance: The SQLAlchemy model instance to serialize
+        include_properties: List of property names to include (computed properties)
+        field_transforms: Dict mapping field names to custom transform functions
+        exclude_fields: Set of field names to exclude from serialization
+    
+    Returns:
+        Dictionary representation of the model instance
+    """
+    from sqlalchemy import inspect
+    from datetime import datetime, date
+    
+    if not model_instance:
+        return None
+        
+    result = {}
+    inspector = inspect(model_instance.__class__)
+    
+    # Serialize database columns
+    for column in inspector.columns:
+        field_name = column.name
+        
+        # Skip excluded fields
+        if exclude_fields and field_name in exclude_fields:
+            continue
+            
+        field_value = getattr(model_instance, field_name, None)
+        
+        # Handle datetime/date objects
+        if isinstance(field_value, (datetime, date)):
+            field_value = field_value.isoformat() if field_value else None
+        
+        # Apply custom transform if specified
+        if field_transforms and field_name in field_transforms:
+            field_value = field_transforms[field_name](field_value)
+            
+        result[field_name] = field_value
+    
+    # Add specified properties
+    if include_properties:
+        for prop_name in include_properties:
+            if hasattr(model_instance, prop_name):
+                prop_value = getattr(model_instance, prop_name)
+                
+                # Apply custom transform if specified
+                if field_transforms and prop_name in field_transforms:
+                    prop_value = field_transforms[prop_name](prop_value)
+                    
+                result[prop_name] = prop_value
+    
+    return result
