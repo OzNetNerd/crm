@@ -1,7 +1,7 @@
 {% extends "base/layout.html" %}
 
 {% from "macros/base/layout.html" import page_layout %}
-{% from "macros/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar, htmx_enhanced_filter_controls %}
+{% from "macros/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar, htmx_enhanced_filter_controls, loading_spinner %}
 {% from "macros/expandable_card.html" import expandable_card, stakeholder_header_content, stakeholder_title_content, stakeholder_metadata_content, action_buttons_row %}
 {% from "macros/imports/entity_imports.html" import include_common_modals %}
 {% from "macros/base/icons.html" import plus_icon %}
@@ -72,9 +72,8 @@
 
     <!-- Loading Indicator -->
     <div id="loading-indicator" class="htmx-indicator">
-        <div class="flex items-center justify-center p-4">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span class="ml-2 text-gray-600">Loading...</span>
+        <div class="p-4">
+            {{ loading_spinner('lg', 'Loading...') }}
         </div>
     </div>
 
@@ -83,9 +82,8 @@
          hx-get="{{ url_for('stakeholders.content') }}?{{ request.query_string.decode('utf-8') }}"
          hx-trigger="load">
         <!-- Content will be loaded here via HTMX -->
-        <div class="flex items-center justify-center p-8">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span class="ml-2 text-gray-600">Loading stakeholders...</span>
+        <div class="p-8">
+            {{ loading_spinner('lg', 'Loading stakeholders...') }}
         </div>
     </div>
 </div>
