@@ -102,44 +102,35 @@ def index():
 
     today = date.today()
     
-    # Filter options for dropdowns
-    group_options = [
-        {'value': 'job_title', 'label': 'Job Title'},
-        {'value': 'name', 'label': 'Name'}
-    ]
+    # Ultra-DRY dropdown generation using pure model introspection
+    from app.utils.form_configs import DropdownConfigGenerator
+    dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('teams', group_by, sort_by, sort_direction, [])
     
-    sort_options = [
-        {'value': 'name', 'label': 'Name'},
-        {'value': 'job_title', 'label': 'Job Title'},
-        {'value': 'email', 'label': 'Email'},
-        {'value': 'created_at', 'label': 'Created Date'}
-    ]
-    
-    # Get unique job titles for filter
+    # Get unique job titles for dynamic filter (since User model doesn't have predefined job title choices)
     job_title_options = []
     job_titles = User.query.with_entities(User.job_title).distinct().all()
     for job_title_tuple in job_titles:
         job_title = job_title_tuple[0]
         if job_title:
             job_title_options.append({'value': job_title, 'label': job_title})
+    
+    # Override primary filter with dynamic job titles
+    dropdown_configs['primary_filter'] = {
+        'button_text': 'All Job Titles',
+        'options': job_title_options,
+        'current_values': [job_title_filter] if job_title_filter else [],
+        'name': 'job_title_filter'
+    }
 
     return render_template(
         "teams/index.html",
+        entity_name="Account Teams",
+        entity_description="Manage team members and assignments",
+        entity_type="team", 
+        entity_endpoint="teams",
+        dropdown_configs=dropdown_configs,
         team_members=team_members,
-        companies=companies_data,
-        opportunities=opportunities_data,
         team_data=team_data,
-        today=today,
-        # Filter states for URL persistence
-        group_by=group_by,
-        sort_by=sort_by,
-        sort_direction=sort_direction,
-        show_all=show_all,
-        job_title_filter=job_title_filter,
-        # Filter options for dropdowns
-        group_options=group_options,
-        sort_options=sort_options,
-        job_title_options=job_title_options,
     )
 
 

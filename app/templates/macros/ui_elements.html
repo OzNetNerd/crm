@@ -248,61 +248,6 @@ details > summary::-webkit-details-marker {
 <a href="{{ url }}" class="{{ classes }}">{{ text }}</a>
 {% endmacro %}
 
-{#
-  Dropdown Select - Single-select dropdown with consistent styling
-  
-  Parameters:
-  - model (required): Alpine.js x-model binding name
-  - options (required): List of options as [{'value': 'val', 'label': 'Label'}] or simple strings
-  - placeholder (optional): Placeholder text for empty option (default: 'Select...')
-  - classes (optional): Additional CSS classes (default: standard input styling)
-  
-  Usage:
-  {{ dropdown_select('groupBy', [{'value': 'stage', 'label': 'Pipeline Stage'}], 'Group by:') }}
-  {{ dropdown_select('sortBy', ['name', 'date', 'priority']) }}
-#}
-{% macro dropdown_select(model, options, placeholder='Select...', classes='px-3 py-2 border border-gray-300 rounded-md text-sm') %}
-<div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
-    <button type="button" 
-            class="select-custom {{ classes }}" 
-            @click="open = !open"
-            x-cloak
-            x-init="if (typeof {{ model }} === 'undefined' || {{ model }} === null) { {{ model }} = '{{ options[0].value if options[0] is mapping else options[0] }}' }">
-        <span x-text="
-                  {% for option in options %}
-                  {% if option is mapping %}
-                  {{ model }} === '{{ option.value }}' ? '{{ option.label }}' :
-                  {% else %}
-                  {{ model }} === '{{ option }}' ? '{{ option|title }}' :
-                  {% endif %}
-                  {% endfor %}
-                  '{{ options[0].label if options[0] is mapping else options[0]|title }}'
-              ">
-                  {{ options[0].label if options[0] is mapping else options[0]|title }}
-              </span>
-    </button>
-    
-    <div x-show="open" 
-         x-cloak
-         x-transition:enter="transition ease-out duration-100"
-         x-transition:enter-start="transform opacity-0 scale-95"
-         x-transition:enter-end="transform opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-75"
-         x-transition:leave-start="transform opacity-100 scale-100"
-         x-transition:leave-end="transform opacity-0 scale-95"
-         class="multiselect-dropdown">
-        
-        <div class="multiselect-options">
-            {% for option in options %}
-            <div class="multiselect-option" 
-                 @click="setSortBy ? setSortBy('{{ option.value if option is mapping else option }}') : ({{ model }} = '{{ option.value if option is mapping else option }}'); open = false">
-                <span>{{ option.label if option is mapping else option|title }}</span>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-{% endmacro %}
 
 {#
   Section Group Header - DRY implementation for consistent expandable section headers
@@ -342,137 +287,7 @@ details > summary::-webkit-details-marker {
 </div>
 {% endmacro %}
 
-{#
-  Dropdown Multi-Select - Multi-select dropdown with search and Select All/Deselect All
-  
-  Parameters:
-  - model (required): Alpine.js x-model binding name (should be an array)
-  - options (required): List of options as [{'value': 'val', 'label': 'Label'}] or simple strings
-  - placeholder (optional): Button text when no items selected (default: 'Select...')
-  - with_search (optional): Include search functionality (default: false)
-  - classes (optional): Additional CSS classes for the button
-  
-  Usage:
-  {{ dropdown_multiselect('priorityFilter', [{'value': 'high', 'label': 'High'}], 'All Priorities') }}
-  {{ dropdown_multiselect('companyFilter', companies, 'All Companies', with_search=true) }}
-#}
-{% macro dropdown_multiselect(model, options, placeholder='Select...', with_search=false, classes='px-3 py-2 border border-gray-300 rounded-md text-sm') %}
-<div class="multiselect-custom" 
-     x-data="{ 
-         open: false, 
-         searchTerm: '',
-         init() {
-             // Ensure model is initialized as an array
-             if (!{{ model }}) {
-                 {{ model }} = [];
-             }
-         }
-     }" 
-     @click.away="open = false">
-    <button type="button" 
-            class="multiselect-button {{ classes }}" 
-            x-cloak
-            @click="open = !open">
-        <span x-text="{{ model }}.length === 0 ? '{{ placeholder }}' : {{ model }}.length + ' selected'">{{ placeholder }}</span>
-    </button>
-    
-    <div x-show="open" 
-         x-cloak
-         x-transition:enter="transition ease-out duration-100"
-         x-transition:enter-start="transform opacity-0 scale-95"
-         x-transition:enter-end="transform opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-75"
-         x-transition:leave-start="transform opacity-100 scale-100"
-         x-transition:leave-end="transform opacity-0 scale-95"
-         class="multiselect-dropdown">
-        
-        <div class="multiselect-header">
-            {% if with_search %}
-            <input type="text" 
-                   x-model="searchTerm" 
-                   class="multiselect-search" 
-                   placeholder="Search..."
-                   @click.stop>
-            {% endif %}
-            <div class="multiselect-controls">
-                <span class="multiselect-control-btn" 
-                      @click="{{ model }} = [{% for option in options %}'{{ option.value if option is mapping else option }}'{% if not loop.last %}, {% endif %}{% endfor %}]">Select All</span>
-                <span class="multiselect-control-btn" 
-                      @click="{{ model }} = []">Deselect All</span>
-            </div>
-        </div>
-        
-        <div class="multiselect-options">
-            {% for option in options %}
-            <div class="multiselect-option" 
-                 {% if with_search %}x-show="!searchTerm || '{{ option.label if option is mapping else option }}'.toLowerCase().includes(searchTerm.toLowerCase())"{% endif %}
-                 @click="
-                    const value = '{{ option.value if option is mapping else option }}';
-                    const index = {{ model }}.indexOf(value);
-                    if (index === -1) {
-                        {{ model }}.push(value);
-                    } else {
-                        {{ model }}.splice(index, 1);
-                    }
-                 ">
-                <input type="checkbox" 
-                       class="multiselect-checkbox"
-                       :checked="{{ model }}.includes('{{ option.value if option is mapping else option }}')"
-                       @click.stop>
-                <span>{{ option.label if option is mapping else option }}</span>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-{% endmacro %}
 
-{#
-<<<<<<< HEAD
-  Entity Section Group - DRY macro for entity index page sections
-  
-  Creates complete expandable sections with header, content area, and filtering.
-  Optimized for contacts, opportunities, and similar entity groupings.
-  
-  Parameters:
-  - section_key (required): Unique key for expand/collapse state
-  - title (required): Section display title
-  - icon_html (required): Icon HTML for section header
-  - items (required): List of items to render in section
-  - card_class (optional): CSS class for card wrapper (default: 'card')
-  - colors (required): Dict with badge_color, border_color, bg_color, hover_color, text_class
-  - x_show_condition (optional): Additional Alpine.js x-show condition
-  - empty_message (optional): Message when no items (default: 'No items found')
-  
-  Usage:
-  {% call entity_section_group('company', 'Companies', building_icon(...), companies, colors=company_colors) %}
-    <!-- render items here using caller() -->
-  {% endcall %}
-#}
-{% macro entity_section_group(section_key, title, icon_html, items, card_class='card', colors=None, x_show_condition='', empty_message='No items found') %}
-<div {% if x_show_condition %}x-show="{{ x_show_condition }}" x-cloak {% endif %}class="{{ card_class }}">
-    {{ section_group_header(
-        section_key,
-        title,
-        icon_html|safe, 
-        '<span class="ml-2 badge-standard badge-' + colors.badge_color + '">' + items|length|string + '</span>',
-        colors.border_color,
-        colors.bg_color,
-        colors.hover_color, 
-        colors.text_class,
-        with_buttons=false
-    ) }}
-    <div class="divide-y divide-gray-200" x-show="expandedSections['{{ section_key }}']" x-cloak x-transition>
-        {% if items %}
-            {{ caller() }}
-        {% else %}
-            <div class="p-6 text-center text-empty-state">
-                {{ empty_message }}
-            </div>
-        {% endif %}
-    </div>
-</div>
-{% endmacro %}
 
 {#
   Badge Count Helper - DRY macro for task count badges with consistent formatting
@@ -816,165 +631,6 @@ details > summary::-webkit-details-marker {
   GENERIC ENTITY MANAGER COMPONENTS - DRY multiselect system for all entity types
 #}
 
-{#
-  Generic Group Dropdown - Reusable group by selector
-  
-  Parameters:
-  - model (required): Alpine.js model binding for groupBy value
-  - options (required): List of group options as [{'value': 'key', 'label': 'Display Name'}]
-  - on_change (optional): JavaScript function to call on change (default: 'updateFilters()')
-  
-  Usage:
-  {{ generic_group_dropdown('groupBy', [{'value': 'stage', 'label': 'Pipeline Stage'}]) }}
-#}
-{% macro generic_group_dropdown(model, options, on_change='updateFilters()') %}
-<div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
-    <button type="button" 
-            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
-            @click="open = !open">
-        <span x-text="
-            {% for option in options %}
-            {{ model }} === '{{ option.value }}' ? '{{ option.label }}' :
-            {% endfor %}
-            '{{ options[0].label }}'
-        "></span>
-        {{ icon('chevron-down', 'sm', 'ml-2') }}
-    </button>
-    
-    <div x-show="open" 
-         x-cloak
-         x-transition:enter="transition ease-out duration-100"
-         x-transition:enter-start="transform opacity-0 scale-95"
-         x-transition:enter-end="transform opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-75"
-         x-transition:leave-start="transform opacity-100 scale-100"
-         x-transition:leave-end="transform opacity-0 scale-95"
-         class="multiselect-dropdown">
-        <div class="multiselect-options">
-            {% for option in options %}
-            <div class="multiselect-option" @click="{{ model }} = '{{ option.value }}'; {{ on_change }}; open = false">
-                <span>{{ option.label }}</span>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-{% endmacro %}
-
-{#
-  Generic Sort Dropdown - Reusable sort selector with direction indicators
-  
-  Parameters:
-  - sort_model (required): Alpine.js model binding for sortBy value
-  - direction_model (required): Alpine.js model binding for sortDirection value
-  - options (required): List of sort options as [{'value': 'key', 'label': 'Display Name'}]
-  - on_change (optional): JavaScript function to call on change (default: 'updateFilters()')
-  
-  Usage:
-  {{ generic_sort_dropdown('sortBy', 'sortDirection', [{'value': 'name', 'label': 'Name'}]) }}
-#}
-{% macro generic_sort_dropdown(sort_model, direction_model, options, on_change='updateFilters()') %}
-<div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
-    <button type="button" 
-            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
-            @click="open = !open">
-        <span x-text="
-            {% for option in options %}
-            {{ sort_model }} === '{{ option.value }}' ? '{{ option.label }}' :
-            {% endfor %}
-            '{{ options[0].label }}'
-        "></span>
-        {{ icon('chevron-down', 'sm', 'ml-2') }}
-    </button>
-    
-    <div x-show="open" 
-         x-cloak
-         x-transition:enter="transition ease-out duration-100"
-         x-transition:enter-start="transform opacity-0 scale-95"
-         x-transition:enter-end="transform opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-75"
-         x-transition:leave-start="transform opacity-100 scale-100"
-         x-transition:leave-end="transform opacity-0 scale-95"
-         class="multiselect-dropdown">
-        <div class="multiselect-options">
-            {% for option in options %}
-            <div class="multiselect-option" @click="if ({{ sort_model }} === '{{ option.value }}') { {{ direction_model }} = {{ direction_model }} === 'asc' ? 'desc' : 'asc'; } else { {{ sort_model }} = '{{ option.value }}'; } {{ on_change }}; open = false">
-                <span>{{ option.label }}</span>
-                <span x-show="{{ sort_model }} === '{{ option.value }}'" x-text="{{ direction_model }} === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-{% endmacro %}
-
-{#
-  Generic Filter Multiselect - Reusable multiselect filter with search and controls
-  
-  Parameters:
-  - model (required): Alpine.js model binding for filter array
-  - options (required): List of filter options as [{'value': 'key', 'label': 'Display Name'}]
-  - placeholder (required): Button text when nothing selected
-  - toggle_function (required): JavaScript function name to toggle values
-  - display_function (required): JavaScript function name to get display text
-  - with_search (optional): Include search functionality (default: false)
-  - select_all_values (optional): Array of all values for Select All (default: auto-generated)
-  - on_change (optional): JavaScript function to call on change (default: 'updateFilters()')
-  
-  Usage:
-  {{ generic_filter_multiselect('priorityFilter', priority_options, 'All Priorities', 'togglePriority', 'getPriorityDisplayText') }}
-#}
-{% macro generic_filter_multiselect(model, options, placeholder, toggle_function, display_function, with_search=false, select_all_values=none, on_change='updateFilters()') %}
-{%- set all_values = select_all_values or options|map(attribute='value')|list -%}
-<div class="multiselect-custom" x-data="{ 
-    open: false{% if with_search %},
-    search: ''{% endif %}
-}" @click.away="open = false">
-    <button type="button" 
-            class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
-            @click="open = !open">
-        <span x-text="{{ display_function }}()">{{ placeholder }}</span>
-        {{ icon('chevron-down', 'sm', 'ml-2') }}
-    </button>
-    
-    <div x-show="open" 
-         x-cloak
-         x-transition:enter="transition ease-out duration-100"
-         x-transition:enter-start="transform opacity-0 scale-95"
-         x-transition:enter-end="transform opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-75"
-         x-transition:leave-start="transform opacity-100 scale-100"
-         x-transition:leave-end="transform opacity-0 scale-95"
-         class="multiselect-dropdown">
-        <div class="multiselect-header">
-            {% if with_search %}
-            <input type="text" 
-                   x-model="search" 
-                   placeholder="Search..."
-                   class="w-full px-2 py-1 text-sm border border-gray-300 rounded">
-            {% endif %}
-            <div class="multiselect-controls">
-                <span class="multiselect-control-btn" @click="{{ model }} = [{% for value in all_values %}'{{ value }}'{% if not loop.last %}, {% endif %}{% endfor %}]; {{ on_change }}">Select All</span>
-                <span class="multiselect-control-btn" @click="{{ model }} = []; {{ on_change }}">Deselect All</span>
-            </div>
-        </div>
-        <div class="multiselect-options">
-            <div class="multiselect-option" @click="{{ model }} = []; {{ on_change }}">
-                <input type="checkbox" :checked="{{ model }}.length === 0" class="mr-2">
-                <span>{{ placeholder }}</span>
-            </div>
-            {% for option in options %}
-            <div class="multiselect-option" 
-                 {% if with_search %}x-show="!search || '{{ option.label }}'.toLowerCase().includes(search.toLowerCase())"{% endif %}
-                 @click="{{ toggle_function }}('{{ option.value }}')">
-                <input type="checkbox" :checked="{{ model }}.includes('{{ option.value }}')" class="mr-2">
-                <span>{{ option.label }}</span>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-{% endmacro %}
 
 {#
   Dynamic Entity Section - Generic expandable section for entity grouping
@@ -1103,6 +759,7 @@ details > summary::-webkit-details-marker {
 }
 {% endmacro %}
 
+<<<<<<< HEAD
 {#
   Enhanced Filter Controls Section - DRY component for all entity index pages
   
@@ -1283,6 +940,8 @@ details > summary::-webkit-details-marker {
     </div>
 </div>
 {% endmacro %}
+=======
+>>>>>>> 689f569 (feat: fix grouping and sorting with unified dropdown system)
 
 {#
   HTMX Enhanced Filter Controls - Pure CSS version of enhanced_filter_controls
@@ -1293,6 +952,10 @@ details > summary::-webkit-details-marker {
   Usage:
   {{ htmx_enhanced_filter_controls(...) }}
 #}
+<<<<<<< HEAD
+=======
+{% from "macros/ui/dropdowns.html" import css_dropdown %}
+>>>>>>> 689f569 (feat: fix grouping and sorting with unified dropdown system)
 {% macro htmx_enhanced_filter_controls(
     group_options, 
     sort_options,

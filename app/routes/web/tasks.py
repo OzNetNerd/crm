@@ -20,14 +20,14 @@ def get_all_tasks_context():
     sort_by = request.args.get("sort_by", "due_date")
     sort_direction = request.args.get("sort_direction", "asc")
     group_by = request.args.get("group_by", "status")
-    priority_filter = (
-        request.args.get("priority", "").split(",")
-        if request.args.get("priority", "")
+    primary_filter = (
+        request.args.get("priority_filter", "").split(",")
+        if request.args.get("priority_filter", "")
         else []
     )
     entity_filter = (
-        request.args.get("entity", "").split(",")
-        if request.args.get("entity", "")
+        request.args.get("entity_filter", "").split(",")
+        if request.args.get("entity_filter", "")
         else []
     )
 
@@ -40,7 +40,7 @@ def get_all_tasks_context():
         "sort_by": sort_by,
         "sort_direction": sort_direction,
         "group_by": group_by,
-        "priority_filter": priority_filter,
+        "primary_filter": primary_filter,
         "entity_filter": entity_filter,
         "today": date.today(),
     }
@@ -55,9 +55,9 @@ def get_filtered_tasks_context():
     group_by = request.args.get("group_by", "status")
     
     # Parse filter arrays
-    priority_filter = []
+    primary_filter = []
     if request.args.get("priority_filter"):
-        priority_filter = [p.strip() for p in request.args.get("priority_filter").split(",") if p.strip()]
+        primary_filter = [p.strip() for p in request.args.get("priority_filter").split(",") if p.strip()]
     
     secondary_filter = []
     if request.args.get("secondary_filter"):
@@ -74,8 +74,8 @@ def get_filtered_tasks_context():
     if not show_completed:
         query = query.filter(Task.status != 'complete')
     
-    if priority_filter:
-        query = query.filter(Task.priority.in_(priority_filter))
+    if primary_filter:
+        query = query.filter(Task.priority.in_(primary_filter))
         
     if entity_filter:
         query = query.filter(Task.entity_type.in_(entity_filter))
@@ -119,7 +119,7 @@ def get_filtered_tasks_context():
         "show_completed": show_completed,
         "sort_by": sort_by,
         "sort_direction": sort_direction,
-        "priority_filter": priority_filter,
+        "primary_filter": primary_filter,
         "secondary_filter": secondary_filter,
         "entity_filter": entity_filter,
         "today": date.today(),
@@ -276,50 +276,74 @@ def index():
         for o in Opportunity.query.order_by(Opportunity.name).all()
     ]
 
-    # Prepare filter options for the new HTMX controls
-    group_options = [
-        {'value': 'status', 'label': 'Status'},
-        {'value': 'priority', 'label': 'Priority'},
-        {'value': 'due_date', 'label': 'Due Date'}
-    ]
+    # Ultra-DRY one-line dropdown generation using pure model introspection
+    from app.utils.form_configs import DropdownConfigGenerator
+    dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('tasks', context["group_by"], context["sort_by"], context["sort_direction"], context["primary_filter"])
     
-    sort_options = [
-        {'value': 'due_date', 'label': 'Due Date'},
-        {'value': 'priority', 'label': 'Priority'},
-        {'value': 'created_at', 'label': 'Created Date'}
+    # Add entity filter using DRY entity types
+    from app.models import Company, Stakeholder, Opportunity
+    ENTITY_TYPES = [
+        {'value': 'company', 'label': Company.__name__},
+        {'value': 'contact', 'label': 'Contact'},  # Legacy name for Stakeholder
+        {'value': 'opportunity', 'label': Opportunity.__name__}
     ]
+    dropdown_configs['entity_filter'] = {
+        'button_text': 'All Entities',
+        'options': ENTITY_TYPES,
+        'current_values': context["entity_filter"],
+        'name': 'entity_filter'
+    }
+
+    # Entity stats for summary cards
+    all_tasks = context["all_tasks"]
+    entity_stats = {
+        'title': 'Task Summary',
+        'stats': [
+            {
+                'value': len([t for t in all_tasks if t.status == 'todo']),
+                'label': 'To Do',
+                'color_class': 'text-blue-600'
+            },
+            {
+                'value': len([t for t in all_tasks if t.status == 'in-progress']),
+                'label': 'In Progress',
+                'color_class': 'text-yellow-600'
+            },
+            {
+                'value': len([t for t in all_tasks if t.status == 'complete']),
+                'label': 'Complete',
+                'color_class': 'text-green-600'
+            },
+            {
+                'value': len([t for t in all_tasks if hasattr(t, 'is_overdue') and t.is_overdue]),
+                'label': 'Overdue',
+                'color_class': 'text-red-600'
+            }
+        ]
+    }
     
-    priority_options = [
-        {'value': 'high', 'label': 'High'},
-        {'value': 'medium', 'label': 'Medium'},
-        {'value': 'low', 'label': 'Low'}
-    ]
-    
-    entity_type_options = [
-        {'value': 'company', 'label': 'Company'},
-        {'value': 'contact', 'label': 'Contact'},
-        {'value': 'opportunity', 'label': 'Opportunity'}
+    # Entity buttons for header
+    entity_buttons = [
+        {
+            'label': 'New Task',
+            'hx_get': '/modals/Task/create',
+            'hx_target': 'body',
+            'hx_swap': 'beforeend',
+            'icon': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>'
+        }
     ]
 
     return render_template(
-        "tasks/index.html",
+        "base/entity_index.html",
+        entity_name="Tasks",
+        entity_description="Manage all your tasks in one place",
+        entity_type="task",
+        entity_endpoint="tasks",
+        entity_stats=entity_stats,
+        entity_buttons=entity_buttons,
+        dropdown_configs=dropdown_configs,
         tasks=tasks,
-        tasks_objects=context["all_tasks"],  # Keep original objects for template logic
-        today=context["today"],
-        show_completed=context["show_completed"],
-        sort_by=context["sort_by"],
-        sort_direction=context["sort_direction"],
-        group_by=context["group_by"],
-        priority_filter=context["priority_filter"],
-        entity_filter=context["entity_filter"],
-        companies=companies_data,
-        contacts=contacts_data,
-        opportunities=opportunities_data,
-        # New filter options for HTMX controls
-        group_options=group_options,
-        sort_options=sort_options,
-        priority_options=priority_options,
-        entity_type_options=entity_type_options,
+        tasks_objects=context["all_tasks"],
     )
 
 

@@ -31,53 +31,58 @@ def index():
     opportunities = Opportunity.query.join(Company).all()
     today = date.today()
 
-    # Filter options for dropdowns
-    group_options = [
-        {'value': 'stage', 'label': 'Stage'},
-        {'value': 'company', 'label': 'Company'}
-    ]
-    
-    sort_options = [
-        {'value': 'name', 'label': 'Name'},
-        {'value': 'value', 'label': 'Value'},
-        {'value': 'stage', 'label': 'Stage'},
-        {'value': 'expected_close_date', 'label': 'Close Date'}
-    ]
-    
-    # Get unique stages for primary filter
-    stage_options = [
-        {'value': 'prospect', 'label': 'Prospect'},
-        {'value': 'qualified', 'label': 'Qualified'},
-        {'value': 'proposal', 'label': 'Proposal'},
-        {'value': 'negotiation', 'label': 'Negotiation'},
-        {'value': 'closed-won', 'label': 'Closed Won'},
-        {'value': 'closed-lost', 'label': 'Closed Lost'}
-    ]
+    # Ultra-DRY one-line dropdown generation using pure model introspection
+    from app.utils.form_configs import DropdownConfigGenerator
+    dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('opportunities', group_by, sort_by, sort_direction, primary_filter)
 
-    # Get unique company names for secondary filter
-    company_options = []
-    companies = Company.query.with_entities(Company.name).distinct().all()
-    for company_tuple in companies:
-        company = company_tuple[0]
-        if company:
-            company_options.append({'value': company, 'label': company})
+    # Entity stats for summary cards
+    total_value = sum(o.value or 0 for o in opportunities)
+    entity_stats = {
+        'title': 'Pipeline Summary',
+        'stats': [
+            {
+                'value': f"${total_value:,}",
+                'label': 'Total Pipeline Value',
+                'color_class': 'text-green-600'
+            },
+            {
+                'value': len(opportunities),
+                'label': 'Total Opportunities',
+                'color_class': 'text-blue-600'
+            },
+            {
+                'value': len([o for o in opportunities if o.stage == 'closed-won']),
+                'label': 'Closed Won',
+                'color_class': 'text-emerald-600'
+            },
+            {
+                'value': len(set(o.company.name for o in opportunities if o.company)),
+                'label': 'Companies in Pipeline',
+                'color_class': 'text-purple-600'
+            }
+        ]
+    }
+    
+    # Entity buttons for header actions
+    entity_buttons = [
+        {
+            'text': 'New Opportunity',
+            'onclick': 'openNewOpportunityModal()',
+            'icon': 'plus',
+            'classes': 'btn-primary'
+        }
+    ]
 
     return render_template(
-        "opportunities/index.html",
+        "base/entity_index.html",
+        entity_name="Opportunities",
+        entity_description="Manage your sales opportunities",
+        entity_type="opportunity",
+        entity_endpoint="opportunities",
+        entity_stats=entity_stats,
+        entity_buttons=entity_buttons,
+        dropdown_configs=dropdown_configs,
         opportunities=opportunities,
-        today=today,
-        # Filter states for URL persistence
-        group_by=group_by,
-        sort_by=sort_by,
-        sort_direction=sort_direction,
-        show_completed=show_completed,
-        primary_filter=primary_filter,
-        secondary_filter=secondary_filter,
-        # Filter options for dropdowns
-        group_options=group_options,
-        sort_options=sort_options,
-        stage_options=stage_options,
-        company_options=company_options,
     )
 
 
