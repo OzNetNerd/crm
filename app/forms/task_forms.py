@@ -11,18 +11,17 @@ from wtforms import (
 from wtforms.validators import DataRequired, Length, Optional, NumberRange
 from app.models import Task
 from app.utils.dynamic_form_builder import DynamicFormBuilder
+from .base_forms import BaseForm, FieldFactory, FormConstants
 
 
-class TaskForm(FlaskForm):
-    description = TextAreaField(
-        "Description",
-        validators=[DataRequired(), Length(min=1, max=500)],
-        render_kw={"placeholder": "What needs to be done?", "rows": 3},
+class TaskForm(BaseForm):
+    description = FieldFactory.create_description_field(
+        placeholder="What needs to be done?"
     )
 
     due_date = DynamicFormBuilder.build_date_field(Task, 'due_date')
 
-    priority = DynamicFormBuilder.build_select_field(Task, 'priority')
+    priority = FieldFactory.create_priority_field(Task)
 
     status = DynamicFormBuilder.build_select_field(Task, 'status')
 
@@ -32,14 +31,7 @@ class TaskForm(FlaskForm):
     )
 
     # Multi-entity selection - JSON string of selected entities
-    linked_entities = StringField(
-        "Linked Entities",
-        validators=[Optional()],
-        render_kw={
-            "data-entity-selector": "true",
-            "placeholder": "Select companies, contacts, or opportunities",
-        },
-    )
+    linked_entities = FieldFactory.create_linked_entities_field()
 
     task_type = DynamicFormBuilder.build_select_field(Task, 'task_type')
 
@@ -58,29 +50,8 @@ class TaskForm(FlaskForm):
             return False
 
         # Validate linked_entities JSON if provided
-        if self.linked_entities.data:
-            try:
-                import json
-
-                entities = json.loads(self.linked_entities.data)
-                if not isinstance(entities, list):
-                    self.linked_entities.errors.append("Linked entities must be a list")
-                    return False
-                for entity in entities:
-                    if (
-                        not isinstance(entity, dict)
-                        or "type" not in entity
-                        or "id" not in entity
-                    ):
-                        self.linked_entities.errors.append(
-                            "Each linked entity must have 'type' and 'id' fields"
-                        )
-                        return False
-            except json.JSONDecodeError:
-                self.linked_entities.errors.append(
-                    "Invalid JSON format for linked entities"
-                )
-                return False
+        if not self.validate_linked_entities_json(self.linked_entities):
+            return False
 
         # If task_type is child, parent_task_id must be provided
         if self.task_type.data == "child" and not self.parent_task_id.data:
@@ -90,30 +61,29 @@ class TaskForm(FlaskForm):
         return True
 
 
-class QuickTaskForm(FlaskForm):
+class QuickTaskForm(BaseForm):
     """Simplified form for quick task creation"""
 
     description = StringField(
         "Task",
-        validators=[DataRequired(), Length(min=1, max=200)],
+        validators=[DataRequired(), Length(min=1, max=FormConstants.QUICK_TASK_MAX_LENGTH)],
         render_kw={"placeholder": "Add a quick task...", "class": "form-control"},
     )
 
-    priority = DynamicFormBuilder.build_select_field(Task, 'priority')
+    priority = FieldFactory.create_priority_field(Task)
 
 
-class ChildTaskForm(FlaskForm):
+class ChildTaskForm(BaseForm):
     """Form for child tasks in Multi Task creation"""
 
-    description = TextAreaField(
-        "Description",
-        validators=[DataRequired(), Length(min=1, max=500)],
-        render_kw={"placeholder": "Child task description...", "rows": 2},
+    description = FieldFactory.create_description_field(
+        placeholder="Child task description...",
+        rows=FormConstants.CHILD_TASK_ROWS
     )
 
-    due_date = DateField("Due Date", validators=[Optional()], default=None)
+    due_date = FieldFactory.create_due_date_field(label="Due Date")
 
-    priority = DynamicFormBuilder.build_select_field(Task, 'priority')
+    priority = FieldFactory.create_priority_field(Task)
 
     next_step_type = DynamicFormBuilder.build_select_field(
         Task, 'next_step_type',
@@ -121,28 +91,20 @@ class ChildTaskForm(FlaskForm):
     )
 
 
-class MultiTaskForm(FlaskForm):
+class MultiTaskForm(BaseForm):
     """Form for creating parent tasks with multiple child tasks"""
 
-    description = TextAreaField(
-        "Parent Task Description",
-        validators=[DataRequired(), Length(min=1, max=500)],
-        render_kw={"placeholder": "What is the overall goal?", "rows": 3},
+    description = FieldFactory.create_description_field(
+        label="Parent Task Description",
+        placeholder="What is the overall goal?"
     )
 
-    due_date = DateField("Overall Due Date", validators=[Optional()], default=None)
+    due_date = FieldFactory.create_due_date_field(label="Overall Due Date")
 
-    priority = DynamicFormBuilder.build_select_field(Task, 'priority')
+    priority = FieldFactory.create_priority_field(Task)
 
     # Multi-entity selection for parent task
-    linked_entities = StringField(
-        "Linked Entities",
-        validators=[Optional()],
-        render_kw={
-            "data-entity-selector": "true",
-            "placeholder": "Select companies, contacts, or opportunities",
-        },
-    )
+    linked_entities = FieldFactory.create_linked_entities_field()
 
     dependency_type = DynamicFormBuilder.build_select_field(Task, 'dependency_type')
 
@@ -155,29 +117,8 @@ class MultiTaskForm(FlaskForm):
             return False
 
         # Validate linked_entities JSON if provided
-        if self.linked_entities.data:
-            try:
-                import json
-
-                entities = json.loads(self.linked_entities.data)
-                if not isinstance(entities, list):
-                    self.linked_entities.errors.append("Linked entities must be a list")
-                    return False
-                for entity in entities:
-                    if (
-                        not isinstance(entity, dict)
-                        or "type" not in entity
-                        or "id" not in entity
-                    ):
-                        self.linked_entities.errors.append(
-                            "Each linked entity must have 'type' and 'id' fields"
-                        )
-                        return False
-            except json.JSONDecodeError:
-                self.linked_entities.errors.append(
-                    "Invalid JSON format for linked entities"
-                )
-                return False
+        if not self.validate_linked_entities_json(self.linked_entities):
+            return False
 
         # Ensure at least 2 child tasks
         if len(self.child_tasks.data) < 2:

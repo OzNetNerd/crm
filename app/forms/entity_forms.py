@@ -12,9 +12,10 @@ from wtforms.widgets import TextArea
 from app.models import Company, Stakeholder, Opportunity
 from app.utils.dynamic_form_builder import DynamicFormBuilder
 from app.utils.model_introspection import ModelIntrospector
+from .base_forms import BaseForm, FieldFactory, FormConstants
 
 
-class CompanyForm(FlaskForm):
+class CompanyForm(BaseForm):
     # Dynamic fields from model metadata
     name = DynamicFormBuilder.build_string_field(
         Company, 'name',
@@ -32,7 +33,7 @@ class CompanyForm(FlaskForm):
     )
 
 
-class StakeholderForm(FlaskForm):
+class StakeholderForm(BaseForm):
     # Dynamic fields from model metadata
     name = DynamicFormBuilder.build_string_field(
         Stakeholder, 'name',
@@ -61,7 +62,7 @@ class StakeholderForm(FlaskForm):
     )
 
 
-class OpportunityForm(FlaskForm):
+class OpportunityForm(BaseForm):
     # Dynamic fields from model metadata
     name = StringField(
         "Opportunity Name",
@@ -92,12 +93,12 @@ class OpportunityForm(FlaskForm):
     )
 
 
-class NoteForm(FlaskForm):
-    content = TextAreaField(
-        "Note Content",
-        validators=[DataRequired(), Length(min=1, max=2000)],
-        widget=TextArea(),
-        render_kw={"placeholder": "Enter your note here...", "rows": 4},
+class NoteForm(BaseForm):
+    content = FieldFactory.create_description_field(
+        label="Note Content",
+        max_length=FormConstants.NOTE_MAX_LENGTH,
+        rows=FormConstants.NOTE_ROWS,
+        placeholder="Enter your note here..."
     )
 
     is_internal = SelectField(
