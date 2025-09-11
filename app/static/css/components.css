@@ -1169,15 +1169,20 @@
     color: #166534; /* hover:text-green-800 */
 }
 
-/* HTMX Loading Indicators - Prevent layout shifts */
-.htmx-indicator {
-    display: none;
+/* Hide all loading animations and indicators */
+.htmx-indicator,
+.modal-loading,
+.modal-spinner,
+[id*="loading-indicator"],
+[class*="loading"],
+[class*="spinner"],
+.loading-spinner,
+.animate-spin {
+    display: none !important;
 }
 
-.htmx-request .htmx-indicator {
-    display: block;
-}
-
+/* Keep htmx-request class for other purposes but hide indicators */
+.htmx-request .htmx-indicator,
 .htmx-request.htmx-indicator {
-    display: block;
+    display: none !important;
 }

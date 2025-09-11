@@ -22,7 +22,7 @@
 #}
 {% macro entity_filter_controls(entity_type, group_options, sort_options, filter_options=None, show_completed_toggle=false, show_view_toggle=false, expand_collapse_target='expandedSections') %}
 {% from "macros/ui_elements.html" import expand_collapse_controls %}
-{% from "macros/ui/controls.html" import pure_css_dropdown %}
+{% from "macros/ui/controls.html" import css_dropdown %}
 
 <div class="card-padded-lg filter-section-enhanced">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:gap-6">
@@ -31,7 +31,7 @@
             <label class="text-label-dark">Group by:</label>
             
             <!-- Group By Dropdown -->
-            {{ pure_css_dropdown('Group by', group_options, name='group_by', hx_target='#' + entity_type + '-content', hx_get='/' + entity_type + '/filter') }}
+            {{ css_dropdown('Group by', group_options, name='group_by', hx_target='#' + entity_type + '-content', hx_get='/' + entity_type + '/filter') }}
             
             {% if show_completed_toggle %}
             <label class="flex items-center">
@@ -74,12 +74,12 @@
             <label class="text-label-dark">Sort by:</label>
             
             <!-- Sort By Dropdown -->
-            {{ pure_css_dropdown('Sort by', sort_options, name='sort_by', hx_target='#' + entity_type + '-content', hx_get='/' + entity_type + '/filter') }}
+            {{ css_dropdown('Sort by', sort_options, name='sort_by', hx_target='#' + entity_type + '-content', hx_get='/' + entity_type + '/filter') }}
             
             {% if filter_options %}
             {% for filter_key, filter_opts in filter_options.items() %}
             <!-- {{ filter_key|title }} Filter -->
-            {{ pure_css_dropdown('Filter by ' + filter_key|title, filter_opts, name=filter_key + '_filter', hx_target='#' + entity_type + '-content', hx_get='/' + entity_type + '/filter') }}
+            {{ css_dropdown('Filter by ' + filter_key|title, filter_opts, name=filter_key + '_filter', hx_target='#' + entity_type + '-content', hx_get='/' + entity_type + '/filter') }}
             {% endfor %}
             {% endif %}
         </div>
