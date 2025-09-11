@@ -6,7 +6,7 @@
   
   Uses Jinja's include/extend capabilities and proper template inheritance patterns.
 #}
-{% from "macros/expandable_card.html" import expandable_card, task_header_content, task_title_content, task_metadata_content, action_buttons_row %}
+{% from "macros/expandable_card.html" import auto_card, expandable_card, task_header_content, task_title_content, task_metadata_content, action_buttons_row %}
 {% from "macros/ui_elements.html" import section_group_header %}
 {% from "macros/base/icons.html" import clipboard_list_icon, bolt_icon, check_circle_icon_solid, fire_icon_solid, exclamation_triangle_icon, exclamation_circle_icon_solid, calendar_days_icon, calendar_icon, chart_bar_icon, question_mark_circle_icon, building_office_icon, user_icon, currency_dollar_icon %}
 
@@ -45,13 +45,7 @@
             {% if task.task_type != 'child' and should_show_task(task, filter_type, filter_value, today) %}
                 {% set _ = rendered_tasks.append(task) %}
                 <div {% if special_styling %}class="{{ special_styling }}"{% endif %}>
-                    {{ expandable_card('task', task, task.id,
-                        expansion_enabled=true,
-                        group_key=group_key,
-                        badge_content=task_header_content(task),
-                        title_content=task_title_content(task),
-                        metadata_content=task_metadata_content(task),
-                        action_buttons=action_buttons_row('task', task.id)) }}
+                    {{ auto_card('task', task) }}
                 </div>
             {% endif %}
         {% endfor %}

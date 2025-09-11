@@ -1,7 +1,5 @@
-{% from "macros/expandable_card.html" import expandable_card, action_buttons_row %}
+{% from "macros/expandable_card.html" import auto_card, expandable_card, action_buttons_row %}
 
 {% macro render_team_member(member) %}
-{{ expandable_card('team', member, member.id,
-    expansion_enabled=true,
-    action_buttons=action_buttons_row('team', member.id)) }}
+{{ auto_card('team', member) }}
 {% endmacro %}

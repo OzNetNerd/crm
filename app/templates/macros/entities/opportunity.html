@@ -1,8 +1,6 @@
-{% from "macros/expandable_card.html" import expandable_card, action_buttons_row %}
+{% from "macros/expandable_card.html" import auto_card, expandable_card, action_buttons_row %}
 
 {% macro render_opportunity(opportunity, today) %}
-{{ expandable_card('opportunity', opportunity, opportunity.id,
-    expansion_enabled=true,
-    action_buttons=action_buttons_row('opportunity', opportunity.id)) }}
+{{ auto_card('opportunity', opportunity) }}
 {% endmacro %}
 

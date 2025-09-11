@@ -1,49 +1,48 @@
 {#
-  Expandable Card Component - htmx-driven DRY component for all entity cards
+  Expandable Card Component - Modernized modular card system with object composition
   
-  Creates a standardized card layout with server-side state management via htmx.
-  Supports expansion, dynamic content loading, and interactive features.
+  This file now provides both the new modular system and backwards compatibility.
   
-  Parameters:
-  - card_type (required): 'task' | 'opportunity' | 'contact' | 'stakeholder' | 'company'
-  - entity (required): Entity object 
-  - entity_id (required): Unique ID of the entity
-  - expansion_enabled (optional): Enable expansion functionality (default: true)
-  - progress_config (optional): Progress bar configuration object
-  - bulk_selection_enabled (optional): Show bulk selection checkbox (default: true)
-  - card_classes (optional): Additional CSS classes for the card
-  - badge_content (optional): Badge/status content for header
-  - title_content (required): Main title/name content
-  - value_content (optional): Value content (deal amount, etc.)
-  - secondary_info (optional): Secondary info (company, stakeholder)
-  - metadata_content (optional): Metadata text content
-  - action_buttons (optional): Action buttons HTML
-  - expanded_content (optional): Content shown when expanded
-  - notes_enabled (optional): Enable notes/comments section (default: false)
+  NEW RECOMMENDED USAGE:
+  {{ auto_card('task', task) }}
+  {{ auto_card('opportunity', opportunity, overrides={'badge_style': 'green'}) }}
   
-  Progress Config Object:
-  {
-    'enabled': true,
-    'type': 'completion' | 'probability' | 'custom',
-    'value': number,
-    'max_value': number (optional, default 100),
-    'color_scheme': 'blue' | 'green' | 'yellow' | 'red' (optional, default 'blue'),
-    'label': string (optional)
-  }
+  LEGACY USAGE (still supported):
+  {{ expandable_card('task', task, task.id, title_content=task.name, ...) }}
   
-  Usage:
-  {{ expandable_card('opportunity', opportunity, opportunity.id, 
-       badge_content=opportunity_header_content(opportunity),
-       title_content=opportunity.name,
-       value_content='$' + "{:,.0f}".format(opportunity.value),
-       secondary_info='<span class="text-entity-base text-color-company">' + opportunity.company.name + '</span>',
-       metadata_content=opportunity_metadata_content(opportunity),
-       action_buttons=action_buttons_row('opportunity', opportunity.id),
-       progress_config={'enabled': true, 'type': 'probability', 'value': opportunity.probability},
-       expanded_content=opportunity_expanded_content(opportunity)) }}
+  The new system uses:
+  - Smart entity configuration that automatically determines what to display
+  - Composable content objects instead of 20+ parameters
+  - Flexible field renderers for any data type
+  - Complete backwards compatibility via adapter macros
 #}
 {% from "macros/ui_elements.html" import bulk_selection_checkbox, pluralized_count %}
 {% from "macros/ui/progress.html" import progress_bar %}
+{% from "macros/card_system.html" import auto_entity_card, render_field %}
+
+{# ========== NEW MODULAR SYSTEM ========== #}
+
+{#
+  Auto Card - The new recommended way to create entity cards
+  
+  Automatically configures and renders cards based on entity type and conventions.
+  Eliminates the need for manual parameter passing while maintaining full flexibility.
+  
+  Parameters:
+  - entity_type (required): 'task' | 'opportunity' | 'contact' | 'stakeholder' | 'company'
+  - entity (required): Entity object
+  - expansion_enabled (optional): Enable expand/collapse (default: true)
+  - overrides (optional): Override default configuration
+  - card_classes (optional): Additional CSS classes
+  
+  Usage:
+  {{ auto_card('task', task) }}
+  {{ auto_card('opportunity', opportunity, overrides={'badge_style': 'green'}) }}
+  {{ auto_card('contact', contact, expansion_enabled=false) }}
+#}
+{% macro auto_card(entity_type, entity, expansion_enabled=true, overrides={}, card_classes='') %}
+{{ auto_entity_card(entity_type, entity, expansion_enabled, card_classes, overrides) }}
+{% endmacro %}
 
 {# Main expandable card macro - htmx-enhanced with server-side state management #}
 {% macro expandable_card(card_type, entity, entity_id, expansion_enabled=true, progress_config=none, bulk_selection_enabled=true, card_classes='', field_config={}, model_class=none, badge_content='', title_content='', value_content='', secondary_info='', metadata_content='', action_buttons='', expanded_content='', notes_enabled=false) %}
