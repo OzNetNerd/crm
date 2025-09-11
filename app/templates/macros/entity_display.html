@@ -1,3 +1,4 @@
+{% from 'macros/base/icons.html' import icon %}
 {# Entity Display System - Unified display management for all entity pages #}
 
 {#
@@ -35,9 +36,7 @@
                             <h3 :class="group.headerClass">
                                 <span class="mr-2 transition-transform duration-200" 
                                       :class="expandedSections[group.key] ? 'rotate-90' : ''">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                    </svg>
+                                    {{ icon('chevron-right', 'sm') }}
                                 </span>
                                 <span x-html="group.icon" class="w-5 h-5 mr-1"></span>
                                 <span x-text="group.title"></span>
@@ -85,9 +84,7 @@
                             <h3 :class="group.headerClass">
                                 <span class="mr-2 transition-transform duration-200" 
                                       :class="expandedSections[group.key] ? 'rotate-90' : ''">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                    </svg>
+                                    {{ icon('chevron-right', 'sm') }}
                                 </span>
                                 <span x-html="group.icon" class="w-5 h-5 mr-1"></span>
                                 <span x-text="group.title"></span>

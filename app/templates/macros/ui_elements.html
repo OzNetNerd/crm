@@ -1,3 +1,4 @@
+{% from 'macros/base/icons.html' import icon %}
 {# Common UI Elements - Reusable macros for consistent interface components #}
 
 {#
@@ -173,9 +174,7 @@
         <div class="flex items-center justify-between">
             <h3 class="{{ text_class }}">
                 <span class="mr-2 transition-transform duration-200 inline-block details-chevron">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
+                    {{ icon('chevron-right', 'sm') }}
                 </span>{{ icon_html|safe }} {{ title }}{{ badge_html|safe }}
             </h3>
         </div>
@@ -651,9 +650,7 @@ details > summary::-webkit-details-marker {
         {% if grid_icon %}
         {{ grid_icon|safe }}
         {% else %}
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-        </svg>
+        {{ icon('squares-2x2', 'sm') }}
         {% endif %}
     </button>
     <button @click="viewMode = 'list'" 
@@ -662,9 +659,7 @@ details > summary::-webkit-details-marker {
         {% if list_icon %}
         {{ list_icon|safe }}
         {% else %}
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
+        {{ icon('list-bullet', 'sm') }}
         {% endif %}
     </button>
 </div>
@@ -684,9 +679,10 @@ details > summary::-webkit-details-marker {
 #}
 {% macro bulk_selection_checkbox(item_id, model='selectedItems', additional_classes='') %}
 <input type="checkbox" 
-       name="{{ model }}" 
+       x-model="{{ model }}" 
        value="{{ item_id }}"
-       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded {{ additional_classes }}">
+       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded {{ additional_classes }}"
+       @click.stop>
 {% endmacro %}
 
 {#
@@ -704,7 +700,9 @@ details > summary::-webkit-details-marker {
 {% macro select_all_checkbox(total_items, model='selectedItems', label='Select all') %}
 <label class="flex items-center space-x-2">
     <input type="checkbox"
-           name="select_all_{{ model }}"
+           :checked="{{ model }}.length === {{ total_items }} && {{ total_items }} > 0"
+           :indeterminate="{{ model }}.length > 0 && {{ model }}.length < {{ total_items }}"
+           @change="{{ model }} = $event.target.checked ? allItemIds : []"
            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
     <span class="text-sm text-gray-700">{{ label }}</span>
 </label>
@@ -724,19 +722,15 @@ details > summary::-webkit-details-marker {
 {% macro search_input(placeholder='Search...', model='searchTerm', additional_classes='') %}
 <div class="relative">
     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
+        {{ icon('magnifying-glass', 'md', 'text-gray-400') }}
     </div>
     <input type="text" 
-           name="{{ model }}"
+           x-model="{{ model }}"
            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm {{ additional_classes }}"
            placeholder="{{ placeholder }}">
-    <div class="absolute inset-y-0 right-0 pr-3 flex items-center" style="display:none;">
-        <button class="text-gray-400 hover:text-gray-600">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
+    <div x-show="{{ model }}.length > 0" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+        <button @click="{{ model }} = ''" class="text-gray-400 hover:text-gray-600">
+            {{ icon('x-mark', 'sm') }}
         </button>
     </div>
 </div>
@@ -755,10 +749,7 @@ details > summary::-webkit-details-marker {
 {% macro loading_spinner(size='md', text='') %}
 {%- set size_classes = {'sm': 'h-4 w-4', 'md': 'h-6 w-6', 'lg': 'h-8 w-8'} -%}
 <div class="flex items-center justify-center space-x-2">
-    <svg class="animate-spin {{ size_classes[size] or size_classes['md'] }} text-blue-600" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
+    {{ icon('spinner', size or 'md', 'animate-spin text-blue-600') }}
     {% if text %}
     <span class="text-sm text-gray-600">{{ text }}</span>
     {% endif %}
@@ -784,9 +775,7 @@ details > summary::-webkit-details-marker {
         {{ icon|safe }}
     </div>
     {% else %}
-    <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-    </svg>
+    {{ icon('document', 'xl', 'mx-auto text-gray-400 mb-4') }}
     {% endif %}
     
     <h3 class="text-lg font-medium text-gray-900 mb-2">{{ title }}</h3>
@@ -849,9 +838,7 @@ details > summary::-webkit-details-marker {
             {% endfor %}
             '{{ options[0].label }}'
         "></span>
-        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
+        {{ icon('chevron-down', 'sm', 'ml-2') }}
     </button>
     
     <div x-show="open" 
@@ -897,9 +884,7 @@ details > summary::-webkit-details-marker {
             {% endfor %}
             '{{ options[0].label }}'
         "></span>
-        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
+        {{ icon('chevron-down', 'sm', 'ml-2') }}
     </button>
     
     <div x-show="open" 
@@ -949,9 +934,7 @@ details > summary::-webkit-details-marker {
             class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
             @click="open = !open">
         <span x-text="{{ display_function }}()">{{ placeholder }}</span>
-        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
+        {{ icon('chevron-down', 'sm', 'ml-2') }}
     </button>
     
     <div x-show="open" 
@@ -1015,9 +998,7 @@ details > summary::-webkit-details-marker {
                     <h3 :class="group.headerClass">
                         <span class="mr-2 transition-transform duration-200" 
                               :class="expandedSections[group.key] ? 'rotate-90' : ''">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
+                            {{ icon('chevron-right', 'sm') }}
                         </span>
                         <span x-html="group.icon" class="w-5 h-5 mr-1"></span>
                         <span x-text="group.title"></span>
@@ -1067,29 +1048,30 @@ details > summary::-webkit-details-marker {
        {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
 #}
 {% macro bulk_actions_bar(entity_type, entity_plural, primary_action, secondary_action) %}
-<div style="display:none;" class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+<div x-show="selectedItems.length > 0" 
+     x-cloak 
+     x-transition
+     class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
     <div class="flex items-center space-x-4">
-        <span class="text-blue-800 font-medium">0 {{ entity_plural }} selected</span>
+        <span class="text-blue-800 font-medium" x-text="`${selectedItems.length} {{ entity_plural }} selected`"></span>
         
         {% if primary_action %}
-        <button onclick="{{ primary_action.onclick }}" 
+        <button @click="{{ primary_action.onclick }}" 
                 class="bg-{{ primary_action.color }}-600 text-white px-3 py-1.5 rounded text-sm hover:bg-{{ primary_action.color }}-700">
             {{ primary_action.label }}
         </button>
         {% endif %}
         
         {% if secondary_action %}
-        <button onclick="{{ secondary_action.onclick }}" 
+        <button @click="{{ secondary_action.onclick }}" 
                 class="bg-{{ secondary_action.color }}-600 text-white px-3 py-1.5 rounded text-sm hover:bg-{{ secondary_action.color }}-700">
             {{ secondary_action.label }}
         </button>
         {% endif %}
     </div>
     
-    <button class="text-blue-600 hover:text-blue-800">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
+    <button @click="selectedItems = []" class="text-blue-600 hover:text-blue-800">
+        {{ icon('x-mark', 'md') }}
     </button>
 </div>
 {% endmacro %}
@@ -1216,6 +1198,38 @@ details > summary::-webkit-details-marker {
   Usage:
   {{ htmx_dropdown('group_by', group_by, group_options, 'Group by') }}
 #}
+{% macro htmx_dropdown(name, current_value, options, label_text='Select') %}
+<div class="relative inline-block">
+    <button type="button" 
+            class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between min-w-[120px] group"
+            onclick="this.nextElementSibling.classList.toggle('hidden')">
+        <span>
+            {% set found = namespace(value=false) %}
+            {% for option in options %}
+                {% if option.value == current_value and not found.value %}
+                    {{ option.label }}
+                    {% set found.value = true %}
+                {% endif %}
+            {% endfor %}
+            {% if not found.value %}{{ label_text }}{% endif %}
+        </span>
+        {{ icon('chevron-down', 'sm', 'ml-2 transition-transform group-focus:rotate-180') }}
+    </button>
+    
+    <div class="absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-10 hidden transition-all duration-200 ease-out">
+        <div class="py-1">
+            {% for option in options %}
+            <button type="submit" 
+                    name="{{ name }}" 
+                    value="{{ option.value }}"
+                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option.value == current_value %}bg-blue-50 text-blue-700{% endif %}">
+                {{ option.label }}
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
 
 {#
   Pure CSS HTMX Multiselect - Checkbox-based multiselect for HTMX forms
@@ -1227,9 +1241,48 @@ details > summary::-webkit-details-marker {
   - placeholder (optional): Placeholder text when nothing selected
   
   Usage:
-  {{ unified_css_dropdown('All Priorities', priority_options, name='priority_filter', current_values=priority_filter) }}
+  {{ htmx_multiselect('priority_filter', priority_filter, priority_options, 'All Priorities') }}
 #}
-{# htmx_multiselect macro removed - replaced by unified css_dropdown #}
+{% macro htmx_multiselect(name, current_values, options, placeholder='Select options') %}
+<div class="relative inline-block">
+    <button type="button" 
+            class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between min-w-[140px] group"
+            onclick="this.nextElementSibling.classList.toggle('hidden')">
+        <span class="truncate">
+            {% if current_values|length == 0 %}
+                {{ placeholder }}
+            {% elif current_values|length == 1 %}
+                {% set found = namespace(value=false) %}
+                {% for option in options %}
+                    {% if option.value in current_values and not found.value %}
+                        {{ option.label }}
+                        {% set found.value = true %}
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                {{ current_values|length }} selected
+            {% endif %}
+        </span>
+        {{ icon('chevron-down', 'sm', 'ml-2 transition-transform group-focus:rotate-180') }}
+    </button>
+    
+    <div class="absolute left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-20 hidden transition-all duration-200 ease-out">
+        <div class="py-1 max-h-48 overflow-y-auto">
+            {% for option in options %}
+            <label class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                <input type="checkbox" 
+                       name="{{ name }}"
+                       value="{{ option.value }}"
+                       {% if option.value in current_values %}checked{% endif %}
+                       class="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                       onchange="this.form.dispatchEvent(new Event('change'))">
+                {{ option.label }}
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
 
 {#
   HTMX Enhanced Filter Controls - Pure CSS version of enhanced_filter_controls
@@ -1240,8 +1293,6 @@ details > summary::-webkit-details-marker {
   Usage:
   {{ htmx_enhanced_filter_controls(...) }}
 #}
-{% from "macros/ui/controls.html" import css_dropdown %}
-{% from "macros/ui/dropdowns.html" import css_dropdown %}
 {% macro htmx_enhanced_filter_controls(
     group_options, 
     sort_options,
@@ -1266,29 +1317,29 @@ details > summary::-webkit-details-marker {
         <!-- First row: Group by, Sort by, and Filters -->
         <div class="flex flex-wrap items-center gap-6">
             <label class="text-label-dark">Group by:</label>
-            {{ css_dropdown('Group by', group_options, name='group_by', current_value=group_by) }}
+            {{ htmx_dropdown('group_by', group_by, group_options, 'Group by') }}
             
             <label class="text-label-dark">Sort by:</label>
-            {{ css_dropdown('Sort by', sort_options, name='sort_by', current_value=sort_by) }}
-            {{ css_dropdown('Order', [
+            {{ htmx_dropdown('sort_by', sort_by, sort_options, 'Sort by') }}
+            {{ htmx_dropdown('sort_direction', sort_direction, [
                 {'value': 'asc', 'label': 'Ascending'},
                 {'value': 'desc', 'label': 'Descending'}
-            ], name='sort_direction', current_value=sort_direction) }}
+            ], 'Order') }}
             
             {% if primary_filter_options or secondary_filter_options or entity_filter_options %}
             <label class="text-label-dark">Filters:</label>
             {% endif %}
             
             {% if primary_filter_options %}
-            {{ css_dropdown(primary_filter_label, primary_filter_options, name='primary_filter', current_values=primary_filter_values) }}
+            {{ htmx_multiselect('primary_filter', primary_filter_values, primary_filter_options, primary_filter_label) }}
             {% endif %}
             
             {% if secondary_filter_options %}
-            {{ css_dropdown(secondary_filter_label, secondary_filter_options, name='secondary_filter', current_values=secondary_filter_values) }}
+            {{ htmx_multiselect('secondary_filter', secondary_filter_values, secondary_filter_options, secondary_filter_label) }}
             {% endif %}
             
             {% if entity_filter_options %}
-            {{ css_dropdown(entity_filter_label, entity_filter_options, name='entity_filter', current_values=entity_filter_values) }}
+            {{ htmx_multiselect('entity_filter', entity_filter_values, entity_filter_options, entity_filter_label) }}
             {% endif %}
         </div>
         
@@ -1311,59 +1362,24 @@ details > summary::-webkit-details-marker {
     </div>
 </div>
 
-{% endmacro %}
-
-{#
-  Config-Driven Filter Controls - Uses unified CSS dropdown system
-  
-  Takes a dropdown_configs dictionary from Flask route and renders
-  all dropdowns using the new unified css_dropdown system.
-  
-  Parameters:
-  - dropdown_configs (required): Dict of dropdown configurations from Flask
-  - show_completed_toggle (optional): Show completed/closed items toggle
-  - expand_collapse_controls (optional): Show expand/collapse controls
-  
-  Usage:
-  {{ config_driven_filter_controls(dropdown_configs, show_completed_toggle=true) }}
-#}
-{% macro config_driven_filter_controls(dropdown_configs, show_completed_toggle=false, expand_collapse_controls=true) %}
-<div class="card-padded-lg filter-section-enhanced">
-    <div class="flex flex-col space-y-4">
-        <!-- First row: All dropdowns from config -->
-        <div class="flex flex-wrap items-center gap-6">
-            {% for config_key, config in dropdown_configs.items() %}
-                {% if config_key != 'industry_filter' %}
-                    <label class="text-label-dark">{{ config.button_text }}:</label>
-                    {{ css_dropdown(**config) }}
-                {% endif %}
-            {% endfor %}
-            
-            {% if dropdown_configs.get('industry_filter') %}
-            <label class="text-label-dark">Filters:</label>
-            {{ css_dropdown(**dropdown_configs['industry_filter']) }}
-            {% endif %}
-        </div>
-        
-        <!-- Second row: Show completed and Expand/Collapse controls -->
-        {% if show_completed_toggle or expand_collapse_controls %}
-        <div class="flex flex-wrap items-center gap-6">
-            {% if show_completed_toggle %}
-            <label class="flex items-center">
-                <input type="checkbox" 
-                       name="show_completed"
-                       value="true"
-                       class="mr-2"
-                       onchange="this.form.dispatchEvent(new Event('change'))">
-                <span class="text-secondary-dark">Show Completed</span>
-            </label>
-            {% endif %}
-
-            {% if expand_collapse_controls %}
-            {{ css_expand_collapse_controls() }}
-            {% endif %}
-        </div>
-        {% endif %}
-    </div>
-</div>
+<script>
+// Close all dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    const isDropdownButton = event.target.closest('[onclick*="classList.toggle"]');
+    const isInsideDropdown = event.target.closest('.absolute');
+    const isSearchRelated = event.target.closest('#global-search') || event.target.closest('#search-results');
+    
+    if (!isDropdownButton && !isInsideDropdown && !isSearchRelated) {
+        // Only close dropdown-type elements, not search results
+        document.querySelectorAll('.absolute.hidden:not(#search-results)').forEach(dropdown => {
+            if (!dropdown.classList.contains('hidden')) {
+                dropdown.classList.add('hidden');
+            }
+        });
+        document.querySelectorAll('.absolute:not(.hidden):not(#search-results)').forEach(dropdown => {
+            dropdown.classList.add('hidden');
+        });
+    }
+});
+</script>
 {% endmacro %}

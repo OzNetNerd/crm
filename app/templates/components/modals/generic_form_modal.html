@@ -1,0 +1,132 @@
+{% from 'macros/base/icons.html' import icon %}
+{#
+  Generic Form Modal using HTMX
+  
+  This template generates a create or edit form for any model using ModelIntrospector.
+  Works with HTMX for form submission and response handling.
+  
+  Variables:
+  - is_edit: Boolean indicating if this is an edit (true) or create (false) operation
+  - modal_title: Title for the modal
+  - action_url: URL to submit the form to
+  - model_name: Name of the model being created/edited
+  - fields: List of field definitions from ModelIntrospector
+#}
+<div class="modal-overlay fixed inset-0 z-50 flex items-center justify-center">
+    <!-- Backdrop -->
+    <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50" 
+         onclick="this.parentElement.remove()"></div>
+    
+    <!-- Modal Content -->
+    <div class="modal-content relative bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-screen overflow-y-auto">
+        <!-- Header -->
+        <div class="modal-header flex items-center justify-between p-6 border-b">
+            <h3 class="modal-title text-lg font-semibold text-gray-900">
+                {{ modal_title }}
+            </h3>
+            <button onclick="this.closest('.modal-overlay').remove()" 
+                    class="modal-close-button text-gray-400 hover:text-gray-600 transition-colors">
+                {{ icon('x-mark', 'lg') }}
+            </button>
+        </div>
+        
+        <!-- Form -->
+        <form hx-post="{{ action_url }}" 
+              hx-target="#modal-content-area"
+              hx-swap="innerHTML"
+              class="modal-form">
+            
+            <!-- Form Fields Container -->
+            <div id="modal-content-area" class="modal-body p-6 space-y-4">
+                {% for field in fields %}
+                <div class="form-field">
+                    <label for="{{ field.name }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ field.label }}
+                        {% if field.required %}
+                        <span class="text-red-500">*</span>
+                        {% endif %}
+                    </label>
+                    
+                    {% if field.type == 'select' %}
+                        <select id="{{ field.name }}" 
+                                name="{{ field.name }}" 
+                                {% if field.required %}required{% endif %}
+                                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select {{ field.label }}</option>
+                            {% for value, label in field.choices %}
+                            <option value="{{ value }}" 
+                                {% if is_edit and field.value == value %}selected
+                                {% elif not is_edit and field.default == value %}selected
+                                {% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    
+                    {% elif field.type == 'textarea' %}
+                        <textarea id="{{ field.name }}" 
+                                  name="{{ field.name }}" 
+                                  rows="{{ field.get('rows', 3) }}"
+                                  {% if field.required %}required{% endif %}
+                                  {% if field.placeholder %}placeholder="{{ field.placeholder }}"{% endif %}
+                                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{% if is_edit %}{{ field.value or '' }}{% else %}{{ field.default or '' }}{% endif %}</textarea>
+                    
+                    {% elif field.type == 'checkbox' %}
+                        <div class="flex items-center">
+                            <input type="checkbox" 
+                                   id="{{ field.name }}" 
+                                   name="{{ field.name }}"
+                                   value="true"
+                                   {% if is_edit and field.value %}checked
+                                   {% elif not is_edit and field.default %}checked
+                                   {% endif %}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="{{ field.name }}" class="ml-2 text-sm text-gray-700">
+                                {{ field.description or field.label }}
+                            </label>
+                        </div>
+                    
+                    {% elif field.type == 'number' %}
+                        <input type="number" 
+                               id="{{ field.name }}" 
+                               name="{{ field.name }}"
+                               value="{% if is_edit %}{{ field.value or '' }}{% else %}{{ field.default or '' }}{% endif %}"
+                               {% if field.required %}required{% endif %}
+                               {% if field.get('min') is not none %}min="{{ field.min }}"{% endif %}
+                               {% if field.get('max') is not none %}max="{{ field.max }}"{% endif %}
+                               {% if field.get('step') %}step="{{ field.step }}"{% endif %}
+                               {% if field.placeholder %}placeholder="{{ field.placeholder }}"{% endif %}
+                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    
+                    {% else %}
+                        <input type="{{ field.type }}" 
+                               id="{{ field.name }}" 
+                               name="{{ field.name }}"
+                               value="{% if is_edit %}{{ field.value or '' }}{% else %}{{ field.default or '' }}{% endif %}"
+                               {% if field.required %}required{% endif %}
+                               {% if field.placeholder %}placeholder="{{ field.placeholder }}"{% endif %}
+                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    {% endif %}
+                    
+                    {% if field.description %}
+                    <p class="mt-1 text-sm text-gray-500">{{ field.description }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Footer -->
+            <div class="modal-footer flex items-center justify-end p-6 border-t space-x-3">
+                <button type="button" 
+                        onclick="this.closest('.modal-overlay').remove()" 
+                        class="modal-cancel-button px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Cancel
+                </button>
+                <button type="submit" 
+                        class="modal-save-button px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    {% if is_edit %}Update{% else %}Create{% endif %} {{ model_name }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

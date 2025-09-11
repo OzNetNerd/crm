@@ -45,10 +45,11 @@ class ModalService:
             'form': form,
             'action_url': f'/modals/{model_name}/create',
             'modal_title': f'Create {model_name}',
+            'is_edit': False,
             **kwargs
         }
         
-        return render_template('components/modals/generic_create_modal.html', **template_vars)
+        return render_template('components/modals/generic_form_modal.html', **template_vars)
     
     @staticmethod
     def render_edit_modal(model_name: str, entity_id: int, **kwargs) -> str:
@@ -82,10 +83,11 @@ class ModalService:
             'form': form,
             'action_url': f'/modals/{model_name}/{entity_id}/update',
             'modal_title': f'Edit {model_name}',
+            'is_edit': True,
             **kwargs
         }
         
-        return render_template('components/modals/generic_edit_modal.html', **template_vars)
+        return render_template('components/modals/generic_form_modal.html', **template_vars)
     
     @staticmethod
     def process_form_submission(model_name: str, entity_id: Optional[int] = None) -> Dict[str, Any]:

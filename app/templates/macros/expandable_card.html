@@ -1,3 +1,4 @@
+{% from 'macros/base/icons.html' import icon %}
 {#
   Expandable Card Component - Modernized modular card system with object composition
   
@@ -86,9 +87,7 @@
             
             <!-- Expand chevron -->
             <div class="ml-4 transition-transform duration-200 details-chevron">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
+                {{ icon('chevron-down', 'md', 'text-gray-400') }}
             </div>
         </div>
     </summary>

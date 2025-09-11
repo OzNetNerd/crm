@@ -1,3 +1,4 @@
+{% from 'macros/base/icons.html' import icon %}
 {# Entity Filter System - Unified filtering components for all entity pages #}
 
 {#
@@ -57,16 +58,12 @@
                 <button @click="viewMode = 'grid'" 
                         :class="viewMode === 'grid' ? 'text-blue-600' : 'text-gray-400'"
                         class="p-1 hover:text-blue-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
+                    {{ icon('squares-2x2', 'md') }}
                 </button>
                 <button @click="viewMode = 'list'" 
                         :class="viewMode === 'list' ? 'text-blue-600' : 'text-gray-400'"
                         class="p-1 hover:text-blue-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                    </svg>
+                    {{ icon('clipboard-list', 'md') }}
                 </button>
             </div>
             {% endif %}

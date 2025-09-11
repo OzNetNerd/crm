@@ -399,10 +399,6 @@
 .select-custom {
     appearance: none;
     background-color: white;
-    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23374151'><path d='M4.5 6.5L8 10l3.5-3.5H4.5z'/></svg>");
-    background-repeat: no-repeat;
-    background-position: calc(100% - 12px) center;
-    background-size: 16px 16px;
     padding-right: 3rem;
     cursor: pointer;
     user-select: none;
@@ -412,6 +408,23 @@
     text-overflow: ellipsis;
     overflow: hidden;
     text-align: center;
+    /* Icon should be added via HTML using centralized icon system */
+    position: relative;
+}
+
+/* Dropdown arrow positioning for centralized icons */
+.select-custom-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.select-custom-wrapper .select-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #374151;
 }
 
 .select-custom:focus {
@@ -429,14 +442,22 @@
 .multiselect-button {
     appearance: none;
     background-color: white;
-    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23374151'><path d='M4.5 6.5L8 10l3.5-3.5H4.5z'/></svg>");
-    background-repeat: no-repeat;
-    background-position: calc(100% - 12px) center;
-    background-size: 16px 16px;
     padding-right: 3rem;
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
+    /* Icon should be added via HTML using centralized icon system */
+    position: relative;
+}
+
+/* Multiselect dropdown arrow positioning */
+.multiselect-custom .multiselect-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #374151;
     display: inline-block;
     width: 160px;
     text-overflow: ellipsis;
