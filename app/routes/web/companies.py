@@ -78,27 +78,8 @@ def content():
 
 @companies_bp.route("/")
 def index():
-    # Get filter parameters for initial state and URL persistence
-    group_by = request.args.get("group_by", "industry")
-    sort_by = request.args.get("sort_by", "name")
-    sort_direction = request.args.get("sort_direction", "asc")
-    show_completed = request.args.get("show_completed", "false").lower() == "true"
-    primary_filter = (
-        request.args.get("primary_filter", "").split(",")
-        if request.args.get("primary_filter")
-        else []
-    )
-    secondary_filter = (
-        request.args.get("secondary_filter", "").split(",")
-        if request.args.get("secondary_filter")
-        else []
-    )
-    entity_filter = (
-        request.args.get("entity_filter", "").split(",")
-        if request.args.get("entity_filter")
-        else []
-    )
-
+    from app.utils.index_helpers import UniversalIndexHelper
+    
     # Get all companies with relationships
     companies = Company.query.all()
 
@@ -148,24 +129,23 @@ def index():
         for company in companies
     ]
 
-    today = date.today()
-    
-    # Ultra-DRY dropdown and entity configuration generation
-    from app.utils.form_configs import DropdownConfigGenerator, EntityConfigGenerator
-    dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('companies', group_by, sort_by, sort_direction, primary_filter)
-    
-    # Generate entity configuration using DRY system
-    entity_config = EntityConfigGenerator.generate_entity_page_config('companies', Company)
+    # Generate entity stats
+    from app.utils.form_configs import EntityConfigGenerator
     entity_stats = EntityConfigGenerator.generate_entity_stats('companies', companies, Company)
-
-    return render_template(
-        "base/entity_index.html",
-        **entity_config,
-        entity_stats=entity_stats,
-        dropdown_configs=dropdown_configs,
-        companies=companies,
-        companies_data=companies_data,
+    
+    # Get standardized context using universal helper
+    context = UniversalIndexHelper.get_standardized_index_context(
+        entity_name='companies',
+        default_group_by='industry',
+        default_sort_by='name',
+        additional_context={
+            'entity_stats': entity_stats,
+            'companies': companies,
+            'companies_data': companies_data,
+        }
     )
+
+    return render_template("base/entity_index.html", **context)
 
 
 
