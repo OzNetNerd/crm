@@ -2,13 +2,15 @@
 Modal Service for HTMX-based form handling.
 
 This service provides a clean interface for handling modal forms using HTMX,
-leveraging the existing ModelIntrospector system for form generation.
+leveraging WTForms with DynamicFormBuilder for form generation and validation.
 """
 
 from typing import Dict, Any, Optional
 from flask import render_template, jsonify, request
 from app.models import db
 from app.utils.model_introspection import ModelIntrospector, get_model_by_name
+from app.utils.dynamic_form_builder import DynamicFormBuilder
+from app.forms.base_forms import BaseForm
 
 
 class ModalService:
@@ -19,7 +21,7 @@ class ModalService:
     @staticmethod
     def render_create_modal(model_name: str, **kwargs) -> str:
         """
-        Render a create modal for the specified model.
+        Render a create modal for the specified model using WTForms.
         
         Args:
             model_name: Name of the model (e.g., 'Task', 'Company')
@@ -33,13 +35,14 @@ class ModalService:
             return render_template('components/modals/error_modal.html', 
                                  error=f"Unknown model: {model_name}")
         
-        # Get form fields from model introspection
-        fields = ModelIntrospector.get_form_fields(model_class)
+        # Generate dynamic WTForms form class
+        form_class = DynamicFormBuilder.build_dynamic_form(model_class, BaseForm)
+        form = form_class()
         
         template_vars = {
             'model_name': model_name,
             'model_class': model_class,
-            'fields': fields,
+            'form': form,
             'action_url': f'/modals/{model_name}/create',
             'modal_title': f'Create {model_name}',
             **kwargs
@@ -50,7 +53,7 @@ class ModalService:
     @staticmethod
     def render_edit_modal(model_name: str, entity_id: int, **kwargs) -> str:
         """
-        Render an edit modal for the specified model and entity.
+        Render an edit modal for the specified model and entity using WTForms.
         
         Args:
             model_name: Name of the model (e.g., 'Task', 'Company')
@@ -68,18 +71,15 @@ class ModalService:
         # Get the entity
         entity = model_class.query.get_or_404(entity_id)
         
-        # Get form fields from model introspection
-        fields = ModelIntrospector.get_form_fields(model_class)
-        
-        # Pre-populate field values from entity
-        for field in fields:
-            field['value'] = getattr(entity, field['name'], field.get('default'))
+        # Generate dynamic WTForms form class and populate with entity data
+        form_class = DynamicFormBuilder.build_dynamic_form(model_class, BaseForm)
+        form = form_class(obj=entity)
         
         template_vars = {
             'model_name': model_name,
             'model_class': model_class,
             'entity': entity,
-            'fields': fields,
+            'form': form,
             'action_url': f'/modals/{model_name}/{entity_id}/update',
             'modal_title': f'Edit {model_name}',
             **kwargs
@@ -90,7 +90,7 @@ class ModalService:
     @staticmethod
     def process_form_submission(model_name: str, entity_id: Optional[int] = None) -> Dict[str, Any]:
         """
-        Process form submission for create or update operations.
+        Process form submission for create or update operations using WTForms validation.
         
         Args:
             model_name: Name of the model
@@ -109,68 +109,71 @@ class ModalService:
             }
         
         try:
-            # Get form fields to validate against
-            fields = ModelIntrospector.get_form_fields(model_class)
-            field_names = {field['name'] for field in fields}
+            print(f"DEBUG: Processing form for model {model_name}, entity_id: {entity_id}")
+            print(f"DEBUG: Form data: {request.form}")
             
+            # Get existing entity for updates
             if entity_id:
-                # Update existing entity
                 entity = model_class.query.get_or_404(entity_id)
                 operation = 'updated'
             else:
-                # Create new entity
-                entity = model_class()
+                entity = None
                 operation = 'created'
             
-            # Process form data
-            form_data = request.form.to_dict()
-            validation_errors = []
+            # Generate dynamic WTForms form class and populate with request data
+            form_class = DynamicFormBuilder.build_dynamic_form(model_class, BaseForm)
+            form = form_class(obj=entity)
             
-            for field in fields:
-                field_name = field['name']
-                if field_name in form_data:
-                    value = form_data[field_name]
-                    
-                    # Basic validation
-                    if field.get('required') and not value:
-                        validation_errors.append(f"{field['label']} is required")
-                        continue
-                    
-                    # Type conversion
-                    if field['type'] == 'number' and value:
-                        try:
-                            value = int(value)
-                        except ValueError:
-                            validation_errors.append(f"{field['label']} must be a number")
-                            continue
-                    elif field['type'] == 'date' and value:
-                        # Flask-SQLAlchemy handles date conversion automatically
-                        pass
-                    
-                    # Set the value
-                    setattr(entity, field_name, value or None)
+            print(f"DEBUG: Form class: {form_class}")
+            print(f"DEBUG: Form fields: {[field.name for field in form]}")
+            print(f"DEBUG: Form validation result: {form.validate_on_submit()}")
+            if form.errors:
+                print(f"DEBUG: Form errors: {form.errors}")
             
-            if validation_errors:
+            # Validate form using WTForms
+            if form.validate_on_submit():
+                # Create or update entity
+                if not entity:
+                    entity = model_class()
+                
+                # Populate entity with form data using WTForms
+                form.populate_obj(entity)
+                
+                # Save to database
+                if not entity_id:
+                    db.session.add(entity)
+                db.session.commit()
+                
+                return {
+                    'success': True,
+                    'message': f"{model_name} {operation} successfully",
+                    'entity_id': entity.id,
+                    'html': render_template('components/modals/form_success.html', 
+                                          message=f"{model_name} {operation} successfully",
+                                          entity=entity)
+                }
+            else:
+                # Form validation failed - re-render form with errors
+                action_url = f'/modals/{model_name}/create' if not entity_id else f'/modals/{model_name}/{entity_id}/update'
+                modal_title = f'Create {model_name}' if not entity_id else f'Edit {model_name}'
+                template_name = 'components/modals/generic_create_modal.html' if not entity_id else 'components/modals/generic_edit_modal.html'
+                
+                template_vars = {
+                    'model_name': model_name,
+                    'model_class': model_class,
+                    'form': form,
+                    'action_url': action_url,
+                    'modal_title': modal_title,
+                }
+                
+                if entity_id:
+                    template_vars['entity'] = entity
+                
                 return {
                     'success': False,
-                    'errors': validation_errors,
-                    'html': render_template('components/modals/form_error.html', 
-                                          errors=validation_errors)
+                    'errors': form.errors,
+                    'html': render_template(template_name, **template_vars)
                 }
-            
-            # Save to database
-            if not entity_id:
-                db.session.add(entity)
-            db.session.commit()
-            
-            return {
-                'success': True,
-                'message': f"{model_name} {operation} successfully",
-                'entity_id': entity.id,
-                'html': render_template('components/modals/form_success.html', 
-                                      message=f"{model_name} {operation} successfully",
-                                      entity=entity)
-            }
             
         except Exception as e:
             db.session.rollback()
