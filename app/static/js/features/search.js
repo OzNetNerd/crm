@@ -85,13 +85,13 @@ class SearchManager {
                 case 'Enter':
                     e.preventDefault();
                     if (current) {
-                        // Trigger the same modal event as clicking
+                        // Trigger view modal event for global search (read-only)
                         const entityType = current.dataset.entityType;
                         const entityId = current.dataset.entityId;
                         
                         if (entityType && entityId) {
                             window.dispatchEvent(new CustomEvent(`open-detail-${entityType}-modal`, {
-                                detail: { id: parseInt(entityId) }
+                                detail: { id: parseInt(entityId), readOnly: true }
                             }));
                             
                             this.hideResults();
@@ -251,9 +251,9 @@ class SearchManager {
                 const entityType = item.dataset.entityType;
                 const entityId = item.dataset.entityId;
                 
-                // Dispatch modal open event
+                // Dispatch view modal event for global search (read-only)
                 window.dispatchEvent(new CustomEvent(`open-detail-${entityType}-modal`, {
-                    detail: { id: parseInt(entityId) }
+                    detail: { id: parseInt(entityId), readOnly: true }
                 }));
                 
                 // Hide search results
