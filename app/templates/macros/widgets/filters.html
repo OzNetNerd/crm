@@ -22,6 +22,7 @@
 #}
 {% macro entity_filter_controls(entity_type, group_options, sort_options, filter_options=None, show_completed_toggle=false, show_view_toggle=false, expand_collapse_target='expandedSections') %}
 {% from "macros/ui_elements.html" import expand_collapse_controls %}
+{% from "macros/ui/controls.html" import pure_css_dropdown %}
 
 <div class="card-padded-lg filter-section-enhanced">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:gap-6">
@@ -30,34 +31,7 @@
             <label class="text-label-dark">Group by:</label>
             
             <!-- Group By Dropdown -->
-            <div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
-                <button type="button" 
-                        class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
-                        @click="open = !open">
-                    <span x-text="getGroupByDisplayText()"></span>
-                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </button>
-                
-                <div x-show="open" 
-                     x-cloak
-                     x-transition:enter="transition ease-out duration-100"
-                     x-transition:enter-start="transform opacity-0 scale-95"
-                     x-transition:enter-end="transform opacity-100 scale-100"
-                     x-transition:leave="transition ease-in duration-75"
-                     x-transition:leave-start="transform opacity-100 scale-100"
-                     x-transition:leave-end="transform opacity-0 scale-95"
-                     class="multiselect-dropdown">
-                    <div class="multiselect-options">
-                        {% for option in group_options %}
-                        <div class="multiselect-option" @click="groupBy = '{{ option.value }}'; updateFilters(); open = false">
-                            <span>{{ option.label }}</span>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+            {{ pure_css_dropdown('Group by', group_options, name='group_by', hx_target='#' + entity_type + '-content', hx_get='/' + entity_type + '/filter') }}
             
             {% if show_completed_toggle %}
             <label class="flex items-center">
@@ -100,78 +74,12 @@
             <label class="text-label-dark">Sort by:</label>
             
             <!-- Sort By Dropdown -->
-            <div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
-                <button type="button" 
-                        class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
-                        @click="open = !open">
-                    <span x-text="getSortByDisplayText()"></span>
-                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </button>
-                
-                <div x-show="open" 
-                     x-cloak
-                     x-transition:enter="transition ease-out duration-100"
-                     x-transition:enter-start="transform opacity-0 scale-95"
-                     x-transition:enter-end="transform opacity-100 scale-100"
-                     x-transition:leave="transition ease-in duration-75"
-                     x-transition:leave-start="transform opacity-100 scale-100"
-                     x-transition:leave-end="transform opacity-0 scale-95"
-                     class="multiselect-dropdown">
-                    <div class="multiselect-options">
-                        {% for option in sort_options %}
-                        <div class="multiselect-option" @click="if (sortBy === '{{ option.value }}') { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortBy = '{{ option.value }}'; } updateFilters(); open = false">
-                            <span>{{ option.label }}</span>
-                            <span x-show="sortBy === '{{ option.value }}'" x-text="sortDirection === 'asc' ? '↑' : '↓'" class="ml-auto text-gray-500"></span>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+            {{ pure_css_dropdown('Sort by', sort_options, name='sort_by', hx_target='#' + entity_type + '-content', hx_get='/' + entity_type + '/filter') }}
             
             {% if filter_options %}
             {% for filter_key, filter_opts in filter_options.items() %}
             <!-- {{ filter_key|title }} Filter -->
-            <div class="multiselect-custom" x-data="{ open: false }" @click.away="open = false">
-                <button type="button" 
-                        class="select-custom px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 flex items-center justify-between min-w-[120px]" 
-                        @click="open = !open">
-                    <span x-text="get{{ filter_key|title }}DisplayText()"></span>
-                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </button>
-                
-                <div x-show="open" 
-                     x-cloak
-                     x-transition:enter="transition ease-out duration-100"
-                     x-transition:enter-start="transform opacity-0 scale-95"
-                     x-transition:enter-end="transform opacity-100 scale-100"
-                     x-transition:leave="transition ease-in duration-75"
-                     x-transition:leave-start="transform opacity-100 scale-100"
-                     x-transition:leave-end="transform opacity-0 scale-95"
-                     class="multiselect-dropdown">
-                    <div class="multiselect-header">
-                        <div class="multiselect-controls">
-                            <span class="multiselect-control-btn" @click="{{ filter_key }}Filter = [{% for opt in filter_opts %}'{{ opt.value if opt is mapping else opt }}'{% if not loop.last %}, {% endif %}{% endfor %}]; updateFilters()">Select All</span>
-                            <span class="multiselect-control-btn" @click="{{ filter_key }}Filter = []; updateFilters()">Deselect All</span>
-                        </div>
-                    </div>
-                    <div class="multiselect-options">
-                        <div class="multiselect-option" @click="{{ filter_key }}Filter = []; updateFilters()">
-                            <input type="checkbox" :checked="{{ filter_key }}Filter.length === 0" class="mr-2">
-                            <span>All {{ filter_key|title }}</span>
-                        </div>
-                        {% for opt in filter_opts %}
-                        <div class="multiselect-option" @click="toggle{{ filter_key|title }}('{{ opt.value if opt is mapping else opt }}')">
-                            <input type="checkbox" :checked="{{ filter_key }}Filter.includes('{{ opt.value if opt is mapping else opt }}')" class="mr-2">
-                            <span>{{ opt.label if opt is mapping else opt|title }}</span>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+            {{ pure_css_dropdown('Filter by ' + filter_key|title, filter_opts, name=filter_key + '_filter', hx_target='#' + entity_type + '-content', hx_get='/' + entity_type + '/filter') }}
             {% endfor %}
             {% endif %}
         </div>

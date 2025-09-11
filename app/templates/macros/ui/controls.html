@@ -235,3 +235,175 @@
     {% endif %}
 </div>
 {% endmacro %}
+
+{#
+  HTMX Dropdown Select - Pure HTMX dropdown with Tailwind styling
+  
+  Styled exactly like the provided example with Tailwind CSS.
+  Uses pure CSS for dropdown behavior - no JavaScript needed.
+  
+  Parameters:
+  - button_text (required): Text to display in the button (e.g., 'Sort by: Company')
+  - options (required): List of options as [{'value': 'val', 'label': 'Label'}] or simple strings
+  - name (optional): Form field name for HTMX submission
+  - current_value (optional): Currently selected value
+  - hx_target (optional): HTMX target for form submission
+  - hx_post (optional): HTMX post URL
+  - additional_classes (optional): Extra CSS classes for the container
+  
+  Usage:
+  {{ htmx_dropdown_select('Sort by: Company', [{'value': 'company', 'label': 'Company'}, {'value': 'email', 'label': 'Email'}], hx_target='#content') }}
+#}
+{% macro htmx_dropdown_select(button_text, options, name=None, current_value=None, hx_target=None, hx_post=None, additional_classes='') %}
+<div class="relative {{ additional_classes }}">
+    <div class="group">
+        <button type="button" 
+                class="bg-white border border-gray-300 rounded-md px-4 py-2 text-left w-48 flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 peer"
+                tabindex="0">
+            <span>{{ button_text }}</span>
+            <svg class="w-4 h-4 ml-2 transition-transform group-focus-within:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </button>
+        
+        <div class="absolute mt-1 w-48 bg-white border border-gray-300 rounded-md shadow-lg z-50 opacity-0 scale-95 pointer-events-none transition-all duration-200 peer-focus:opacity-100 peer-focus:scale-100 peer-focus:pointer-events-auto group-focus-within:opacity-100 group-focus-within:scale-100 group-focus-within:pointer-events-auto">
+            {% for option in options %}
+                {%- if option is mapping -%}
+                    {%- set option_value = option.value -%}
+                    {%- set option_label = option.label -%}
+                {%- else -%}
+                    {%- set option_value = option -%}
+                    {%- set option_label = option|title -%}
+                {%- endif -%}
+                
+                {% if name and hx_target %}
+                    <button type="submit" 
+                            name="{{ name }}" 
+                            value="{{ option_value }}"
+                            {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
+                            {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
+                            class="block w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option_value == current_value %}bg-blue-50 text-blue-700{% endif %}">
+                        {{ option_label }}
+                    </button>
+                {% else %}
+                    <a href="#" 
+                       class="block px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option_value == current_value %}bg-blue-50 text-blue-700{% endif %}">
+                        {{ option_label }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  HTMX Sort Dropdown - Pure HTMX dropdown for sorting with direction indicators
+  
+  Parameters:
+  - current_sort (optional): Currently selected sort value
+  - current_direction (optional): Current sort direction ('asc' or 'desc')
+  - sort_options (required): List of sort options
+  - hx_target (optional): HTMX target for form submission
+  - hx_post (optional): HTMX post URL
+  
+  Usage:
+  {{ htmx_sort_dropdown('name', 'asc', [{'value': 'name', 'label': 'Company'}], hx_target='#content') }}
+#}
+{% macro htmx_sort_dropdown(current_sort='', current_direction='asc', sort_options=[], hx_target=None, hx_post=None, additional_classes='') %}
+{%- set button_text = 'Sort by: ' + (sort_options | selectattr('value', 'equalto', current_sort) | map(attribute='label') | first or 'Select') -%}
+{%- set direction_indicator = ' ↑' if current_direction == 'asc' else ' ↓' -%}
+
+<div class="relative {{ additional_classes }}">
+    <div class="group">
+        <button type="button" 
+                class="bg-white border border-gray-300 rounded-md px-4 py-2 text-left w-48 flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 peer"
+                tabindex="0">
+            <span>{{ button_text }}{{ direction_indicator if current_sort }}</span>
+            <svg class="w-4 h-4 ml-2 transition-transform group-focus-within:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </button>
+        
+        <div class="absolute mt-1 w-48 bg-white border border-gray-300 rounded-md shadow-lg z-50 opacity-0 scale-95 pointer-events-none transition-all duration-200 peer-focus:opacity-100 peer-focus:scale-100 peer-focus:pointer-events-auto group-focus-within:opacity-100 group-focus-within:scale-100 group-focus-within:pointer-events-auto">
+            {% for option in sort_options %}
+                <button type="submit" 
+                        name="sort_by" 
+                        value="{{ option.value }}"
+                        {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
+                        {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
+                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option.value == current_sort %}bg-blue-50 text-blue-700{% endif %}">
+                    <span class="flex items-center justify-between">
+                        <span>{{ option.label }}</span>
+                        {% if option.value == current_sort %}
+                            <span class="text-gray-500">{{ '↑' if current_direction == 'asc' else '↓' }}</span>
+                        {% endif %}
+                    </span>
+                    <input type="hidden" name="sort_direction" value="{{ 'desc' if option.value == current_sort and current_direction == 'asc' else 'asc' }}">
+                </button>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  Pure CSS Dropdown using Tailwind - No JavaScript required
+  
+  This uses focus/focus-within CSS states to show/hide the dropdown.
+  Styled exactly like your example: bg-white border border-gray-300 rounded-md px-4 py-2
+  
+  Parameters:
+  - button_text (required): Text to display in the button (e.g., 'Sort by: Company')
+  - options (required): List of options as [{'value': 'val', 'label': 'Label'}] or simple strings
+  - name (optional): Form field name for HTMX submission
+  - current_value (optional): Currently selected value
+  - hx_target (optional): HTMX target for form submission
+  - hx_get/hx_post (optional): HTMX endpoint
+  
+  Usage:
+  {{ pure_css_dropdown('Sort by: Company', [{'value': 'company', 'label': 'Company'}, {'value': 'email', 'label': 'Email'}]) }}
+#}
+{% macro pure_css_dropdown(button_text, options, name=None, current_value=None, hx_target=None, hx_get=None, hx_post=None, additional_classes='') %}
+<div class="relative {{ additional_classes }}">
+    <div class="group">
+        <button type="button" 
+                class="bg-white border border-gray-300 rounded-md px-4 py-2 text-left flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 peer min-w-[12rem]"
+                tabindex="0">
+            <span>{{ button_text }}</span>
+            <svg class="w-4 h-4 ml-2 transition-transform group-focus-within:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </button>
+        
+        <div class="absolute mt-1 min-w-[12rem] bg-white border border-gray-300 rounded-md shadow-lg z-50 opacity-0 scale-95 pointer-events-none transition-all duration-200 peer-focus:opacity-100 peer-focus:scale-100 peer-focus:pointer-events-auto group-focus-within:opacity-100 group-focus-within:scale-100 group-focus-within:pointer-events-auto">
+            {% for option in options %}
+                {%- if option is mapping -%}
+                    {%- set option_value = option.value -%}
+                    {%- set option_label = option.label -%}
+                {%- else -%}
+                    {%- set option_value = option -%}
+                    {%- set option_label = option|title -%}
+                {%- endif -%}
+                
+                {% if name %}
+                    <button type="submit" 
+                            name="{{ name }}" 
+                            value="{{ option_value }}"
+                            {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
+                            {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
+                            {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
+                            class="block w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option_value == current_value %}bg-blue-50 text-blue-700{% endif %}">
+                        {{ option_label }}
+                    </button>
+                {% else %}
+                    <a href="#" 
+                       class="block px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option_value == current_value %}bg-blue-50 text-blue-700{% endif %}">
+                        {{ option_label }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
