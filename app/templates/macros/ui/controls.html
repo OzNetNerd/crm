@@ -20,10 +20,16 @@
     {%- set display_singular = singular -%}
     {%- if plural -%}
         {%- set display_plural = plural -%}
-    {%- elif singular == 'opportunity' -%}
-        {%- set display_plural = 'opportunities' -%}
     {%- else -%}
-        {%- set display_plural = singular + 's' -%}
+        {%- set plural_map = {
+            'opportunity': 'opportunities',
+            'company': 'companies', 
+            'category': 'categories',
+            'activity': 'activities',
+            'entity': 'entities',
+            'priority': 'priorities'
+        } -%}
+        {%- set display_plural = plural_map.get(singular, singular + 's') -%}
     {%- endif -%}
     
     {%- if short -%}
