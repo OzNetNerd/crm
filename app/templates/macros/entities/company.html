@@ -1,7 +1,0 @@
-{% from "macros/expandable_card.html" import expandable_card, action_buttons_row %}
-
-{% macro render_company(company) %}
-{{ expandable_card('company', company, company.id,
-    expansion_enabled=true,
-    action_buttons=action_buttons_row('company', company.id)) }}
-{% endmacro %}

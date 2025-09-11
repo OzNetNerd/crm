@@ -62,21 +62,7 @@
 </div>
 {% endmacro %}
 
-{# Notes Section - Common notes display for entities #}
-{% macro notes_section(notes, show_empty=true) %}
-<div class="notes-section">
-    <h4 class="text-sm font-medium text-gray-900 mb-2">Notes</h4>
-    {% if notes and notes.strip() %}
-        <div class="bg-gray-50 rounded-md p-3">
-            <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ notes }}</p>
-        </div>
-    {% elif show_empty %}
-        <div class="bg-gray-50 rounded-md p-3">
-            <p class="text-sm text-gray-500 italic">No notes available</p>
-        </div>
-    {% endif %}
-</div>
-{% endmacro %}
+{# Notes Section - Now handled by template components in components/notes/ #}
 
 {# Generic Detail Modal - Reusable detail display #}
 {% macro generic_detail_modal(modal_id, title, entity, fields, show_var="show") %}
@@ -105,7 +91,9 @@
             {% endfor %}
             
             {% if entity.notes %}
-                {{ notes_section(entity.notes) }}
+                {% with notes=entity.notes %}
+                    {% include 'components/notes/notes_display.html' %}
+                {% endwith %}
             {% endif %}
         </div>
     {% endcall %}

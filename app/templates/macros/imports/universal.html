@@ -49,40 +49,11 @@
 {% from "macros/base/layout.html" import page_layout %}
 
 {# === CARD COMPONENTS === #}
-{# Expandable card system used by all entities #}
+{# New modular card system - single import for all entities #}
 {% from "macros/expandable_card.html" import 
+    auto_card,
     expandable_card,
     action_buttons_row
-%}
-
-{# === ENTITY-SPECIFIC CARD COMPONENTS === #}
-{# Company cards #}
-{% from "macros/expandable_card.html" import 
-    company_header_content,
-    company_title_content,
-    company_metadata_content
-%}
-
-{# Stakeholder cards #}
-{% from "macros/expandable_card.html" import 
-    stakeholder_header_content,
-    stakeholder_title_content,
-    stakeholder_metadata_content
-%}
-
-{# Opportunity cards #}
-{% from "macros/expandable_card.html" import 
-    opportunity_header_content,
-    opportunity_title_content,
-    opportunity_metadata_content
-%}
-
-{# Task cards #}
-{% from "macros/expandable_card.html" import 
-    task_header_content,
-    task_title_content,
-    task_metadata_content,
-    task_reschedule_buttons
 %}
 
 {# === MODAL IMPORTS === #}
@@ -92,25 +63,23 @@
     modal_header,
     modal_body,
     modal_footer,
-    notes_section,
     generic_detail_modal
 %}
 
 {# Confirmation modals #}
 {% from "macros/modals/confirmation.html" import confirmation_modal %}
 
-{# Form modals #}
-{% from "macros/modals/forms.html" import 
-    company_new_modal,
-    opportunity_new_modal,
-    stakeholder_new_modal,
-    task_new_modal
-%}
+{# Generic new modal #}
+{% from "macros/modals/base/generic_new.html" import generic_new_modal %}
 
 {# Modal configurations #}
 {% from "macros/modals/configs.html" import 
     entity_modal_configs,
-    get_entity_modal_config
+    get_entity_modal_config,
+    company_new_config,
+    stakeholder_new_config,
+    opportunity_new_config,
+    task_new_config
 %}
 
 {# === HELPER MACROS === #}

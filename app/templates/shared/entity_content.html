@@ -1,5 +1,5 @@
-{# Universal HTMX Content Partial - Works for ALL entities using model metadata #}
-{% from "macros/expandable_card.html" import css_expandable_card, action_buttons_row %}
+{# Universal HTMX Content Partial - Works for ALL entities using new modular card system #}
+{% from "macros/expandable_card.html" import auto_card, expandable_card, action_buttons_row %}
 {% from "macros/ui_elements.html" import pluralized_count %}
 
 {# Pure CSS/HTML version - no Alpine.js needed #}
@@ -38,22 +38,14 @@
                     {# Handle special task logic for parent/child relationships #}
                     {% if entity_type == 'task' and entity.task_type != 'child' %}
                         <div class="p-4">
-                            {{ css_expandable_card(entity_type, entity, entity.id,
-                                expansion_enabled=true,
-                                field_config=card_config,
-                                model_class=model_class,
-                                action_buttons=action_buttons_row(entity_type, entity.id)) }}
+                            {{ auto_card(entity_type, entity) }}
                             
                             {# Render child tasks if this is a parent #}
                             {% if entity.task_type == 'parent' and entity.child_tasks %}
                                 <div class="ml-8 mt-4 space-y-2 border-l-2 border-gray-200 pl-4">
                                     {% for child_task in entity.child_tasks %}
                                         <div class="bg-gray-50 rounded-md p-3">
-                                            {{ css_expandable_card(entity_type, child_task, child_task.id,
-                                                expansion_enabled=true,
-                                                field_config=card_config,
-                                                model_class=model_class,
-                                                action_buttons=action_buttons_row(entity_type, child_task.id)) }}
+                                            {{ auto_card(entity_type, child_task) }}
                                         </div>
                                     {% endfor %}
                                 </div>
@@ -61,11 +53,7 @@
                         </div>
                     {% elif entity_type != 'task' or entity.task_type != 'child' %}
                         <div class="p-4">
-                            {{ css_expandable_card(entity_type, entity, entity.id,
-                                expansion_enabled=true,
-                                field_config=card_config,
-                                model_class=model_class,
-                                action_buttons=action_buttons_row(entity_type, entity.id)) }}
+                            {{ auto_card(entity_type, entity) }}
                         </div>
                     {% endif %}
                 {% endfor %}
