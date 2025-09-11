@@ -30,15 +30,8 @@ class Embedding(db.Model):
 
     def to_dict(self):
         """Convert embedding to dictionary for JSON serialization"""
-        return {
-            "id": self.id,
-            "content_type": self.content_type,
-            "content_id": self.content_id,
-            "text_content": self.text_content,
-            "embedding_vector": self.embedding_vector,
-            "embedding_metadata": self.embedding_metadata,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-        }
+        from app.utils.model_helpers import auto_serialize
+        return auto_serialize(self)
 
     def __repr__(self):
         return f"<Embedding {self.content_type}:{self.content_id}>"

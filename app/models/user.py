@@ -15,13 +15,8 @@ class User(db.Model):
 
     def to_dict(self):
         """Convert user to dictionary for JSON serialization"""
-        return {
-            "id": self.id,
-            "name": self.name,
-            "email": self.email,
-            "job_title": self.job_title,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-        }
+        from app.utils.model_helpers import auto_serialize
+        return auto_serialize(self)
 
     def get_company_assignments(self):
         """Get all companies this user is assigned to"""
@@ -79,14 +74,16 @@ class CompanyAccountTeam(db.Model):
 
     def to_dict(self):
         """Convert to dictionary for JSON serialization"""
-        return {
-            "user_id": self.user_id,
-            "company_id": self.company_id,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "user_name": self.user.name if self.user else None,
-            "user_job_title": self.user.job_title if self.user else None,
-            "company_name": self.company.name if self.company else None,
-        }
+        from app.utils.model_helpers import auto_serialize
+        
+        result = auto_serialize(self)
+        
+        # Add computed relationship fields
+        result["user_name"] = self.user.name if self.user else None
+        result["user_job_title"] = self.user.job_title if self.user else None
+        result["company_name"] = self.company.name if self.company else None
+        
+        return result
 
     def __repr__(self):
         return f"<CompanyAccountTeam {self.user.name if self.user else 'Unknown'} → {self.company.name if self.company else 'Unknown'}>"
@@ -113,14 +110,16 @@ class OpportunityAccountTeam(db.Model):
 
     def to_dict(self):
         """Convert to dictionary for JSON serialization"""
-        return {
-            "user_id": self.user_id,
-            "opportunity_id": self.opportunity_id,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "user_name": self.user.name if self.user else None,
-            "user_job_title": self.user.job_title if self.user else None,
-            "opportunity_name": self.opportunity.name if self.opportunity else None,
-        }
+        from app.utils.model_helpers import auto_serialize
+        
+        result = auto_serialize(self)
+        
+        # Add computed relationship fields
+        result["user_name"] = self.user.name if self.user else None
+        result["user_job_title"] = self.user.job_title if self.user else None
+        result["opportunity_name"] = self.opportunity.name if self.opportunity else None
+        
+        return result
 
     def __repr__(self):
         return f"<OpportunityAccountTeam {self.user.name if self.user else 'Unknown'} → {self.opportunity.name if self.opportunity else 'Unknown'}>"

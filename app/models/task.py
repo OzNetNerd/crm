@@ -309,39 +309,33 @@ class Task(db.Model):
 
     def to_dict(self):
         """Convert task to dictionary for JSON serialization"""
-        return {
-            "id": self.id,
-            "description": self.description,
-            "due_date": self.due_date.isoformat() if self.due_date else None,
-            "priority": self.priority,
-            "priority_css_class": self.get_priority_css_class(self.priority),
-            "status": self.status,
-            "status_css_class": self.get_status_css_class(self.status),
-            "next_step_type": self.next_step_type,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "completed_at": (
-                self.completed_at.isoformat() if self.completed_at else None
-            ),
-            "entity_name": self.entity_name,
-            "task_type": self.task_type,
-            "parent_task_id": self.parent_task_id,
-            "sequence_order": self.sequence_order,
-            "dependency_type": self.dependency_type,
-            "is_overdue": self.is_overdue,
-            "opportunity_value": self.opportunity_value,
-            "company_name": self.company_name,
-            "opportunity_name": self.opportunity_name,
-            "opportunity_stage": self.opportunity_stage,
-            "stakeholder_opportunity_name": self.stakeholder_opportunity_name,
-            "stakeholder_opportunity_value": self.stakeholder_opportunity_value,
-            "task_type_badge": self.task_type_badge,
-            "can_start": self.can_start,
-            "completion_percentage": self.completion_percentage,
-            "linked_entities": [
+        from app.utils.model_helpers import auto_serialize
+        
+        # Define properties to include beyond database columns
+        include_properties = [
+            "is_overdue", "entity_name", "opportunity_value", "company_name", 
+            "opportunity_name", "opportunity_stage", "stakeholder_opportunity_name", 
+            "stakeholder_opportunity_value", "task_type_badge", "can_start", 
+            "completion_percentage"
+        ]
+        
+        # Define custom transforms for specific fields
+        field_transforms = {
+            "priority": lambda val: val,  # Keep as-is but add CSS class separately
+            "status": lambda val: val,    # Keep as-is but add CSS class separately
+            "linked_entities": lambda _: [
                 {"type": entity["type"], "id": entity["id"], "name": entity["name"]}
                 for entity in self.linked_entities
-            ],
+            ]
         }
+        
+        result = auto_serialize(self, include_properties, field_transforms)
+        
+        # Add CSS classes for status and priority
+        result["priority_css_class"] = self.get_priority_css_class(self.priority)
+        result["status_css_class"] = self.get_status_css_class(self.status)
+        
+        return result
 
     def __repr__(self):
         return f"<Task {self.task_type}: {self.description[:50]}>"

@@ -162,14 +162,14 @@ class Company(db.Model):
 
     def to_dict(self):
         """Convert company to dictionary for JSON serialization"""
-        return {
-            "id": self.id,
-            "name": self.name,
-            "industry": self.industry,
-            "industry_css_class": self.get_industry_css_class(self.industry) if self.industry else '',
-            "website": self.website,
-            "size_category": self.size_category,
-            "stakeholders": [
+        from app.utils.model_helpers import auto_serialize
+        
+        # Define properties to include beyond database columns
+        include_properties = ["size_category", "account_team"]
+        
+        # Define custom transforms for relationships and CSS classes
+        field_transforms = {
+            "stakeholders": lambda _: [
                 {
                     "id": stakeholder.id,
                     "name": stakeholder.name,
@@ -178,8 +178,7 @@ class Company(db.Model):
                 }
                 for stakeholder in self.stakeholders
             ],
-            "account_team": self.get_account_team(),
-            "opportunities": [
+            "opportunities": lambda _: [
                 {
                     "id": opp.id,
                     "name": opp.name,
@@ -188,8 +187,15 @@ class Company(db.Model):
                     "probability": opp.probability,
                 }
                 for opp in self.opportunities
-            ],
+            ]
         }
+        
+        result = auto_serialize(self, include_properties, field_transforms)
+        
+        # Add CSS class for industry
+        result["industry_css_class"] = self.get_industry_css_class(self.industry) if self.industry else ''
+        
+        return result
 
     def __repr__(self):
         return f"<Company {self.name}>"

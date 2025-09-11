@@ -27,15 +27,8 @@ class ChatHistory(db.Model):
 
     def to_dict(self):
         """Convert chat history to dictionary for JSON serialization"""
-        return {
-            "id": self.id,
-            "session_id": self.session_id,
-            "user_message": self.user_message,
-            "bot_response": self.bot_response,
-            "context_used": self.context_used,
-            "response_metadata": self.response_metadata,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-        }
+        from app.utils.model_helpers import auto_serialize
+        return auto_serialize(self)
 
     def __repr__(self):
         return f"<ChatHistory {self.session_id} - {self.user_message[:50]}...>"

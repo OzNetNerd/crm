@@ -197,27 +197,33 @@ class Stakeholder(db.Model):
 
     def to_dict(self):
         """Convert stakeholder to dictionary for JSON serialization"""
-        return {
-            "id": self.id,
-            "name": self.name,
-            "job_title": self.job_title,
-            "email": self.email,
-            "phone": self.phone,
-            "company_id": self.company_id,
-            "company_name": self.company.name if self.company else None,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "contact_info_status": self.contact_info_status,
-            "meddpicc_roles": self.get_meddpicc_role_names(),
-            "relationship_owners": self.get_relationship_owners(),
-            "opportunities": [
+        from app.utils.model_helpers import auto_serialize
+        
+        # Define properties to include beyond database columns
+        include_properties = [
+            "contact_info_status", "meddpicc_roles", "relationship_owners"
+        ]
+        
+        # Define custom transforms for computed fields and relationships
+        field_transforms = {
+            "meddpicc_roles": lambda _: self.get_meddpicc_role_names(),
+            "relationship_owners": lambda _: self.get_relationship_owners(),
+            "opportunities": lambda _: [
                 {
                     "id": opp.id,
                     "name": opp.name,
                     "stage": opp.stage,
                 }
                 for opp in self.opportunities
-            ],
+            ]
         }
+        
+        result = auto_serialize(self, include_properties, field_transforms)
+        
+        # Add computed company name
+        result["company_name"] = self.company.name if self.company else None
+        
+        return result
     
     @property
     def contact_info_status(self):

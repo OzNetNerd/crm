@@ -238,3 +238,65 @@ class GenericAPIHandler:
 
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+
+
+class NotesAPIHandler:
+    """Generic handler for notes endpoints to eliminate duplication"""
+
+    def __init__(self, entity_model, entity_name):
+        self.entity_model = entity_model
+        self.entity_name = entity_name  # e.g. 'company', 'contact', 'opportunity'
+
+    def get_notes(self, entity_id):
+        """Get all notes for a specific entity"""
+        from app.models import Note
+        from app.utils.model_helpers import auto_serialize
+
+        try:
+            # Verify entity exists
+            self.entity_model.query.get_or_404(entity_id)
+
+            notes = (
+                Note.query.filter_by(entity_type=self.entity_name, entity_id=entity_id)
+                .order_by(Note.created_at.desc())
+                .all()
+            )
+
+            return jsonify([
+                auto_serialize(note, include_properties=['entity_name'])
+                for note in notes
+            ])
+
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    def create_note(self, entity_id):
+        """Create a new note for a specific entity"""
+        from app.models import Note
+        from app.utils.model_helpers import auto_serialize
+
+        try:
+            # Verify entity exists
+            self.entity_model.query.get_or_404(entity_id)
+
+            data = request.get_json()
+            if not data or not data.get("content"):
+                return jsonify({"error": "Note content is required"}), 400
+
+            note = Note(
+                content=data["content"],
+                entity_type=self.entity_name,
+                entity_id=entity_id,
+                is_internal=data.get("is_internal", True),
+            )
+
+            db.session.add(note)
+            db.session.commit()
+
+            return jsonify(
+                auto_serialize(note, include_properties=['entity_name'])
+            ), 201
+
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error": str(e)}), 500

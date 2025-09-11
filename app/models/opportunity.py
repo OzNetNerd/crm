@@ -213,24 +213,15 @@ class Opportunity(db.Model):
 
     def to_dict(self):
         """Convert opportunity to dictionary for JSON serialization"""
-        return {
-            "id": self.id,
-            "name": self.name,
-            "value": float(self.value) if self.value else None,
-            "probability": self.probability,
-            "expected_close_date": (
-                self.expected_close_date.isoformat()
-                if self.expected_close_date
-                else None
-            ),
-            "stage": self.stage,
-            "stage_css_class": self.get_stage_css_class(self.stage),
-            "calculated_priority": self.calculated_priority,
-            "company_id": self.company_id,
-            "company_name": self.company.name if self.company else None,
-            "deal_age": self.deal_age,
-            "created_at": self.created_at.isoformat(),
-            "stakeholders": [
+        from app.utils.model_helpers import auto_serialize
+        
+        # Define properties to include beyond database columns
+        include_properties = ["calculated_priority", "deal_age"]
+        
+        # Define custom transforms for specific fields and relationships
+        field_transforms = {
+            "value": lambda val: float(val) if val else None,
+            "stakeholders": lambda _: [
                 {
                     "id": stakeholder["id"],
                     "name": stakeholder["name"],
@@ -239,8 +230,16 @@ class Opportunity(db.Model):
                     "meddpicc_roles": stakeholder["meddpicc_roles"],
                 }
                 for stakeholder in self.get_stakeholders()
-            ],
+            ]
         }
+        
+        result = auto_serialize(self, include_properties, field_transforms)
+        
+        # Add computed company name and CSS class
+        result["company_name"] = self.company.name if self.company else None
+        result["stage_css_class"] = self.get_stage_css_class(self.stage)
+        
+        return result
 
     def __repr__(self):
         return f"<Opportunity {self.name}>"
