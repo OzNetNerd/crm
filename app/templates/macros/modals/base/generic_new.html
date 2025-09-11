@@ -44,7 +44,7 @@
         
         this.saving = true;
         try {
-            const payload = {% if config.payload_transform %}{{ config.payload_transform | safe }}{% else %}this.{{ entity_type }}{% endif %};
+            const payload = {% if config.payload_transform %}{{ config.payload_transform }}{% else %}this.{{ entity_type }}{% endif %};
             const response = await fetch('{{ config.api_endpoint }}', {
                 method: 'POST',
                 headers: {
