@@ -723,7 +723,7 @@ details[open] .details-chevron {
 
 {% if entity_type == 'task' %}
     <button hx-post="/api/tasks/{{ entity_id }}/complete"
-            hx-target="closest(.task-card)"
+            hx-target="closest .task-card"
             hx-swap="outerHTML"
             onclick="event.stopPropagation()"
             class="px-2 py-1 rounded text-action-sm transition-colors duration-200 text-success-hover hover:bg-green-50" 
@@ -740,7 +740,7 @@ details[open] .details-chevron {
     </button>
     <button hx-delete="/api/tasks/{{ entity_id }}"
             hx-confirm="Are you sure you want to delete this task?"
-            hx-target="closest(.task-card)"
+            hx-target="closest .task-card"
             hx-swap="outerHTML"
             onclick="event.stopPropagation()"
             class="px-2 py-1 rounded text-action-sm transition-colors duration-200 text-danger-hover hover:bg-red-50" 
@@ -769,7 +769,7 @@ details[open] .details-chevron {
     </button>
     <button hx-delete="/api/stakeholders/{{ entity_id }}"
             hx-confirm="Are you sure you want to delete this {{ entity_type }}?"
-            hx-target="closest(.stakeholder-card)"
+            hx-target="closest .stakeholder-card"
             hx-swap="outerHTML"
             onclick="event.stopPropagation()"
             class="px-2 py-1 rounded text-action-sm transition-colors duration-200 text-danger-hover hover:bg-red-50" 
