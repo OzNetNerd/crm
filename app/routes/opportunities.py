@@ -2,6 +2,7 @@ from datetime import date
 from flask import Blueprint, render_template, request, jsonify
 from app.models import Opportunity, Company, Stakeholder, Note, db
 from app.utils.route_helpers import GenericAPIHandler
+from collections import defaultdict
 
 opportunities_bp = Blueprint("opportunities", __name__)
 opportunity_handler = GenericAPIHandler(Opportunity, "opportunity")
@@ -11,8 +12,8 @@ opportunity_handler = GenericAPIHandler(Opportunity, "opportunity")
 def index():
     # Get filter parameters for initial state and URL persistence
     group_by = request.args.get("group_by", "stage")
-    sort_by = request.args.get("sort_by", "close_date")
-    sort_direction = request.args.get("sort_direction", "asc")
+    sort_by = request.args.get("sort_by", "value")
+    sort_direction = request.args.get("sort_direction", "desc")
     show_completed = request.args.get("show_completed", "false").lower() == "true"
     primary_filter = (
         request.args.get("primary_filter", "").split(",")
@@ -24,74 +25,45 @@ def index():
         if request.args.get("secondary_filter")
         else []
     )
-    entity_filter = (
-        request.args.get("entity_filter", "").split(",")
-        if request.args.get("entity_filter")
-        else []
-    )
 
-    # Get all opportunities with relationships
-    opportunities = (
-        Opportunity.query.join(Company)
-        .order_by(Opportunity.expected_close_date.asc())
-        .all()
-    )
-
-    # Get all companies and contacts for global data
-    companies_objects = Company.query.all()
-    contacts_objects = Stakeholder.query.all()
-
-    # Convert to JSON-serializable format for JavaScript
-    companies_data = [
-        {
-            "id": company.id,
-            "name": company.name,
-            "industry": company.industry,
-            "website": company.website,
-        }
-        for company in companies_objects
-    ]
-
-    contacts_data = [
-        {
-            "id": contact.id,
-            "name": contact.name,
-            "email": contact.email,
-            "phone": contact.phone,
-            "company_id": contact.company_id,
-        }
-        for contact in contacts_objects
-    ]
-
-    opportunities_data = [
-        {
-            "id": opp.id,
-            "name": opp.name,
-            "value": float(opp.value) if opp.value else 0,
-            "probability": opp.probability,
-            "stage": opp.stage,
-            "expected_close_date": (
-                opp.expected_close_date.isoformat() if opp.expected_close_date else None
-            ),
-            "created_at": opp.created_at.isoformat() if opp.created_at else None,
-            "company": (
-                {"id": opp.company.id, "name": opp.company.name}
-                if opp.company
-                else None
-            ),
-            "company_name": opp.company.name if opp.company else None,
-        }
-        for opp in opportunities
-    ]
-
+    # Get all opportunities for stats
+    opportunities = Opportunity.query.join(Company).all()
     today = date.today()
+
+    # Filter options for dropdowns
+    group_options = [
+        {'value': 'stage', 'label': 'Stage'},
+        {'value': 'company', 'label': 'Company'}
+    ]
+    
+    sort_options = [
+        {'value': 'name', 'label': 'Name'},
+        {'value': 'value', 'label': 'Value'},
+        {'value': 'stage', 'label': 'Stage'},
+        {'value': 'expected_close_date', 'label': 'Close Date'}
+    ]
+    
+    # Get unique stages for primary filter
+    stage_options = [
+        {'value': 'prospect', 'label': 'Prospect'},
+        {'value': 'qualified', 'label': 'Qualified'},
+        {'value': 'proposal', 'label': 'Proposal'},
+        {'value': 'negotiation', 'label': 'Negotiation'},
+        {'value': 'closed-won', 'label': 'Closed Won'},
+        {'value': 'closed-lost', 'label': 'Closed Lost'}
+    ]
+
+    # Get unique company names for secondary filter
+    company_options = []
+    companies = Company.query.with_entities(Company.name).distinct().all()
+    for company_tuple in companies:
+        company = company_tuple[0]
+        if company:
+            company_options.append({'value': company, 'label': company})
 
     return render_template(
         "opportunities/index.html",
         opportunities=opportunities,
-        companies=companies_data,
-        contacts=contacts_data,
-        opportunities_data=opportunities_data,
         today=today,
         # Filter states for URL persistence
         group_by=group_by,
@@ -100,7 +72,11 @@ def index():
         show_completed=show_completed,
         primary_filter=primary_filter,
         secondary_filter=secondary_filter,
-        entity_filter=entity_filter,
+        # Filter options for dropdowns
+        group_options=group_options,
+        sort_options=sort_options,
+        stage_options=stage_options,
+        company_options=company_options,
     )
 
 
@@ -208,6 +184,152 @@ def create_opportunity_note(opportunity_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+
+def get_filtered_opportunities_context():
+    """Server-side filtering and sorting for opportunities HTMX endpoints"""
+    # Get filter parameters
+    group_by = request.args.get("group_by", "stage")
+    sort_by = request.args.get("sort_by", "value")
+    sort_direction = request.args.get("sort_direction", "desc")
+    
+    # Parse filter arrays
+    primary_filter = []
+    if request.args.get("primary_filter"):
+        primary_filter = [p.strip() for p in request.args.get("primary_filter").split(",") if p.strip()]
+    
+    secondary_filter = []
+    if request.args.get("secondary_filter"):
+        secondary_filter = [p.strip() for p in request.args.get("secondary_filter").split(",") if p.strip()]
+
+    # Start with base query
+    query = Opportunity.query.join(Company)
+    
+    # Apply filters
+    if primary_filter:
+        query = query.filter(Opportunity.stage.in_(primary_filter))
+    
+    if secondary_filter:
+        query = query.filter(Company.name.in_(secondary_filter))
+    
+    # Apply sorting
+    if sort_by == "name":
+        if sort_direction == "desc":
+            query = query.order_by(Opportunity.name.desc())
+        else:
+            query = query.order_by(Opportunity.name.asc())
+    elif sort_by == "value":
+        if sort_direction == "desc":
+            query = query.order_by(Opportunity.value.desc().nulls_last())
+        else:
+            query = query.order_by(Opportunity.value.asc().nulls_last())
+    elif sort_by == "stage":
+        if sort_direction == "desc":
+            query = query.order_by(Opportunity.stage.desc())
+        else:
+            query = query.order_by(Opportunity.stage.asc())
+    elif sort_by == "expected_close_date":
+        if sort_direction == "desc":
+            query = query.order_by(Opportunity.expected_close_date.desc().nulls_last())
+        else:
+            query = query.order_by(Opportunity.expected_close_date.asc().nulls_last())
+    else:
+        # Default sort by value
+        query = query.order_by(Opportunity.value.desc().nulls_last())
+    
+    filtered_opportunities = query.all()
+    
+    # Group opportunities by the specified grouping
+    grouped_opportunities = group_opportunities_by_field(filtered_opportunities, group_by)
+    
+    return {
+        "grouped_opportunities": grouped_opportunities,
+        "group_by": group_by,
+        "total_count": len(filtered_opportunities),
+        "sort_by": sort_by,
+        "sort_direction": sort_direction,
+        "primary_filter": primary_filter,
+        "secondary_filter": secondary_filter,
+        "today": date.today(),
+    }
+
+
+def group_opportunities_by_field(opportunities, group_by):
+    """Group opportunities by specified field"""
+    grouped = defaultdict(list)
+    
+    if group_by == "stage":
+        for opportunity in opportunities:
+            stage = opportunity.stage or "Other"
+            grouped[stage].append(opportunity)
+        
+        # Return in stage order
+        stage_order = ["prospect", "qualified", "proposal", "negotiation", "closed-won", "closed-lost", "Other"]
+        result = []
+        for stage in stage_order:
+            if stage in grouped and grouped[stage]:
+                result.append({
+                    "key": stage,
+                    "label": stage.replace("-", " ").title(),
+                    "entities": grouped[stage],
+                    "count": len(grouped[stage])
+                })
+        return result
+        
+    elif group_by == "company":
+        for opportunity in opportunities:
+            company_name = opportunity.company.name if opportunity.company else "No Company"
+            grouped[company_name].append(opportunity)
+        
+        # Return sorted by company name
+        result = []
+        for company_name in sorted(grouped.keys()):
+            if grouped[company_name]:
+                result.append({
+                    "key": company_name,
+                    "label": company_name,
+                    "entities": grouped[company_name],
+                    "count": len(grouped[company_name])
+                })
+        return result
+    
+    else:
+        # Default: no grouping, return all in one group
+        return [{
+            "key": "all",
+            "label": "All Opportunities",
+            "entities": opportunities,
+            "count": len(opportunities)
+        }]
+
+
+@opportunities_bp.route("/content")
+def content():
+    """HTMX endpoint for filtered opportunity content"""
+    context = get_filtered_opportunities_context()
+    
+    # Universal template configuration
+    context.update({
+        'grouped_entities': context["grouped_opportunities"],
+        'entity_type': 'opportunity',
+        'entity_name_singular': 'opportunity',
+        'entity_name_plural': 'opportunities',
+        'card_config': {
+            'badge_field': 'stage',
+            'badge_style': 'blue',
+            'title_field': 'name',
+            'secondary_fields': [
+                {'field': 'company.name', 'type': 'text'},
+                {'field': 'contact.name', 'type': 'text'}
+            ],
+            'metadata_fields': [
+                {'field': 'close_date', 'type': 'date', 'format': '%d/%m/%y'},
+                {'field': 'created_at', 'type': 'date', 'format': '%m/%d/%y'}
+            ]
+        }
+    })
+    
+    return render_template("shared/entity_content.html", **context)
 
 
 @opportunities_bp.route("/create", methods=["GET", "POST"])

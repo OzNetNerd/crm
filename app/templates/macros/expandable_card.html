@@ -658,6 +658,14 @@
 {{ company.name }}
 {% endmacro %}
 
+{% macro stakeholder_title_content(stakeholder) %}
+{{ stakeholder.name }}
+{% endmacro %}
+
+{% macro opportunity_title_content(opportunity) %}
+{{ opportunity.name }}
+{% endmacro %}
+
 {% macro company_metadata_content(company) %}
 <div class="text-sm text-gray-500 flex items-center space-x-4">
     {% if company.contacts %}
