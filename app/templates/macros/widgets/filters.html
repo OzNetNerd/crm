@@ -22,7 +22,7 @@
        show_view_toggle=true) }}
 #}
 {% macro entity_filter_controls(entity_type, group_options, sort_options, filter_options=None, show_completed_toggle=false, show_view_toggle=false, expand_collapse_target='expandedSections') %}
-{% from "macros/ui_elements.html" import expand_collapse_controls %}
+{% from "macros/ui/controls.html" import expand_collapse_controls %}
 {% from "macros/ui/controls.html" import css_dropdown %}
 
 <div class="card-padded-lg filter-section-enhanced">
