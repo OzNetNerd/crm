@@ -1,0 +1,40 @@
+{% from 'macros/base/icons.html' import icon %}
+{#
+  Modal Error Display Template
+  
+  Displays error messages in a modal format when model operations fail.
+  Used by ModalService for unknown model errors.
+#}
+<div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="modal-container bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="modal-header flex items-center justify-between p-6 border-b">
+            <h3 class="text-lg font-medium text-gray-900">Error</h3>
+            <button type="button" 
+                    class="text-gray-400 hover:text-gray-600" 
+                    onclick="this.closest('.modal-backdrop').remove()">
+                {{ icon('x-mark', 'sm') }}
+            </button>
+        </div>
+        
+        <div class="modal-body p-6">
+            <div class="flex items-start">
+                {{ icon('x-circle', 'md', 'text-red-500 mr-3 mt-1') }}
+                <div class="text-gray-800">
+                    {% if error %}
+                        <p>{{ error }}</p>
+                    {% else %}
+                        <p>An unexpected error occurred. Please try again.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer flex justify-end p-6 border-t bg-gray-50">
+            <button type="button" 
+                    class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                    onclick="this.closest('.modal-backdrop').remove()">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
