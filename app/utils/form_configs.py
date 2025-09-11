@@ -285,8 +285,113 @@ class DynamicChoiceProvider:
 
     @staticmethod
     def get_company_size_choices() -> List[Dict[str, str]]:
-        """Get company size options - now using constants"""
-        return [
-            {"value": value, "label": label} 
-            for value, label in CompanySize.choices()
+        """Get company size options that match Company.size_category property"""
+        # Define constants that match the Company.size_category property logic
+        COMPANY_SIZE_CHOICES = [
+            {"value": "unknown", "label": "Unknown Size (0 contacts)"},
+            {"value": "small", "label": "Small (1-10 contacts)"},
+            {"value": "medium", "label": "Medium (11-50 contacts)"},
+            {"value": "large", "label": "Large (50+ contacts)"}
         ]
+        return COMPANY_SIZE_CHOICES
+
+
+class DropdownConfigGenerator:
+    """Ultra-DRY dropdown generator using pure model introspection"""
+    
+    @staticmethod
+    def get_model_by_entity_name(entity_name: str):
+        """Get model class from entity name"""
+        from app.models import Company, Task, Opportunity, Stakeholder, User
+        
+        model_map = {
+            'companies': Company,
+            'tasks': Task, 
+            'opportunities': Opportunity,
+            'stakeholders': Stakeholder,
+            'teams': User  # Teams manage User entities
+        }
+        return model_map.get(entity_name)
+    
+    @staticmethod
+    def generate_entity_dropdown_configs(entity_name: str, 
+                                       group_by: str = None,
+                                       sort_by: str = None, 
+                                       sort_direction: str = 'asc',
+                                       primary_filter: List[str] = None) -> Dict[str, Any]:
+        """Generate dropdown configs using pure model introspection - no hardcoded data"""
+        from app.utils.model_introspection import ModelIntrospector
+        
+        # Get model class
+        model_class = DropdownConfigGenerator.get_model_by_entity_name(entity_name)
+        if not model_class:
+            return {}
+        
+        # Get options from model metadata
+        group_fields = ModelIntrospector.get_groupable_fields(model_class)
+        sort_fields = ModelIntrospector.get_sortable_fields(model_class)
+        
+        # Convert to dropdown format
+        group_options = [{'value': field, 'label': label} for field, label in group_fields]
+        sort_options = [{'value': field, 'label': label} for field, label in sort_fields]
+        
+        # Standard sort directions
+        sort_direction_options = [
+            {'value': 'asc', 'label': 'Ascending'},
+            {'value': 'desc', 'label': 'Descending'}
+        ]
+        
+        # Get primary filterable field (first groupable field with choices)
+        filter_options = []
+        filter_name = 'All Items'
+        if group_fields:
+            primary_field = group_fields[0][0]  # First groupable field
+            choices = ModelIntrospector.get_field_choices(model_class, primary_field)
+            if choices:
+                filter_options = [{"value": value, "label": label} for value, label in choices]
+                filter_name = f'All {group_fields[0][1]}s'
+        
+        # HTMX targets using proper singular mapping
+        singular_map = {
+            'companies': 'company',
+            'tasks': 'task',
+            'opportunities': 'opportunity', 
+            'stakeholders': 'stakeholder',
+            'teams': 'team'
+        }
+        singular = singular_map.get(entity_name, entity_name)
+        hx_target = f'#{singular}-content'
+        hx_get = f'/{entity_name}/content'
+        
+        return {
+            'group_by': {
+                'button_text': 'Group by',
+                'options': group_options,
+                'current_value': group_by or '',
+                'name': 'group_by',
+                'hx_target': hx_target,
+                'hx_get': hx_get
+            },
+            'sort_by': {
+                'button_text': 'Sort by',
+                'options': sort_options, 
+                'current_value': sort_by or '',
+                'name': 'sort_by',
+                'hx_target': hx_target,
+                'hx_get': hx_get
+            },
+            'sort_direction': {
+                'button_text': 'Order',
+                'options': sort_direction_options,
+                'current_value': sort_direction,
+                'name': 'sort_direction',
+                'hx_target': hx_target,
+                'hx_get': hx_get
+            },
+            'primary_filter': {
+                'button_text': filter_name,
+                'options': filter_options,
+                'current_values': primary_filter or [],
+                'name': 'primary_filter'
+            }
+        }

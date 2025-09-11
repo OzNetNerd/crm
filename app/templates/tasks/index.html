@@ -1,15 +1,6 @@
-{% extends "base/layout.html" %}
+{% extends "base/entity_index.html" %}
 
-{# Import core components #}
-{% from "macros/base/layout.html" import page_layout %}
-{% from "macros/ui_elements.html" import htmx_enhanced_filter_controls %}
-{% from "macros/base/icons.html" import plus_icon %}
-{% from "macros/imports/universal.html" import include_common_modals %}
-{% from "macros/modals/confirmation.html" import confirmation_modal %}
-
-{% block title %}All Tasks - CRM{% endblock %}
-
-{% block content %}
+{% block entity_config %}
 {% set entity_stats = {
     'title': 'Task Summary',
     'stats': [
@@ -20,7 +11,7 @@
         },
         {
             'value': tasks_objects|selectattr('status', 'equalto', 'in-progress')|list|length,
-            'label': 'In Progress',
+            'label': 'In Progress', 
             'color_class': 'text-yellow-600'
         },
         {
@@ -35,7 +26,6 @@
         }
     ]
 } %}
-
 {% set entity_buttons = [
     {
         'label': 'New Task',
@@ -45,55 +35,14 @@
         'icon': plus_icon('w-4 h-4')
     }
 ] %}
-
-{% call page_layout("All Tasks", "Manage all your tasks in one place", buttons=entity_buttons, summary_data=entity_stats) %}
-
-<div class="space-y-6">
-    <!-- HTMX Enhanced Filter Controls -->
-    <form hx-get="{{ url_for('tasks.content') }}" 
-          hx-target="#task-content"
-          hx-trigger="change, submit">
-        {{ htmx_enhanced_filter_controls(
-            group_options=group_options,
-            sort_options=sort_options,
-            show_completed_label='Show Completed',
-            show_completed_name='show_completed',
-            show_completed_value=show_completed,
-            primary_filter_options=priority_options,
-            primary_filter_label='All Priorities',
-            primary_filter_values=priority_filter,
-            entity_filter_options=entity_type_options,
-            entity_filter_label='All Entities',
-            entity_filter_values=entity_filter,
-            group_by=group_by,
-            sort_by=sort_by,
-            sort_direction=sort_direction
-        ) }}
-    </form>
-
-    <!-- Dynamic Content Area -->
-    <div id="task-content" 
-         hx-get="{{ url_for('tasks.content') }}?{{ request.query_string.decode('utf-8') }}"
-         hx-trigger="load">
-        <!-- Content will be loaded here via HTMX -->
-        <div class="p-8">
-            <p class="text-center text-gray-500">Loading tasks...</p>
-        </div>
-    </div>
-</div>
-
-{% endcall %}
 {% endblock %}
 
-{% block modals %}
-{{ confirmation_modal('task-confirmation-modal') }}
-{{ include_common_modals() }}
+{% block entity_filter_controls %}
+{% from "macros/ui_elements.html" import config_driven_filter_controls %}
+{{ config_driven_filter_controls(dropdown_configs, show_completed_toggle=true, expand_collapse_controls=true) }}
 {% endblock %}
 
-{% block data_attributes %}
-{# No longer need data attributes since using HTMX #}
+{% block entity_imports %}
+{% from "macros/base/icons.html" import plus_icon %}
 {% endblock %}
 
-{% block scripts %}
-{# Tasks functionality now handled by HTMX #}
-{% endblock %}

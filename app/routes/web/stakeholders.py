@@ -31,18 +31,12 @@ def index():
     stakeholders = Stakeholder.query.join(Company).all()
     today = date.today()
 
-    # Filter options for dropdowns
-    group_options = [
-        {'value': 'company', 'label': 'Company'},
-        {'value': 'job_title', 'label': 'Job Title'}
-    ]
+    # Ultra-DRY dropdown generation using pure model introspection
+    from app.utils.form_configs import DropdownConfigGenerator
+    dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('stakeholders', group_by, sort_by, sort_direction, primary_filter)
     
-    sort_options = [
-        {'value': 'name', 'label': 'Name'},
-        {'value': 'company', 'label': 'Company'}
-    ]
-    
-    # Get unique job titles for primary filter
+    # Since stakeholders have dynamic job titles and companies, add them as additional filters
+    # Get unique job titles for secondary filter
     job_title_options = []
     job_titles = Stakeholder.query.with_entities(Stakeholder.job_title).distinct().filter(Stakeholder.job_title.isnot(None)).all()
     for job_title_tuple in job_titles:
@@ -50,30 +44,36 @@ def index():
         if job_title:
             job_title_options.append({'value': job_title, 'label': job_title})
 
-    # Get unique company names for secondary filter
+    # Get unique company names for tertiary filter  
     company_options = []
     companies = Company.query.with_entities(Company.name).distinct().all()
     for company_tuple in companies:
         company = company_tuple[0]
         if company:
             company_options.append({'value': company, 'label': company})
+    
+    # Add additional filters to DRY config
+    dropdown_configs['secondary_filter'] = {
+        'button_text': 'All Job Titles',
+        'options': job_title_options,
+        'current_values': primary_filter or [],
+        'name': 'secondary_filter' 
+    }
+    dropdown_configs['tertiary_filter'] = {
+        'button_text': 'All Companies',
+        'options': company_options,
+        'current_values': secondary_filter or [],
+        'name': 'tertiary_filter'
+    }
 
     return render_template(
         "stakeholders/index.html",
+        entity_name="Stakeholders",
+        entity_description="Manage your customer contacts", 
+        entity_type="stakeholder",
+        entity_endpoint="stakeholders",
+        dropdown_configs=dropdown_configs,
         stakeholders=stakeholders,
-        today=today,
-        # Filter states for URL persistence
-        group_by=group_by,
-        sort_by=sort_by,
-        sort_direction=sort_direction,
-        show_incomplete=show_incomplete,
-        primary_filter=primary_filter,
-        secondary_filter=secondary_filter,
-        # Filter options for dropdowns
-        group_options=group_options,
-        sort_options=sort_options,
-        job_title_options=job_title_options,
-        company_options=company_options,
     )
 
 
