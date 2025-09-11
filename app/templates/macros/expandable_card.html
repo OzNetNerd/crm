@@ -46,7 +46,7 @@
 {% endmacro %}
 
 {# Main expandable card macro - htmx-enhanced with server-side state management #}
-{% macro expandable_card(card_type, entity, entity_id, expansion_enabled=true, progress_config=none, bulk_selection_enabled=true, card_classes='', field_config={}, model_class=none, badge_content='', title_content='', value_content='', secondary_info='', metadata_content='', action_buttons='', expanded_content='', notes_enabled=false) %}
+{% macro expandable_card(card_type, entity, entity_id, expansion_enabled=true, progress_config=none, bulk_selection_enabled=false, card_classes='', field_config={}, model_class=none, badge_content='', title_content='', value_content='', secondary_info='', metadata_content='', action_buttons='', expanded_content='', notes_enabled=false) %}
 {# Setup card styling and auto-field extraction #}
 {%- set base_classes = card_type + '-card card-padded relative mb-3' -%}
 {%- set color_classes = {
@@ -637,7 +637,7 @@ function rescheduleTask(taskId, days) {
   Usage:
   {{ expandable_card_auto('stakeholder', stakeholder, stakeholder.id) }}
 #}
-{% macro expandable_card_auto(entity_type, entity, entity_id, expansion_enabled=true, bulk_selection_enabled=true) %}
+{% macro expandable_card_auto(entity_type, entity, entity_id, expansion_enabled=true, bulk_selection_enabled=false) %}
 {% set model_config = get_model_config(entity.__class__) %}
 
 {# Auto-generate field configuration from model metadata #}
