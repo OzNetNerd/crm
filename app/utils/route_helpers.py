@@ -1,5 +1,8 @@
 from flask import request, jsonify, redirect, url_for
 from app.models import db
+from app.utils.model_introspection import ModelIntrospector
+from collections import defaultdict
+from datetime import date
 
 
 class BaseRouteHandler:
@@ -300,3 +303,157 @@ class NotesAPIHandler:
         except Exception as e:
             db.session.rollback()
             return jsonify({"error": str(e)}), 500
+
+
+class EntityFilterManager:
+    """Universal filtering and sorting handler for all entities"""
+    
+    def __init__(self, model_class, entity_name):
+        self.model_class = model_class
+        self.entity_name = entity_name
+        
+    def get_filtered_context(self, custom_filters=None, custom_sorting=None, custom_grouper=None, joins=None):
+        """Generic filtered context builder"""
+        # Get filter parameters
+        group_by = request.args.get("group_by", "default")
+        sort_by = request.args.get("sort_by", "name")
+        sort_direction = request.args.get("sort_direction", "asc")
+        
+        # Parse filter arrays
+        primary_filter = self._parse_filter_param("primary_filter")
+        secondary_filter = self._parse_filter_param("secondary_filter")
+        entity_filter = self._parse_filter_param("entity_filter")
+        
+        # Additional filters
+        show_completed = request.args.get("show_completed", "false").lower() == "true"
+        priority_filter = self._parse_filter_param("priority_filter")
+        
+        # Start with base query
+        query = self.model_class.query
+        
+        # Apply joins if provided
+        if joins:
+            for join_model in joins:
+                query = query.join(join_model)
+        
+        # Apply custom filters
+        if custom_filters:
+            query = custom_filters(query, {
+                'primary_filter': primary_filter,
+                'secondary_filter': secondary_filter,
+                'entity_filter': entity_filter,
+                'show_completed': show_completed,
+                'priority_filter': priority_filter
+            })
+        
+        # Apply custom sorting or default sorting
+        if custom_sorting:
+            query = custom_sorting(query, sort_by, sort_direction)
+        else:
+            query = self._apply_default_sorting(query, sort_by, sort_direction)
+        
+        filtered_entities = query.all()
+        
+        # Group entities
+        grouper = EntityGrouper(self.model_class, self.entity_name)
+        grouped_entities = grouper.group_by_field(filtered_entities, group_by, custom_grouper)
+        
+        return {
+            f"grouped_{self.entity_name}s": grouped_entities,
+            "grouped_entities": grouped_entities,  # Universal key
+            "group_by": group_by,
+            "total_count": len(filtered_entities),
+            "sort_by": sort_by,
+            "sort_direction": sort_direction,
+            "primary_filter": primary_filter,
+            "secondary_filter": secondary_filter,
+            "entity_filter": entity_filter,
+            "show_completed": show_completed,
+            "priority_filter": priority_filter,
+            "today": date.today(),
+        }
+    
+    def _parse_filter_param(self, param_name):
+        """Parse comma-separated filter parameters"""
+        param_value = request.args.get(param_name)
+        if not param_value:
+            return []
+        return [p.strip() for p in param_value.split(",") if p.strip()]
+    
+    def _apply_default_sorting(self, query, sort_by, sort_direction):
+        """Apply default sorting logic"""
+        # Try to get the sort field from the model
+        if hasattr(self.model_class, sort_by):
+            sort_field = getattr(self.model_class, sort_by)
+            if sort_direction == "desc":
+                return query.order_by(sort_field.desc())
+            else:
+                return query.order_by(sort_field.asc())
+        
+        # Fallback to name or id
+        if hasattr(self.model_class, 'name'):
+            return query.order_by(self.model_class.name.asc())
+        else:
+            return query.order_by(self.model_class.id.asc())
+    
+    def get_content_context(self, custom_filters=None, custom_sorting=None, custom_grouper=None, joins=None):
+        """Get context for /content HTMX endpoints"""
+        context = self.get_filtered_context(custom_filters, custom_sorting, custom_grouper, joins)
+        
+        # Add universal template configuration
+        context.update({
+            'entity_type': self.entity_name,
+            'entity_name_singular': self.entity_name,
+            'entity_name_plural': f"{self.entity_name}s",
+            'card_config': ModelIntrospector.get_card_config(self.model_class),
+            'model_class': self.model_class
+        })
+        
+        return context
+
+
+class EntityGrouper:
+    """Universal grouping handler for all entities"""
+    
+    def __init__(self, model_class, entity_name):
+        self.model_class = model_class
+        self.entity_name = entity_name
+    
+    def group_by_field(self, entities, group_by, custom_grouper=None):
+        """Group entities by specified field with support for custom grouper function"""
+        
+        # Use custom grouper if provided
+        if custom_grouper:
+            result = custom_grouper(entities, group_by)
+            if result is not None:
+                return result
+        
+        # Default grouping logic
+        grouped = defaultdict(list)
+        
+        # Generic field-based grouping
+        if hasattr(self.model_class, group_by):
+            for entity in entities:
+                field_value = getattr(entity, group_by, None)
+                key = str(field_value) if field_value is not None else "Other"
+                grouped[key].append(entity)
+            
+            # Return sorted groups
+            result = []
+            for key in sorted(grouped.keys()):
+                if grouped[key]:
+                    result.append({
+                        "key": key,
+                        "label": key.replace("_", " ").replace("-", " ").title(),
+                        "entities": grouped[key],
+                        "count": len(grouped[key])
+                    })
+            return result
+        
+        # Fallback: return all entities in one group
+        return [{
+            "key": "all",
+            "label": f"All {self.entity_name.title()}s",
+            "entities": entities,
+            "count": len(entities)
+        }]
