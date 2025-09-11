@@ -40,6 +40,7 @@
                             {{ css_expandable_card(entity_type, entity, entity.id,
                                 expansion_enabled=true,
                                 field_config=card_config,
+                                model_class=model_class,
                                 action_buttons=action_buttons_row(entity_type, entity.id)) }}
                             
                             {# Render child tasks if this is a parent #}
@@ -50,6 +51,7 @@
                                             {{ css_expandable_card(entity_type, child_task, child_task.id,
                                                 expansion_enabled=true,
                                                 field_config=card_config,
+                                                model_class=model_class,
                                                 action_buttons=action_buttons_row(entity_type, child_task.id)) }}
                                         </div>
                                     {% endfor %}
@@ -61,6 +63,7 @@
                             {{ css_expandable_card(entity_type, entity, entity.id,
                                 expansion_enabled=true,
                                 field_config=card_config,
+                                model_class=model_class,
                                 action_buttons=action_buttons_row(entity_type, entity.id)) }}
                         </div>
                     {% endif %}

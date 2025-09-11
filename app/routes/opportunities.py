@@ -2,6 +2,7 @@ from datetime import date
 from flask import Blueprint, render_template, request, jsonify
 from app.models import Opportunity, Company, Stakeholder, Note, db
 from app.utils.route_helpers import GenericAPIHandler
+from app.utils.model_introspection import ModelIntrospector
 from collections import defaultdict
 
 opportunities_bp = Blueprint("opportunities", __name__)
@@ -308,25 +309,14 @@ def content():
     """HTMX endpoint for filtered opportunity content"""
     context = get_filtered_opportunities_context()
     
-    # Universal template configuration
+    # Universal template configuration using model introspection
     context.update({
         'grouped_entities': context["grouped_opportunities"],
         'entity_type': 'opportunity',
         'entity_name_singular': 'opportunity',
         'entity_name_plural': 'opportunities',
-        'card_config': {
-            'badge_field': 'stage',
-            'badge_style': 'blue',
-            'title_field': 'name',
-            'secondary_fields': [
-                {'field': 'company.name', 'type': 'text'},
-                {'field': 'contact.name', 'type': 'text'}
-            ],
-            'metadata_fields': [
-                {'field': 'close_date', 'type': 'date', 'format': '%d/%m/%y'},
-                {'field': 'created_at', 'type': 'date', 'format': '%m/%d/%y'}
-            ]
-        }
+        'card_config': ModelIntrospector.get_card_config(Opportunity),
+        'model_class': Opportunity
     })
     
     return render_template("shared/entity_content.html", **context)
