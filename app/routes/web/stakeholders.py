@@ -1,12 +1,80 @@
 from datetime import date
 from flask import Blueprint, render_template, request
 from app.models import Stakeholder, Company, Opportunity
-from app.utils.route_helpers import BaseRouteHandler
+from app.utils.route_helpers import BaseRouteHandler, EntityFilterManager, EntityGrouper
 from app.utils.model_introspection import ModelIntrospector
 from collections import defaultdict
 
 stakeholders_bp = Blueprint("stakeholders", __name__)
 stakeholder_handler = BaseRouteHandler(Stakeholder, "stakeholders")
+stakeholder_filter_manager = EntityFilterManager(Stakeholder, "stakeholder")
+
+
+def stakeholder_custom_filters(query, filters):
+    """Stakeholder-specific filtering logic"""
+    if filters['primary_filter']:
+        query = query.filter(Stakeholder.job_title.in_(filters['primary_filter']))
+    
+    if filters['secondary_filter']:
+        query = query.filter(Company.name.in_(filters['secondary_filter']))
+    
+    return query
+
+
+def stakeholder_custom_sorting(query, sort_by, sort_direction):
+    """Stakeholder-specific sorting logic"""
+    if sort_by == "name":
+        if sort_direction == "desc":
+            return query.order_by(Stakeholder.name.desc())
+        else:
+            return query.order_by(Stakeholder.name.asc())
+    elif sort_by == "company":
+        if sort_direction == "desc":
+            return query.order_by(Company.name.desc(), Stakeholder.name.asc())
+        else:
+            return query.order_by(Company.name.asc(), Stakeholder.name.asc())
+    else:
+        # Default sort by name
+        return query.order_by(Stakeholder.name.asc())
+
+
+def stakeholder_custom_groupers(entities, group_by):
+    """Stakeholder-specific grouping logic"""
+    grouped = defaultdict(list)
+    
+    if group_by == "company":
+        for stakeholder in entities:
+            company_name = stakeholder.company.name if stakeholder.company else "No Company"
+            grouped[company_name].append(stakeholder)
+        
+        result = []
+        for company_name in sorted(grouped.keys()):
+            if grouped[company_name]:
+                result.append({
+                    "key": company_name,
+                    "label": company_name,
+                    "entities": grouped[company_name],
+                    "count": len(grouped[company_name])
+                })
+        return result
+        
+    elif group_by == "job_title":
+        for stakeholder in entities:
+            job_title = stakeholder.job_title or "Other"
+            grouped[job_title].append(stakeholder)
+        
+        result = []
+        for job_title in sorted(grouped.keys()):
+            if grouped[job_title]:
+                result.append({
+                    "key": job_title,
+                    "label": job_title,
+                    "entities": grouped[job_title],
+                    "count": len(grouped[job_title])
+                })
+        return result
+    
+    return None  # Use default grouping
 
 
 @stakeholders_bp.route("/")
@@ -118,126 +186,26 @@ def index():
 
 
 def get_filtered_stakeholders_context():
-    """Server-side filtering and sorting for stakeholders HTMX endpoints"""
-    # Get filter parameters
-    group_by = request.args.get("group_by", "company")
-    sort_by = request.args.get("sort_by", "name")
-    sort_direction = request.args.get("sort_direction", "asc")
-    
-    # Parse filter arrays
-    primary_filter = []
-    if request.args.get("primary_filter"):
-        primary_filter = [p.strip() for p in request.args.get("primary_filter").split(",") if p.strip()]
-    
-    secondary_filter = []
-    if request.args.get("secondary_filter"):
-        secondary_filter = [p.strip() for p in request.args.get("secondary_filter").split(",") if p.strip()]
-
-    # Start with base query
-    query = Stakeholder.query.join(Company)
-    
-    # Apply filters
-    if primary_filter:
-        query = query.filter(Stakeholder.job_title.in_(primary_filter))
-    
-    if secondary_filter:
-        query = query.filter(Company.name.in_(secondary_filter))
-    
-    # Apply sorting
-    if sort_by == "name":
-        if sort_direction == "desc":
-            query = query.order_by(Stakeholder.name.desc())
-        else:
-            query = query.order_by(Stakeholder.name.asc())
-    elif sort_by == "company":
-        if sort_direction == "desc":
-            query = query.order_by(Company.name.desc(), Stakeholder.name.asc())
-        else:
-            query = query.order_by(Company.name.asc(), Stakeholder.name.asc())
-    else:
-        # Default sort by name
-        query = query.order_by(Stakeholder.name.asc())
-    
-    filtered_stakeholders = query.all()
-    
-    # Group stakeholders by the specified grouping
-    grouped_stakeholders = group_stakeholders_by_field(filtered_stakeholders, group_by)
-    
-    return {
-        "grouped_stakeholders": grouped_stakeholders,
-        "group_by": group_by,
-        "total_count": len(filtered_stakeholders),
-        "sort_by": sort_by,
-        "sort_direction": sort_direction,
-        "primary_filter": primary_filter,
-        "secondary_filter": secondary_filter,
-        "today": date.today(),
-    }
+    """Server-side filtering and sorting for stakeholders HTMX endpoints - DRY version"""
+    return stakeholder_filter_manager.get_filtered_context(
+        custom_filters=stakeholder_custom_filters,
+        custom_sorting=stakeholder_custom_sorting,
+        custom_grouper=stakeholder_custom_groupers,
+        joins=[Company]
+    )
 
 
-def group_stakeholders_by_field(stakeholders, group_by):
-    """Group stakeholders by specified field"""
-    grouped = defaultdict(list)
-    
-    if group_by == "company":
-        for stakeholder in stakeholders:
-            company_name = stakeholder.company.name if stakeholder.company else "No Company"
-            grouped[company_name].append(stakeholder)
-        
-        # Return sorted by company name
-        result = []
-        for company_name in sorted(grouped.keys()):
-            if grouped[company_name]:
-                result.append({
-                    "key": company_name,
-                    "label": company_name,
-                    "entities": grouped[company_name],
-                    "count": len(grouped[company_name])
-                })
-        return result
-        
-    elif group_by == "job_title":
-        for stakeholder in stakeholders:
-            job_title = stakeholder.job_title or "Other"
-            grouped[job_title].append(stakeholder)
-        
-        # Return sorted by job title
-        result = []
-        for job_title in sorted(grouped.keys()):
-            if grouped[job_title]:
-                result.append({
-                    "key": job_title,
-                    "label": job_title,
-                    "entities": grouped[job_title],
-                    "count": len(grouped[job_title])
-                })
-        return result
-    
-    else:
-        # Default: no grouping, return all in one group
-        return [{
-            "key": "all",
-            "label": "All Stakeholders",
-            "entities": stakeholders,
-            "count": len(stakeholders)
-        }]
 
 
 @stakeholders_bp.route("/content")
 def content():
-    """HTMX endpoint for filtered stakeholder content"""
-    context = get_filtered_stakeholders_context()
-    
-    # Universal template configuration
-    # Universal template configuration using model introspection
-    context.update({
-        'grouped_entities': context["grouped_stakeholders"],
-        'entity_type': 'stakeholder',
-        'entity_name_singular': 'stakeholder',
-        'entity_name_plural': 'stakeholders',
-        'card_config': ModelIntrospector.get_card_config(Stakeholder),
-        'model_class': Stakeholder
-    })
+    """HTMX endpoint for filtered stakeholder content - DRY version"""
+    context = stakeholder_filter_manager.get_content_context(
+        custom_filters=stakeholder_custom_filters,
+        custom_sorting=stakeholder_custom_sorting,
+        custom_grouper=stakeholder_custom_groupers,
+        joins=[Company]
+    )
     
     return render_template("shared/entity_content.html", **context)
 
