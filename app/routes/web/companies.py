@@ -199,24 +199,25 @@ def index():
 
     today = date.today()
     
-    # Prepare filter options for the new HTMX controls
-    group_options = [
+    # Prepare filter options for the new HTMX controls (sorted alphabetically)
+    group_options = sorted([
         {'value': 'industry', 'label': 'Industry'},
         {'value': 'size', 'label': 'Company Size'}
-    ]
+    ], key=lambda x: x['label'])
     
-    sort_options = [
+    sort_options = sorted([
         {'value': 'name', 'label': 'Name'},
         {'value': 'industry', 'label': 'Industry'}
-    ]
+    ], key=lambda x: x['label'])
     
-    # Get unique industries from database for filter options
+    # Get unique industries from database for filter options (sorted alphabetically)
     industry_options = []
     industries = db.session.query(Company.industry).distinct().filter(Company.industry.isnot(None)).all()
     for industry_tuple in industries:
         industry = industry_tuple[0]
         if industry:
             industry_options.append({'value': industry, 'label': industry})
+    industry_options = sorted(industry_options, key=lambda x: x['label'])
 
     # Create dropdown configurations for the new unified system
     dropdown_configs = {

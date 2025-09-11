@@ -49,12 +49,12 @@
 <div class="relative {{ additional_classes }} dropdown-container" 
      hx-on:htmx:after-request="this.querySelector('input[type=checkbox]').checked = false"
      tabindex="0"
-     onblur="if (!this.contains(event.relatedTarget)) this.querySelector('input[type=checkbox]').checked = false">
+     onblur="setTimeout(() => { if (!this.contains(document.activeElement)) this.querySelector('input[type=checkbox]').checked = false }, 100)">
     <input type="checkbox" id="{{ dropdown_id }}" class="hidden peer">
     
     <label for="{{ dropdown_id }}" 
            class="bg-white border border-gray-300 rounded-md px-4 py-2 text-left flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer min-w-[12rem]">
-        <span class="truncate">
+        <span class="truncate" id="{{ dropdown_id }}-label">
             {% if is_single %}
                 {# Single select display logic #}
                 {% set found = namespace(value=false) %}
@@ -64,7 +64,7 @@
                         {% set found.value = true %}
                     {% endif %}
                 {% endfor %}
-                {% if not found.value %}{{ button_text }}{% endif %}
+                {% if not found.value %}{{ options[0].label if options[0] is mapping else options[0]|title }}{% endif %}
             {% elif is_multi %}
                 {# Multi select display logic #}
                 {% if current_values|length == 0 %}
@@ -83,7 +83,7 @@
                     {{ current_values|length }} selected
                 {% endif %}
             {% else %}
-                {{ button_text }}
+                {{ options[0].label if options[0] is mapping else options[0]|title }}
             {% endif %}
         </span>
         <svg class="w-4 h-4 ml-2 transition-transform peer-checked:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +107,8 @@
                            {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
                            {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
                            hx-trigger="change"
-                           {% if option_value == current_value %}checked{% endif %}>
+                           {% if option_value == current_value %}checked{% endif %}
+                           onchange="document.getElementById('{{ dropdown_id }}-label').textContent='{{ option_label }}'">
                     <span class="block w-full text-left px-4 py-2 hover:bg-gray-100 peer-focus:bg-gray-100 cursor-pointer {% if option_value == current_value %}bg-blue-50 text-blue-700{% endif %}">
                         {{ option_label }}
                     </span>
@@ -129,7 +130,8 @@
                                hx-trigger="change"
                                {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
                                {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
-                               {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}>
+                               {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
+                               onchange="let c=document.querySelectorAll('#{{ dropdown_id }} input[type=checkbox]:checked').length; document.getElementById('{{ dropdown_id }}-label').textContent=c===0?'{{ button_text }}':c+' selected'">
                         {{ option_label }}
                     </label>
                 {% endfor %}
@@ -148,7 +150,8 @@
                            {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
                            {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
                            {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
-                           hx-trigger="change">
+                           hx-trigger="change"
+                           onchange="document.getElementById('{{ dropdown_id }}-label').textContent='{{ option_label }}'">
                     <span class="block w-full text-left px-4 py-2 hover:bg-gray-100 peer-focus:bg-gray-100 cursor-pointer">
                         {{ option_label }}
                     </span>
