@@ -89,29 +89,30 @@
        {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
 #}
 {% macro bulk_actions_bar(entity_type, entity_plural, primary_action, secondary_action) %}
-<div x-show="selectedItems.length > 0" 
-     x-cloak 
-     x-transition
+<div id="bulk-actions-bar" 
+     style="display: none;" 
      class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
     <div class="flex items-center space-x-4">
-        <span class="text-blue-800 font-medium" x-text="`${selectedItems.length} {{ entity_plural }} selected`"></span>
+        <span class="text-blue-800 font-medium" id="selected-count">0 {{ entity_plural }} selected</span>
         
         {% if primary_action %}
-        <button @click="{{ primary_action.onclick }}" 
+        <button hx-post="{{ primary_action.url if primary_action.url else '#' }}" 
+                hx-include="[name='selected_items']:checked"
                 class="bg-{{ primary_action.color }}-600 text-white px-3 py-1.5 rounded text-sm hover:bg-{{ primary_action.color }}-700">
             {{ primary_action.label }}
         </button>
         {% endif %}
         
         {% if secondary_action %}
-        <button @click="{{ secondary_action.onclick }}" 
+        <button hx-post="{{ secondary_action.url if secondary_action.url else '#' }}" 
+                hx-include="[name='selected_items']:checked"
                 class="bg-{{ secondary_action.color }}-600 text-white px-3 py-1.5 rounded text-sm hover:bg-{{ secondary_action.color }}-700">
             {{ secondary_action.label }}
         </button>
         {% endif %}
     </div>
     
-    <button @click="selectedItems = []" class="text-blue-600 hover:text-blue-800">
+    <button onclick="clearSelection()" class="text-blue-600 hover:text-blue-800">
         {{ icon('x-mark', 'md') }}
     </button>
 </div>

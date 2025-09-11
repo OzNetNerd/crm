@@ -113,12 +113,12 @@
   {{ bulk_selection_checkbox(company.id) }}
   {{ bulk_selection_checkbox(contact.id, 'selectedStakeholders') }}
 #}
-{% macro bulk_selection_checkbox(item_id, model='selectedItems', additional_classes='') %}
+{% macro bulk_selection_checkbox(item_id, model='selected_items', additional_classes='') %}
 <input type="checkbox" 
-       x-model="{{ model }}" 
+       name="{{ model }}" 
        value="{{ item_id }}"
        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded {{ additional_classes }}"
-       @click.stop>
+       onclick="event.stopPropagation()">
 {% endmacro %}
 
 {#
