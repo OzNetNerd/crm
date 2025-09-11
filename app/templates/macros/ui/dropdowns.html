@@ -46,12 +46,11 @@
 {# Generate unique ID for this dropdown #}
 {% set dropdown_id = 'dropdown-' + name + '-' + range(1000, 9999)|random|string %}
 
-<div class="relative {{ additional_classes }}" 
-     hx-on:htmx:after-request="this.querySelector('input[type=checkbox]').checked = false">
+<div class="relative {{ additional_classes }} dropdown-container" 
+     hx-on:htmx:after-request="this.querySelector('input[type=checkbox]').checked = false"
+     tabindex="0"
+     onblur="if (!this.contains(event.relatedTarget)) this.querySelector('input[type=checkbox]').checked = false">
     <input type="checkbox" id="{{ dropdown_id }}" class="hidden peer">
-    
-    {# Invisible overlay that closes dropdown when clicked outside #}
-    <label for="{{ dropdown_id }}" class="fixed inset-0 z-10 cursor-default hidden peer-checked:block" aria-hidden="true"></label>
     
     <label for="{{ dropdown_id }}" 
            class="bg-white border border-gray-300 rounded-md px-4 py-2 text-left flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer min-w-[12rem]">
