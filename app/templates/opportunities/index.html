@@ -38,8 +38,9 @@
 {% set entity_buttons = [
     {
         'label': 'New Opportunity',
-        'onclick': 'openNewOpportunityModal()',
-        'color': 'blue',
+        'hx_get': '/modals/Opportunity/create',
+        'hx_target': 'body',
+        'hx_swap': 'beforeend',
         'icon': plus_icon('w-4 h-4')
     }
 ] %}

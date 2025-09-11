@@ -42,8 +42,9 @@
 {% set entity_buttons = [
     {
         'label': 'New Task',
-        'onclick': 'openNewTaskModal()',
-        'color': 'blue',
+        'hx_get': '/modals/Task/create',
+        'hx_target': 'body',
+        'hx_swap': 'beforeend',
         'icon': plus_icon('w-4 h-4')
     }
 ] %}
@@ -64,8 +65,9 @@
 {% set entity_buttons = [
     {
         'label': 'New Task',
-        'onclick': 'openNewTaskModal()',
-        'color': 'blue',
+        'hx_get': '/modals/Task/create',
+        'hx_target': 'body',
+        'hx_swap': 'beforeend',
         'icon': plus_icon('w-4 h-4')
     }
 ] %}
