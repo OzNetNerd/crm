@@ -131,10 +131,10 @@
 #}
 {% macro css_expand_collapse_controls(data_group='', additional_classes='') %}
 <div class="flex items-center gap-4 border-l pl-4 {{ additional_classes }}">
-    <button onclick="document.querySelectorAll('details{% if data_group %}[data-group=&quot;{{ data_group }}&quot;]{% endif %}').forEach(d => d.open = true)"
+    <button onclick="document.querySelectorAll('details{% if data_group %}[data-group=\"{{ data_group }}\"]{% endif %}').forEach(d => d.open = true)"
             class="text-secondary-dark hover:text-gray-900">Expand All</button>
     <div class="border-l border-gray-300 h-5"></div>
-    <button onclick="document.querySelectorAll('details{% if data_group %}[data-group=&quot;{{ data_group }}&quot;]{% endif %}').forEach(d => d.open = false)"
+    <button onclick="document.querySelectorAll('details{% if data_group %}[data-group=\"{{ data_group }}\"]{% endif %}').forEach(d => d.open = false)"
             class="text-secondary-dark hover:text-gray-900">Collapse All</button>
 </div>
 {% endmacro %}
