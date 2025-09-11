@@ -90,6 +90,81 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
+/* Entity Content Utility Classes */
+/* DRY utility classes for entity_content.html patterns */
+
+/* Group content containers */
+.entity-group-container {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-gray-200);
+}
+
+.entity-group-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-gray-200);
+    background: var(--color-gray-50);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    cursor: pointer;
+    list-style: none;
+}
+
+.entity-group-content {
+    border-top: 1px solid var(--color-gray-200);
+}
+
+/* Child task container */
+.child-task-container {
+    margin-left: 2rem;
+    margin-top: 1rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--color-gray-200);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.child-task-item {
+    background: var(--color-gray-50);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+}
+
+/* Empty state styling */
+.empty-state-container {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-gray-200);
+    padding: 2rem;
+    text-align: center;
+}
+
+.empty-state-icon {
+    margin: 0 auto var(--spacing-lg) auto;
+    color: var(--color-gray-400);
+}
+
+.empty-state-title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-medium);
+    color: var(--color-gray-500);
+    margin-bottom: var(--spacing-sm);
+}
+
+.empty-state-subtitle {
+    font-size: var(--text-sm);
+    color: var(--color-gray-500);
+}
+
+/* Group empty state (inline) */
+.group-empty-state {
+    padding: 2rem;
+    text-align: center;
+    color: var(--color-gray-500);
+}
+
 /* Text Styling Components */
 /* Core text patterns with semantic naming */
 
