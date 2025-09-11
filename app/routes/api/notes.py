@@ -1,223 +1,55 @@
-from flask import Blueprint, request, jsonify
-from app.models import db, Company, Stakeholder, Opportunity, Note
+from flask import Blueprint
+from app.models import Company, Stakeholder, Opportunity
+from app.utils.route_helpers import NotesAPIHandler
 
 api_notes_bp = Blueprint("api_notes", __name__, url_prefix="/api")
 
+# Define entity configurations for notes
+NOTE_ENTITY_CONFIGS = {
+    "companies": {
+        "model": Company,
+        "entity_name": "company",
+        "route_param": "company_id",
+    },
+    "contacts": {
+        "model": Stakeholder, 
+        "entity_name": "contact",
+        "route_param": "contact_id",
+    },
+    "opportunities": {
+        "model": Opportunity,
+        "entity_name": "opportunity", 
+        "route_param": "opportunity_id",
+    },
+}
 
-@api_notes_bp.route("/companies/<int:company_id>/notes", methods=["GET"])
-def get_company_notes(company_id):
-    """Get all notes for a specific company"""
-    try:
-        # Verify company exists
-        _ = Company.query.get_or_404(company_id)  # Verify company exists
-
-        notes = (
-            Note.query.filter_by(entity_type="company", entity_id=company_id)
-            .order_by(Note.created_at.desc())
-            .all()
-        )
-
-        return jsonify(
-            [
-                {
-                    "id": note.id,
-                    "content": note.content,
-                    "entity_type": note.entity_type,
-                    "entity_id": note.entity_id,
-                    "is_internal": note.is_internal,
-                    "created_at": note.created_at.isoformat(),
-                    "entity_name": note.entity_name,
-                }
-                for note in notes
-            ]
-        )
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@api_notes_bp.route("/companies/<int:company_id>/notes", methods=["POST"])
-def create_company_note(company_id):
-    """Create a new note for a specific company"""
-    try:
-        # Verify company exists
-        _ = Company.query.get_or_404(company_id)  # Verify company exists
-
-        data = request.get_json()
-        if not data or not data.get("content"):
-            return jsonify({"error": "Note content is required"}), 400
-
-        note = Note(
-            content=data["content"],
-            entity_type="company",
-            entity_id=company_id,
-            is_internal=data.get("is_internal", True),
-        )
-
-        db.session.add(note)
-        db.session.commit()
-
-        return (
-            jsonify(
-                {
-                    "id": note.id,
-                    "content": note.content,
-                    "entity_type": note.entity_type,
-                    "entity_id": note.entity_id,
-                    "is_internal": note.is_internal,
-                    "created_at": note.created_at.isoformat(),
-                    "entity_name": note.entity_name,
-                }
-            ),
-            201,
-        )
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-
-@api_notes_bp.route("/contacts/<int:contact_id>/notes", methods=["GET"])
-def get_contact_notes(contact_id):
-    """Get all notes for a specific contact"""
-    try:
-        # Verify contact exists
-        _ = Stakeholder.query.get_or_404(contact_id)  # Verify contact exists
-
-        notes = (
-            Note.query.filter_by(entity_type="contact", entity_id=contact_id)
-            .order_by(Note.created_at.desc())
-            .all()
-        )
-
-        return jsonify(
-            [
-                {
-                    "id": note.id,
-                    "content": note.content,
-                    "entity_type": note.entity_type,
-                    "entity_id": note.entity_id,
-                    "is_internal": note.is_internal,
-                    "created_at": note.created_at.isoformat(),
-                    "entity_name": note.entity_name,
-                }
-                for note in notes
-            ]
-        )
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@api_notes_bp.route("/contacts/<int:contact_id>/notes", methods=["POST"])
-def create_contact_note(contact_id):
-    """Create a new note for a specific contact"""
-    try:
-        # Verify contact exists
-        _ = Stakeholder.query.get_or_404(contact_id)  # Verify contact exists
-
-        data = request.get_json()
-        if not data or not data.get("content"):
-            return jsonify({"error": "Note content is required"}), 400
-
-        note = Note(
-            content=data["content"],
-            entity_type="contact",
-            entity_id=contact_id,
-            is_internal=data.get("is_internal", True),
-        )
-
-        db.session.add(note)
-        db.session.commit()
-
-        return (
-            jsonify(
-                {
-                    "id": note.id,
-                    "content": note.content,
-                    "entity_type": note.entity_type,
-                    "entity_id": note.entity_id,
-                    "is_internal": note.is_internal,
-                    "created_at": note.created_at.isoformat(),
-                    "entity_name": note.entity_name,
-                }
-            ),
-            201,
-        )
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-
-@api_notes_bp.route("/opportunities/<int:opportunity_id>/notes", methods=["GET"])
-def get_opportunity_notes(opportunity_id):
-    """Get all notes for a specific opportunity"""
-    try:
-        # Verify opportunity exists
-        _ = Opportunity.query.get_or_404(opportunity_id)  # Verify opportunity exists
-
-        notes = (
-            Note.query.filter_by(entity_type="opportunity", entity_id=opportunity_id)
-            .order_by(Note.created_at.desc())
-            .all()
-        )
-
-        return jsonify(
-            [
-                {
-                    "id": note.id,
-                    "content": note.content,
-                    "entity_type": note.entity_type,
-                    "entity_id": note.entity_id,
-                    "is_internal": note.is_internal,
-                    "created_at": note.created_at.isoformat(),
-                    "entity_name": note.entity_name,
-                }
-                for note in notes
-            ]
-        )
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@api_notes_bp.route("/opportunities/<int:opportunity_id>/notes", methods=["POST"])
-def create_opportunity_note(opportunity_id):
-    """Create a new note for a specific opportunity"""
-    try:
-        # Verify opportunity exists
-        _ = Opportunity.query.get_or_404(opportunity_id)  # Verify opportunity exists
-
-        data = request.get_json()
-        if not data or not data.get("content"):
-            return jsonify({"error": "Note content is required"}), 400
-
-        note = Note(
-            content=data["content"],
-            entity_type="opportunity",
-            entity_id=opportunity_id,
-            is_internal=data.get("is_internal", True),
-        )
-
-        db.session.add(note)
-        db.session.commit()
-
-        return (
-            jsonify(
-                {
-                    "id": note.id,
-                    "content": note.content,
-                    "entity_type": note.entity_type,
-                    "entity_id": note.entity_id,
-                    "is_internal": note.is_internal,
-                    "created_at": note.created_at.isoformat(),
-                    "entity_name": note.entity_name,
-                }
-            ),
-            201,
-        )
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+# Dynamically register GET and POST endpoints for notes
+for entity_plural, config in NOTE_ENTITY_CONFIGS.items():
+    handler = NotesAPIHandler(config["model"], config["entity_name"])
+    route_param = config["route_param"]
+    
+    # Create GET endpoint function with proper closure
+    def make_get_endpoint(handler_func, param_name):
+        def endpoint(**kwargs):
+            entity_id = kwargs[param_name]
+            return handler_func(entity_id)
+        return endpoint
+    
+    get_endpoint_func = make_get_endpoint(handler.get_notes, route_param)
+    get_endpoint_func.__name__ = f"get_{config['entity_name']}_notes"
+    get_endpoint_func.__doc__ = f"Get all notes for a specific {config['entity_name']}"
+    
+    api_notes_bp.route(f"/{entity_plural}/<int:{route_param}>/notes", methods=["GET"])(get_endpoint_func)
+    
+    # Create POST endpoint function with proper closure
+    def make_post_endpoint(handler_func, param_name):
+        def endpoint(**kwargs):
+            entity_id = kwargs[param_name]
+            return handler_func(entity_id)
+        return endpoint
+    
+    post_endpoint_func = make_post_endpoint(handler.create_note, route_param)
+    post_endpoint_func.__name__ = f"create_{config['entity_name']}_note"
+    post_endpoint_func.__doc__ = f"Create a new note for a specific {config['entity_name']}"
+    
+    api_notes_bp.route(f"/{entity_plural}/<int:{route_param}>/notes", methods=["POST"])(post_endpoint_func)
