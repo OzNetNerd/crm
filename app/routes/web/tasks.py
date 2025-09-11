@@ -325,51 +325,6 @@ def index():
 
 
 
-@tasks_bp.route("/create", methods=["GET", "POST"])
-def create():
-    if request.method == "POST":
-        try:
-            data = request.get_json()
-
-            # Create the task with basic fields
-            task = Task(
-                description=data["description"],
-                due_date=(
-                    datetime.strptime(data["due_date"], "%Y-%m-%d").date()
-                    if data.get("due_date")
-                    else None
-                ),
-                priority=data.get("priority", "medium"),
-                status=data.get("status", "todo"),
-                next_step_type=data.get("next_step_type"),
-                task_type=data.get("task_type", "single"),
-                parent_task_id=parse_int_field(data, "parent_task_id"),
-                sequence_order=parse_int_field(data, "sequence_order", 0),
-                dependency_type=data.get("dependency_type", "parallel"),
-            )
-
-            db.session.add(task)
-            db.session.flush()  # Get the task ID
-
-            # Handle linked entities
-            linked_entities = data.get("linked_entities", [])
-            if linked_entities:
-                task.set_linked_entities(linked_entities)
-
-            db.session.commit()
-            return jsonify({"status": "success", "task_id": task.id})
-
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({"status": "error", "message": str(e)}), 500
-
-    entity_data = get_entity_data_for_forms()
-    return render_template(
-        "tasks/new.html",
-        companies=entity_data["companies"],
-        contacts=entity_data["contacts"],
-        opportunities=entity_data["opportunities"],
-    )
 
 
 @tasks_bp.route("/multi/create", methods=["GET", "POST"])
