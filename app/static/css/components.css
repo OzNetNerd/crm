@@ -176,8 +176,6 @@
 /* Common text patterns for small text with colors */
 .text-xs-gray-500 { @apply text-xs text-gray-500; }
 .text-xs-gray-400 { @apply text-xs text-gray-400; }
-.text-xs-gray-300 { @apply text-xs text-gray-300; }
-.text-xs-red-400 { @apply text-xs text-red-400; }
 
 /* Common text patterns for small text with alignment */
 .text-xs-center { @apply text-xs text-center; }
@@ -1073,27 +1071,6 @@
 /* Alpine.js Common Patterns */
 /* Standard transition classes for Alpine.js animations */
 
-.alpine-transition-enter {
-    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-    opacity: 0;
-    transform: scale(0.95);
-}
-
-.alpine-transition-enter-end {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.alpine-transition-leave {
-    transition: opacity 0.15s ease-in, transform 0.15s ease-in;
-    opacity: 1;
-    transform: scale(1);
-}
-
-.alpine-transition-leave-end {
-    opacity: 0;
-    transform: scale(0.95);
-}
 
 /* Entity Avatar Styling */
 .entity-avatar {
