@@ -1222,40 +1222,6 @@ details > summary::-webkit-details-marker {
   Usage:
   {{ htmx_dropdown('group_by', group_by, group_options, 'Group by') }}
 #}
-{% macro htmx_dropdown(name, current_value, options, label_text='Select') %}
-<div class="relative inline-block">
-    <button type="button" 
-            class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between min-w-[120px] group"
-            onclick="this.nextElementSibling.classList.toggle('hidden')">
-        <span>
-            {% set found = namespace(value=false) %}
-            {% for option in options %}
-                {% if option.value == current_value and not found.value %}
-                    {{ option.label }}
-                    {% set found.value = true %}
-                {% endif %}
-            {% endfor %}
-            {% if not found.value %}{{ label_text }}{% endif %}
-        </span>
-        <svg class="w-4 h-4 ml-2 transition-transform group-focus:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-    </button>
-    
-    <div class="absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-10 hidden transition-all duration-200 ease-out">
-        <div class="py-1">
-            {% for option in options %}
-            <button type="submit" 
-                    name="{{ name }}" 
-                    value="{{ option.value }}"
-                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option.value == current_value %}bg-blue-50 text-blue-700{% endif %}">
-                {{ option.label }}
-            </button>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-{% endmacro %}
 
 {#
   Pure CSS HTMX Multiselect - Checkbox-based multiselect for HTMX forms
@@ -1269,48 +1235,7 @@ details > summary::-webkit-details-marker {
   Usage:
   {{ htmx_multiselect('priority_filter', priority_filter, priority_options, 'All Priorities') }}
 #}
-{% macro htmx_multiselect(name, current_values, options, placeholder='Select options') %}
-<div class="relative inline-block">
-    <button type="button" 
-            class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between min-w-[140px] group"
-            onclick="this.nextElementSibling.classList.toggle('hidden')">
-        <span class="truncate">
-            {% if current_values|length == 0 %}
-                {{ placeholder }}
-            {% elif current_values|length == 1 %}
-                {% set found = namespace(value=false) %}
-                {% for option in options %}
-                    {% if option.value in current_values and not found.value %}
-                        {{ option.label }}
-                        {% set found.value = true %}
-                    {% endif %}
-                {% endfor %}
-            {% else %}
-                {{ current_values|length }} selected
-            {% endif %}
-        </span>
-        <svg class="w-4 h-4 ml-2 transition-transform group-focus:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-    </button>
-    
-    <div class="absolute left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-20 hidden transition-all duration-200 ease-out">
-        <div class="py-1 max-h-48 overflow-y-auto">
-            {% for option in options %}
-            <label class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-                <input type="checkbox" 
-                       name="{{ name }}"
-                       value="{{ option.value }}"
-                       {% if option.value in current_values %}checked{% endif %}
-                       class="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                       onchange="this.form.dispatchEvent(new Event('change'))">
-                {{ option.label }}
-            </label>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-{% endmacro %}
+{# htmx_multiselect macro removed - replaced by unified css_dropdown #}
 
 {#
   HTMX Enhanced Filter Controls - Pure CSS version of enhanced_filter_controls
@@ -1321,6 +1246,8 @@ details > summary::-webkit-details-marker {
   Usage:
   {{ htmx_enhanced_filter_controls(...) }}
 #}
+{% from "macros/ui/controls.html" import css_dropdown %}
+{% from "macros/ui/dropdowns.html" import css_dropdown as unified_css_dropdown %}
 {% macro htmx_enhanced_filter_controls(
     group_options, 
     sort_options,
@@ -1345,14 +1272,14 @@ details > summary::-webkit-details-marker {
         <!-- First row: Group by, Sort by, and Filters -->
         <div class="flex flex-wrap items-center gap-6">
             <label class="text-label-dark">Group by:</label>
-            {{ htmx_dropdown('group_by', group_by, group_options, 'Group by') }}
+            {{ css_dropdown('Group by', group_options, name='group_by', current_value=group_by) }}
             
             <label class="text-label-dark">Sort by:</label>
-            {{ htmx_dropdown('sort_by', sort_by, sort_options, 'Sort by') }}
-            {{ htmx_dropdown('sort_direction', sort_direction, [
+            {{ css_dropdown('Sort by', sort_options, name='sort_by', current_value=sort_by) }}
+            {{ css_dropdown('Order', [
                 {'value': 'asc', 'label': 'Ascending'},
                 {'value': 'desc', 'label': 'Descending'}
-            ], 'Order') }}
+            ], name='sort_direction', current_value=sort_direction) }}
             
             {% if primary_filter_options or secondary_filter_options or entity_filter_options %}
             <label class="text-label-dark">Filters:</label>
@@ -1390,24 +1317,59 @@ details > summary::-webkit-details-marker {
     </div>
 </div>
 
-<script>
-// Close all dropdowns when clicking outside
-document.addEventListener('click', function(event) {
-    const isDropdownButton = event.target.closest('[onclick*="classList.toggle"]');
-    const isInsideDropdown = event.target.closest('.absolute');
-    const isSearchRelated = event.target.closest('#global-search') || event.target.closest('#search-results');
-    
-    if (!isDropdownButton && !isInsideDropdown && !isSearchRelated) {
-        // Only close dropdown-type elements, not search results
-        document.querySelectorAll('.absolute.hidden:not(#search-results)').forEach(dropdown => {
-            if (!dropdown.classList.contains('hidden')) {
-                dropdown.classList.add('hidden');
-            }
-        });
-        document.querySelectorAll('.absolute:not(.hidden):not(#search-results)').forEach(dropdown => {
-            dropdown.classList.add('hidden');
-        });
-    }
-});
-</script>
+{% endmacro %}
+
+{#
+  Config-Driven Filter Controls - Uses unified CSS dropdown system
+  
+  Takes a dropdown_configs dictionary from Flask route and renders
+  all dropdowns using the new unified css_dropdown system.
+  
+  Parameters:
+  - dropdown_configs (required): Dict of dropdown configurations from Flask
+  - show_completed_toggle (optional): Show completed/closed items toggle
+  - expand_collapse_controls (optional): Show expand/collapse controls
+  
+  Usage:
+  {{ config_driven_filter_controls(dropdown_configs, show_completed_toggle=true) }}
+#}
+{% macro config_driven_filter_controls(dropdown_configs, show_completed_toggle=false, expand_collapse_controls=true) %}
+<div class="card-padded-lg filter-section-enhanced">
+    <div class="flex flex-col space-y-4">
+        <!-- First row: All dropdowns from config -->
+        <div class="flex flex-wrap items-center gap-6">
+            {% for config_key, config in dropdown_configs.items() %}
+                {% if config_key != 'industry_filter' %}
+                    <label class="text-label-dark">{{ config.button_text }}:</label>
+                    {{ unified_css_dropdown(**config) }}
+                {% endif %}
+            {% endfor %}
+            
+            {% if dropdown_configs.get('industry_filter') %}
+            <label class="text-label-dark">Filters:</label>
+            {{ unified_css_dropdown(**dropdown_configs['industry_filter']) }}
+            {% endif %}
+        </div>
+        
+        <!-- Second row: Show completed and Expand/Collapse controls -->
+        {% if show_completed_toggle or expand_collapse_controls %}
+        <div class="flex flex-wrap items-center gap-6">
+            {% if show_completed_toggle %}
+            <label class="flex items-center">
+                <input type="checkbox" 
+                       name="show_completed"
+                       value="true"
+                       class="mr-2"
+                       onchange="this.form.dispatchEvent(new Event('change'))">
+                <span class="text-secondary-dark">Show Completed</span>
+            </label>
+            {% endif %}
+
+            {% if expand_collapse_controls %}
+            {{ css_expand_collapse_controls() }}
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
 {% endmacro %}
