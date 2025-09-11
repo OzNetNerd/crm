@@ -409,7 +409,8 @@ class EntityFilterManager:
             'activity': 'activities',
             'entity': 'entities',
             'priority': 'priorities',
-            'industry': 'industries'
+            'industry': 'industries',
+            'team_member': 'team members'
         }
         
         entity_plural = plural_map.get(self.entity_name, f"{self.entity_name}s")
@@ -440,7 +441,8 @@ class EntityGrouper:
             'activity': 'activities',
             'entity': 'entities',
             'priority': 'priorities',
-            'industry': 'industries'
+            'industry': 'industries',
+            'team_member': 'team members'
         }
     
     def group_by_field(self, entities, group_by, custom_grouper=None):
