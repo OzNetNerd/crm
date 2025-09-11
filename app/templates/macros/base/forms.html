@@ -97,3 +97,77 @@
     </div>
 </div>
 {% endmacro %}
+
+{# Enhanced form components for selection and search #}
+{% from 'macros/base/icons.html' import icon %}
+
+{#
+  Bulk Selection Checkbox - Checkbox with consistent selection styling
+  
+  Parameters:
+  - item_id (required): Unique identifier for the item
+  - model (optional): Alpine.js model name (default: 'selectedItems')
+  - additional_classes (optional): Extra CSS classes
+  
+  Usage:
+  {{ bulk_selection_checkbox(company.id) }}
+  {{ bulk_selection_checkbox(contact.id, 'selectedStakeholders') }}
+#}
+{% macro bulk_selection_checkbox(item_id, model='selectedItems', additional_classes='') %}
+<input type="checkbox" 
+       x-model="{{ model }}" 
+       value="{{ item_id }}"
+       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded {{ additional_classes }}"
+       @click.stop>
+{% endmacro %}
+
+{#
+  Select All Checkbox - Master checkbox for bulk selection
+  
+  Parameters:
+  - total_items (required): Total number of items that can be selected
+  - model (optional): Alpine.js model name (default: 'selectedItems')
+  - label (optional): Label text for the checkbox
+  
+  Usage:
+  {{ select_all_checkbox(companies|length) }}
+  {{ select_all_checkbox(contacts|length, 'selectedStakeholders', 'Select all contacts') }}
+#}
+{% macro select_all_checkbox(total_items, model='selectedItems', label='Select all') %}
+<label class="flex items-center space-x-2">
+    <input type="checkbox"
+           :checked="{{ model }}.length === {{ total_items }} && {{ total_items }} > 0"
+           :indeterminate="{{ model }}.length > 0 && {{ model }}.length < {{ total_items }}"
+           @change="{{ model }} = $event.target.checked ? allItemIds : []"
+           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+    <span class="text-sm text-gray-700">{{ label }}</span>
+</label>
+{% endmacro %}
+
+{#
+  Search Input - Consistent search input with icon
+  
+  Parameters:
+  - placeholder (optional): Placeholder text
+  - model (optional): Alpine.js model binding
+  - additional_classes (optional): Extra CSS classes
+  
+  Usage:
+  {{ search_input('Search companies...', 'searchTerm') }}
+#}
+{% macro search_input(placeholder='Search...', model='searchTerm', additional_classes='') %}
+<div class="relative">
+    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        {{ icon('magnifying-glass', 'md', 'text-gray-400') }}
+    </div>
+    <input type="text" 
+           x-model="{{ model }}"
+           class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm {{ additional_classes }}"
+           placeholder="{{ placeholder }}">
+    <div x-show="{{ model }}.length > 0" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+        <button @click="{{ model }} = ''" class="text-gray-400 hover:text-gray-600">
+            {{ icon('x-mark', 'sm') }}
+        </button>
+    </div>
+</div>
+{% endmacro %}
