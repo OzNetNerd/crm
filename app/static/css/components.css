@@ -1168,3 +1168,16 @@
 .contact-method-phone:hover {
     color: #166534; /* hover:text-green-800 */
 }
+
+/* HTMX Loading Indicators - Prevent layout shifts */
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request .htmx-indicator {
+    display: block;
+}
+
+.htmx-request.htmx-indicator {
+    display: block;
+}
