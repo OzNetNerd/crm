@@ -395,3 +395,148 @@ class DropdownConfigGenerator:
                 'name': 'primary_filter'
             }
         }
+
+
+class EntityConfigGenerator:
+    """Ultra-DRY entity configuration generator using model introspection and metadata"""
+    
+    @staticmethod
+    def generate_entity_page_config(entity_name: str, model_class=None) -> Dict[str, Any]:
+        """Generate complete entity page configuration from model metadata"""
+        
+        # Get model class if not provided
+        if not model_class:
+            model_class = DropdownConfigGenerator.get_model_by_entity_name(entity_name)
+            if not model_class:
+                raise ValueError(f"Unknown entity: {entity_name}")
+        
+        # Get entity config from model
+        entity_config = getattr(model_class, '__entity_config__', {})
+        
+        # Generate entity buttons with proper HTMX attributes and icons
+        entity_buttons = [
+            {
+                'label': f'New {entity_config.get("display_name_singular", "Item")}',
+                'hx_get': f'{entity_config.get("modal_path", "/modals/Item")}/create',
+                'hx_target': 'body',
+                'hx_swap': 'beforeend', 
+                'icon': entity_config.get('icon', 'plus'),
+                'classes': f'btn-new-{entity_name}'
+            }
+        ]
+        
+        # Generate entity metadata
+        entity_info = {
+            'entity_name': entity_config.get('display_name', 'Items'),
+            'entity_name_singular': entity_config.get('display_name_singular', 'Item'),
+            'entity_description': entity_config.get('description', f'Manage your {entity_name}'),
+            'entity_type': entity_name.rstrip('s'),  # Remove trailing 's' for singular
+            'entity_endpoint': entity_config.get('endpoint_name', entity_name),
+            'entity_buttons': entity_buttons
+        }
+        
+        return entity_info
+    
+    @staticmethod
+    def generate_entity_stats(entity_name: str, entities: List, model_class=None) -> Dict[str, Any]:
+        """Generate entity stats based on model metadata and data"""
+        
+        if not model_class:
+            model_class = DropdownConfigGenerator.get_model_by_entity_name(entity_name)
+            if not model_class:
+                return {}
+        
+        entity_config = getattr(model_class, '__entity_config__', {})
+        display_name = entity_config.get('display_name', 'Items')
+        
+        # Base stats that work for all entities
+        base_stats = [
+            {
+                'value': len(entities),
+                'label': f'Total {display_name}',
+                'color_class': 'text-blue-600'
+            }
+        ]
+        
+        # Entity-specific stat generators based on entity type
+        if entity_name == 'opportunities':
+            total_value = sum(getattr(e, 'value', 0) or 0 for e in entities)
+            base_stats.extend([
+                {
+                    'value': f"${total_value:,}",
+                    'label': 'Total Pipeline Value',
+                    'color_class': 'text-green-600'
+                },
+                {
+                    'value': len([e for e in entities if getattr(e, 'stage', None) == 'closed-won']),
+                    'label': 'Closed Won',
+                    'color_class': 'text-emerald-600'
+                },
+                {
+                    'value': len(set(getattr(e, 'company_id', None) for e in entities if getattr(e, 'company_id', None))),
+                    'label': 'Companies in Pipeline',
+                    'color_class': 'text-purple-600'
+                }
+            ])
+        elif entity_name == 'companies':
+            base_stats.extend([
+                {
+                    'value': len([c for c in entities if getattr(c, 'industry', None)]),
+                    'label': 'With Industry',
+                    'color_class': 'text-green-600'
+                },
+                {
+                    'value': sum(len(getattr(c, 'stakeholders', []) or []) for c in entities),
+                    'label': 'Total Stakeholders',
+                    'color_class': 'text-purple-600'
+                },
+                {
+                    'value': sum(len(getattr(c, 'opportunities', []) or []) for c in entities),
+                    'label': 'Total Opportunities',
+                    'color_class': 'text-yellow-600'
+                }
+            ])
+        elif entity_name == 'stakeholders':
+            base_stats.extend([
+                {
+                    'value': len([s for s in entities if getattr(s, 'phone', None)]),
+                    'label': 'With Phone',
+                    'color_class': 'text-green-600'
+                },
+                {
+                    'value': len([s for s in entities if getattr(s, 'email', None)]),
+                    'label': 'With Email',
+                    'color_class': 'text-purple-600'
+                },
+                {
+                    'value': len(set([getattr(s, 'company_id', None) for s in entities if getattr(s, 'company_id', None)])),
+                    'label': 'Companies Represented',
+                    'color_class': 'text-yellow-600'
+                }
+            ])
+        elif entity_name == 'tasks':
+            from datetime import datetime
+            completed_tasks = len([t for t in entities if getattr(t, 'status', None) == 'completed'])
+            overdue_tasks = len([t for t in entities if getattr(t, 'status', None) != 'completed' and hasattr(t, 'due_date') and getattr(t, 'due_date', None) and getattr(t, 'due_date') < datetime.now().date()])
+            base_stats.extend([
+                {
+                    'value': completed_tasks,
+                    'label': 'Completed',
+                    'color_class': 'text-green-600'
+                },
+                {
+                    'value': len(entities) - completed_tasks,
+                    'label': 'Active',
+                    'color_class': 'text-blue-600'
+                },
+                {
+                    'value': overdue_tasks,
+                    'label': 'Overdue',
+                    'color_class': 'text-red-600'
+                }
+            ])
+        
+        return {
+            'title': f'{display_name} Overview',
+            'stats': base_stats
+        }

@@ -42,6 +42,15 @@ class Stakeholder(db.Model):
     """Stakeholder model (formerly Contact) - customer-side contacts with MEDDPICC roles"""
 
     __tablename__ = "stakeholders"
+    
+    __entity_config__ = {
+        'display_name': 'Stakeholders',
+        'display_name_singular': 'Stakeholder',
+        'description': 'Manage your stakeholder relationships', 
+        'icon': 'user',
+        'endpoint_name': 'stakeholders',
+        'modal_path': '/modals/Stakeholder'
+    }
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(

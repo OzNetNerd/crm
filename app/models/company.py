@@ -3,6 +3,15 @@ from . import db
 
 class Company(db.Model):
     __tablename__ = "companies"
+    
+    __entity_config__ = {
+        'display_name': 'Companies',
+        'display_name_singular': 'Company',  
+        'description': 'Manage your company relationships',
+        'icon': 'building-office',
+        'endpoint_name': 'companies',
+        'modal_path': '/modals/Company'
+    }
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(

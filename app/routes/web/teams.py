@@ -6,6 +6,7 @@ from app.models import (
     Opportunity,
 )
 from app.utils.model_introspection import ModelIntrospector
+from app.utils.form_configs import EntityConfigGenerator
 from collections import defaultdict
 
 teams_bp = Blueprint("teams", __name__)
@@ -122,32 +123,40 @@ def index():
         'name': 'job_title_filter'
     }
 
-    # Entity buttons for header actions
-    entity_buttons = [
-        {
-            'label': 'New Team Member',
-            'onclick': 'openNewTeamMemberModal()',
-            'icon': 'plus',
-            'classes': 'btn-primary'
-        }
-    ]
+    # Generate entity configuration using DRY system
+    entity_config = EntityConfigGenerator.generate_entity_page_config('teams', User)
     
-    # Team member stats for overview
+    # Team member stats for overview (custom format for teams)
     entity_stats = {
-        'Total Team Members': len(team_members),
-        'Active Assignments': sum(len(member.get_company_assignments()) + len(member.get_opportunity_assignments()) for member in team_members),
-        'Companies Covered': len(companies_data),
-        'Opportunities Managed': len(opportunities_data)
+        'title': 'Team Overview',
+        'stats': [
+            {
+                'value': len(team_members),
+                'label': 'Total Team Members',
+                'color_class': 'text-blue-600'
+            },
+            {
+                'value': sum(len(member.get_company_assignments()) + len(member.get_opportunity_assignments()) for member in team_members),
+                'label': 'Active Assignments',
+                'color_class': 'text-green-600'
+            },
+            {
+                'value': len(companies_data),
+                'label': 'Companies Covered',
+                'color_class': 'text-purple-600'
+            },
+            {
+                'value': len(opportunities_data),
+                'label': 'Opportunities Managed',
+                'color_class': 'text-yellow-600'
+            }
+        ]
     }
 
     return render_template(
         "base/entity_index.html",
-        entity_name="Account Teams",
-        entity_description="Manage team members and assignments",
-        entity_type="team", 
-        entity_endpoint="teams",
+        **entity_config,
         dropdown_configs=dropdown_configs,
-        entity_buttons=entity_buttons,
         entity_stats=entity_stats,
         team_members=team_members,
         team_data=team_data,

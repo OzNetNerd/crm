@@ -238,8 +238,8 @@ def index():
         for o in Opportunity.query.order_by(Opportunity.name).all()
     ]
 
-    # Ultra-DRY one-line dropdown generation using pure model introspection
-    from app.utils.form_configs import DropdownConfigGenerator
+    # Ultra-DRY dropdown and entity configuration generation
+    from app.utils.form_configs import DropdownConfigGenerator, EntityConfigGenerator
     dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('tasks', context["group_by"], context["sort_by"], context["sort_direction"], context["primary_filter"])
     
     # Add entity filter using DRY entity types
@@ -283,25 +283,13 @@ def index():
         ]
     }
     
-    # Entity buttons for header
-    entity_buttons = [
-        {
-            'label': 'New Task',
-            'hx_get': '/modals/Task/create',
-            'hx_target': 'body',
-            'hx_swap': 'beforeend',
-            'icon': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>'
-        }
-    ]
+    # Generate entity configuration using DRY system
+    entity_config = EntityConfigGenerator.generate_entity_page_config('tasks', Task)
 
     return render_template(
         "base/entity_index.html",
-        entity_name="Tasks",
-        entity_description="Manage all your tasks in one place",
-        entity_type="task",
-        entity_endpoint="tasks",
+        **entity_config,
         entity_stats=entity_stats,
-        entity_buttons=entity_buttons,
         dropdown_configs=dropdown_configs,
         tasks=tasks,
         tasks_objects=context["all_tasks"],
