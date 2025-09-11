@@ -1,0 +1,82 @@
+{# Entity Configuration System - DRY approach to entity metadata #}
+
+{#
+  Central configuration for all entity types to eliminate hardcoded mappings
+  and provide consistent metadata handling across templates.
+#}
+
+{# Entity Configuration Registry #}
+{% set entity_config = {
+  'task': {
+    'icon': 'clipboard-list',
+    'singular': 'task',
+    'plural': 'tasks',
+    'empty_state': {
+      'title': 'No tasks found',
+      'subtitle': 'Try adjusting your filters or create a new task.'
+    }
+  },
+  'stakeholder': {
+    'icon': 'user', 
+    'singular': 'stakeholder',
+    'plural': 'stakeholders',
+    'empty_state': {
+      'title': 'No stakeholders found',
+      'subtitle': 'Try adjusting your filters or create a new stakeholder.'
+    }
+  },
+  'company': {
+    'icon': 'building-office-alt',
+    'singular': 'company', 
+    'plural': 'companies',
+    'empty_state': {
+      'title': 'No companies found',
+      'subtitle': 'Try adjusting your filters or create a new company.'
+    }
+  },
+  'opportunity': {
+    'icon': 'currency-dollar-circle',
+    'singular': 'opportunity',
+    'plural': 'opportunities', 
+    'empty_state': {
+      'title': 'No opportunities found',
+      'subtitle': 'Try adjusting your filters or create a new opportunity.'
+    }
+  }
+} %}
+
+{# Get entity configuration by type #}
+{% macro get_entity_config(entity_type) %}
+  {{ entity_config.get(entity_type, {
+    'icon': 'document',
+    'singular': entity_type,
+    'plural': entity_type + 's',
+    'empty_state': {
+      'title': 'No ' + entity_type + 's found',
+      'subtitle': 'Try adjusting your filters or create a new ' + entity_type + '.'
+    }
+  }) }}
+{% endmacro %}
+
+{# Get entity icon #}
+{% macro get_entity_icon(entity_type) %}
+  {{ entity_config.get(entity_type, {}).get('icon', 'document') }}
+{% endmacro %}
+
+{# Get entity labels #}
+{% macro get_entity_labels(entity_type) %}
+  {% set config = entity_config.get(entity_type, {}) %}
+  {{ {
+    'singular': config.get('singular', entity_type),
+    'plural': config.get('plural', entity_type + 's')
+  } }}
+{% endmacro %}
+
+{# Get empty state config #}
+{% macro get_empty_state_config(entity_type) %}
+  {% set config = entity_config.get(entity_type, {}) %}
+  {{ config.get('empty_state', {
+    'title': 'No ' + entity_type + 's found',
+    'subtitle': 'Try adjusting your filters or create a new ' + entity_type + '.'
+  }) }}
+{% endmacro %}

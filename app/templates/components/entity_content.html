@@ -1,6 +1,8 @@
 {# Universal HTMX Content Partial - Works for ALL entities using new modular card system #}
-{% from "macros/expandable_card.html" import auto_card, expandable_card, action_buttons_row %}
+{% from "macros/cards/expandable_card.html" import auto_card, expandable_card, action_buttons_row %}
 {% from "macros/ui/controls.html" import pluralized_count %}
+{% from "macros/empty_state.html" import empty_state, group_empty_state %}
+{% from "macros/task_renderer.html" import render_task_entity %}
 {% from 'macros/base/icons.html' import icon %}
 
 {# Pure CSS/HTML version - no Alpine.js needed #}
@@ -34,23 +36,10 @@
             <div class="divide-y divide-gray-200">
                 
                 {% for entity in group.entities %}
-                    {# Handle special task logic for parent/child relationships #}
-                    {% if entity_type == 'task' and entity.task_type != 'child' %}
-                        <div class="p-4">
-                            {{ auto_card(entity_type, entity) }}
-                            
-                            {# Render child tasks if this is a parent #}
-                            {% if entity.task_type == 'parent' and entity.child_tasks %}
-                                <div class="ml-8 mt-4 space-y-2 border-l-2 border-gray-200 pl-4">
-                                    {% for child_task in entity.child_tasks %}
-                                        <div class="bg-gray-50 rounded-md p-3">
-                                            {{ auto_card(entity_type, child_task) }}
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% elif entity_type != 'task' or entity.task_type != 'child' %}
+                    {# Use specialized task renderer for tasks, simple rendering for others #}
+                    {% if entity_type == 'task' %}
+                        {{ render_task_entity(entity_type, entity) }}
+                    {% elif entity.task_type is not defined or entity.task_type != 'child' %}
                         <div class="p-4">
                             {{ auto_card(entity_type, entity) }}
                         </div>
@@ -58,34 +47,15 @@
                 {% endfor %}
                 
                 {% if group.entities|length == 0 %}
-                    <div class="p-8 text-center text-gray-500">
-                        No {{ entity_name_plural }} in this category
-                    </div>
+                    {{ group_empty_state(entity_type, group.label) }}
                 {% endif %}
             </div>
         </details>
     {% endfor %}
 
-    {# No results message #}
+    {# No results message - using DRY empty state component #}
     {% if grouped_entities|length == 0 %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-            <div class="text-gray-500">
-                {# Dynamic icon based on entity type #}
-                {% if entity_type == 'task' %}
-                    {{ icon('clipboard-list', 'xl', 'mx-auto text-gray-400 mb-4') }}
-                {% elif entity_type == 'stakeholder' %}
-                    {{ icon('user', 'xl', 'mx-auto text-gray-400 mb-4') }}
-                {% elif entity_type == 'company' %}
-                    {{ icon('building-office-alt', 'xl', 'mx-auto text-gray-400 mb-4') }}
-                {% elif entity_type == 'opportunity' %}
-                    {{ icon('currency-dollar-circle', 'xl', 'mx-auto text-gray-400 mb-4') }}
-                {% else %}
-                    {{ icon('document', 'xl', 'mx-auto text-gray-400 mb-4') }}
-                {% endif %}
-                <p class="text-lg font-medium">No {{ entity_name_plural }} found</p>
-                <p class="text-sm">Try adjusting your filters or create a new {{ entity_name_singular }}.</p>
-            </div>
-        </div>
+        {{ empty_state(entity_type) }}
     {% endif %}
 
 </div>
