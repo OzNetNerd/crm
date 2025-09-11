@@ -98,7 +98,7 @@
                 {%- set option_value = option.value if option is mapping else option -%}
                 {%- set option_label = option.label if option is mapping else option|title -%}
                 
-                <label>
+                <label onclick="this.querySelector('input').checked=true; this.querySelector('input').dispatchEvent(new Event('change'))">
                     <input type="radio" 
                            name="{{ name }}" 
                            value="{{ option_value }}"
@@ -109,7 +109,7 @@
                            hx-trigger="change"
                            {% if option_value == current_value %}checked{% endif %}
                            onchange="document.getElementById('{{ dropdown_id }}-label').textContent='{{ option_label }}'">
-                    <span class="block w-full text-left px-4 py-2 hover:bg-gray-100 peer-focus:bg-gray-100 cursor-pointer {% if option_value == current_value %}bg-blue-50 text-blue-700{% endif %}">
+                    <span class="block w-full text-left px-4 py-2 hover:bg-gray-100 peer-focus:bg-gray-100 cursor-pointer peer-checked:bg-blue-50 peer-checked:text-blue-700">
                         {{ option_label }}
                     </span>
                 </label>
@@ -121,7 +121,7 @@
                     {%- set option_value = option.value if option is mapping else option -%}
                     {%- set option_label = option.label if option is mapping else option|title -%}
                     
-                    <label class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                    <label class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" onclick="event.stopPropagation()">
                         <input type="checkbox" 
                                name="{{ name }}"
                                value="{{ option_value }}"
@@ -142,7 +142,7 @@
                 {%- set option_value = option.value if option is mapping else option -%}
                 {%- set option_label = option.label if option is mapping else option|title -%}
                 
-                <label>
+                <label onclick="this.querySelector('input').checked=true; this.querySelector('input').dispatchEvent(new Event('change'))">
                     <input type="radio" 
                            name="{{ name }}" 
                            value="{{ option_value }}"
@@ -152,7 +152,7 @@
                            {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
                            hx-trigger="change"
                            onchange="document.getElementById('{{ dropdown_id }}-label').textContent='{{ option_label }}'">
-                    <span class="block w-full text-left px-4 py-2 hover:bg-gray-100 peer-focus:bg-gray-100 cursor-pointer">
+                    <span class="block w-full text-left px-4 py-2 hover:bg-gray-100 peer-focus:bg-gray-100 cursor-pointer peer-checked:bg-blue-50 peer-checked:text-blue-700">
                         {{ option_label }}
                     </span>
                 </label>
