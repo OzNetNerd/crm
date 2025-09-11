@@ -19,43 +19,8 @@
 {% block title %}Dashboard - CRM{% endblock %}
 
 {% block content %}
-{% set dashboard_buttons = [
-    {
-        'label': 'New Task',
-        'hx_get': '/modals/Task/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': clipboard_list_icon('w-4 h-4')
-    },
-    {
-        'label': 'New Company',
-        'hx_get': '/modals/Company/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': building_office_icon('w-4 h-4')
-    },
-    {
-        'label': 'New Stakeholder',
-        'hx_get': '/modals/Stakeholder/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': user_icon('w-4 h-4')
-    },
-    {
-        'label': 'New Opportunity',
-        'hx_get': '/modals/Opportunity/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': currency_dollar_icon('w-4 h-4')
-    },
-    {
-        'label': 'New Team Member',
-        'hx_get': '/modals/User/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': user_icon('w-4 h-4')
-    }
-] %}
+{# Use centralized DRY button generation system #}
+{% set dashboard_buttons = get_dashboard_buttons() %}
 
 {{ simple_page_header("Dashboard", "Overview of your CRM performance and activity", buttons=dashboard_buttons) }}
 

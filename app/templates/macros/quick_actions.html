@@ -26,29 +26,9 @@
 {% endmacro %}
 
 {% macro default_dashboard_actions() %}
-{{ quick_actions_buttons([
-    {
-        'label': 'New Task',
-        'hx_get': '/modals/Task/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': plus_icon('w-4 h-4')
-    },
-    {
-        'label': 'New Company',
-        'hx_get': '/modals/Company/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': building_office_icon('w-4 h-4')
-    },
-    {
-        'label': 'New Opportunity',
-        'hx_get': '/modals/Opportunity/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': currency_dollar_icon('w-4 h-4')
-    }
-]) }}
+{# Use centralized DRY button generation system #}
+{% set entity_buttons = get_dashboard_buttons() %}
+{{ quick_actions_buttons(entity_buttons) }}
 {% endmacro %}
 
 {# 

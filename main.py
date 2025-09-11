@@ -16,6 +16,7 @@ from app.utils.template_globals import (
     get_detail_modal_config,
     get_all_modal_configs,
     get_all_detail_modal_configs,
+    get_dashboard_buttons,
     PRIORITY_OPTIONS,
     SIZE_OPTIONS,
 )
@@ -88,6 +89,7 @@ def create_app():
     app.jinja_env.globals["get_detail_modal_config"] = get_detail_modal_config
     app.jinja_env.globals["get_all_modal_configs"] = get_all_modal_configs
     app.jinja_env.globals["get_all_detail_modal_configs"] = get_all_detail_modal_configs
+    app.jinja_env.globals["get_dashboard_buttons"] = get_dashboard_buttons
     app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
     app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
     

@@ -144,3 +144,9 @@ def get_all_modal_configs():
 def get_all_detail_modal_configs():
     """Get all detail modal configurations for bulk operations."""
     return DETAIL_MODAL_CONFIGS
+
+
+def get_dashboard_buttons():
+    """Get centralized dashboard buttons for DRY system."""
+    from app.utils.entity_icons import get_dashboard_buttons
+    return get_dashboard_buttons()
