@@ -1,3 +1,4 @@
+{% from 'macros/base/icons.html' import icon %}
 {# UI Controls - Interactive UI elements like search, selection, and navigation #}
 
 {#
@@ -86,9 +87,7 @@
         {% if grid_icon %}
             {{ grid_icon|safe }}
         {% else %}
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
+            {{ icon('squares-2x2', 'sm') }}
         {% endif %}
         <span class="ml-1">Grid</span>
     </button>
@@ -98,9 +97,7 @@
         {% if list_icon %}
             {{ list_icon|safe }}
         {% else %}
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-            </svg>
+            {{ icon('list-bullet', 'sm') }}
         {% endif %}
         <span class="ml-1">List</span>
     </button>
@@ -164,9 +161,7 @@
 {% macro search_input(placeholder='Search...', model='searchTerm', additional_classes='') %}
 <div class="relative">
     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
+        {{ icon('magnifying-glass', 'md', 'text-gray-400') }}
     </div>
     <input type="text" 
            x-model="{{ model }}"
@@ -174,9 +169,7 @@
            placeholder="{{ placeholder }}">
     <div x-show="{{ model }}.length > 0" class="absolute inset-y-0 right-0 pr-3 flex items-center">
         <button @click="{{ model }} = ''" class="text-gray-400 hover:text-gray-600">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
+            {{ icon('x-mark', 'sm') }}
         </button>
     </div>
 </div>
@@ -195,10 +188,7 @@
 {% macro loading_spinner(size='md', text='') %}
 {%- set size_classes = {'sm': 'h-4 w-4', 'md': 'h-6 w-6', 'lg': 'h-8 w-8'} -%}
 <div class="flex items-center justify-center space-x-2">
-    <svg class="animate-spin {{ size_classes[size] or size_classes['md'] }} text-blue-600" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
+    {{ icon('spinner', size or 'md', 'animate-spin text-blue-600') }}
     {% if text %}
     <span class="text-sm text-gray-600">{{ text }}</span>
     {% endif %}
@@ -261,9 +251,7 @@
                 class="bg-white border border-gray-300 rounded-md px-4 py-2 text-left w-48 flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 peer"
                 tabindex="0">
             <span>{{ button_text }}</span>
-            <svg class="w-4 h-4 ml-2 transition-transform group-focus-within:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
+            {{ icon('chevron-down', 'sm', 'ml-2 transition-transform group-focus-within:rotate-180') }}
         </button>
         
         <div class="absolute mt-1 w-48 bg-white border border-gray-300 rounded-md shadow-lg z-50 opacity-0 scale-95 pointer-events-none transition-all duration-200 peer-focus:opacity-100 peer-focus:scale-100 peer-focus:pointer-events-auto group-focus-within:opacity-100 group-focus-within:scale-100 group-focus-within:pointer-events-auto">
@@ -320,9 +308,7 @@
                 class="bg-white border border-gray-300 rounded-md px-4 py-2 text-left w-48 flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 peer"
                 tabindex="0">
             <span>{{ button_text }}{{ direction_indicator if current_sort }}</span>
-            <svg class="w-4 h-4 ml-2 transition-transform group-focus-within:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
+            {{ icon('chevron-down', 'sm', 'ml-2 transition-transform group-focus-within:rotate-180') }}
         </button>
         
         <div class="absolute mt-1 w-48 bg-white border border-gray-300 rounded-md shadow-lg z-50 opacity-0 scale-95 pointer-events-none transition-all duration-200 peer-focus:opacity-100 peer-focus:scale-100 peer-focus:pointer-events-auto group-focus-within:opacity-100 group-focus-within:scale-100 group-focus-within:pointer-events-auto">
@@ -372,9 +358,7 @@
     <label for="{{ dropdown_id }}" 
            class="bg-white border border-gray-300 rounded-md px-4 py-2 text-left flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer min-w-[12rem]">
         <span>{{ button_text }}</span>
-        <svg class="w-4 h-4 ml-2 transition-transform peer-checked:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
+        {{ icon('chevron-down', 'sm', 'ml-2 transition-transform peer-checked:rotate-180') }}
     </label>
     
     <div class="absolute mt-1 min-w-[12rem] bg-white border border-gray-300 rounded-md shadow-lg z-50 opacity-0 scale-95 pointer-events-none transition-all duration-200 peer-checked:opacity-100 peer-checked:scale-100 peer-checked:pointer-events-auto">
