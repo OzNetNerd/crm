@@ -7,6 +7,7 @@ from app.utils.route_helpers import (
     parse_int_field,
     get_entity_data_for_forms,
 )
+from app.utils.model_introspection import ModelIntrospector
 
 tasks_bp = Blueprint("tasks", __name__)
 task_handler = BaseRouteHandler(Task, "tasks")
@@ -222,21 +223,14 @@ def content():
     context = get_filtered_tasks_context()
     
     # Universal template configuration
+    # Universal template configuration using model introspection
     context.update({
         'grouped_entities': context["grouped_tasks"],
         'entity_type': 'task',
         'entity_name_singular': 'task',
         'entity_name_plural': 'tasks',
-        'card_config': {
-            'badge_field': 'priority',
-            'badge_style': 'blue',
-            'title_field': 'description',
-            'secondary_fields': [],
-            'metadata_fields': [
-                {'field': 'due_date', 'type': 'date', 'format': '%d/%m/%y'},
-                {'field': 'next_step_type', 'type': 'text'}
-            ]
-        }
+        'card_config': ModelIntrospector.get_card_config(Task),
+        'model_class': Task
     })
     
     return render_template("shared/entity_content.html", **context)

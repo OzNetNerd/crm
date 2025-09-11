@@ -376,6 +376,137 @@ class ModelIntrospector:
             return form_order.get(field['name'], 6)
         
         return sorted(fields, key=get_sort_key)
+    
+    @staticmethod
+    def get_card_config(model_class) -> Dict[str, Any]:
+        """
+        Extract card rendering configuration from model metadata.
+        
+        Args:
+            model_class: SQLAlchemy model class
+            
+        Returns:
+            Card configuration dictionary for template rendering
+        """
+        config = {
+            'title_field': 'name',  # Standard across all models
+            'badge_field': None,
+            'value_field': None, 
+            'secondary_fields': [],
+            'metadata_fields': []
+        }
+        
+        # Find primary status/stage field for badge
+        badge_candidates = ['stage', 'status', 'priority', 'job_title', 'industry']
+        for field_name in badge_candidates:
+            if hasattr(model_class, field_name):
+                column = getattr(model_class, field_name)
+                if hasattr(column.property, 'columns') and len(column.property.columns) > 0:
+                    info = column.property.columns[0].info
+                    choices = info.get('choices', {})
+                    if choices:  # Field has choices, good for badge
+                        config['badge_field'] = field_name
+                        break
+        
+        # Find value field (for deals, amounts, etc.)
+        value_candidates = ['value', 'amount', 'price', 'salary']
+        for field_name in value_candidates:
+            if hasattr(model_class, field_name):
+                config['value_field'] = field_name
+                break
+        
+        # Find relationship fields for secondary info
+        relationship_fields = []
+        for attr_name in dir(model_class):
+            if attr_name.startswith('_'):
+                continue
+            try:
+                attr = getattr(model_class, attr_name)
+                # Check for relationships
+                if hasattr(attr, 'property') and hasattr(attr.property, 'mapper'):
+                    # This is a relationship - add common sub-fields
+                    relationship_fields.extend([
+                        {'field': f'{attr_name}.name', 'type': 'text'},
+                        {'field': f'{attr_name}.email', 'type': 'email'}
+                    ])
+                    break  # Limit to first relationship to avoid clutter
+            except (AttributeError, TypeError):
+                continue
+        
+        config['secondary_fields'] = relationship_fields[:2]  # Max 2 secondary fields
+        
+        # Find date fields for metadata
+        date_fields = []
+        date_candidates = ['created_at', 'due_date', 'expected_close_date', 'start_date', 'end_date', 'completed_at']
+        for field_name in date_candidates:
+            if hasattr(model_class, field_name):
+                date_fields.append({
+                    'field': field_name, 
+                    'type': 'date', 
+                    'format': '%m/%d/%y'
+                })
+                if len(date_fields) >= 2:  # Max 2 date fields
+                    break
+        
+        config['metadata_fields'] = date_fields
+        
+        return config
+    
+    @staticmethod
+    def extract_field_value(entity, field_path: str):
+        """
+        Extract a field value from an entity using dot notation.
+        
+        Args:
+            entity: Model instance
+            field_path: Field path like 'name' or 'company.name'
+            
+        Returns:
+            Field value or None if not found
+        """
+        try:
+            # Split field path and traverse
+            parts = field_path.split('.')
+            value = entity
+            
+            for part in parts:
+                if hasattr(value, part):
+                    value = getattr(value, part)
+                else:
+                    return None
+            
+            return value
+        except (AttributeError, TypeError):
+            return None
+    
+    @staticmethod
+    def format_field_value(value, field_type: str, format_string: str = None) -> str:
+        """
+        Format a field value based on its type.
+        
+        Args:
+            value: Raw field value
+            field_type: Type hint ('date', 'currency', 'text', etc.)
+            format_string: Optional format string
+            
+        Returns:
+            Formatted string value
+        """
+        if value is None:
+            return ""
+        
+        try:
+            if field_type == 'date' and hasattr(value, 'strftime'):
+                format_str = format_string or '%m/%d/%y'
+                return value.strftime(format_str)
+            elif field_type == 'currency' and isinstance(value, (int, float)):
+                return f"${value:,.0f}"
+            elif field_type == 'email' and value:
+                return f"<a href='mailto:{value}' class='text-blue-600 hover:text-blue-800'>{value}</a>"
+            else:
+                return str(value)
+        except (AttributeError, ValueError, TypeError):
+            return str(value) if value else ""
 
 
 def get_model_by_name(model_name: str):

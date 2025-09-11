@@ -2,6 +2,7 @@ from datetime import date
 from flask import Blueprint, render_template, request
 from app.models import Stakeholder, Company, Opportunity
 from app.utils.route_helpers import BaseRouteHandler
+from app.utils.model_introspection import ModelIntrospector
 from collections import defaultdict
 
 stakeholders_bp = Blueprint("stakeholders", __name__)
@@ -188,24 +189,14 @@ def content():
     context = get_filtered_stakeholders_context()
     
     # Universal template configuration
+    # Universal template configuration using model introspection
     context.update({
         'grouped_entities': context["grouped_stakeholders"],
         'entity_type': 'stakeholder',
         'entity_name_singular': 'stakeholder',
         'entity_name_plural': 'stakeholders',
-        'card_config': {
-            'badge_field': 'job_title',
-            'badge_style': 'blue',
-            'title_field': 'name',
-            'secondary_fields': [
-                {'field': 'company.name', 'type': 'text'},
-                {'field': 'email', 'type': 'text'}
-            ],
-            'metadata_fields': [
-                {'field': 'phone', 'type': 'text'},
-                {'field': 'created_at', 'type': 'date', 'format': '%m/%d/%y'}
-            ]
-        }
+        'card_config': ModelIntrospector.get_card_config(Stakeholder),
+        'model_class': Stakeholder
     })
     
     return render_template("shared/entity_content.html", **context)
