@@ -1,89 +1,122 @@
 {% from "macros/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
 
 {% macro generic_new_modal(entity_type, config) %}
-<div x-cloak x-data="{
-    show: false,
-    saving: false,
-    {{ entity_type }}: {{ config.default_values | tojson }},
-    {% if config.additional_fields %}
-    {% for field_name, default_value in config.additional_fields.items() %}
-    {{ field_name }}: {{ default_value | tojson }},
-    {% endfor %}
-    {% endif %}
-    
-    openModal() {
-        this.show = true;
-        this.resetForm();
-    },
-    
-    closeModal() {
-        this.show = false;
-    },
-    
-    resetForm() {
-        this.{{ entity_type }} = {{ config.default_values | tojson }};
-        {% if config.additional_fields %}
-        {% for field_name, default_value in config.additional_fields.items() %}
-        this.{{ field_name }} = {{ default_value | tojson }};
-        {% endfor %}
-        {% endif %}
-        this.saving = false;
-        {% if config.reset_callback %}
-        {{ config.reset_callback | safe }}
-        {% endif %}
-    },
-    
-    async save{{ entity_type|title }}() {
-        // Validation
-        {% for validation in config.validations %}
-        if ({{ validation.condition }}) {
-            alert('{{ validation.message }}');
-            return;
-        }
-        {% endfor %}
+<div id="{{ entity_type }}-new-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-container">
+        <div class="modal-backdrop" onclick="closeModal('{{ entity_type }}-new-modal')"></div>
         
-        this.saving = true;
-        try {
-            const payload = {% if config.payload_transform %}{{ config.payload_transform }}{% else %}this.{{ entity_type }}{% endif %};
-            const response = await fetch('{{ config.api_endpoint }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h3 class="modal-title">{{ config.title }}</h3>
+                <button onclick="closeModal('{{ entity_type }}-new-modal')" class="modal-close-button">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
             
-            if (response.ok) {
-                this.closeModal();
-                {% if config.success_callback %}
-                {{ config.success_callback | safe }}
-                {% else %}
-                window.location.reload(); // Simple refresh for now
-                {% endif %}
-            } else {
-                alert('{{ config.error_message | default("Error creating " + entity_type) }}');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('{{ config.error_message | default("Error creating " + entity_type) }}');
-        } finally {
-            this.saving = false;
+            <!-- Modal Body with HTMX Form -->
+            <div class="modal-body modal-content-spacing">
+                <form id="{{ entity_type }}-new-form"
+                      hx-post="{{ config.api_endpoint }}"
+                      hx-trigger="submit"
+                      hx-target="body"
+                      hx-swap="beforeend"
+                      hx-on::before-request="showFormSaving('{{ entity_type }}-new-form')"
+                      hx-on::after-request="handleFormResponse('{{ entity_type }}-new-modal', event)">
+                    
+                    {{ render_new_fields(entity_type, config.fields) }}
+                    
+                    <!-- Hidden fields for additional data -->
+                    {% if config.additional_fields %}
+                    {% for field_name, default_value in config.additional_fields.items() %}
+                    <input type="hidden" name="{{ field_name }}" value="{{ default_value | tojson }}">
+                    {% endfor %}
+                    {% endif %}
+                </form>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button onclick="closeModal('{{ entity_type }}-new-modal')" class="modal-cancel-button">
+                    Cancel
+                </button>
+                <button form="{{ entity_type }}-new-form" type="submit" class="modal-save-button">
+                    <span class="save-text">{{ config.save_text | default("Save") }}</span>
+                    <span class="save-loading hidden">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Saving...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openNewModal(entityType) {
+    const modal = document.getElementById(entityType + '-new-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Reset form
+        const form = document.getElementById(entityType + '-new-form');
+        if (form) form.reset();
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('hidden');
+        // Reset any loading states
+        const saveButton = modal.querySelector('.modal-save-button');
+        if (saveButton) {
+            saveButton.disabled = false;
+            saveButton.querySelector('.save-text').classList.remove('hidden');
+            saveButton.querySelector('.save-loading').classList.add('hidden');
         }
     }
-}"
-@open-new-{{ entity_type }}-modal.window="openModal()"
-@close-modal.window="closeModal()">
+}
 
-    {% call base_modal(entity_type + '-new-modal', backdrop_click_close=false) %}
-        {{ modal_header(config.title) }}
-        
-        <div class="modal-body modal-content-spacing">
-            {{ render_new_fields(entity_type, config.fields) }}
-        </div>
-        
-        {{ modal_footer(save_action="save" + entity_type|title + "()", save_text=config.save_text | default("Save")) }}
-    {% endcall %}
-</div>
+function showFormSaving(formId) {
+    const form = document.getElementById(formId);
+    if (form) {
+        const saveButton = form.closest('.modal-content').querySelector('.modal-save-button');
+        if (saveButton) {
+            saveButton.disabled = true;
+            saveButton.querySelector('.save-text').classList.add('hidden');
+            saveButton.querySelector('.save-loading').classList.remove('hidden');
+        }
+    }
+}
+
+function handleFormResponse(modalId, event) {
+    if (event.detail.xhr.status === 200) {
+        closeModal(modalId);
+        // Trigger content refresh
+        if (window.location.pathname.includes('stakeholder')) {
+            htmx.trigger('#stakeholder-content', 'load');
+        }
+    } else {
+        // Show error
+        alert('{{ config.error_message | default("Error creating " + entity_type) }}');
+        // Reset button state
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            const saveButton = modal.querySelector('.modal-save-button');
+            if (saveButton) {
+                saveButton.disabled = false;
+                saveButton.querySelector('.save-text').classList.remove('hidden');
+                saveButton.querySelector('.save-loading').classList.add('hidden');
+            }
+        }
+    }
+}
+</script>
 {% endmacro %}
 
 {% macro render_new_fields(entity_type, fields) %}
@@ -91,7 +124,7 @@
         {% if field.type == 'text' %}
             <div class="form-group">
                 <label class="form-label{{ ' required' if field.required else '' }}">{{ field.label }}</label>
-                <input x-model="{{ entity_type }}.{{ field.name }}" 
+                <input name="{{ field.name }}" 
                        type="{{ field.input_type | default('text') }}" 
                        class="form-input"
                        placeholder="{{ field.placeholder | default('') }}"
@@ -101,7 +134,7 @@
         {% elif field.type == 'number' %}
             <div class="form-group">
                 <label class="form-label{{ ' required' if field.required else '' }}">{{ field.label }}</label>
-                <input x-model="{{ entity_type }}.{{ field.name }}" 
+                <input name="{{ field.name }}" 
                        type="number" 
                        class="form-input"
                        placeholder="{{ field.placeholder | default('') }}"
@@ -113,7 +146,7 @@
         {% elif field.type == 'textarea' %}
             <div class="form-group">
                 <label class="form-label{{ ' required' if field.required else '' }}">{{ field.label }}</label>
-                <textarea x-model="{{ entity_type }}.{{ field.name }}" 
+                <textarea name="{{ field.name }}" 
                           class="form-textarea" 
                           rows="{{ field.rows | default(2) }}"
                           placeholder="{{ field.placeholder | default('') }}"
@@ -123,7 +156,7 @@
         {% elif field.type == 'select' %}
             <div class="form-group">
                 <label class="form-label{{ ' required' if field.required else '' }}">{{ field.label }}</label>
-                <select x-model="{{ entity_type }}.{{ field.name }}" 
+                <select name="{{ field.name }}" 
                         class="form-select"
                         {{ 'required' if field.required else '' }}
                         {% if field.attributes %}{{ field.attributes | safe }}{% endif %}>
@@ -137,7 +170,7 @@
         {% elif field.type == 'date' %}
             <div class="form-group">
                 <label class="form-label{{ ' required' if field.required else '' }}">{{ field.label }}</label>
-                <input x-model="{{ entity_type }}.{{ field.name }}" 
+                <input name="{{ field.name }}" 
                        type="date" 
                        class="form-input"
                        {{ 'required' if field.required else '' }}

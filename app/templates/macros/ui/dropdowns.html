@@ -49,7 +49,7 @@
 <div class="relative {{ additional_classes }} dropdown-container" 
      hx-on:htmx:after-request="this.querySelector('input[type=checkbox]').checked = false"
      tabindex="0"
-     onblur="setTimeout(() => { if (!this.contains(document.activeElement)) this.querySelector('input[type=checkbox]').checked = false }, 100)">
+     onblur="if (!this.contains(event.relatedTarget)) this.querySelector('input[type=checkbox]').checked = false">
     <input type="checkbox" id="{{ dropdown_id }}" class="hidden peer">
     
     <label for="{{ dropdown_id }}" 

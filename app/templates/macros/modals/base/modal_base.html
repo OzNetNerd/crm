@@ -1,38 +1,37 @@
 {% macro base_modal(modal_id, show_var="show", backdrop_click_close=true) %}
-<div x-show="{{ show_var }}" 
-     x-cloak 
-     x-transition:enter="modal-fade-enter"
-     x-transition:enter-end="modal-fade-enter-to"
-     x-transition:leave="modal-fade-leave"
-     x-transition:leave-end="modal-fade-leave-to"
-     class="modal-overlay"
+<div id="{{ modal_id }}" 
+     class="modal-overlay hidden"
      aria-labelledby="{{ modal_id }}-title" 
      role="dialog" 
      aria-modal="true">
     
     <div class="modal-container">
-        <div x-show="{{ show_var }}" 
-             x-transition:enter="modal-fade-enter"
-             x-transition:enter-end="modal-fade-enter-to"
-             x-transition:leave="modal-fade-leave"
-             x-transition:leave-end="modal-fade-leave-to"
-             class="modal-backdrop"
-             {% if backdrop_click_close %}@click="{{ show_var }} = false"{% endif %}></div>
+        <div class="modal-backdrop"
+             {% if backdrop_click_close %}onclick="closeModalById('{{ modal_id }}')"{% endif %}></div>
 
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
         
-        <div x-show="{{ show_var }}"
-             x-transition:enter="modal-scale-enter"
-             x-transition:enter-end="modal-scale-enter-to"
-             x-transition:leave="modal-scale-leave"
-             x-transition:leave-end="modal-scale-leave-to"
-             class="modal-content"
-             @click.stop>
-            
+        <div class="modal-content" onclick="event.stopPropagation()">
             {{ caller() }}
         </div>
     </div>
 </div>
+
+<script>
+function closeModalById(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+function openModalById(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+</script>
 {% endmacro %}
 
 {% macro modal_header(title, show_var="show") %}
@@ -40,7 +39,7 @@
     <h3 class="modal-title" id="modal-title">
         {{ title }}
     </h3>
-    <button @click="{{ show_var }} = false" class="modal-close-button">
+    <button onclick="this.closest('.modal-overlay').classList.add('hidden')" class="modal-close-button">
         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -50,15 +49,13 @@
 
 {% macro modal_footer(show_var="show", save_action="", save_text="Save", save_loading_var="saving") %}
 <div class="modal-footer">
-    <button @click="{{ show_var }} = false" class="modal-cancel-button">
+    <button onclick="this.closest('.modal-overlay').classList.add('hidden')" class="modal-cancel-button">
         Cancel
     </button>
     {% if save_action %}
-    <button @click="{{ save_action }}"
-            :disabled="{{ save_loading_var }}"
-            class="modal-save-button">
-        <span x-show="!{{ save_loading_var }}">{{ save_text }}</span>
-        <span x-show="{{ save_loading_var }}" class="flex items-center">
+    <button onclick="{{ save_action }}" class="modal-save-button">
+        <span class="save-text">{{ save_text }}</span>
+        <span class="save-loading hidden">
             <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
