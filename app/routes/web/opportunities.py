@@ -74,10 +74,10 @@ def index():
     ]
 
     return render_template(
-        "opportunities/index.html",
+        "base/entity_index.html",
         entity_name="Opportunities",
         entity_description="Manage your sales opportunities",
-        entity_type="opportunity", 
+        entity_type="opportunity",
         entity_endpoint="opportunities",
         entity_stats=entity_stats,
         entity_buttons=entity_buttons,

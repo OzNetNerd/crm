@@ -65,13 +65,53 @@ def index():
         'current_values': secondary_filter or [],
         'name': 'tertiary_filter'
     }
+    
+    # Entity stats for summary cards
+    entity_stats = {
+        'title': 'Stakeholder Overview',
+        'stats': [
+            {
+                'value': len(stakeholders),
+                'label': 'Total Stakeholders',
+                'color_class': 'text-blue-600'
+            },
+            {
+                'value': len([s for s in stakeholders if s.phone]),
+                'label': 'With Phone',
+                'color_class': 'text-green-600'
+            },
+            {
+                'value': len([s for s in stakeholders if s.email]),
+                'label': 'With Email',
+                'color_class': 'text-purple-600'
+            },
+            {
+                'value': len(set([s.company_id for s in stakeholders if s.company_id])),
+                'label': 'Companies Represented',
+                'color_class': 'text-yellow-600'
+            }
+        ]
+    }
+    
+    # Entity buttons for header
+    entity_buttons = [
+        {
+            'label': 'New Stakeholder',
+            'hx_get': '/modals/Stakeholder/create',
+            'hx_target': 'body',
+            'hx_swap': 'beforeend',
+            'icon': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>'
+        }
+    ]
 
     return render_template(
-        "stakeholders/index.html",
+        "base/entity_index.html",
         entity_name="Stakeholders",
-        entity_description="Manage your customer contacts", 
+        entity_description="Manage your stakeholder relationships",
         entity_type="stakeholder",
         entity_endpoint="stakeholders",
+        entity_stats=entity_stats,
+        entity_buttons=entity_buttons,
         dropdown_configs=dropdown_configs,
         stakeholders=stakeholders,
     )
