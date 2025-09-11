@@ -1,0 +1,30 @@
+{# Notes Display Component - Shows list of notes (read-only) #}
+<div class="notes-list space-y-3" id="notes-{{ entity_id }}">
+    {% for note in notes %}
+        <div class="note-item bg-gray-50 rounded-lg p-3" id="note-{{ note.id }}">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <p class="text-sm text-gray-800">{{ note.content }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ note.created_at.strftime('%m/%d/%y') if note.created_at else 'Today' }}</p>
+                </div>
+                {% if show_delete|default(true) %}
+                <button hx-delete="/api/notes/{{ note.id }}"
+                        hx-target="#note-{{ note.id }}"
+                        hx-swap="outerHTML"
+                        hx-confirm="Delete this note?"
+                        class="ml-2 text-gray-400 hover:text-red-600 transition-colors duration-200">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    
+    {% if notes|length == 0 %}
+        <div class="empty-state text-gray-500 text-sm italic text-center py-4">
+            No notes yet
+        </div>
+    {% endif %}
+</div>

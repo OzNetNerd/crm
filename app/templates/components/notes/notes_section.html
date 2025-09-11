@@ -1,0 +1,10 @@
+{# Complete Notes Section Component - Display + Form #}
+<div class="notes-section">
+    <h4 class="text-sm font-medium text-gray-900 mb-3">Notes</h4>
+    
+    {% include 'components/notes/notes_display.html' %}
+    
+    {% if show_form|default(true) %}
+        {% include 'components/notes/notes_form.html' %}
+    {% endif %}
+</div>

@@ -1,5 +1,5 @@
 {% from "macros/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
-{% from "macros/modals/base/notes_section.html" import notes_section %}
+{# Notes now use template components #}
 {% from "macros/ui_elements.html" import loading_spinner %}
 
 {% macro generic_detail_modal(entity_type, config) %}
@@ -62,7 +62,7 @@
                     {% if tab.key == 'details' %}
                         {{ render_detail_fields(entity_type, config.fields) }}
                     {% elif tab.key == 'notes' %}
-                        {{ notes_section(entity_type) }}
+                        {% include 'components/notes/notes_section.html' %}
                     {% else %}
                         {{ tab.content | safe }}
                     {% endif %}
@@ -72,7 +72,7 @@
                 {{ render_detail_fields(entity_type, config.fields) }}
                 
                 {% if config.show_notes %}
-                {{ notes_section(entity_type) }}
+                {% include 'components/notes/notes_section.html' %}
                 {% endif %}
             {% endif %}
         </div>
