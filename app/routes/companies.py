@@ -1,6 +1,6 @@
 from datetime import date
 from flask import Blueprint, render_template, request
-from app.models import Company, Stakeholder, Opportunity
+from app.models import Company, Stakeholder, Opportunity, db
 from app.utils.route_helpers import BaseRouteHandler
 from collections import defaultdict
 
