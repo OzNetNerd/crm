@@ -203,12 +203,52 @@ def index():
     from app.utils.form_configs import DropdownConfigGenerator
     dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('companies', group_by, sort_by, sort_direction, primary_filter)
     
+    # Entity stats for summary cards
+    entity_stats = {
+        'title': 'Company Overview',
+        'stats': [
+            {
+                'value': len(companies),
+                'label': 'Total Companies',
+                'color_class': 'text-blue-600'
+            },
+            {
+                'value': len([c for c in companies if c.industry]),
+                'label': 'With Industry',
+                'color_class': 'text-green-600'
+            },
+            {
+                'value': sum(len(c.stakeholders or []) for c in companies),
+                'label': 'Total Stakeholders',
+                'color_class': 'text-purple-600'
+            },
+            {
+                'value': sum(len(c.opportunities or []) for c in companies),
+                'label': 'Total Opportunities',
+                'color_class': 'text-yellow-600'
+            }
+        ]
+    }
+    
+    # Entity buttons for header
+    entity_buttons = [
+        {
+            'label': 'New Company',
+            'hx_get': '/modals/Company/create',
+            'hx_target': 'body',
+            'hx_swap': 'beforeend',
+            'icon': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>'
+        }
+    ]
+
     return render_template(
-        "companies/index.html",
+        "base/entity_index.html",
         entity_name="Companies",
-        entity_description="Manage your company relationships", 
+        entity_description="Manage your company relationships",
         entity_type="company",
         entity_endpoint="companies",
+        entity_stats=entity_stats,
+        entity_buttons=entity_buttons,
         dropdown_configs=dropdown_configs,
         companies=companies,
         companies_data=companies_data,

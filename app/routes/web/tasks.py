@@ -294,12 +294,53 @@ def index():
         'name': 'entity_filter'
     }
 
+    # Entity stats for summary cards
+    all_tasks = context["all_tasks"]
+    entity_stats = {
+        'title': 'Task Summary',
+        'stats': [
+            {
+                'value': len([t for t in all_tasks if t.status == 'todo']),
+                'label': 'To Do',
+                'color_class': 'text-blue-600'
+            },
+            {
+                'value': len([t for t in all_tasks if t.status == 'in-progress']),
+                'label': 'In Progress',
+                'color_class': 'text-yellow-600'
+            },
+            {
+                'value': len([t for t in all_tasks if t.status == 'complete']),
+                'label': 'Complete',
+                'color_class': 'text-green-600'
+            },
+            {
+                'value': len([t for t in all_tasks if hasattr(t, 'is_overdue') and t.is_overdue]),
+                'label': 'Overdue',
+                'color_class': 'text-red-600'
+            }
+        ]
+    }
+    
+    # Entity buttons for header
+    entity_buttons = [
+        {
+            'label': 'New Task',
+            'hx_get': '/modals/Task/create',
+            'hx_target': 'body',
+            'hx_swap': 'beforeend',
+            'icon': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>'
+        }
+    ]
+
     return render_template(
-        "tasks/index.html",
+        "base/entity_index.html",
         entity_name="Tasks",
         entity_description="Manage all your tasks in one place",
         entity_type="task",
         entity_endpoint="tasks",
+        entity_stats=entity_stats,
+        entity_buttons=entity_buttons,
         dropdown_configs=dropdown_configs,
         tasks=tasks,
         tasks_objects=context["all_tasks"],

@@ -1,42 +1,32 @@
 {% extends "base/layout.html" %}
 
 {# 
-  Universal Entity Index Template - Maximum DRY
+  Single Universal Entity Index Template - Pure Context-Driven
   
-  Eliminates 90% of duplication across all entity index templates.
-  Each entity only needs to define their specific configuration.
+  NO template inheritance needed - all customization via backend context.
+  All entity routes render this same template with different context data.
   
-  Usage: Entity templates extend this and define blocks with their config
+  Required context variables:
+  - entity_name: Display name (e.g. "Tasks", "Companies")
+  - entity_description: Page description
+  - entity_type: Type identifier (e.g. "task", "company") 
+  - entity_endpoint: Blueprint name (e.g. "tasks", "companies")
+  - entity_stats: Stats data for summary cards
+  - entity_buttons: Action buttons for header
+  - dropdown_configs: Filter dropdown configurations
 #}
 
-{# Universal imports - ALL common imports consolidated #}
-{% from "macros/imports/universal.html" import include_common_modals %}
-
-{# Import all the core components that every entity needs #}
+{# Import core components #}
 {% from "macros/base/layout.html" import page_layout %}
-{% from "macros/ui_elements.html" import htmx_enhanced_filter_controls, loading_spinner %}
-{% from "macros/base/icons.html" import plus_icon %}
+{% from "macros/ui_elements.html" import config_driven_filter_controls %}
 {% from "macros/modals/confirmation.html" import confirmation_modal %}
 
-
-{# Entity-specific imports - only import what each entity needs #}  
-{% block entity_imports %}
-{# Each entity imports their specific card helpers here #}
-{% endblock %}
-
-{% block title %}{{ entity_name }} - CRM{% endblock %}
+{# Set page title based on entity context #}
+{% block title %}{{ entity_name or "Entity" }} - CRM{% endblock %}
 
 {% block content %}
-{# Execute entity config block for stats and buttons #}
-{% block entity_config %}
-{# Default values - each entity should override these #}
-{% set entity_stats = {} %}
-{% set entity_buttons = [] %}
-{% endblock %}
-
-{# Get filter controls from entity template #}
+{# Generate filter controls based on entity type #}
 {% set entity_filter_controls %}
-{% block entity_filter_controls %}
 {% from "macros/ui_elements.html" import htmx_enhanced_filter_controls %}
 {{ htmx_enhanced_filter_controls(
     group_options=dropdown_configs.group_by.options if dropdown_configs.group_by else [],
@@ -47,10 +37,14 @@
     primary_filter_values=dropdown_configs.primary_filter.current_values if dropdown_configs.primary_filter else [],
     expand_collapse_controls=true
 ) }}
-{% endblock %}
 {% endset %}
 
-{% call page_layout(entity_name, entity_description, buttons=entity_buttons, summary_data=entity_stats) %}
+{% call page_layout(
+    entity_name or "Entity", 
+    entity_description or "Manage entities", 
+    buttons=entity_buttons or [], 
+    summary_data=entity_stats or {}
+) %}
 
 <div class="space-y-6">
     <!-- HTMX Enhanced Filter Controls -->
@@ -65,6 +59,9 @@
          hx-get="{{ url_for(entity_endpoint + '.content') }}?{{ request.query_string.decode('utf-8') }}"
          hx-trigger="load">
         <!-- Content will be loaded here via HTMX -->
+        <div class="p-8 text-center text-gray-500">
+            Loading {{ entity_name|lower }}...
+        </div>
     </div>
 </div>
 
@@ -72,20 +69,5 @@
 {% endblock %}
 
 {% block modals %}
-{% from "macros/modals/confirmation.html" import confirmation_modal %}
-{{ confirmation_modal(entity_type + '-confirmation-modal') }}
-{{ include_common_modals() }}
-{% endblock %}
-
-{% block data_attributes %}
-{% block entity_data_attributes %}
-{# Each entity defines their data attributes here #}
-{% endblock %}
-{% endblock %}
-
-{% block scripts %}
-<!-- Modal functionality now handled by HTMX -->
-{% block entity_scripts %}
-{# Each entity can include their specific JS here if needed #}
-{% endblock %}
+{{ confirmation_modal((entity_type or 'entity') + '-confirmation-modal') }}
 {% endblock %}
