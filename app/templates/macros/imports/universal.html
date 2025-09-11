@@ -69,18 +69,17 @@
 {# Confirmation modals #}
 {% from "macros/modals/confirmation.html" import confirmation_modal %}
 
-{# Form modals #}
-{% from "macros/modals/forms.html" import 
-    company_new_modal,
-    opportunity_new_modal,
-    stakeholder_new_modal,
-    task_new_modal
-%}
+{# Generic new modal #}
+{% from "macros/modals/base/generic_new.html" import generic_new_modal %}
 
 {# Modal configurations #}
 {% from "macros/modals/configs.html" import 
     entity_modal_configs,
-    get_entity_modal_config
+    get_entity_modal_config,
+    company_new_config,
+    stakeholder_new_config,
+    opportunity_new_config,
+    task_new_config
 %}
 
 {# === HELPER MACROS === #}

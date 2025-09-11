@@ -1,0 +1,156 @@
+{% from "macros/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
+
+{% macro generic_new_modal(entity_type, config) %}
+<div x-cloak x-data="{
+    show: false,
+    saving: false,
+    {{ entity_type }}: {{ config.default_values | tojson }},
+    {% if config.additional_fields %}
+    {% for field_name, default_value in config.additional_fields.items() %}
+    {{ field_name }}: {{ default_value | tojson }},
+    {% endfor %}
+    {% endif %}
+    
+    openModal() {
+        this.show = true;
+        this.resetForm();
+    },
+    
+    closeModal() {
+        this.show = false;
+    },
+    
+    resetForm() {
+        this.{{ entity_type }} = {{ config.default_values | tojson }};
+        {% if config.additional_fields %}
+        {% for field_name, default_value in config.additional_fields.items() %}
+        this.{{ field_name }} = {{ default_value | tojson }};
+        {% endfor %}
+        {% endif %}
+        this.saving = false;
+        {% if config.reset_callback %}
+        {{ config.reset_callback | safe }}
+        {% endif %}
+    },
+    
+    async save{{ entity_type|title }}() {
+        // Validation
+        {% for validation in config.validations %}
+        if ({{ validation.condition }}) {
+            alert('{{ validation.message }}');
+            return;
+        }
+        {% endfor %}
+        
+        this.saving = true;
+        try {
+            const payload = {% if config.payload_transform %}{{ config.payload_transform | safe }}{% else %}this.{{ entity_type }}{% endif %};
+            const response = await fetch('{{ config.api_endpoint }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if (response.ok) {
+                this.closeModal();
+                {% if config.success_callback %}
+                {{ config.success_callback | safe }}
+                {% else %}
+                window.location.reload(); // Simple refresh for now
+                {% endif %}
+            } else {
+                alert('{{ config.error_message | default("Error creating " + entity_type) }}');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('{{ config.error_message | default("Error creating " + entity_type) }}');
+        } finally {
+            this.saving = false;
+        }
+    }
+}"
+@open-new-{{ entity_type }}-modal.window="openModal()"
+@close-modal.window="closeModal()">
+
+    {% call base_modal(entity_type + '-new-modal', backdrop_click_close=false) %}
+        {{ modal_header(config.title) }}
+        
+        <div class="modal-body modal-content-spacing">
+            {{ render_new_fields(entity_type, config.fields) }}
+        </div>
+        
+        {{ modal_footer(save_action="save" + entity_type|title + "()", save_text=config.save_text | default("Save")) }}
+    {% endcall %}
+</div>
+{% endmacro %}
+
+{% macro render_new_fields(entity_type, fields) %}
+    {% for field in fields %}
+        {% if field.type == 'text' %}
+            <div class="form-group">
+                <label class="form-label{{ ' required' if field.required else '' }}">{{ field.label }}</label>
+                <input x-model="{{ entity_type }}.{{ field.name }}" 
+                       type="{{ field.input_type | default('text') }}" 
+                       class="form-input"
+                       placeholder="{{ field.placeholder | default('') }}"
+                       {{ 'required' if field.required else '' }}
+                       {% if field.attributes %}{{ field.attributes | safe }}{% endif %}>
+            </div>
+        {% elif field.type == 'number' %}
+            <div class="form-group">
+                <label class="form-label{{ ' required' if field.required else '' }}">{{ field.label }}</label>
+                <input x-model="{{ entity_type }}.{{ field.name }}" 
+                       type="number" 
+                       class="form-input"
+                       placeholder="{{ field.placeholder | default('') }}"
+                       {{ 'required' if field.required else '' }}
+                       {% if field.min %}min="{{ field.min }}"{% endif %}
+                       {% if field.max %}max="{{ field.max }}"{% endif %}
+                       {% if field.attributes %}{{ field.attributes | safe }}{% endif %}>
+            </div>
+        {% elif field.type == 'textarea' %}
+            <div class="form-group">
+                <label class="form-label{{ ' required' if field.required else '' }}">{{ field.label }}</label>
+                <textarea x-model="{{ entity_type }}.{{ field.name }}" 
+                          class="form-textarea" 
+                          rows="{{ field.rows | default(2) }}"
+                          placeholder="{{ field.placeholder | default('') }}"
+                          {{ 'required' if field.required else '' }}
+                          {% if field.attributes %}{{ field.attributes | safe }}{% endif %}></textarea>
+            </div>
+        {% elif field.type == 'select' %}
+            <div class="form-group">
+                <label class="form-label{{ ' required' if field.required else '' }}">{{ field.label }}</label>
+                <select x-model="{{ entity_type }}.{{ field.name }}" 
+                        class="form-select"
+                        {{ 'required' if field.required else '' }}
+                        {% if field.attributes %}{{ field.attributes | safe }}{% endif %}>
+                    {% for option in field.options %}
+                    <option value="{{ option.value if option is mapping else option }}">
+                        {{ option.label if option is mapping else option|title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% elif field.type == 'date' %}
+            <div class="form-group">
+                <label class="form-label{{ ' required' if field.required else '' }}">{{ field.label }}</label>
+                <input x-model="{{ entity_type }}.{{ field.name }}" 
+                       type="date" 
+                       class="form-input"
+                       {{ 'required' if field.required else '' }}
+                       {% if field.attributes %}{{ field.attributes | safe }}{% endif %}>
+            </div>
+        {% elif field.type == 'grid' %}
+            <div class="modal-grid-{{ field.columns | default(2) }}">
+                {% for subfield in field.fields %}
+                    {{ render_new_fields(entity_type, [subfield]) }}
+                {% endfor %}
+            </div>
+        {% elif field.type == 'custom' %}
+            {{ field.template | safe }}
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
