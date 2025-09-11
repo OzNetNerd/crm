@@ -1,8 +1,20 @@
 /**
- * Modal System CSS - Semantic classes to replace inline Tailwind repetition
+ * Modal System CSS - CDN-Compatible Semantic Classes
  * 
- * This file consolidates all modal styling into reusable, semantic CSS classes
- * eliminating the need for repeated Tailwind classes in templates.
+ * This file provides a complete modal styling system designed for use with
+ * Tailwind CSS CDN. All styles use CSS custom properties and semantic classes
+ * for maintainability and consistency.
+ * 
+ * Architecture:
+ * - Base Modal Structure: Core overlay, backdrop, container, and content styles
+ * - Modal Components: Headers, bodies, footers with consistent styling  
+ * - Button System: Unified primary/secondary button patterns
+ * - Form Elements: Standardized input, textarea, select with variants
+ * - Layout Utilities: Flexible grid and column layouts
+ * - Component-Specific: Tabs, loading states, notes, tasks, etc.
+ * 
+ * CDN Compatibility: No @apply directives - all styles use vanilla CSS
+ * with CSS custom properties for theming consistency.
  */
 
 /* ========== Base Modal Structure ========== */
@@ -79,6 +91,10 @@
         transform: scale(1);
     }
 }
+
+.modal-content {
+    display: inline-block;
+    animation: modalScaleIn 0.3s ease-out;
     vertical-align: bottom;
     background-color: white;
     border-radius: var(--radius-lg);
@@ -102,11 +118,51 @@
 }
 
 .modal-content-large {
-    @apply inline-block align-bottom bg-white rounded-xl px-6 pt-6 pb-6 text-left overflow-visible shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-gray-100;
+    display: inline-block;
+    vertical-align: bottom;
+    background-color: white;
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    text-align: left;
+    overflow: visible;
+    box-shadow: var(--shadow-2xl);
+    transform: translateZ(0);
+    transition: var(--transition-normal);
+    border: 1px solid var(--color-gray-100);
+    width: 100%;
+    max-width: 56rem;
+}
+
+@media (min-width: 640px) {
+    .modal-content-large {
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        vertical-align: middle;
+    }
 }
 
 .modal-content-medium {
-    @apply inline-block align-bottom bg-white rounded-xl px-6 pt-6 pb-6 text-left overflow-visible shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100;
+    display: inline-block;
+    vertical-align: bottom;
+    background-color: white;
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    text-align: left;
+    overflow: visible;
+    box-shadow: var(--shadow-2xl);
+    transform: translateZ(0);
+    transition: var(--transition-normal);
+    border: 1px solid var(--color-gray-100);
+    width: 100%;
+    max-width: 32rem;
+}
+
+@media (min-width: 640px) {
+    .modal-content-medium {
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        vertical-align: middle;
+    }
 }
 
 /* ========== Modal Header ========== */
@@ -161,56 +217,141 @@
     gap: var(--spacing-md);
 }
 
-/* Modal Cancel Button - keep specific styling for secondary action */
-.modal-cancel-button {
+/* ========== Unified Modal Button System ========== */
+/*
+ * Provides consistent button styling across all modal contexts.
+ * Uses composition pattern with base + variant classes for DRY code.
+ * CDN-compatible with explicit property declarations.
+ */
+
+/* Base button styling */
+.modal-button-base {
     padding: 0.5rem 1rem;
-    border: 1px solid var(--color-gray-300);
-    border-radius: var(--radius-lg);
-    background-color: white;
-    color: var(--color-gray-700);
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
     font-weight: 500;
-    transition: var(--transition-normal);
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-lg);
+    border: none;
     cursor: pointer;
+    transition: var(--transition-normal);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
 }
 
-.modal-cancel-button:hover {
+.modal-button-base:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Primary button (save, submit actions) */
+.modal-button-primary {
+    background-color: #2563eb;
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.modal-button-primary:hover:not(:disabled) {
+    background-color: #1d4ed8;
+}
+
+.modal-button-primary:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px rgba(59, 130, 246, 0.3);
+}
+
+/* Secondary button (cancel, dismiss actions) */
+.modal-button-secondary {
+    background-color: white;
+    color: var(--color-gray-700);
+    border: 1px solid var(--color-gray-300);
+    box-shadow: var(--shadow-sm);
+}
+
+.modal-button-secondary:hover:not(:disabled) {
     background-color: var(--color-gray-50);
     border-color: var(--color-gray-400);
 }
 
-/* Modal Save Button - now just use universal btn-primary */
-.modal-save-button {
-    background-color: #2563eb;
-    color: white;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 0.5rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    transform: scale(1);
+.modal-button-secondary:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-gray-400);
 }
 
-.modal-save-button:hover {
+/* Legacy aliases for backward compatibility - duplicating styles for CDN compatibility */
+.modal-cancel-button {
+    /* Base button styling */
+    padding: 0.5rem 1rem;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: var(--transition-normal);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    /* Secondary button styling */
+    background-color: white;
+    color: var(--color-gray-700);
+    border: 1px solid var(--color-gray-300);
+    box-shadow: var(--shadow-sm);
+}
+
+.modal-cancel-button:hover:not(:disabled) {
+    background-color: var(--color-gray-50);
+    border-color: var(--color-gray-400);
+}
+
+.modal-cancel-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-gray-400);
+}
+
+.modal-cancel-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.modal-save-button {
+    /* Base button styling */
+    padding: 0.5rem 1rem;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    border-radius: var(--radius-lg);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    /* Primary button styling */
+    background-color: #2563eb;
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.modal-save-button:hover:not(:disabled) {
     background-color: #1d4ed8;
-    transform: scale(1.05);
 }
 
 .modal-save-button:focus {
     outline: none;
-    box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px rgba(59, 130, 246, 0.3);
 }
 
 .modal-save-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    transform: scale(1);
 }
 
 /* ========== Form Elements ========== */
+/*
+ * Standardized form styling system with consistent look and behavior.
+ * Includes base styles, variants (compact/medium), and legacy compatibility.
+ * All elements follow the same interaction patterns (hover, focus, disabled).
+ */
 
 .form-field, .form-group {
     margin-bottom: var(--spacing-xl);
@@ -231,7 +372,7 @@
     font-weight: var(--font-bold);
 }
 
-/* Form Field Base Styling - No width constraints */
+/* Form Field Base Styling - Shared by all form elements */
 .form-field-base {
     padding: var(--spacing-md) var(--spacing-lg);
     border: 1px solid var(--color-gray-300);
@@ -240,28 +381,6 @@
     background-color: white;
     transition: var(--transition-normal);
     box-shadow: var(--shadow-sm);
-}
-
-/* Full-width modifier for traditional form inputs */
-.form-field-full {
-    width: 100%;
-}
-
-/* Specific form element styling */
-.form-input,
-.form-textarea {
-    /* Traditional full-width form inputs */
-    @apply form-field-base form-field-full;
-}
-
-.form-select {
-    /* Dropdowns use base styling only - width controlled by component */
-    @apply form-field-base;
-}
-
-.form-input::placeholder,
-.form-textarea::placeholder {
-    color: var(--color-gray-400);
 }
 
 .form-field-base:hover {
@@ -274,306 +393,719 @@
     box-shadow: 0 0 0 3px var(--color-primary-lighter);
 }
 
+/* Specific form element styling that extends base */
+.form-input,
+.form-textarea,
+.form-select {
+    /* Inherit all base styling */
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-sm);
+    background-color: white;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Full-width inputs */
+.form-input,
+.form-textarea {
+    width: 100%;
+}
+
+.form-input:hover,
+.form-textarea:hover,
+.form-select:hover {
+    border-color: var(--color-gray-400);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-lighter);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+    color: var(--color-gray-400);
+}
+
 /* Textarea specific styles */
 .form-textarea {
     resize: vertical;
     min-height: 5rem;
 }
 
+/* ========== Form Input Variants ========== */
+
+/* Compact input variant (for smaller spaces) */
+.form-input-compact {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    background-color: white;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+.form-input-compact:hover {
+    border-color: var(--color-gray-400);
+}
+
+.form-input-compact:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+/* Medium input variant (between standard and compact) */
+.form-input-medium {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    background-color: white;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+.form-input-medium:hover {
+    border-color: var(--color-gray-400);
+}
+
+.form-input-medium:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary);
+}
+
 .form-checkbox {
-    @apply text-blue-600 focus:ring-blue-500 border-gray-300 rounded;
+    color: #2563eb;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-sm);
+}
+
+.form-checkbox:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
 }
 
 .form-radio {
-    @apply mr-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded;
+    margin-right: 0.5rem;
+    color: #2563eb;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-sm);
+}
+
+.form-radio:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
 }
 
 /* ========== Layout Utilities ========== */
+/*
+ * Flexible layout system for modal content organization.
+ * Provides grid systems and flex column layouts with consistent gaps.
+ * Includes legacy aliases for backward compatibility.
+ */
+
+/* Grid System - Standard gap */
+.modal-grid-base {
+    display: grid;
+    gap: 1rem;
+}
 
 .modal-grid-2 {
-    @apply grid grid-cols-2 gap-4;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
 }
 
 .modal-grid-3 {
-    @apply grid grid-cols-3 gap-4;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
 }
 
+/* Compact grid variant */
+.modal-grid-compact {
+    display: grid;
+    gap: 0.5rem;
+}
+
+/* Flex Column Layouts */
+.modal-flex-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-flex-col-sm {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.modal-flex-col-md {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.modal-flex-col-lg {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Legacy aliases for backward compatibility */
 .modal-section {
-    @apply space-y-4;
-}
-
-.modal-section-title {
-    @apply text-md font-semibold text-gray-900 pb-2 border-b border-gray-100;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .modal-content-spacing {
-    @apply space-y-5;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.modal-section-title {
+    font-size: var(--text-md);
+    font-weight: var(--font-semibold);
+    color: var(--color-gray-900);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-gray-100);
 }
 
 /* ========== Tab Navigation ========== */
+/*
+ * Tab navigation system for multi-section modals.
+ * Includes active/inactive states and badge support.
+ */
 
 .modal-tab-container {
-    @apply border-b border-gray-200;
+    border-bottom: 1px solid var(--color-gray-200);
 }
 
 .modal-tab-nav {
-    @apply -mb-px flex space-x-8;
+    margin-bottom: -1px;
+    display: flex;
+    gap: 2rem;
 }
 
 .modal-tab-button {
-    @apply whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200;
+    white-space: nowrap;
+    padding: 0.5rem 0.25rem;
+    border-bottom: 2px solid;
+    font-weight: 500;
+    font-size: var(--text-sm);
+    transition: color 0.2s ease-in-out;
 }
 
 .modal-tab-button-active {
-    @apply border-blue-500 text-blue-600;
+    border-color: #3b82f6;
+    color: #2563eb;
 }
 
 .modal-tab-button-inactive {
-    @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
+    border-color: transparent;
+    color: var(--color-gray-500);
+}
+
+.modal-tab-button-inactive:hover {
+    color: var(--color-gray-700);
+    border-color: var(--color-gray-300);
 }
 
 .modal-tab-badge {
-    @apply ml-1 bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs;
+    margin-left: 0.25rem;
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-600);
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: var(--text-xs);
 }
 
 /* ========== Loading States ========== */
+/*
+ * Loading indicators and states for async operations.
+ * Includes spinner animation and loading text styling.
+ */
 
 .modal-loading {
-    @apply flex items-center justify-center py-8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
 }
 
 .modal-spinner {
-    @apply inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600;
+    display: inline-block;
+    animation: spin 1s linear infinite;
+    border-radius: 50%;
+    height: 2rem;
+    width: 2rem;
+    border: 2px solid transparent;
+    border-bottom-color: #2563eb;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .modal-loading-text {
-    @apply text-gray-500;
+    color: var(--color-gray-500);
 }
 
 /* ========== Notes Section ========== */
 
 .modal-notes {
-    @apply mt-6;
+    margin-top: 1.5rem;
 }
 
 .modal-notes-title {
-    @apply text-sm font-medium text-gray-900 mb-3;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-gray-900);
+    margin-bottom: 0.75rem;
 }
 
 .modal-notes-list {
-    @apply space-y-3 mb-4 max-h-40 overflow-y-auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    max-height: 10rem;
+    overflow-y: auto;
 }
 
 .modal-note-item {
-    @apply bg-gray-50 rounded-lg p-3;
+    background-color: var(--color-gray-50);
+    border-radius: var(--radius-lg);
+    padding: 0.75rem;
 }
 
 .modal-note-content {
-    @apply flex justify-between items-start;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 .modal-note-text {
-    @apply text-sm text-gray-800;
+    font-size: var(--text-sm);
+    color: var(--color-gray-800);
 }
 
 .modal-note-date {
-    @apply text-xs text-gray-500 mt-1;
+    font-size: var(--text-xs);
+    color: var(--color-gray-500);
+    margin-top: 0.25rem;
 }
 
 .modal-note-delete {
-    @apply ml-2 text-gray-400 hover:text-red-600 transition-colors duration-200;
+    margin-left: 0.5rem;
+    color: var(--color-gray-400);
+    transition: color 0.2s ease-in-out;
+}
+
+.modal-note-delete:hover {
+    color: #dc2626;
 }
 
 .modal-note-input-container {
-    @apply flex space-x-2;
+    display: flex;
+    gap: 0.5rem;
 }
 
 .modal-note-input {
-    @apply flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+    /* Uses medium input variant with flex modifier */
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    background-color: white;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+.modal-note-input:hover {
+    border-color: var(--color-gray-400);
+}
+
+.modal-note-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary);
 }
 
 .modal-note-add-button {
-    @apply px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed;
+    /* Uses primary button styling with slightly different padding */
+    padding: 0.5rem 0.75rem;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #2563eb;
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.modal-note-add-button:hover:not(:disabled) {
+    background-color: #1d4ed8;
+}
+
+.modal-note-add-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px rgba(59, 130, 246, 0.3);
+}
+
+.modal-note-add-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* ========== Empty States ========== */
 
 .modal-empty-state {
-    @apply text-center text-gray-500 py-8;
+    text-align: center;
+    color: var(--color-gray-500);
+    padding: 2rem 0;
 }
 
 .modal-empty-state-small {
-    @apply text-center text-gray-500 py-4;
+    text-align: center;
+    color: var(--color-gray-500);
+    padding: 1rem 0;
 }
 
 .modal-empty-state-text {
-    @apply text-sm italic;
+    font-size: var(--text-sm);
+    font-style: italic;
 }
 
 /* ========== Entity Relationship Sections ========== */
 
 .modal-related-items {
-    @apply space-y-2 max-h-32 overflow-y-auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 8rem;
+    overflow-y: auto;
 }
 
 .modal-related-item {
-    @apply flex items-center justify-between p-2 bg-gray-50 rounded;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background-color: var(--color-gray-50);
+    border-radius: var(--radius-md);
 }
 
 .modal-related-item-content {
-    @apply flex-1;
+    flex: 1;
 }
 
 .modal-related-item-title {
-    @apply text-sm font-medium text-gray-900;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-gray-900);
 }
 
 .modal-related-item-subtitle {
-    @apply text-xs text-gray-500;
+    font-size: var(--text-xs);
+    color: var(--color-gray-500);
 }
 
 .modal-related-item-meta {
-    @apply text-xs text-gray-400;
+    font-size: var(--text-xs);
+    color: var(--color-gray-400);
 }
 
 /* ========== Task-Specific Styles ========== */
 
 .modal-task-type-selector {
-    @apply mb-6 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: linear-gradient(to right, #eff6ff, #eef2ff);
+    border-radius: var(--radius-xl);
+    border: 1px solid #dbeafe;
 }
 
 .modal-radio-group {
-    @apply flex space-x-6;
+    display: flex;
+    gap: 1.5rem;
 }
 
 .modal-radio-label {
-    @apply flex items-center cursor-pointer;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
 }
 
 .modal-radio-text {
-    @apply text-sm text-gray-700;
+    font-size: var(--text-sm);
+    color: var(--color-gray-700);
 }
 
 .modal-child-task-container {
-    @apply p-3 border border-gray-200 rounded-lg;
+    padding: 0.75rem;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
 }
 
 .modal-child-task-header {
-    @apply flex justify-between items-start mb-2;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
 }
 
 .modal-child-task-title {
-    @apply text-sm font-medium text-gray-700;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-gray-700);
 }
 
 .modal-child-task-delete {
-    @apply text-red-500 hover:text-red-700;
+    color: #ef4444;
+}
+
+.modal-child-task-delete:hover {
+    color: #b91c1c;
 }
 
 .modal-child-task-input {
-    @apply w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500;
+    /* Uses compact input variant with full width */
+    width: 100%;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    background-color: white;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+.modal-child-task-input:hover {
+    border-color: var(--color-gray-400);
+}
+
+.modal-child-task-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
 }
 
 .modal-child-task-grid {
-    @apply grid grid-cols-3 gap-2 mt-2;
+    /* Uses compact grid with 3 columns and margin */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
 }
 
 .modal-child-task-controls {
-    @apply px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+}
+
+.modal-child-task-controls:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px #3b82f6;
+    border-color: #3b82f6;
 }
 
 .modal-add-subtask-button {
-    @apply text-sm text-blue-600 hover:text-blue-800;
+    font-size: var(--text-sm);
+    color: #2563eb;
+}
+
+.modal-add-subtask-button:hover {
+    color: #1e40af;
 }
 
 /* ========== Status Badges ========== */
+/*
+ * Status and priority indicators with semantic color coding.
+ * Includes status badges (complete, pending, etc.) and priority levels.
+ */
 
 .modal-status-badge {
-    @apply px-2 py-1 text-xs font-medium rounded-full capitalize;
+    padding: 0.25rem 0.5rem;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    border-radius: 9999px;
+    text-transform: capitalize;
 }
 
 .modal-status-complete {
-    @apply bg-green-100 text-green-800;
+    background-color: #dcfce7;
+    color: #166534;
 }
 
 .modal-status-pending {
-    @apply bg-gray-100 text-gray-800;
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-800);
 }
 
 .modal-status-in-progress {
-    @apply bg-yellow-100 text-yellow-800;
+    background-color: #fef3c7;
+    color: #92400e;
 }
 
 .modal-status-cancelled {
-    @apply bg-red-100 text-red-800;
+    background-color: #fee2e2;
+    color: #991b1b;
 }
 
 /* ========== Priority Indicators ========== */
 
 .modal-priority-high {
-    @apply text-red-600 font-medium;
+    color: #dc2626;
+    font-weight: 500;
 }
 
 .modal-priority-medium {
-    @apply text-yellow-600 font-medium;
+    color: #d97706;
+    font-weight: 500;
 }
 
 .modal-priority-low {
-    @apply text-gray-600 font-medium;
+    color: var(--color-gray-600);
+    font-weight: 500;
 }
 
 /* ========== Transitions ========== */
+/*
+ * Animation classes for modal enter/leave transitions.
+ * CDN-compatible with explicit transform and opacity declarations.
+ */
 
 .modal-fade-enter {
-    @apply ease-out duration-300 opacity-0;
+    transition-timing-function: ease-out;
+    transition-duration: 0.3s;
+    opacity: 0;
 }
 
 .modal-fade-enter-to {
-    @apply opacity-100;
+    opacity: 1;
 }
 
 .modal-fade-leave {
-    @apply ease-in duration-200 opacity-100;
+    transition-timing-function: ease-in;
+    transition-duration: 0.2s;
+    opacity: 1;
 }
 
 .modal-fade-leave-to {
-    @apply opacity-0;
+    opacity: 0;
 }
 
 .modal-scale-enter {
-    @apply ease-out duration-300 opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95;
+    transition-timing-function: ease-out;
+    transition-duration: 0.3s;
+    opacity: 0;
+    transform: translateY(1rem);
+}
+
+@media (min-width: 640px) {
+    .modal-scale-enter {
+        transform: translateY(0) scale(0.95);
+    }
 }
 
 .modal-scale-enter-to {
-    @apply opacity-100 translate-y-0 sm:scale-100;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (min-width: 640px) {
+    .modal-scale-enter-to {
+        transform: scale(1);
+    }
 }
 
 .modal-scale-leave {
-    @apply ease-in duration-200 opacity-100 translate-y-0 sm:scale-100;
+    transition-timing-function: ease-in;
+    transition-duration: 0.2s;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (min-width: 640px) {
+    .modal-scale-leave {
+        transform: scale(1);
+    }
 }
 
 .modal-scale-leave-to {
-    @apply opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95;
+    opacity: 0;
+    transform: translateY(1rem);
+}
+
+@media (min-width: 640px) {
+    .modal-scale-leave-to {
+        transform: translateY(0) scale(0.95);
+    }
 }
 
 /* ========== Entity Linker Specific ========== */
 
 .modal-entity-linker-container {
-    @apply relative;
+    position: relative;
 }
 
 .modal-entity-linker-input {
-    @apply form-input;
+    /* Inherits from form-input styles */
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-sm);
+    background-color: white;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+    width: 100%;
 }
 
 .modal-entity-linker-results {
-    @apply absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-40 overflow-y-auto;
+    position: absolute;
+    z-index: 10;
+    width: 100%;
+    background-color: white;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    margin-top: 0.25rem;
+    max-height: 10rem;
+    overflow-y: auto;
 }
 
 .modal-entity-linker-result {
-    @apply px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    font-size: var(--text-sm);
+}
+
+.modal-entity-linker-result:hover {
+    background-color: var(--color-gray-100);
 }
 
 .modal-entity-linker-selected {
-    @apply bg-blue-50 text-blue-800;
+    background-color: #eff6ff;
+    color: #1e40af;
 }
