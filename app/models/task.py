@@ -1,5 +1,16 @@
 from datetime import datetime
 from . import db
+from app.utils.model_helpers import (
+    create_choice_field_info,
+    create_date_field_info,
+    create_model_choice_methods,
+    PRIORITY_CHOICES,
+    STATUS_CHOICES,
+    NEXT_STEP_TYPE_CHOICES,
+    TASK_TYPE_CHOICES,
+    DEPENDENCY_TYPE_CHOICES,
+    DUE_DATE_GROUPINGS
+)
 
 
 # Junction table for task-entity relationships
@@ -13,6 +24,7 @@ task_entities = db.Table(
 )
 
 
+@create_model_choice_methods(['priority', 'status'])
 class Task(db.Model):
     __tablename__ = "tasks"
 
@@ -20,134 +32,21 @@ class Task(db.Model):
     description = db.Column(db.Text, nullable=False)
     due_date = db.Column(
         db.Date,
-        info={
-            'display_label': 'Due Date',
-            'groupable': True,
-            'sortable': True,
-            'date_groupings': {
-                'overdue': {'label': 'Overdue', 'css_class': 'date-overdue'},
-                'today': {'label': 'Due Today', 'css_class': 'date-today'},
-                'this_week': {'label': 'This Week', 'css_class': 'date-soon'},
-                'later': {'label': 'Later', 'css_class': 'date-future'},
-                'no_date': {'label': 'No Due Date', 'css_class': 'date-missing'}
-            }
-        }
+        info=create_date_field_info('Due Date', date_groupings=DUE_DATE_GROUPINGS)
     )
     priority = db.Column(
         db.String(10), 
         default="medium",
-        info={
-            'display_label': 'Priority',
-            'choices': {
-                'high': {
-                    'label': 'High',
-                    'css_class': 'priority-urgent',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Urgent priority',
-                    'icon': 'exclamation',
-                    'order': 1
-                },
-                'medium': {
-                    'label': 'Medium',
-                    'css_class': 'priority-normal',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Normal priority',
-                    'icon': 'minus',
-                    'order': 2
-                },
-                'low': {
-                    'label': 'Low',
-                    'css_class': 'priority-low',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Low priority',
-                    'icon': 'arrow-down',
-                    'order': 3
-                }
-            }
-        }
+        info=create_choice_field_info('Priority', PRIORITY_CHOICES)
     )  # high/medium/low
     status = db.Column(
         db.String(20), 
         default="todo",
-        info={
-            'display_label': 'Status',
-            'choices': {
-                'todo': {
-                    'label': 'To Do',
-                    'css_class': 'status-todo',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Not started',
-                    'icon': 'circle',
-                    'order': 1
-                },
-                'in-progress': {
-                    'label': 'In Progress',
-                    'css_class': 'status-progress',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Currently working on',
-                    'icon': 'clock',
-                    'order': 2
-                },
-                'complete': {
-                    'label': 'Complete',
-                    'css_class': 'status-complete',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Finished',
-                    'icon': 'check-circle',
-                    'order': 3
-                }
-            }
-        }
+        info=create_choice_field_info('Status', STATUS_CHOICES)
     )  # todo/in-progress/complete
     next_step_type = db.Column(
         db.String(20),
-        info={
-            'display_label': 'Next Step Type',
-            'choices': {
-                'call': {
-                    'label': 'Call',
-                    'css_class': 'step-call',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Phone call',
-                    'icon': 'phone',
-                    'order': 1
-                },
-                'email': {
-                    'label': 'Email',
-                    'css_class': 'step-email',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Send email',
-                    'icon': 'mail',
-                    'order': 2
-                },
-                'meeting': {
-                    'label': 'Meeting',
-                    'css_class': 'step-meeting',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'In-person or video meeting',
-                    'icon': 'users',
-                    'order': 3
-                },
-                'demo': {
-                    'label': 'Demo',
-                    'css_class': 'step-demo',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Product demonstration',
-                    'icon': 'presentation-chart-line',
-                    'order': 4
-                }
-            }
-        }
+        info=create_choice_field_info('Next Step Type', NEXT_STEP_TYPE_CHOICES)
     )  # meeting/demo/call/email
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime)
@@ -158,67 +57,14 @@ class Task(db.Model):
     task_type = db.Column(
         db.String(20), 
         default="single",
-        info={
-            'display_label': 'Task Type',
-            'choices': {
-                'single': {
-                    'label': 'Single Task',
-                    'css_class': 'type-single',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Standalone task',
-                    'icon': 'document',
-                    'order': 1
-                },
-                'parent': {
-                    'label': 'Parent Task',
-                    'css_class': 'type-parent',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Task with subtasks',
-                    'icon': 'folder',
-                    'order': 2
-                },
-                'child': {
-                    'label': 'Child Task',
-                    'css_class': 'type-child',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Subtask of parent',
-                    'icon': 'document-duplicate',
-                    'order': 3
-                }
-            }
-        }
+        info=create_choice_field_info('Task Type', TASK_TYPE_CHOICES)
     )  # 'single', 'parent', 'child'
     parent_task_id = db.Column(db.Integer, db.ForeignKey("tasks.id"))
     sequence_order = db.Column(db.Integer, default=0)  # For ordering child tasks
     dependency_type = db.Column(
         db.String(20), 
         default="parallel",
-        info={
-            'display_label': 'Dependency Type',
-            'choices': {
-                'parallel': {
-                    'label': 'Parallel',
-                    'css_class': 'dep-parallel',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Can run simultaneously',
-                    'icon': 'arrows-right-left',
-                    'order': 1
-                },
-                'sequential': {
-                    'label': 'Sequential',
-                    'css_class': 'dep-sequential',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Must complete in order',
-                    'icon': 'arrow-right',
-                    'order': 2
-                }
-            }
-        }
+        info=create_choice_field_info('Dependency Type', DEPENDENCY_TYPE_CHOICES)
     )  # 'sequential', 'parallel'
 
     @property
@@ -244,13 +90,14 @@ class Task(db.Model):
         lazy="select",
     )
 
-    @property
-    def opportunity_value(self):
-        """Get opportunity value from linked opportunities"""
+    def _get_entity_attr(self, entity_type, attr_name):
+        """Get attribute from first matching linked entity"""
         for entity in self.linked_entities:
-            if entity["type"] == "opportunity" and entity["entity"]:
-                return entity["entity"].value
+            if entity["type"] == entity_type and entity.get("entity"):
+                return getattr(entity["entity"], attr_name, None)
         return None
+
+    opportunity_value = property(lambda self: self._get_entity_attr("opportunity", "value"))
 
     @property
     def company_name(self):
@@ -276,13 +123,7 @@ class Task(db.Model):
                 return entity["name"]
         return None
 
-    @property
-    def opportunity_stage(self):
-        """Get opportunity stage from linked opportunities"""
-        for entity in self.linked_entities:
-            if entity["type"] == "opportunity" and entity["entity"]:
-                return entity["entity"].stage
-        return None
+    opportunity_stage = property(lambda self: self._get_entity_attr("opportunity", "stage"))
 
     @property
     def stakeholder_opportunity_name(self):
@@ -465,29 +306,6 @@ class Task(db.Model):
             db.session.execute(insert_stmt)
         db.session.commit()
 
-    @classmethod
-    def get_priority_choices(cls):
-        """Get priority choices from model metadata"""
-        from app.utils.model_introspection import ModelIntrospector
-        return ModelIntrospector.get_field_choices(cls, 'priority')
-    
-    @classmethod
-    def get_status_choices(cls):
-        """Get status choices from model metadata"""
-        from app.utils.model_introspection import ModelIntrospector
-        return ModelIntrospector.get_field_choices(cls, 'status')
-    
-    @classmethod
-    def get_priority_css_class(cls, priority_value):
-        """Get CSS class for a priority value"""
-        from app.utils.model_introspection import ModelIntrospector
-        return ModelIntrospector.get_field_css_class(cls, 'priority', priority_value)
-    
-    @classmethod
-    def get_status_css_class(cls, status_value):
-        """Get CSS class for a status value"""
-        from app.utils.model_introspection import ModelIntrospector
-        return ModelIntrospector.get_field_css_class(cls, 'status', status_value)
 
     def to_dict(self):
         """Convert task to dictionary for JSON serialization"""

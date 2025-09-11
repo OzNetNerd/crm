@@ -216,3 +216,25 @@ class GenericAPIHandler:
         except Exception as e:
             db.session.rollback()
             return jsonify({"error": str(e)}), 500
+
+    def get_list(self, field_serializer=None, order_by_field=None):
+        """Generic list handler for dropdown/selection endpoints"""
+        try:
+            query = self.model_class.query
+            if order_by_field:
+                order_attr = getattr(self.model_class, order_by_field)
+                query = query.order_by(order_attr)
+            
+            entities = query.all()
+            
+            if field_serializer and callable(field_serializer):
+                return jsonify([field_serializer(entity) for entity in entities])
+            else:
+                # Default serialization - try to_dict() or basic fields
+                if hasattr(entities[0] if entities else self.model_class(), "to_dict"):
+                    return jsonify([entity.to_dict() for entity in entities])
+                else:
+                    return jsonify([{"id": entity.id, "name": getattr(entity, "name", str(entity))} for entity in entities])
+
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500

@@ -4,128 +4,110 @@ from app.utils.route_helpers import GenericAPIHandler
 
 api_entities_bp = Blueprint("api_entities", __name__, url_prefix="/api")
 
-# Create generic API handlers
-task_api = GenericAPIHandler(Task, "task")
-stakeholder_api = GenericAPIHandler(Stakeholder, "stakeholder")
-company_api = GenericAPIHandler(Company, "company")
-opportunity_api = GenericAPIHandler(Opportunity, "opportunity")
+# Entity configurations for DRY route registration
+ENTITY_CONFIGS = {
+    "tasks": {
+        "model": Task,
+        "handler": GenericAPIHandler(Task, "task"),
+        "update_fields": ["description", "due_date", "priority", "status", "next_step_type"],
+        "create_fields": ["description", "due_date", "priority", "status", "next_step_type", "task_type"],
+        "route_param": "task_id",
+        "has_custom_create": True,  # Tasks have complex creation logic
+    },
+    "stakeholders": {
+        "model": Stakeholder,
+        "handler": GenericAPIHandler(Stakeholder, "stakeholder"), 
+        "update_fields": ["name", "job_title", "email", "phone"],
+        "create_fields": ["name", "job_title", "email", "phone", "company_id"],
+        "route_param": "stakeholder_id",
+        "list_serializer": lambda s: {
+            "id": s.id,
+            "name": s.name,
+            "job_title": s.job_title,
+            "company_name": s.company.name if s.company else None,
+            "meddpicc_roles": s.get_meddpicc_role_names(),
+        },
+    },
+    "companies": {
+        "model": Company,
+        "handler": GenericAPIHandler(Company, "company"),
+        "update_fields": ["name", "industry", "website"],
+        "create_fields": ["name", "industry", "size", "website", "phone", "address"],
+        "route_param": "company_id",
+        "list_serializer": lambda c: {"id": c.id, "name": c.name, "industry": c.industry},
+    },
+    "opportunities": {
+        "model": Opportunity,
+        "handler": GenericAPIHandler(Opportunity, "opportunity"),
+        "update_fields": ["name", "value", "probability", "expected_close_date", "stage"],
+        "create_fields": ["name", "value", "probability", "expected_close_date", "stage", "company_id", "contact_id"],
+        "route_param": "opportunity_id",
+        "list_serializer": lambda o: {
+            "id": o.id,
+            "name": o.name,
+            "stage": o.stage,
+            "company_name": o.company.name if o.company else None,
+        },
+    },
+}
 
 
-# GET endpoints for entity details
-@api_entities_bp.route("/tasks/<int:task_id>")
-def get_task_details(task_id):
-    """Get task details with notes"""
-    return task_api.get_details(task_id)
+# Dynamically register GET detail endpoints
+for entity_name, config in ENTITY_CONFIGS.items():
+    route_param = config["route_param"]
+    handler = config["handler"]
+    
+    # Create endpoint function with proper closure
+    def make_detail_endpoint(handler_func):
+        def endpoint(entity_id):
+            return handler_func(entity_id)
+        return endpoint
+    
+    endpoint_func = make_detail_endpoint(handler.get_details)
+    endpoint_func.__name__ = f"get_{entity_name[:-1]}_details"  # Remove 's' from plural
+    endpoint_func.__doc__ = f"Get {entity_name[:-1]} details with notes"
+    
+    api_entities_bp.route(f"/{entity_name}/<int:{route_param}>")(endpoint_func)
 
 
-@api_entities_bp.route("/stakeholders/<int:stakeholder_id>")
-def get_stakeholder_details(stakeholder_id):
-    """Get stakeholder details with notes"""
-    return stakeholder_api.get_details(stakeholder_id)
+# Dynamically register GET list endpoints for dropdowns (skip tasks - not needed for dropdowns)  
+for entity_name, config in ENTITY_CONFIGS.items():
+    if entity_name == "tasks":
+        continue  # Tasks don't need dropdown endpoints
+        
+    handler = config["handler"]
+    list_serializer = config.get("list_serializer")
+    
+    # Create list endpoint function with proper closure
+    def make_list_endpoint(handler_func, serializer):
+        def endpoint():
+            return handler_func(field_serializer=serializer, order_by_field="name")
+        return endpoint
+    
+    endpoint_func = make_list_endpoint(handler.get_list, list_serializer)
+    endpoint_func.__name__ = f"get_{entity_name}"  # Keep plural for list endpoints
+    endpoint_func.__doc__ = f"Get all {entity_name} for form dropdowns"
+    
+    api_entities_bp.route(f"/{entity_name}")(endpoint_func)
 
 
-@api_entities_bp.route("/companies/<int:company_id>")
-def get_company_details(company_id):
-    """Get company details with notes"""
-    return company_api.get_details(company_id)
-
-
-@api_entities_bp.route("/opportunities/<int:opportunity_id>")
-def get_opportunity_details(opportunity_id):
-    """Get opportunity details with notes"""
-    return opportunity_api.get_details(opportunity_id)
-
-
-# GET endpoints for entity lists (for dropdowns)
-@api_entities_bp.route("/companies")
-def get_companies():
-    """Get all companies for form dropdowns"""
-    try:
-        companies = Company.query.order_by(Company.name).all()
-        return jsonify(
-            [
-                {"id": company.id, "name": company.name, "industry": company.industry}
-                for company in companies
-            ]
-        )
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@api_entities_bp.route("/stakeholders")
-def get_stakeholders():
-    """Get all stakeholders for form dropdowns"""
-    try:
-        stakeholders = Stakeholder.query.order_by(Stakeholder.name).all()
-        return jsonify(
-            [
-                {
-                    "id": stakeholder.id,
-                    "name": stakeholder.name,
-                    "job_title": stakeholder.job_title,
-                    "company_name": (
-                        stakeholder.company.name if stakeholder.company else None
-                    ),
-                    "meddpicc_roles": stakeholder.get_meddpicc_role_names(),
-                }
-                for stakeholder in stakeholders
-            ]
-        )
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@api_entities_bp.route("/opportunities")
-def get_opportunities():
-    """Get all opportunities for form dropdowns"""
-    try:
-        opportunities = Opportunity.query.order_by(Opportunity.name).all()
-        return jsonify(
-            [
-                {
-                    "id": opportunity.id,
-                    "name": opportunity.name,
-                    "stage": opportunity.stage,
-                    "company_name": (
-                        opportunity.company.name if opportunity.company else None
-                    ),
-                }
-                for opportunity in opportunities
-            ]
-        )
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-# PUT endpoints for entity updates
-@api_entities_bp.route("/tasks/<int:task_id>", methods=["PUT"])
-def update_task(task_id):
-    """Update task details"""
-    return task_api.update_entity(
-        task_id, ["description", "due_date", "priority", "status", "next_step_type"]
-    )
-
-
-@api_entities_bp.route("/stakeholders/<int:stakeholder_id>", methods=["PUT"])
-def update_stakeholder(stakeholder_id):
-    """Update stakeholder details"""
-    return stakeholder_api.update_entity(
-        stakeholder_id, ["name", "job_title", "email", "phone"]
-    )
-
-
-@api_entities_bp.route("/companies/<int:company_id>", methods=["PUT"])
-def update_company(company_id):
-    """Update company details"""
-    return company_api.update_entity(company_id, ["name", "industry", "website"])
-
-
-@api_entities_bp.route("/opportunities/<int:opportunity_id>", methods=["PUT"])
-def update_opportunity(opportunity_id):
-    """Update opportunity details"""
-    return opportunity_api.update_entity(
-        opportunity_id, ["name", "value", "probability", "expected_close_date", "stage"]
-    )
+# Dynamically register PUT endpoints for entity updates
+for entity_name, config in ENTITY_CONFIGS.items():
+    route_param = config["route_param"]
+    handler = config["handler"]
+    update_fields = config["update_fields"]
+    
+    # Create update endpoint function with proper closure
+    def make_update_endpoint(handler_func, fields):
+        def endpoint(entity_id):
+            return handler_func(entity_id, fields)
+        return endpoint
+    
+    endpoint_func = make_update_endpoint(handler.update_entity, update_fields)
+    endpoint_func.__name__ = f"update_{entity_name[:-1]}"  # Remove 's' from plural
+    endpoint_func.__doc__ = f"Update {entity_name[:-1]} details"
+    
+    api_entities_bp.route(f"/{entity_name}/<int:{route_param}>", methods=["PUT"])(endpoint_func)
 
 
 # POST endpoints for entity creation
@@ -248,58 +230,40 @@ def create_task():
         return jsonify({"error": str(e)}), 400
 
 
-@api_entities_bp.route("/stakeholders", methods=["POST"])
-def create_stakeholder():
-    """Create new stakeholder"""
-    return stakeholder_api.create_entity(
-        ["name", "job_title", "email", "phone", "company_id"]
-    )
+# Dynamically register POST endpoints for simple entity creation (skip tasks - has custom logic)
+for entity_name, config in ENTITY_CONFIGS.items():
+    if config.get("has_custom_create"):
+        continue  # Skip entities with custom creation logic
+        
+    handler = config["handler"]
+    create_fields = config["create_fields"]
+    
+    # Create endpoint function with proper closure
+    def make_create_endpoint(handler_func, fields):
+        def endpoint():
+            return handler_func(fields)
+        return endpoint
+    
+    endpoint_func = make_create_endpoint(handler.create_entity, create_fields)
+    endpoint_func.__name__ = f"create_{entity_name[:-1]}"  # Remove 's' from plural
+    endpoint_func.__doc__ = f"Create new {entity_name[:-1]}"
+    
+    api_entities_bp.route(f"/{entity_name}", methods=["POST"])(endpoint_func)
 
 
-@api_entities_bp.route("/companies", methods=["POST"])
-def create_company():
-    """Create new company"""
-    return company_api.create_entity(
-        ["name", "industry", "size", "website", "phone", "address"]
-    )
-
-
-@api_entities_bp.route("/opportunities", methods=["POST"])
-def create_opportunity():
-    """Create new opportunity"""
-    return opportunity_api.create_entity(
-        [
-            "name",
-            "value",
-            "probability",
-            "expected_close_date",
-            "stage",
-            "company_id",
-            "contact_id",
-        ]
-    )
-
-
-# DELETE endpoints for entity deletion
-@api_entities_bp.route("/tasks/<int:task_id>", methods=["DELETE"])
-def delete_task(task_id):
-    """Delete task"""
-    return task_api.delete_entity(task_id)
-
-
-@api_entities_bp.route("/stakeholders/<int:stakeholder_id>", methods=["DELETE"])
-def delete_stakeholder(stakeholder_id):
-    """Delete stakeholder"""
-    return stakeholder_api.delete_entity(stakeholder_id)
-
-
-@api_entities_bp.route("/companies/<int:company_id>", methods=["DELETE"])
-def delete_company(company_id):
-    """Delete company"""
-    return company_api.delete_entity(company_id)
-
-
-@api_entities_bp.route("/opportunities/<int:opportunity_id>", methods=["DELETE"])
-def delete_opportunity(opportunity_id):
-    """Delete opportunity"""
-    return opportunity_api.delete_entity(opportunity_id)
+# Dynamically register DELETE endpoints for entity deletion
+for entity_name, config in ENTITY_CONFIGS.items():
+    route_param = config["route_param"]
+    handler = config["handler"]
+    
+    # Create delete endpoint function with proper closure
+    def make_delete_endpoint(handler_func):
+        def endpoint(entity_id):
+            return handler_func(entity_id)
+        return endpoint
+    
+    endpoint_func = make_delete_endpoint(handler.delete_entity)
+    endpoint_func.__name__ = f"delete_{entity_name[:-1]}"  # Remove 's' from plural
+    endpoint_func.__doc__ = f"Delete {entity_name[:-1]}"
+    
+    api_entities_bp.route(f"/{entity_name}/<int:{route_param}>", methods=["DELETE"])(endpoint_func)
