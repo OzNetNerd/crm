@@ -315,3 +315,138 @@ def auto_serialize(model_instance, include_properties=None, field_transforms=Non
                 result[prop_name] = prop_value
     
     return result
+
+
+class EntityConfigGenerator:
+    """
+    Utility class to auto-generate API entity configurations from model metadata.
+    Eliminates manual field lists and uses model introspection instead.
+    """
+    
+    @staticmethod
+    def generate_config(model_class, entity_name, overrides=None):
+        """
+        Generate complete entity configuration from model metadata.
+        
+        Args:
+            model_class: SQLAlchemy model class
+            entity_name: Plural entity name (e.g., 'companies', 'tasks')  
+            overrides: Dict of configuration overrides
+            
+        Returns:
+            Complete entity configuration dict
+        """
+        from app.utils.route_helpers import GenericAPIHandler
+        from app.utils.model_introspection import ModelIntrospector
+        
+        overrides = overrides or {}
+        
+        # Generate base configuration
+        config = {
+            "model": model_class,
+            "handler": GenericAPIHandler(model_class, entity_name[:-1]),  # Remove 's' for singular
+            "route_param": f"{entity_name[:-1]}_id",  # Remove 's' and add '_id'
+        }
+        
+        # Auto-generate field lists from model introspection
+        form_fields = ModelIntrospector.get_form_fields(model_class)
+        
+        # Separate create vs update fields based on requirements
+        create_fields = []
+        update_fields = []
+        
+        for field in form_fields:
+            field_name = field['name']
+            # Skip auto-generated fields
+            if field_name in ['id', 'created_at', 'updated_at', 'completed_at']:
+                continue
+                
+            # All non-auto fields can be updated
+            update_fields.append(field_name)
+            
+            # Required fields and some optional ones are needed for creation
+            if field['required'] or field_name in ['company_id', 'task_type', 'stage', 'priority', 'status']:
+                create_fields.append(field_name)
+        
+        config["create_fields"] = create_fields
+        config["update_fields"] = update_fields
+        
+        # Generate list serializer using to_dict with field filtering
+        config["list_serializer"] = EntityConfigGenerator._create_list_serializer(model_class)
+        
+        # Apply any overrides
+        config.update(overrides)
+        
+        return config
+    
+    @staticmethod
+    def _create_list_serializer(model_class):
+        """
+        Create a generic list serializer that uses the model's to_dict method
+        but filters to essential fields for dropdown/list usage.
+        """
+        def list_serializer(entity):
+            full_dict = entity.to_dict()
+            
+            # Essential fields for lists/dropdowns
+            essential_fields = {
+                'id': full_dict.get('id'),
+                'name': full_dict.get('name', full_dict.get('description')),  # Fallback to description for tasks
+            }
+            
+            # Add model-specific fields
+            model_name = model_class.__name__.lower()
+            if model_name == 'stakeholder':
+                essential_fields.update({
+                    'job_title': full_dict.get('job_title'),
+                    'company_name': full_dict.get('company_name'),
+                    'meddpicc_roles': full_dict.get('meddpicc_roles'),
+                })
+            elif model_name == 'company':
+                essential_fields.update({
+                    'industry': full_dict.get('industry'),
+                })
+            elif model_name == 'opportunity':
+                essential_fields.update({
+                    'stage': full_dict.get('stage'),
+                    'company_name': full_dict.get('company_name'),
+                })
+            elif model_name == 'task':
+                essential_fields.update({
+                    'status': full_dict.get('status'),
+                    'priority': full_dict.get('priority'),
+                    'due_date': full_dict.get('due_date'),
+                })
+                
+            return essential_fields
+            
+        return list_serializer
+    
+    @staticmethod
+    def generate_all_configs():
+        """
+        Generate configurations for all standard entities.
+        
+        Returns:
+            Dict of entity configurations keyed by entity name
+        """
+        from app.models import Task, Stakeholder, Company, Opportunity
+        
+        configs = {}
+        
+        # Define entities with their models and any special overrides
+        entities = [
+            ("tasks", Task, {
+                "has_custom_create": True,  # Tasks have complex creation logic
+            }),
+            ("stakeholders", Stakeholder, {}),
+            ("companies", Company, {}), 
+            ("opportunities", Opportunity, {}),
+        ]
+        
+        for entity_name, model_class, overrides in entities:
+            configs[entity_name] = EntityConfigGenerator.generate_config(
+                model_class, entity_name, overrides
+            )
+            
+        return configs

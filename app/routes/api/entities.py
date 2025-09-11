@@ -1,55 +1,11 @@
 from flask import Blueprint, request, jsonify
 from app.models import db, Task, Stakeholder, Company, Opportunity
-from app.utils.route_helpers import GenericAPIHandler
+from app.utils.model_helpers import EntityConfigGenerator
 
 api_entities_bp = Blueprint("api_entities", __name__, url_prefix="/api")
 
-# Entity configurations for DRY route registration
-ENTITY_CONFIGS = {
-    "tasks": {
-        "model": Task,
-        "handler": GenericAPIHandler(Task, "task"),
-        "update_fields": ["description", "due_date", "priority", "status", "next_step_type"],
-        "create_fields": ["description", "due_date", "priority", "status", "next_step_type", "task_type"],
-        "route_param": "task_id",
-        "has_custom_create": True,  # Tasks have complex creation logic
-    },
-    "stakeholders": {
-        "model": Stakeholder,
-        "handler": GenericAPIHandler(Stakeholder, "stakeholder"), 
-        "update_fields": ["name", "job_title", "email", "phone"],
-        "create_fields": ["name", "job_title", "email", "phone", "company_id"],
-        "route_param": "stakeholder_id",
-        "list_serializer": lambda s: {
-            "id": s.id,
-            "name": s.name,
-            "job_title": s.job_title,
-            "company_name": s.company.name if s.company else None,
-            "meddpicc_roles": s.get_meddpicc_role_names(),
-        },
-    },
-    "companies": {
-        "model": Company,
-        "handler": GenericAPIHandler(Company, "company"),
-        "update_fields": ["name", "industry", "website"],
-        "create_fields": ["name", "industry", "size", "website", "phone", "address"],
-        "route_param": "company_id",
-        "list_serializer": lambda c: {"id": c.id, "name": c.name, "industry": c.industry},
-    },
-    "opportunities": {
-        "model": Opportunity,
-        "handler": GenericAPIHandler(Opportunity, "opportunity"),
-        "update_fields": ["name", "value", "probability", "expected_close_date", "stage"],
-        "create_fields": ["name", "value", "probability", "expected_close_date", "stage", "company_id", "contact_id"],
-        "route_param": "opportunity_id",
-        "list_serializer": lambda o: {
-            "id": o.id,
-            "name": o.name,
-            "stage": o.stage,
-            "company_name": o.company.name if o.company else None,
-        },
-    },
-}
+# Auto-generate entity configurations from model metadata - much more DRY!
+ENTITY_CONFIGS = EntityConfigGenerator.generate_all_configs()
 
 
 # Dynamically register GET detail endpoints
