@@ -11,19 +11,13 @@
                 {% if button['hx_target'] %}hx-target="{{ button['hx_target'] }}"{% endif %}
                 {% if button['hx_swap'] %}hx-swap="{{ button['hx_swap'] }}"{% endif %}
                 class="flex items-center gap-2 {{ btn_class }}">
-            {{ button['icon'] }}
-            {{ button['label'] }}
-        </button>
-    {% elif button['onclick'] %}
-        <button onclick="{{ button['onclick'] }}" 
-                class="flex items-center gap-2 {{ btn_class }}">
-            {{ button['icon'] }}
+            {{ button['icon']|safe }}
             {{ button['label'] }}
         </button>
     {% else %}
-        <a href="{{ button['url'] or '' }}" 
+        <a href="{{ button['url'] or '#' }}" 
            class="flex items-center gap-2 {{ btn_class }}">
-            {{ button['icon'] }}
+            {{ button['icon']|safe }}
             {{ button['label'] }}
         </a>
     {% endif %}
@@ -57,52 +51,8 @@
 ]) }}
 {% endmacro %}
 
-{# Page-specific action button configurations #}
-
-{% macro companies_page_actions() %}
-{{ quick_actions_buttons([
-    {
-        'label': 'New Company',
-        'hx_get': '/modals/Company/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': plus_icon('w-4 h-4')
-    }
-]) }}
-{% endmacro %}
-
-{% macro contacts_page_actions() %}
-{{ quick_actions_buttons([
-    {
-        'label': 'New Stakeholder',
-        'hx_get': '/modals/Stakeholder/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': plus_icon('w-4 h-4')
-    }
-]) }}
-{% endmacro %}
-
-{% macro opportunities_page_actions() %}
-{{ quick_actions_buttons([
-    {
-        'label': 'New Opportunity',
-        'hx_get': '/modals/Opportunity/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': plus_icon('w-4 h-4')
-    }
-]) }}
-{% endmacro %}
-
-{% macro tasks_page_actions() %}
-{{ quick_actions_buttons([
-    {
-        'label': 'New Task',
-        'hx_get': '/modals/Task/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': plus_icon('w-4 h-4')
-    }
-]) }}
-{% endmacro %}
+{# 
+  Page-specific action button macros removed - now handled by EntityConfigGenerator
+  in form_configs.py for true DRY implementation. All entity pages use the 
+  entity_buttons context variable generated automatically from model __entity_config__.
+#}

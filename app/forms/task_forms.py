@@ -103,8 +103,22 @@ class MultiTaskForm(BaseForm):
 
     priority = FieldFactory.create_priority_field(Task)
 
-    # Multi-entity selection for parent task
-    linked_entities = FieldFactory.create_linked_entities_field()
+    # Simple entity selection for parent task
+    entity_type = SelectField(
+        "Related To",
+        choices=[
+            ("", "None"),
+            ("company", "Company"),
+            ("stakeholder", "Stakeholder"), 
+            ("opportunity", "Opportunity")
+        ],
+        validators=[Optional()]
+    )
+    
+    entity_id = IntegerField(
+        "Select Entity",
+        validators=[Optional()]
+    )
 
     dependency_type = DynamicFormBuilder.build_select_field(Task, 'dependency_type')
 

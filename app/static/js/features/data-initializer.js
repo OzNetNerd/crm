@@ -53,19 +53,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const pageType = dataContainer.dataset.pageType;
     
     switch (pageType) {
-        case 'multi-task':
-            if (typeof initMultiTaskData === 'function') {
-                initMultiTaskData(
-                    window.companiesData || [],
-                    window.stakeholdersData || [],
-                    window.opportunitiesData || []
-                );
-            }
-            if (typeof initMultiTaskForm === 'function') {
-                initMultiTaskForm();
-            }
-            break;
-            
         case 'tasks-index':
             if (typeof initTasksData === 'function') {
                 initTasksData(

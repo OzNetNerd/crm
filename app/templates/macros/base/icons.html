@@ -236,6 +236,11 @@
 {{ icon('user', 'lg', class.replace('w-6 h-6', '').strip()) }}
 {% endmacro %}
 
+{# Users Icon (Team/Multiple Users) #}
+{% macro users_icon(class="w-6 h-6") %}
+{{ icon('users', 'lg', class.replace('w-6 h-6', '').strip()) }}
+{% endmacro %}
+
 {# Currency Dollar Icon (Opportunity) #}
 {% macro currency_dollar_icon(class="w-6 h-6") %}
 {{ icon('currency-dollar', 'lg', class.replace('w-6 h-6', '').strip()) }}

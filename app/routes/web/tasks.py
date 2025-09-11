@@ -322,6 +322,14 @@ def create_multi():
 
             db.session.add(parent_task)
             db.session.flush()  # Get the parent task ID
+            
+            # Handle entity relationship from form fields
+            if form.entity_type.data and form.entity_id.data:
+                linked_entities = [{
+                    'type': form.entity_type.data,
+                    'id': form.entity_id.data
+                }]
+                parent_task.set_linked_entities(linked_entities)
 
             # Create child tasks from form data
             for i, child_form in enumerate(form.child_tasks.entries):
@@ -342,6 +350,11 @@ def create_multi():
                         dependency_type=form.dependency_type.data,
                     )
                     db.session.add(child_task)
+                    db.session.flush()  # Get child task ID
+                    
+                    # Inherit parent task entity relationships
+                    if form.entity_type.data and form.entity_id.data:
+                        child_task.set_linked_entities(linked_entities)
 
             db.session.commit()
             flash("Multi Task created successfully!", "success")
