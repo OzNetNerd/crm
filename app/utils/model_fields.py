@@ -71,13 +71,13 @@ def get_filter_options(model_name, field_name, **kwargs):
     from app.models import Company, Stakeholder, Task, Opportunity
 
     model_map = {
-        "Company": Company,
-        "Stakeholder": Stakeholder,
-        "Task": Task,
-        "Opportunity": Opportunity,
+        "company": Company,
+        "stakeholder": Stakeholder,
+        "task": Task,
+        "opportunity": Opportunity,
     }
 
-    model_class = model_map.get(model_name)
+    model_class = model_map.get(model_name.lower())
     if not model_class:
         return []
 
@@ -169,10 +169,10 @@ def get_sort_options(model_name, exclude_fields=None, custom_fields=None):
     from app.models import Company, Stakeholder, Task, Opportunity
 
     model_map = {
-        "Company": Company,
-        "Contact": Stakeholder,
-        "Task": Task,
-        "Opportunity": Opportunity,
+        "company": Company,
+        "contact": Stakeholder,
+        "task": Task,
+        "opportunity": Opportunity,
     }
 
     # Default custom fields for each model
@@ -185,7 +185,7 @@ def get_sort_options(model_name, exclude_fields=None, custom_fields=None):
         "Opportunity": {"deal_age": "Deal Age"},
     }
 
-    model_class = model_map.get(model_name)
+    model_class = model_map.get(model_name.lower())
     if not model_class:
         return []
 

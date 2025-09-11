@@ -522,19 +522,14 @@ def get_model_by_name(model_name: str):
     from app.models import Company, Stakeholder, Opportunity, Task
     
     model_map = {
-        'Company': Company,
         'company': Company,
-        'Stakeholder': Stakeholder,
         'stakeholder': Stakeholder,
-        'Contact': Stakeholder,  # Legacy support
-        'contact': Stakeholder,
-        'Opportunity': Opportunity,
+        'contact': Stakeholder,  # Legacy support
         'opportunity': Opportunity,
-        'Task': Task,
         'task': Task,
     }
     
-    return model_map.get(model_name)
+    return model_map.get(model_name.lower())
 
 
 def get_all_model_configs() -> Dict[str, Dict[str, Any]]:
