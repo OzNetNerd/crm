@@ -1132,3 +1132,209 @@
     </div>
 </div>
 {% endmacro %}
+
+{#
+  Pure CSS HTMX Dropdown - Focus-based dropdown for HTMX forms
+  
+  Parameters:
+  - name (required): HTML name attribute for the form field
+  - current_value (required): Currently selected value
+  - options (required): List of {value, label} dictionaries
+  - label_text (optional): Label to display in the button
+  
+  Usage:
+  {{ htmx_dropdown('group_by', group_by, group_options, 'Group by') }}
+#}
+{% macro htmx_dropdown(name, current_value, options, label_text='Select') %}
+<div class="relative inline-block">
+    <button type="button" 
+            class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between min-w-[120px] group"
+            onclick="this.nextElementSibling.classList.toggle('hidden')">
+        <span>
+            {% set found = namespace(value=false) %}
+            {% for option in options %}
+                {% if option.value == current_value and not found.value %}
+                    {{ option.label }}
+                    {% set found.value = true %}
+                {% endif %}
+            {% endfor %}
+            {% if not found.value %}{{ label_text }}{% endif %}
+        </span>
+        <svg class="w-4 h-4 ml-2 transition-transform group-focus:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+    
+    <div class="absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-10 hidden transition-all duration-200 ease-out">
+        <div class="py-1">
+            {% for option in options %}
+            <button type="submit" 
+                    name="{{ name }}" 
+                    value="{{ option.value }}"
+                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option.value == current_value %}bg-blue-50 text-blue-700{% endif %}">
+                {{ option.label }}
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  Pure CSS HTMX Multiselect - Checkbox-based multiselect for HTMX forms
+  
+  Parameters:
+  - name (required): HTML name attribute for the form field
+  - current_values (required): List of currently selected values
+  - options (required): List of {value, label} dictionaries
+  - placeholder (optional): Placeholder text when nothing selected
+  
+  Usage:
+  {{ htmx_multiselect('priority_filter', priority_filter, priority_options, 'All Priorities') }}
+#}
+{% macro htmx_multiselect(name, current_values, options, placeholder='Select options') %}
+<div class="relative inline-block">
+    <button type="button" 
+            class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between min-w-[140px] group"
+            onclick="this.nextElementSibling.classList.toggle('hidden')">
+        <span class="truncate">
+            {% if current_values|length == 0 %}
+                {{ placeholder }}
+            {% elif current_values|length == 1 %}
+                {% set found = namespace(value=false) %}
+                {% for option in options %}
+                    {% if option.value in current_values and not found.value %}
+                        {{ option.label }}
+                        {% set found.value = true %}
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                {{ current_values|length }} selected
+            {% endif %}
+        </span>
+        <svg class="w-4 h-4 ml-2 transition-transform group-focus:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+    
+    <div class="absolute left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-20 hidden transition-all duration-200 ease-out">
+        <div class="py-1 max-h-48 overflow-y-auto">
+            {% for option in options %}
+            <label class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                <input type="checkbox" 
+                       name="{{ name }}"
+                       value="{{ option.value }}"
+                       {% if option.value in current_values %}checked{% endif %}
+                       class="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                       onchange="this.form.dispatchEvent(new Event('change'))">
+                {{ option.label }}
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  HTMX Enhanced Filter Controls - Pure CSS version of enhanced_filter_controls
+  
+  Parameters:
+  - Same as enhanced_filter_controls but uses pure CSS components
+  
+  Usage:
+  {{ htmx_enhanced_filter_controls(...) }}
+#}
+{% macro htmx_enhanced_filter_controls(
+    group_options, 
+    sort_options,
+    show_completed_label='Show Completed',
+    show_completed_name='show_completed',
+    show_completed_value=false,
+    primary_filter_options=None,
+    primary_filter_label='All Filters',
+    primary_filter_values=[],
+    secondary_filter_options=None,
+    secondary_filter_label='All Filters',
+    secondary_filter_values=[],
+    entity_filter_options=None,
+    entity_filter_label='All Entities',
+    entity_filter_values=[],
+    group_by='',
+    sort_by='',
+    sort_direction='asc'
+) %}
+<div class="card-padded-lg filter-section-enhanced">
+    <div class="flex flex-col space-y-4">
+        <!-- First row: Group by, Sort by, and Filters -->
+        <div class="flex flex-wrap items-center gap-6">
+            <label class="text-label-dark">Group by:</label>
+            {{ htmx_dropdown('group_by', group_by, group_options, 'Group by') }}
+            
+            <label class="text-label-dark">Sort by:</label>
+            {{ htmx_dropdown('sort_by', sort_by, sort_options, 'Sort by') }}
+            {{ htmx_dropdown('sort_direction', sort_direction, [
+                {'value': 'asc', 'label': 'Ascending'},
+                {'value': 'desc', 'label': 'Descending'}
+            ], 'Order') }}
+            
+            {% if primary_filter_options or secondary_filter_options or entity_filter_options %}
+            <label class="text-label-dark">Filters:</label>
+            {% endif %}
+            
+            {% if primary_filter_options %}
+            {{ htmx_multiselect('primary_filter', primary_filter_values, primary_filter_options, primary_filter_label) }}
+            {% endif %}
+            
+            {% if secondary_filter_options %}
+            {{ htmx_multiselect('secondary_filter', secondary_filter_values, secondary_filter_options, secondary_filter_label) }}
+            {% endif %}
+            
+            {% if entity_filter_options %}
+            {{ htmx_multiselect('entity_filter', entity_filter_values, entity_filter_options, entity_filter_label) }}
+            {% endif %}
+        </div>
+        
+        <!-- Second row: Show completed and Expand/Collapse controls -->
+        <div class="flex flex-wrap items-center gap-6">
+            {% if show_completed_label %}
+            <label class="flex items-center">
+                <input type="checkbox" 
+                       name="{{ show_completed_name }}"
+                       value="true"
+                       {% if show_completed_value %}checked{% endif %}
+                       class="mr-2"
+                       onchange="this.form.dispatchEvent(new Event('change'))">
+                <span class="text-secondary-dark">{{ show_completed_label }}</span>
+            </label>
+            {% endif %}
+
+            <div class="flex items-center gap-4 border-l pl-4">
+                <button type="button" onclick="document.querySelectorAll('[x-show]').forEach(el => el.__x.$data.expandedSections && Object.keys(el.__x.$data.expandedSections).forEach(key => el.__x.$data.expandedSections[key] = true))"
+                        class="text-secondary-dark hover:text-gray-900">Expand All</button>
+                <div class="border-l border-gray-300 h-5"></div>
+                <button type="button" onclick="document.querySelectorAll('[x-show]').forEach(el => el.__x.$data.expandedSections && Object.keys(el.__x.$data.expandedSections).forEach(key => el.__x.$data.expandedSections[key] = false))"
+                        class="text-secondary-dark hover:text-gray-900">Collapse All</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Close all dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    const isDropdownButton = event.target.closest('[onclick*="classList.toggle"]');
+    const isInsideDropdown = event.target.closest('.absolute');
+    
+    if (!isDropdownButton && !isInsideDropdown) {
+        document.querySelectorAll('.absolute.hidden').forEach(dropdown => {
+            if (!dropdown.classList.contains('hidden')) {
+                dropdown.classList.add('hidden');
+            }
+        });
+        document.querySelectorAll('.absolute:not(.hidden)').forEach(dropdown => {
+            dropdown.classList.add('hidden');
+        });
+    }
+});
+</script>
+{% endmacro %}

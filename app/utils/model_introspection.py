@@ -7,6 +7,7 @@ UI behavior, choices, CSS classes, grouping, and sorting.
 """
 
 from typing import Dict, List, Tuple, Any, Optional, Union
+from datetime import datetime
 from sqlalchemy import Column
 from flask import current_app
 
@@ -284,6 +285,97 @@ class ModelIntrospector:
             return db_column.default
         
         return None
+    
+    @staticmethod
+    def get_form_fields(model_class) -> List[Dict[str, Any]]:
+        """
+        Get form field definitions for all model fields suitable for forms.
+        
+        Args:
+            model_class: SQLAlchemy model class
+            
+        Returns:
+            List of form field definitions with name, type, label, choices, etc.
+        """
+        fields = []
+        
+        for attr_name in dir(model_class):
+            # Skip private/system attributes and relationships
+            if attr_name.startswith('_') or attr_name in ['metadata', 'registry', 'query', 'query_class', 'id']:
+                continue
+                
+            try:
+                attr = getattr(model_class, attr_name)
+                # Check if it's a SQLAlchemy column (not relationship)
+                if hasattr(attr, 'property') and hasattr(attr.property, 'columns') and len(attr.property.columns) > 0:
+                    column = attr.property.columns[0]
+                    info = column.info
+                    
+                    # Skip auto-generated fields typically not in forms
+                    if attr_name in ['created_at', 'completed_at', 'updated_at']:
+                        continue
+                    
+                    # Determine field type based on SQLAlchemy column type
+                    field_type = 'text'  # default
+                    if hasattr(column.type, 'python_type'):
+                        python_type = column.type.python_type
+                        if python_type == int:
+                            field_type = 'number'
+                        elif python_type == bool:
+                            field_type = 'checkbox'
+                        elif python_type == datetime:
+                            field_type = 'datetime-local'
+                        elif hasattr(column.type, 'name'):
+                            if column.type.name.upper() == 'DATE':
+                                field_type = 'date'
+                            elif column.type.name.upper() == 'TEXT':
+                                field_type = 'textarea'
+                    
+                    # Check if field has choices - use select instead
+                    choices = ModelIntrospector.get_field_choices(model_class, attr_name)
+                    if choices:
+                        field_type = 'select'
+                    
+                    # Build field definition
+                    field_def = {
+                        'name': attr_name,
+                        'type': field_type,
+                        'label': info.get('display_label', attr_name.replace('_', ' ').title()),
+                        'required': not column.nullable and not column.default,
+                        'default': ModelIntrospector.get_field_default_value(model_class, attr_name),
+                        'choices': choices,
+                        'description': info.get('description', ''),
+                        'placeholder': info.get('placeholder', ''),
+                    }
+                    
+                    # Add field-specific attributes
+                    if field_type == 'textarea':
+                        field_def['rows'] = info.get('rows', 3)
+                    elif field_type == 'number':
+                        field_def['min'] = info.get('min')
+                        field_def['max'] = info.get('max')
+                        field_def['step'] = info.get('step')
+                    
+                    fields.append(field_def)
+                    
+            except (AttributeError, TypeError):
+                # Skip attributes that can't be introspected
+                continue
+        
+        # Sort fields by a logical form order
+        form_order = {
+            'description': 1, 'name': 1, 'title': 1,
+            'due_date': 2, 'start_date': 2, 'end_date': 2,
+            'priority': 3, 'status': 3, 'stage': 3,
+            'type': 4, 'category': 4,
+            'value': 5, 'amount': 5, 'price': 5,
+            'notes': 10, 'comments': 10
+        }
+        
+        def get_sort_key(field):
+            return form_order.get(field['name'], 6)
+        
+        return sorted(fields, key=get_sort_key)
 
 
 def get_model_by_name(model_name: str):

@@ -1,6 +1,7 @@
 """Clean template global functions - no more string-based hacks."""
 
-from app.models import db, Company, Stakeholder, Task, Opportunity
+from app.models import db, Company, Stakeholder, Task, Opportunity, User
+from app.utils.model_introspection import ModelIntrospector, get_model_by_name
 from sqlalchemy import distinct
 
 
@@ -42,6 +43,10 @@ def get_sortable_fields(model_class, exclude=None):
     elif model_class == Stakeholder:
         options.append({"value": "name", "label": "Name"})
         options.append({"value": "company_name", "label": "Company"})
+    elif model_class == User:
+        options.append({"value": "name", "label": "Name"})
+        options.append({"value": "email", "label": "Email"})
+        options.append({"value": "job_title", "label": "Job Title"})
 
     return sorted(options, key=lambda x: x["label"])
 
@@ -72,6 +77,10 @@ def get_groupable_fields(model_class):
             {"value": "priority", "label": "Priority"},
             {"value": "entity_type", "label": "Entity Type"},
         ]
+    elif model_class == User:
+        options = [
+            {"value": "job_title", "label": "Job Title"},
+        ]
 
     return options
 
@@ -91,3 +100,25 @@ SIZE_OPTIONS = [
     {"value": "large", "label": "Large"},
     {"value": "enterprise", "label": "Enterprise"},
 ]
+
+
+def get_model_form_fields(model_name):
+    """
+    Get form field definitions for a model by name.
+    
+    Args:
+        model_name: String name of the model (e.g., 'Task', 'Company')
+        
+    Returns:
+        List of form field definitions with name, type, label, choices, etc.
+    """
+    model_class = get_model_by_name(model_name)
+    if not model_class:
+        return []
+    
+    return ModelIntrospector.get_form_fields(model_class)
+
+
+def get_model_config(model_class):
+    """Get complete model configuration for templates."""
+    return ModelIntrospector.get_model_config(model_class)

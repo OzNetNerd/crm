@@ -1,0 +1,119 @@
+{# Universal HTMX Content Partial - Works for ALL entities using model metadata #}
+{% from "components/expandable_card.html" import expandable_card, action_buttons_row %}
+
+{# Alpine.js data for expand/collapse state only #}
+<div x-data="{ 
+    expandedSections: {
+        {% for group in grouped_entities %}
+        '{{ group.key }}': true{% if not loop.last %},{% endif %}
+        {% endfor %}
+    }
+}" class="space-y-4">
+
+    {# Show total count #}
+    {% if total_count > 0 %}
+        <div class="text-sm text-gray-600 mb-4">
+            Showing {{ total_count }} {{ entity_name_singular }}{{ 's' if total_count != 1 else '' }}
+        </div>
+    {% endif %}
+
+    {# Render grouped entities #}
+    {% for group in grouped_entities %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            {# Group Header #}
+            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-medium text-gray-900 flex items-center">
+                        <button @click="expandedSections['{{ group.key }}'] = !expandedSections['{{ group.key }}']" 
+                                class="mr-2 text-gray-400 hover:text-gray-600">
+                            <svg class="w-5 h-5 transition-transform duration-200" 
+                                 :class="expandedSections['{{ group.key }}'] ? 'rotate-90' : ''" 
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                        {{ group.label }}
+                        <span class="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                            {{ group.count }}
+                        </span>
+                    </h3>
+                </div>
+            </div>
+            
+            {# Group Content #}
+            <div x-show="expandedSections['{{ group.key }}']" 
+                 x-transition:enter="transition-all duration-200 ease-out"
+                 x-transition:enter-start="opacity-0 max-h-0"
+                 x-transition:enter-end="opacity-100 max-h-screen"
+                 x-transition:leave="transition-all duration-200 ease-in"
+                 x-transition:leave-start="opacity-100 max-h-screen"
+                 x-transition:leave-end="opacity-0 max-h-0"
+                 class="divide-y divide-gray-200 overflow-hidden">
+                
+                {% for entity in group.entities %}
+                    {# Handle special task logic for parent/child relationships #}
+                    {% if entity_type == 'task' and entity.task_type != 'child' %}
+                        <div class="p-4">
+                            {{ expandable_card(entity_type, entity, entity.id,
+                                expansion_enabled=true,
+                                field_config=card_config,
+                                action_buttons=action_buttons_row(entity_type, entity.id)) }}
+                            
+                            {# Render child tasks if this is a parent #}
+                            {% if entity.task_type == 'parent' and entity.child_tasks %}
+                                <div class="ml-8 mt-4 space-y-2 border-l-2 border-gray-200 pl-4">
+                                    {% for child_task in entity.child_tasks %}
+                                        <div class="bg-gray-50 rounded-md p-3">
+                                            {{ expandable_card(entity_type, child_task, child_task.id,
+                                                expansion_enabled=true,
+                                                field_config=card_config,
+                                                action_buttons=action_buttons_row(entity_type, child_task.id)) }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% elif entity_type != 'task' or entity.task_type != 'child' %}
+                        <div class="p-4">
+                            {{ expandable_card(entity_type, entity, entity.id,
+                                expansion_enabled=true,
+                                field_config=card_config,
+                                action_buttons=action_buttons_row(entity_type, entity.id)) }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if group.entities|length == 0 %}
+                    <div class="p-8 text-center text-gray-500">
+                        No {{ entity_name_plural }} in this category
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+
+    {# No results message #}
+    {% if grouped_entities|length == 0 %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+            <div class="text-gray-500">
+                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {# Dynamic icon based on entity type #}
+                    {% if entity_type == 'task' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    {% elif entity_type == 'stakeholder' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    {% elif entity_type == 'company' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    {% elif entity_type == 'opportunity' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    {% else %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    {% endif %}
+                </svg>
+                <p class="text-lg font-medium">No {{ entity_name_plural }} found</p>
+                <p class="text-sm">Try adjusting your filters or create a new {{ entity_name_singular }}.</p>
+            </div>
+        </div>
+    {% endif %}
+
+</div>

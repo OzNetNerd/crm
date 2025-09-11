@@ -1,10 +1,10 @@
 {% extends "base/layout.html" %}
 
-{% from "macros/base/layout.html" import page_layout %}
-{% from "macros/widgets/filters.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
-{% from "macros/expandable_card.html" import expandable_card, company_header_content, company_title_content, company_metadata_content, action_buttons_row %}
-{% from "macros/imports/modals.html" import include_common_modals %}
-{% from "macros/base/icons.html" import plus_icon %}
+{% from "components/page_template.html" import page_layout %}
+{% from "components/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar, htmx_enhanced_filter_controls %}
+{% from "components/expandable_card.html" import expandable_card, company_header_content, company_title_content, company_metadata_content, action_buttons_row %}
+{% from "components/imports/entity_imports.html" import include_common_modals %}
+{% from "components/icons.html" import plus_icon %}
 
 {% block title %}Companies - CRM{% endblock %}
 
@@ -57,34 +57,42 @@
 
 {% call page_layout("Companies", "Manage your company relationships", buttons=entity_buttons, summary_data=entity_stats) %}
 
-<div x-data="createEntityManager(getCompanyConfig('{{ today if today else '' }}'))" class="space-y-6">
+<div class="space-y-6">
+    <!-- HTMX Enhanced Filter Controls - Pure CSS Components -->
+    <form hx-get="{{ url_for('companies.content') }}" 
+          hx-target="#company-content"
+          hx-trigger="change, submit"
+          hx-indicator="#loading-indicator">
+        {{ htmx_enhanced_filter_controls(
+            group_options=group_options,
+            sort_options=sort_options,
+            primary_filter_options=industry_options,
+            primary_filter_label='All Industries',
+            primary_filter_values=primary_filter,
+            group_by=group_by,
+            sort_by=sort_by,
+            sort_direction=sort_direction
+        ) }}
+    </form>
 
-    <!-- Bulk Actions Bar -->
-    {{ bulk_actions_bar('company', 'companies', 
-         {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
-
-    <!-- Enhanced Filters -->
-    {{ entity_filter_controls }}
-
-    <!-- Dynamic Entity Section -->
-    <div id="company-content">
-        {{ dynamic_entity_section() }}
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="htmx-indicator">
+        <div class="flex items-center justify-center p-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2 text-gray-600">Loading...</span>
+        </div>
     </div>
 
-    <!-- Entity Cards Cache -->
-    <div style="display: none;" id="company-cards-cache">
-        {% for company in companies %}
-            <div id="company-card-{{ company.id }}">
-                {{ expandable_card('company', company, company.id,
-                    expansion_enabled=true,
-                    badge_content=company_header_content(company),
-                    title_content=company_title_content(company),
-                    metadata_content=company_metadata_content(company),
-                    action_buttons=action_buttons_row('company', company.id)) }}
-            </div>
-        {% endfor %}
+    <!-- Dynamic Content Area -->
+    <div id="company-content" 
+         hx-get="{{ url_for('companies.content') }}?{{ request.query_string.decode('utf-8') }}"
+         hx-trigger="load">
+        <!-- Content will be loaded here via HTMX -->
+        <div class="flex items-center justify-center p-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2 text-gray-600">Loading companies...</span>
+        </div>
     </div>
-
 </div>
 
 {% endcall %}
@@ -97,14 +105,9 @@
 {% endblock %}
 
 {% block data_attributes %}
-data-companies="{{ companies_data | tojson | forceescape }}"
-data-contacts="{{ contacts | tojson | forceescape }}"
-data-opportunities="{{ opportunities | tojson | forceescape }}"
+{# No longer need data attributes since using HTMX #}
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
-<script src="{{ url_for('static', filename='js/entities/companies.js') }}"></script>
+<!-- Modal functionality now handled by HTMX -->
 {% endblock %}

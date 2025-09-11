@@ -658,6 +658,14 @@
 {{ company.name }}
 {% endmacro %}
 
+{% macro stakeholder_title_content(stakeholder) %}
+{{ stakeholder.name }}
+{% endmacro %}
+
+{% macro opportunity_title_content(opportunity) %}
+{{ opportunity.name }}
+{% endmacro %}
+
 {% macro company_metadata_content(company) %}
 <div class="text-sm text-gray-500 flex items-center space-x-4">
     {% if company.contacts %}
@@ -693,4 +701,73 @@
     {% endif %}
     <span>{{ member.created_at.strftime('%m/%d/%y') if member.created_at else 'N/A' }}</span>
 </div>
+{% endmacro %}
+
+{#
+  Automatic Expandable Card - Fully DRY using Model Metadata
+  
+  Parameters:
+  - entity_type (required): 'task' | 'opportunity' | 'stakeholder' | 'company'  
+  - entity (required): Entity object
+  - entity_id (required): Unique ID of the entity
+  - expansion_enabled (optional): Enable expansion functionality (default: true)
+  - bulk_selection_enabled (optional): Show bulk selection checkbox (default: true)
+  
+  This macro automatically:
+  - Gets model configuration via ModelIntrospector
+  - Extracts badge, title, secondary, metadata fields from model metadata
+  - Uses appropriate CSS classes and icons from model.info
+  - Generates correct action buttons for entity type
+  
+  Usage:
+  {{ expandable_card_auto('stakeholder', stakeholder, stakeholder.id) }}
+#}
+{% macro expandable_card_auto(entity_type, entity, entity_id, expansion_enabled=true, bulk_selection_enabled=true) %}
+{% set model_config = get_model_config(entity.__class__) %}
+
+{# Auto-generate field configuration from model metadata #}
+{% set auto_config = {
+    'badge_field': none,
+    'badge_style': 'blue',
+    'title_field': 'name',
+    'secondary_fields': [],
+    'metadata_fields': []
+} %}
+
+{# Extract badge field from model metadata - look for groupable fields with choices #}
+{% for field_name, field_info in model_config.fields.items() %}
+    {% if field_info.choices and field_info.groupable and not auto_config.badge_field %}
+        {% set _ = auto_config.update({'badge_field': field_name}) %}
+    {% endif %}
+{% endfor %}
+
+{# Build secondary fields - look for relationship and contact fields #}
+{% if entity_type == 'stakeholder' %}
+    {% set _ = auto_config.secondary_fields.append({'field': 'company.name', 'type': 'text'}) %}
+    {% set _ = auto_config.secondary_fields.append({'field': 'email', 'type': 'text'}) %}
+{% elif entity_type == 'opportunity' %}
+    {% set _ = auto_config.secondary_fields.append({'field': 'company.name', 'type': 'text'}) %}
+    {% set _ = auto_config.secondary_fields.append({'field': 'contact.name', 'type': 'text'}) %}
+{% elif entity_type == 'task' %}
+    {# Tasks have special handling in template already #}
+{% endif %}
+
+{# Build metadata fields - look for date and status fields #}
+{% for field_name, field_info in model_config.fields.items() %}
+    {% if field_name in ['phone', 'created_at', 'due_date', 'close_date'] %}
+        {% if field_name == 'created_at' %}
+            {% set _ = auto_config.metadata_fields.append({'field': field_name, 'type': 'date', 'format': '%m/%d/%y'}) %}
+        {% elif 'date' in field_name %}
+            {% set _ = auto_config.metadata_fields.append({'field': field_name, 'type': 'date', 'format': '%d/%m/%y'}) %}
+        {% else %}
+            {% set _ = auto_config.metadata_fields.append({'field': field_name, 'type': 'text'}) %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+{{ expandable_card(entity_type, entity, entity_id,
+    expansion_enabled=expansion_enabled,
+    bulk_selection_enabled=bulk_selection_enabled,
+    field_config=auto_config,
+    action_buttons=action_buttons_row(entity_type, entity_id)) }}
 {% endmacro %}

@@ -1,18 +1,14 @@
 {% extends "base/layout.html" %}
 
-{% from "macros/page_template.html" import page_layout %}
-{% from "macros/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
-{% from "macros/expandable_card.html" import expandable_card, opportunity_header_content, opportunity_metadata_content, action_buttons_row %}
-{% from "macros/imports/entity_imports.html" import include_common_modals %}
-{% from "macros/icons.html" import plus_icon %}
+{% from "components/page_template.html" import page_layout %}
+{% from "components/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar, htmx_enhanced_filter_controls %}
+{% from "components/expandable_card.html" import expandable_card, opportunity_header_content, opportunity_title_content, opportunity_metadata_content, action_buttons_row %}
+{% from "components/imports/entity_imports.html" import include_common_modals %}
+{% from "components/icons.html" import plus_icon %}
 
 {% block title %}Opportunities - CRM{% endblock %}
 
 {% block content %}
-{% set entity_name = "Opportunities" %}
-{% set entity_description = "Track your sales pipeline" %}
-{% set entity_type = "opportunity" %}
-
 {% set entity_stats = {
     'title': 'Pipeline Summary',
     'stats': [
@@ -48,79 +44,50 @@
     }
 ] %}
 
-{# Build unique company options for filtering #}
-{% set company_options = [] %}
-{% for opportunity in opportunities %}
-    {% if opportunity.company and opportunity.company.name not in company_options|map(attribute='value')|list %}
-        {% set _ = company_options.append({'value': opportunity.company.name, 'label': opportunity.company.name}) %}
-    {% endif %}
-{% endfor %}
+{% call page_layout("Opportunities", "Track your sales pipeline", buttons=entity_buttons, summary_data=entity_stats) %}
 
-{% set entity_filter_controls %}
-{{ enhanced_filter_controls(
-    group_options=get_groupable_fields(Opportunity),
-    sort_options=get_sortable_fields(Opportunity),
-    show_completed_label='Show Closed',
-    show_completed_name='show_completed',
-    primary_filter_options=PRIORITY_OPTIONS,
-    primary_filter_label='All Priorities',
-    secondary_filter_options=get_field_options(Opportunity, 'stage'),
-    secondary_filter_label='All Stages',
-    entity_filter_options=company_options,
-    entity_filter_label='All Companies',
-    entity_filter_search=true
-) }}
-{% endset %}
+<div class="space-y-6">
+    <!-- HTMX Enhanced Filter Controls - Pure CSS Components -->
+    <form hx-get="{{ url_for('opportunities.content') }}" 
+          hx-target="#opportunity-content"
+          hx-trigger="change, submit"
+          hx-indicator="#loading-indicator">
+        {{ htmx_enhanced_filter_controls(
+            group_options=group_options,
+            sort_options=sort_options,
+            show_completed_label='Show Closed',
+            show_completed_name='show_completed',
+            show_completed_value=show_completed,
+            primary_filter_options=stage_options,
+            primary_filter_label='All Stages',
+            primary_filter_values=primary_filter,
+            secondary_filter_options=company_options,
+            secondary_filter_label='All Companies',
+            secondary_filter_values=secondary_filter,
+            group_by=group_by,
+            sort_by=sort_by,
+            sort_direction=sort_direction
+        ) }}
+    </form>
 
-{% set entity_buttons = [
-    {
-        'label': 'New Opportunity',
-        'onclick': 'openNewOpportunityModal()',
-        'color': 'blue',
-        'icon': plus_icon('w-4 h-4')
-    }
-] %}
-
-{% call page_layout(entity_name, entity_description, buttons=entity_buttons, summary_data=entity_stats) %}
-
-<div x-data="createEntityManager(get{{ entity_type|title }}Config('{{ today if today else '' }}'))" class="space-y-6">
-
-    <!-- Bulk Actions Bar -->
-    {{ bulk_actions_bar(entity_type, entity_type + 's', 
-         {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
-
-    <!-- Enhanced Filters -->
-    {{ entity_filter_controls }}
-
-    <!-- Dynamic Entity Section -->
-    <div id="{{ entity_type }}-content">
-        {{ dynamic_entity_section() }}
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="htmx-indicator">
+        <div class="flex items-center justify-center p-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2 text-gray-600">Loading...</span>
+        </div>
     </div>
 
-    <!-- Entity Cards Cache -->
-    <div style="display: none;" id="{{ entity_type }}-cards-cache">
-{% for opportunity in opportunities %}
-    <div id="opportunity-card-{{ opportunity.id }}">
-        {% set progress_config = {
-            'enabled': opportunity.probability is not none,
-            'type': 'probability', 
-            'value': opportunity.probability or 0,
-            'color_scheme': 'blue',
-            'size': 'md'
-        } %}
-        {{ expandable_card('opportunity', opportunity, opportunity.id,
-            expansion_enabled=true,
-            progress_config=progress_config,
-            badge_content=opportunity_header_content(opportunity),
-            title_content=opportunity.name,
-            value_content='$' + "{:,.0f}".format(opportunity.value) if opportunity.value else '',
-            secondary_info='<span class="text-entity-base text-color-company">' + opportunity.company.name + '</span>',
-            metadata_content=opportunity_metadata_content(opportunity),
-            action_buttons=action_buttons_row('opportunity', opportunity.id)) }}
+    <!-- Dynamic Content Area -->
+    <div id="opportunity-content" 
+         hx-get="{{ url_for('opportunities.content') }}?{{ request.query_string.decode('utf-8') }}"
+         hx-trigger="load">
+        <!-- Content will be loaded here via HTMX -->
+        <div class="flex items-center justify-center p-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2 text-gray-600">Loading opportunities...</span>
+        </div>
     </div>
-{% endfor %}
-    </div>
-
 </div>
 
 {% endcall %}
@@ -133,18 +100,9 @@
 {% endblock %}
 
 {% block data_attributes %}
-data-companies="{{ companies | tojson | forceescape }}"
-data-contacts="{{ contacts | tojson | forceescape }}"
-data-opportunities="{{ opportunities_data | tojson | forceescape }}"
-data-model-configs="{{ model_configs|tojson|e }}"
-data-opportunity-config="{{ model_configs.Opportunity|tojson|e }}"
-data-page-type="opportunity"
+{# No longer need data attributes since using HTMX #}
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
-<script src="{{ url_for('static', filename='js/features/data-initializer.js') }}"></script>
-<script src="{{ url_for('static', filename='js/entities/opportunities.js') }}"></script>
+<!-- Modal functionality now handled by HTMX -->
 {% endblock %}

@@ -1,10 +1,136 @@
 from datetime import date
 from flask import Blueprint, render_template, request
-from app.models import Company, Stakeholder, Opportunity
+from app.models import Company, Stakeholder, Opportunity, db
 from app.utils.route_helpers import BaseRouteHandler
+from collections import defaultdict
 
 companies_bp = Blueprint("companies", __name__)
 company_handler = BaseRouteHandler(Company, "companies")
+
+
+def get_filtered_companies_context():
+    """Server-side filtering and sorting for companies HTMX endpoints"""
+    # Get filter parameters
+    group_by = request.args.get("group_by", "industry")
+    sort_by = request.args.get("sort_by", "name")
+    sort_direction = request.args.get("sort_direction", "asc")
+    
+    # Parse filter arrays
+    primary_filter = []
+    if request.args.get("primary_filter"):
+        primary_filter = [p.strip() for p in request.args.get("primary_filter").split(",") if p.strip()]
+
+    # Start with base query
+    query = Company.query
+    
+    # Apply filters
+    if primary_filter:
+        query = query.filter(Company.industry.in_(primary_filter))
+    
+    # Apply sorting
+    if sort_by == "name":
+        if sort_direction == "desc":
+            query = query.order_by(Company.name.desc())
+        else:
+            query = query.order_by(Company.name.asc())
+    elif sort_by == "industry":
+        if sort_direction == "desc":
+            query = query.order_by(Company.industry.desc())
+        else:
+            query = query.order_by(Company.industry.asc())
+    else:
+        # Default sort by name
+        query = query.order_by(Company.name.asc())
+    
+    filtered_companies = query.all()
+    
+    # Group companies by the specified grouping
+    grouped_companies = group_companies_by_field(filtered_companies, group_by)
+    
+    return {
+        "grouped_companies": grouped_companies,
+        "group_by": group_by,
+        "total_count": len(filtered_companies),
+        "sort_by": sort_by,
+        "sort_direction": sort_direction,
+        "primary_filter": primary_filter,
+        "today": date.today(),
+    }
+
+
+def group_companies_by_field(companies, group_by):
+    """Group companies by specified field"""
+    grouped = defaultdict(list)
+    
+    if group_by == "industry":
+        for company in companies:
+            industry = company.industry or "Other"
+            grouped[industry].append(company)
+        
+        # Return sorted by industry name
+        result = []
+        for industry in sorted(grouped.keys()):
+            if grouped[industry]:
+                result.append({
+                    "key": industry,
+                    "label": industry,
+                    "entities": grouped[industry],
+                    "count": len(grouped[industry])
+                })
+        return result
+        
+    elif group_by == "size":
+        for company in companies:
+            size = company.size or "Unknown"
+            grouped[size].append(company)
+        
+        # Return in size order
+        size_order = ["startup", "small", "medium", "large", "enterprise", "Unknown"]
+        result = []
+        for size in size_order:
+            if grouped[size]:
+                result.append({
+                    "key": size,
+                    "label": size.title(),
+                    "entities": grouped[size],
+                    "count": len(grouped[size])
+                })
+        return result
+    
+    # Default: return all companies in one group
+    return [{
+        "key": "all",
+        "label": "All Companies",
+        "entities": companies,
+        "count": len(companies)
+    }]
+
+
+@companies_bp.route("/content")
+def content():
+    """HTMX endpoint for filtered company content"""
+    context = get_filtered_companies_context()
+    
+    # Universal template configuration
+    context.update({
+        'grouped_entities': context["grouped_companies"],
+        'entity_type': 'company',
+        'entity_name_singular': 'company',
+        'entity_name_plural': 'companies',
+        'card_config': {
+            'badge_field': 'industry',
+            'badge_style': 'blue',
+            'title_field': 'name',
+            'secondary_fields': [],
+            'metadata_fields': [
+                {'field': 'contacts', 'type': 'count', 'label': 'contact'},
+                {'field': 'opportunities', 'type': 'count', 'label': 'opportunity'},
+                {'field': 'created_at', 'type': 'date', 'format': '%m/%d/%y'}
+            ]
+        }
+    })
+    
+    return render_template("shared/entity_content.html", **context)
 
 
 @companies_bp.route("/")
@@ -80,6 +206,25 @@ def index():
     ]
 
     today = date.today()
+    
+    # Prepare filter options for the new HTMX controls
+    group_options = [
+        {'value': 'industry', 'label': 'Industry'},
+        {'value': 'size', 'label': 'Company Size'}
+    ]
+    
+    sort_options = [
+        {'value': 'name', 'label': 'Name'},
+        {'value': 'industry', 'label': 'Industry'}
+    ]
+    
+    # Get unique industries from database for filter options
+    industry_options = []
+    industries = db.session.query(Company.industry).distinct().filter(Company.industry.isnot(None)).all()
+    for industry_tuple in industries:
+        industry = industry_tuple[0]
+        if industry:
+            industry_options.append({'value': industry, 'label': industry})
 
     return render_template(
         "companies/index.html",
@@ -93,9 +238,13 @@ def index():
         sort_by=sort_by,
         sort_direction=sort_direction,
         show_completed=show_completed,
-        primary_filter=",".join(primary_filter),
-        secondary_filter=",".join(secondary_filter),
-        entity_filter=",".join(entity_filter),
+        primary_filter=primary_filter,
+        secondary_filter=secondary_filter,
+        entity_filter=entity_filter,
+        # New filter options for HTMX controls
+        group_options=group_options,
+        sort_options=sort_options,
+        industry_options=industry_options,
     )
 
 

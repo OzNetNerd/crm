@@ -1,10 +1,10 @@
 {% extends "base/layout.html" %}
 
-{% from "macros/page_template.html" import page_layout %}
-{% from "macros/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
-{% from "macros/expandable_card.html" import expandable_card, task_header_content, task_reschedule_buttons, action_buttons_row, task_title_content, task_metadata_content %}
-{% from "macros/imports/entity_imports.html" import include_common_modals %}
-{% from "macros/icons.html" import plus_icon %}
+{% from "components/page_template.html" import page_layout %}
+{% from "components/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar, htmx_enhanced_filter_controls %}
+{% from "components/expandable_card.html" import expandable_card, task_header_content, task_reschedule_buttons, action_buttons_row, task_title_content, task_metadata_content %}
+{% from "components/imports/entity_imports.html" import include_common_modals %}
+{% from "components/icons.html" import plus_icon %}
 
 {% block title %}All Tasks - CRM{% endblock %}
 
@@ -72,50 +72,48 @@
 
 {% call page_layout(entity_name, entity_description, buttons=entity_buttons, summary_data=entity_stats) %}
 
-<div x-data="createEntityManager(get{{ entity_type|title }}Config('{{ today if today else '' }}'))" class="space-y-6">
+<div class="space-y-6">
+    <!-- HTMX Enhanced Filter Controls - Pure CSS Components -->
+    <form hx-get="{{ url_for('tasks.content') }}" 
+          hx-target="#task-content"
+          hx-trigger="change, submit"
+          hx-indicator="#loading-indicator">
+        {{ htmx_enhanced_filter_controls(
+            group_options=group_options,
+            sort_options=sort_options,
+            show_completed_label='Show Completed',
+            show_completed_name='show_completed',
+            show_completed_value=show_completed,
+            primary_filter_options=priority_options,
+            primary_filter_label='All Priorities',
+            primary_filter_values=priority_filter,
+            entity_filter_options=entity_type_options,
+            entity_filter_label='All Entities',
+            entity_filter_values=entity_filter,
+            group_by=group_by,
+            sort_by=sort_by,
+            sort_direction=sort_direction
+        ) }}
+    </form>
 
-    <!-- Bulk Actions Bar -->
-    {{ bulk_actions_bar(entity_type, entity_type + 's', 
-         {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
-
-    <!-- Enhanced Filters -->
-    {{ entity_filter_controls }}
-
-    <!-- Dynamic Entity Section -->
-    <div id="{{ entity_type }}-content">
-        {{ dynamic_entity_section() }}
-    </div>
-
-    <!-- Entity Cards Cache -->
-    <div style="display: none;" id="{{ entity_type }}-cards-cache">
-{% for task in tasks_objects %}
-    {% if task.task_type != 'child' %}
-        <div id="task-card-{{ task.id }}">
-            {{ expandable_card('task', task, task.id,
-                expansion_enabled=true,
-                badge_content=task_header_content(task),
-                title_content=task_title_content(task),
-                metadata_content=task_metadata_content(task),
-                action_buttons=action_buttons_row('task', task.id)) }}
-            
-            <!-- Render child tasks if this is a parent -->
-            {% if task.task_type == 'parent' and task.child_tasks %}
-                {% for child in task.child_tasks %}
-                    {% if show_completed or child.status != 'complete' %}
-                        {{ expandable_card('task', child, child.id,
-                            expansion_enabled=true,
-                            badge_content=task_header_content(child),
-                            title_content=task_title_content(child),
-                            metadata_content=task_metadata_content(child),
-                            action_buttons=action_buttons_row('task', child.id)) }}
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="htmx-indicator">
+        <div class="flex items-center justify-center p-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2 text-gray-600">Loading...</span>
         </div>
-    {% endif %}
-{% endfor %}
     </div>
 
+    <!-- Dynamic Content Area -->
+    <div id="task-content" 
+         hx-get="{{ url_for('tasks.content') }}?{{ request.query_string.decode('utf-8') }}"
+         hx-trigger="load">
+        <!-- Content will be loaded here via HTMX -->
+        <div class="flex items-center justify-center p-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2 text-gray-600">Loading tasks...</span>
+        </div>
+    </div>
 </div>
 
 {% endcall %}
@@ -128,19 +126,10 @@
 {% endblock %}
 
 {% block data_attributes %}
-data-page-type="tasks-index"
+{# No longer need page-type for data initialization since using HTMX #}
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
-<script>
-// Initialize data for the tasks page
-window.companiesData = {{ companies | tojson | safe }};
-window.contactsData = {{ contacts | tojson | safe }};
-window.opportunitiesData = {{ opportunities | tojson | safe }};
-window.tasksData = {{ tasks | tojson | safe }};
-</script>
+<!-- Tasks JavaScript still needed for specific functionality -->
 <script src="{{ url_for('static', filename='js/features/tasks.js') }}"></script>
 {% endblock %}

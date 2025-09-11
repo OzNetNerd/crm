@@ -50,11 +50,11 @@
 
 {% set entity_filter_controls %}
 {{ enhanced_filter_controls(
-    group_options=get_groupable_fields(TeamMember),
-    sort_options=get_sortable_fields(TeamMember),
+    group_options=get_groupable_fields(User),
+    sort_options=get_sortable_fields(User),
     show_completed_label='Show All',
     show_completed_name='show_all',
-    primary_filter_options=get_field_options(TeamMember, 'job_title'),
+    primary_filter_options=get_field_options(User, 'job_title'),
     primary_filter_label='All Roles'
 ) }}
 {% endset %}
