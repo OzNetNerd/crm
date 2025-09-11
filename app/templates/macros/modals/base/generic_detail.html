@@ -1,5 +1,6 @@
 {% from "macros/modals/base/modal_base.html" import base_modal, modal_header, modal_footer %}
 {% from "macros/modals/base/notes_section.html" import notes_section %}
+{% from "macros/ui_elements.html" import loading_spinner %}
 
 {% macro generic_detail_modal(entity_type, config) %}
 <div x-data="{
@@ -30,7 +31,7 @@
         {{ modal_header(config.title) }}
         
         <div x-show="loading" class="text-center py-8">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            {{ loading_spinner('lg') }}
         </div>
         
         <div x-show="!loading && {{ entity_type }}" class="modal-body modal-content-spacing">
