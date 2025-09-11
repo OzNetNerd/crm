@@ -39,9 +39,7 @@
 {% set entity_buttons = [
     {
         'label': 'New Stakeholder',
-        'hx_get': '/modals/Stakeholder/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
+        'onclick': 'openNewModal("stakeholder")',
         'icon': plus_icon('w-4 h-4')
     }
 ] %}
@@ -88,6 +86,11 @@
 {% block modals %}
 {{ confirmation_modal('stakeholder-confirmation-modal') }}
 {{ include_common_modals() }}
+
+{# Include stakeholder new modal #}
+{% from "macros/modals/base/generic_new.html" import generic_new_modal %}
+{% from "macros/modals/configs.html" import stakeholder_new_config %}
+{{ generic_new_modal('stakeholder', stakeholder_new_config) }}
 {% endblock %}
 
 {% block data_attributes %}

@@ -82,11 +82,11 @@ def group_companies_by_field(companies, group_by):
         
     elif group_by == "size":
         for company in companies:
-            size = company.size or "Unknown"
+            size = company.size_category or "Unknown"
             grouped[size].append(company)
         
         # Return in size order
-        size_order = ["startup", "small", "medium", "large", "enterprise", "Unknown"]
+        size_order = ["unknown", "small", "medium", "large", "Unknown"]
         result = []
         for size in size_order:
             if grouped[size]:
@@ -199,25 +199,63 @@ def index():
 
     today = date.today()
     
-    # Prepare filter options for the new HTMX controls
-    group_options = [
+    # Prepare filter options for the new HTMX controls (sorted alphabetically)
+    group_options = sorted([
         {'value': 'industry', 'label': 'Industry'},
         {'value': 'size', 'label': 'Company Size'}
-    ]
+    ], key=lambda x: x['label'])
     
-    sort_options = [
+    sort_options = sorted([
         {'value': 'name', 'label': 'Name'},
         {'value': 'industry', 'label': 'Industry'}
-    ]
+    ], key=lambda x: x['label'])
     
-    # Get unique industries from database for filter options
+    # Get unique industries from database for filter options (sorted alphabetically)
     industry_options = []
     industries = db.session.query(Company.industry).distinct().filter(Company.industry.isnot(None)).all()
     for industry_tuple in industries:
         industry = industry_tuple[0]
         if industry:
             industry_options.append({'value': industry, 'label': industry})
+    industry_options = sorted(industry_options, key=lambda x: x['label'])
 
+    # Create dropdown configurations for the new unified system
+    dropdown_configs = {
+        'group_by': {
+            'button_text': 'Group by',
+            'options': group_options,
+            'current_value': group_by,
+            'name': 'group_by',
+            'hx_target': '#company-content',
+            'hx_get': '/companies/content'
+        },
+        'sort_by': {
+            'button_text': 'Sort by',
+            'options': sort_options,
+            'current_value': sort_by,
+            'name': 'sort_by',
+            'hx_target': '#company-content',
+            'hx_get': '/companies/content'
+        },
+        'sort_direction': {
+            'button_text': 'Order',
+            'options': [
+                {'value': 'asc', 'label': 'Ascending'},
+                {'value': 'desc', 'label': 'Descending'}
+            ],
+            'current_value': sort_direction,
+            'name': 'sort_direction',
+            'hx_target': '#company-content',
+            'hx_get': '/companies/content'
+        },
+        'industry_filter': {
+            'button_text': 'All Industries',
+            'options': industry_options,
+            'current_values': primary_filter,
+            'name': 'primary_filter'
+        }
+    }
+    
     return render_template(
         "companies/index.html",
         companies=companies,
@@ -233,7 +271,9 @@ def index():
         primary_filter=primary_filter,
         secondary_filter=secondary_filter,
         entity_filter=entity_filter,
-        # New filter options for HTMX controls
+        # New unified dropdown configurations
+        dropdown_configs=dropdown_configs,
+        # Legacy support - keep for backward compatibility during transition
         group_options=group_options,
         sort_options=sort_options,
         industry_options=industry_options,
@@ -242,11 +282,3 @@ def index():
 
 
 
-@companies_bp.route("/create", methods=["GET", "POST"])
-def create():
-    if request.method == "POST":
-        return company_handler.handle_create(
-            name="name", industry="industry", website="website"
-        )
-
-    return render_template("companies/new.html")

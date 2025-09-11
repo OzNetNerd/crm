@@ -417,7 +417,7 @@ details[open] .details-chevron {
     'complete': 'text-success-hover hover:bg-green-50'
 } -%}
 
-<button @click.stop="{{ action.onclick }}" 
+<button onclick="event.stopPropagation(); {{ action.onclick }}" 
         class="px-2 py-1 rounded text-action-sm transition-colors duration-200 {{ action.get('classes', default_classes.get(action.type, '')) }}" 
         title="{{ action.get('title', action.type.title()) }}">
     {{ action.get('icon', default_icons.get(action.type, ''))|safe }}
@@ -724,50 +724,76 @@ details[open] .details-chevron {
 {% from "macros/base/icons.html" import pencil_icon, trash_icon, check_icon %}
 
 {% if entity_type == 'task' %}
-    <button @click.stop="completeTask({{ entity_id }})" 
+    <button hx-post="/api/tasks/{{ entity_id }}/complete"
+            hx-target="closest(.task-card)"
+            hx-swap="outerHTML"
+            onclick="event.stopPropagation()"
             class="px-2 py-1 rounded text-action-sm transition-colors duration-200 text-success-hover hover:bg-green-50" 
             title="Complete task">
         {{ check_icon("w-4 h-4") }}
     </button>
-    <button @click.stop="editTask({{ entity_id }})" 
+    <button hx-get="/modals/Task/{{ entity_id }}/edit"
+            hx-target="body"
+            hx-swap="beforeend"
+            onclick="event.stopPropagation()"
             class="px-2 py-1 rounded text-action-sm transition-colors duration-200 text-info-hover hover:bg-blue-50" 
             title="Edit task">
         {{ pencil_icon("w-4 h-4") }}
     </button>
-    <button @click.stop="deleteTask({{ entity_id }})" 
+    <button hx-delete="/api/tasks/{{ entity_id }}"
+            hx-confirm="Are you sure you want to delete this task?"
+            hx-target="closest(.task-card)"
+            hx-swap="outerHTML"
+            onclick="event.stopPropagation()"
             class="px-2 py-1 rounded text-action-sm transition-colors duration-200 text-danger-hover hover:bg-red-50" 
             title="Delete task">
         {{ trash_icon("w-4 h-4") }}
     </button>
 
 {% elif entity_type == 'opportunity' %}
-    <button @click.stop="editOpportunity({{ entity_id }})" 
+    <button hx-get="/modals/Opportunity/{{ entity_id }}/edit"
+            hx-target="body"
+            hx-swap="beforeend"
+            onclick="event.stopPropagation()"
             class="px-2 py-1 rounded text-action-sm transition-colors duration-200 text-info-hover hover:bg-blue-50" 
             title="Edit opportunity">
         {{ pencil_icon("w-4 h-4") }}
     </button>
 
 {% elif entity_type == 'contact' or entity_type == 'stakeholder' %}
-    <button @click.stop="openStakeholderModal({{ entity_id }})" 
+    <button hx-get="/modals/Stakeholder/{{ entity_id }}/edit"
+            hx-target="body"
+            hx-swap="beforeend"
+            onclick="event.stopPropagation()"
             class="px-2 py-1 rounded text-action-sm transition-colors duration-200 text-info-hover hover:bg-blue-50" 
             title="Edit {{ entity_type }}">
         {{ pencil_icon("w-4 h-4") }}
     </button>
-    <button @click.stop="deleteStakeholder({{ entity_id }})" 
+    <button hx-delete="/api/stakeholders/{{ entity_id }}"
+            hx-confirm="Are you sure you want to delete this {{ entity_type }}?"
+            hx-target="closest(.stakeholder-card)"
+            hx-swap="outerHTML"
+            onclick="event.stopPropagation()"
             class="px-2 py-1 rounded text-action-sm transition-colors duration-200 text-danger-hover hover:bg-red-50" 
             title="Delete {{ entity_type }}">
         {{ trash_icon("w-4 h-4") }}
     </button>
 
 {% elif entity_type == 'company' %}
-    <button @click.stop="editCompany({{ entity_id }})" 
+    <button hx-get="/modals/Company/{{ entity_id }}/edit"
+            hx-target="body"
+            hx-swap="beforeend"
+            onclick="event.stopPropagation()"
             class="px-2 py-1 rounded text-action-sm transition-colors duration-200 text-info-hover hover:bg-blue-50" 
             title="Edit company">
         {{ pencil_icon("w-4 h-4") }}
     </button>
 
 {% elif entity_type == 'team' %}
-    <button @click.stop="editTeamMember({{ entity_id }})" 
+    <button hx-get="/modals/Team/{{ entity_id }}/edit"
+            hx-target="body"
+            hx-swap="beforeend"
+            onclick="event.stopPropagation()"
             class="px-2 py-1 rounded text-action-sm transition-colors duration-200 text-info-hover hover:bg-blue-50" 
             title="Edit team member">
         {{ pencil_icon("w-4 h-4") }}

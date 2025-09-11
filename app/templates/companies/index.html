@@ -2,7 +2,7 @@
 
 {# Import core components #}
 {% from "macros/base/layout.html" import page_layout %}
-{% from "macros/ui_elements.html" import htmx_enhanced_filter_controls %}
+{% from "macros/ui_elements.html" import htmx_enhanced_filter_controls, config_driven_filter_controls %}
 {% from "macros/base/icons.html" import plus_icon %}
 {% from "macros/imports/universal.html" import include_common_modals %}
 {% from "macros/modals/confirmation.html" import confirmation_modal %}
@@ -49,20 +49,11 @@
 {% call page_layout("Companies", "Manage your company relationships", buttons=entity_buttons, summary_data=entity_stats) %}
 
 <div class="space-y-6">
-    <!-- HTMX Enhanced Filter Controls -->
+    <!-- Config-Driven Filter Controls -->
     <form hx-get="{{ url_for('companies.content') }}" 
           hx-target="#company-content"
           hx-trigger="change, submit">
-        {{ htmx_enhanced_filter_controls(
-            group_options=group_options,
-            sort_options=sort_options,
-            primary_filter_options=industry_options,
-            primary_filter_label='All Industries',
-            primary_filter_values=primary_filter,
-            group_by=group_by,
-            sort_by=sort_by,
-            sort_direction=sort_direction
-        ) }}
+        {{ config_driven_filter_controls(dropdown_configs, expand_collapse_controls=true) }}
     </form>
 
     <!-- Dynamic Content Area -->
