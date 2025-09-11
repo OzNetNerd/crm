@@ -9,11 +9,9 @@
   Usage: Entity templates extend this and define blocks with their config
 #}
 
-{# Universal imports - used by ALL entity pages #}
-{% from "macros/base/layout.html" import page_layout %}
-{% from "macros/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
-{% from "macros/expandable_card.html" import expandable_card %}
-{% from "macros/imports/entity_imports.html" import include_common_modals %}
+{# Universal imports - ALL common imports consolidated #}
+{% from "macros/imports/universal.html" import activate_universal_imports, include_common_modals %}
+{{ activate_universal_imports() }}
 
 {# Entity-specific configuration blocks - each entity overrides these #}
 {% block entity_config %}
@@ -38,28 +36,31 @@
 
 {% call page_layout(entity_name, entity_description, buttons=entity_buttons, summary_data=entity_stats) %}
 
-<div x-data="createEntityManager(get{{ entity_type|title }}Config('{{ today if today else '' }}'))" class="space-y-6">
+<div class="space-y-6">
+    <!-- HTMX Enhanced Filter Controls -->
+    <form hx-get="{{ url_for(entity_type + 's.content') }}" 
+          hx-target="#{{ entity_type }}-content"
+          hx-trigger="change, submit"
+          hx-indicator="#loading-indicator">
+        {{ entity_filter_controls }}
+    </form>
 
-    <!-- Universal Bulk Actions Bar -->
-    {{ bulk_actions_bar(entity_type, entity_type + 's', 
-         {'label': 'Update Status', 'onclick': 'bulkUpdateStatus()', 'color': 'blue'},
-         {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
-
-    <!-- Universal Enhanced Filters -->
-    {{ entity_filter_controls }}
-
-    <!-- Universal Dynamic Entity Section -->
-    <div id="{{ entity_type }}-content">
-        {{ dynamic_entity_section() }}
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="htmx-indicator">
+        <div class="p-4">
+            {{ loading_spinner('lg', 'Loading...') }}
+        </div>
     </div>
 
-    <!-- Universal Entity Cards Cache -->
-    <div style="display: none;" id="{{ entity_type }}-cards-cache">
-        {% block entity_cards %}
-        {# Each entity renders their cards here using expandable_card() #}
-        {% endblock %}
+    <!-- Dynamic Content Area -->
+    <div id="{{ entity_type }}-content" 
+         hx-get="{{ url_for(entity_type + 's.content') }}?{{ request.query_string.decode('utf-8') }}"
+         hx-trigger="load">
+        <!-- Content will be loaded here via HTMX -->
+        <div class="p-8">
+            {{ loading_spinner('lg', 'Loading ' + entity_type + 's...') }}
+        </div>
     </div>
-
 </div>
 
 {% endcall %}
@@ -78,10 +79,8 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>
+<!-- Modal functionality now handled by HTMX -->
 {% block entity_scripts %}
-{# Each entity includes their specific JS here #}
+{# Each entity can include their specific JS here if needed #}
 {% endblock %}
 {% endblock %}
