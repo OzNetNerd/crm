@@ -86,10 +86,6 @@ def index():
     )
 
 
-@opportunities_bp.route("/<int:opportunity_id>")
-def show(opportunity_id):
-    opportunity = Opportunity.query.get_or_404(opportunity_id)
-    return render_template("opportunities/detail.html", opportunity=opportunity)
 
 
 
