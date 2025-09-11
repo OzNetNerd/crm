@@ -109,7 +109,28 @@
 {% endmacro %}
 
 {#
-  Expand/Collapse Controls - Standardized section expansion controls
+  CSS Expand/Collapse Controls - Pure CSS/vanilla JS controls for details elements
+  
+  Parameters:
+  - data_group (optional): Group identifier for targeting specific details elements
+  - additional_classes (optional): Extra CSS classes for the container
+  
+  Usage:
+  {{ css_expand_collapse_controls() }}
+  {{ css_expand_collapse_controls('tasks', 'ml-4') }}
+#}
+{% macro css_expand_collapse_controls(data_group='', additional_classes='') %}
+<div class="flex items-center gap-4 border-l pl-4 {{ additional_classes }}">
+    <button onclick="document.querySelectorAll('details{% if data_group %}[data-group=&quot;{{ data_group }}&quot;]{% endif %}').forEach(d => d.open = true)"
+            class="text-secondary-dark hover:text-gray-900">Expand All</button>
+    <div class="border-l border-gray-300 h-5"></div>
+    <button onclick="document.querySelectorAll('details{% if data_group %}[data-group=&quot;{{ data_group }}&quot;]{% endif %}').forEach(d => d.open = false)"
+            class="text-secondary-dark hover:text-gray-900">Collapse All</button>
+</div>
+{% endmacro %}
+
+{#
+  Expand/Collapse Controls - Legacy Alpine.js version kept for compatibility
   
   Parameters:
   - target_sections (required): Alpine.js data object name containing section states
@@ -120,13 +141,63 @@
   {{ expand_collapse_controls('sectionStates', 'ml-4') }}
 #}
 {% macro expand_collapse_controls(target_sections, additional_classes='') %}
-<div class="flex items-center gap-4 border-l pl-4 {{ additional_classes }}">
-    <button @click="Object.keys({{ target_sections }}).forEach(key => {{ target_sections }}[key] = true)"
-            class="text-secondary-dark hover:text-gray-900">Expand All</button>
-    <div class="border-l border-gray-300 h-5"></div>
-    <button @click="Object.keys({{ target_sections }}).forEach(key => {{ target_sections }}[key] = false)"
-            class="text-secondary-dark hover:text-gray-900">Collapse All</button>
-</div>
+{{ css_expand_collapse_controls('', additional_classes) }}
+{% endmacro %}
+
+{#
+  CSS Details Section - Native HTML details/summary expandable section
+  
+  Replaces Alpine.js x-show sections with native HTML details elements.
+  Styled to match existing card appearance.
+  
+  Parameters:
+  - section_key (required): Unique key for the section and data-group attribute
+  - title (required): Display title for the section
+  - icon_html (required): HTML for the icon (use icon macros)
+  - badge_html (required): HTML for the count badge
+  - border_color (required): Border color class name (e.g., 'blue', 'red')
+  - bg_color (required): Background color class name
+  - hover_color (required): Hover background color class name
+  - text_class (required): Text styling class
+  - open_by_default (optional): Whether section starts open (default: false)
+  - card_class (optional): CSS class for the container (default: 'card')
+  
+  Usage:
+  {% call css_details_section('todo', 'To Do', clipboard_icon("w-5 h-5 mr-1"), '<span class="badge-blue">5</span>', 'blue', 'blue', 'blue', 'text-status-header') %}
+    <!-- Section content here -->
+  {% endcall %}
+#}
+{% macro css_details_section(section_key, title, icon_html, badge_html, border_color, bg_color, hover_color, text_class, open_by_default=false, card_class='card') %}
+<details data-group="{{ section_key }}" class="{{ card_class }}" {% if open_by_default %}open{% endif %}>
+    <summary class="border-b border-{{ border_color }}-200 px-6 py-4 bg-{{ bg_color }}-50 cursor-pointer hover:bg-{{ hover_color }}-100 list-none">
+        <div class="flex items-center justify-between">
+            <h3 class="{{ text_class }}">
+                <span class="mr-2 transition-transform duration-200 inline-block details-chevron">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </span>{{ icon_html|safe }} {{ title }}{{ badge_html|safe }}
+            </h3>
+        </div>
+    </summary>
+    <div class="p-6">
+        {{ caller() }}
+    </div>
+</details>
+
+<style>
+/* CSS for details chevron rotation */
+details[open] .details-chevron {
+    transform: rotate(90deg);
+}
+/* Remove default details marker */
+details > summary {
+    list-style: none;
+}
+details > summary::-webkit-details-marker {
+    display: none;
+}
+</style>
 {% endmacro %}
 
 {#
@@ -1133,7 +1204,7 @@
                 <span class="text-secondary-dark">{{ show_completed_label }}</span>
             </label>
 
-            {{ expand_collapse_controls('expandedSections') }}
+            {{ css_expand_collapse_controls() }}
         </div>
     </div>
 </div>
@@ -1314,13 +1385,7 @@
             </label>
             {% endif %}
 
-            <div class="flex items-center gap-4 border-l pl-4">
-                <button type="button" onclick="document.querySelectorAll('[x-show]').forEach(el => el.__x.$data.expandedSections && Object.keys(el.__x.$data.expandedSections).forEach(key => el.__x.$data.expandedSections[key] = true))"
-                        class="text-secondary-dark hover:text-gray-900">Expand All</button>
-                <div class="border-l border-gray-300 h-5"></div>
-                <button type="button" onclick="document.querySelectorAll('[x-show]').forEach(el => el.__x.$data.expandedSections && Object.keys(el.__x.$data.expandedSections).forEach(key => el.__x.$data.expandedSections[key] = false))"
-                        class="text-secondary-dark hover:text-gray-900">Collapse All</button>
-            </div>
+            {{ css_expand_collapse_controls() }}
         </div>
     </div>
 </div>

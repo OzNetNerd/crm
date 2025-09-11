@@ -2,7 +2,7 @@
 
 {# Import core components #}
 {% from "macros/base/layout.html" import page_layout %}
-{% from "macros/ui_elements.html" import htmx_enhanced_filter_controls, loading_spinner %}
+{% from "macros/ui_elements.html" import htmx_enhanced_filter_controls %}
 {% from "macros/base/icons.html" import plus_icon %}
 {% from "macros/imports/universal.html" import include_common_modals %}
 {% from "macros/modals/confirmation.html" import confirmation_modal %}
@@ -52,8 +52,7 @@
     <!-- HTMX Enhanced Filter Controls -->
     <form hx-get="{{ url_for('companies.content') }}" 
           hx-target="#company-content"
-          hx-trigger="change, submit"
-          hx-indicator="#loading-indicator">
+          hx-trigger="change, submit">
         {{ htmx_enhanced_filter_controls(
             group_options=group_options,
             sort_options=sort_options,
@@ -66,20 +65,13 @@
         ) }}
     </form>
 
-    <!-- Loading Indicator -->
-    <div id="loading-indicator" class="htmx-indicator">
-        <div class="p-4">
-            {{ loading_spinner('lg', 'Loading...') }}
-        </div>
-    </div>
-
     <!-- Dynamic Content Area -->
     <div id="company-content" 
          hx-get="{{ url_for('companies.content') }}?{{ request.query_string.decode('utf-8') }}"
          hx-trigger="load">
         <!-- Content will be loaded here via HTMX -->
         <div class="p-8">
-            {{ loading_spinner('lg', 'Loading companies...') }}
+            <p class="text-center text-gray-500">Loading companies...</p>
         </div>
     </div>
 </div>

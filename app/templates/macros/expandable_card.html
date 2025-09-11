@@ -45,6 +45,158 @@
 {% from "macros/ui_elements.html" import bulk_selection_checkbox, pluralized_count %}
 {% from "macros/ui/progress.html" import progress_bar %}
 
+{#
+  CSS Expandable Card - Pure CSS/HTML version using details/summary
+  
+  Replaces Alpine.js x-data with native HTML details element.
+  Maintains existing styling and functionality but eliminates JavaScript dependency.
+  
+  Parameters: Same as expandable_card but uses details/summary for expansion
+  
+  Usage:
+  {{ css_expandable_card('task', task, task.id, 
+       title_content=task.title,
+       metadata_content=task_metadata_content(task),
+       action_buttons=task_action_buttons(task.id)) }}
+#}
+{% macro css_expandable_card(card_type, entity, entity_id, expansion_enabled=true, progress_config=none, bulk_selection_enabled=true, group_key='', card_classes='', field_config={}, badge_content='', title_content='', value_content='', secondary_info='', metadata_content='', action_buttons='', expanded_content='') %}
+{%- set base_classes = card_type + '-card card-padded relative mb-3' -%}
+{%- set color_classes = {
+    'task': 'ring-2 ring-gray-200 bg-gray-50',
+    'opportunity': 'ring-2 ring-blue-200 bg-blue-50',
+    'contact': 'ring-2 ring-green-200 bg-green-50',
+    'stakeholder': 'ring-2 ring-green-200 bg-green-50',
+    'company': 'ring-2 ring-blue-200 bg-blue-50'
+} -%}
+
+{% if expansion_enabled %}
+<details class="{{ base_classes }} {{ color_classes.get(card_type, '') }} {{ card_classes }}" 
+         data-{{ card_type }}-id="{{ entity_id }}" 
+         {% if group_key %}data-group="{{ group_key }}"{% endif %}>
+    <summary class="cursor-pointer list-none flex items-center justify-between">
+        <!-- Remove default details marker -->
+        <div class="flex-1 flex items-center justify-between">
+            <!-- Left side content -->
+            <div class="flex items-center space-x-3">
+                {% if bulk_selection_enabled %}
+                {{ bulk_selection_checkbox(entity_id) }}
+                {% endif %}
+                
+                <div class="flex-1">
+                    <!-- Badge content -->
+                    {% if badge_content %}
+                    <div class="mb-1">{{ badge_content|safe }}</div>
+                    {% endif %}
+                    
+                    <!-- Title and Value -->
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-medium text-gray-900">{{ title_content|safe }}</h3>
+                        {% if value_content %}
+                        <span class="text-lg font-semibold text-gray-700">{{ value_content|safe }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Secondary info -->
+                    {% if secondary_info %}
+                    <div class="mt-1">{{ secondary_info|safe }}</div>
+                    {% endif %}
+                    
+                    <!-- Progress bar -->
+                    {% if progress_config and progress_config.enabled %}
+                    <div class="mt-2">
+                        {{ progress_bar(progress_config.value, progress_config.max_value or 100, progress_config.color_scheme or 'blue', progress_config.label) }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Metadata -->
+                    {% if metadata_content %}
+                    <div class="mt-2 text-sm text-gray-500">{{ metadata_content|safe }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Right side actions -->
+            {% if action_buttons %}
+            <div class="flex items-center space-x-2">{{ action_buttons|safe }}</div>
+            {% endif %}
+            
+            <!-- Expand chevron -->
+            <div class="ml-4 transition-transform duration-200 details-chevron">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </div>
+        </div>
+    </summary>
+    
+    <!-- Expanded content -->
+    {% if expanded_content or caller %}
+    <div class="mt-4 pt-4 border-t border-gray-200">
+        {% if expanded_content %}
+        {{ expanded_content|safe }}
+        {% endif %}
+        {% if caller %}
+        {{ caller() }}
+        {% endif %}
+    </div>
+    {% endif %}
+</details>
+{% else %}
+<!-- Non-expandable version -->
+<div class="{{ base_classes }} {{ color_classes.get(card_type, '') }} {{ card_classes }}" data-{{ card_type }}-id="{{ entity_id }}">
+    <div class="flex items-center justify-between">
+        <!-- Content same as summary above but without expansion controls -->
+        <div class="flex items-center space-x-3 flex-1">
+            {% if bulk_selection_enabled %}
+            {{ bulk_selection_checkbox(entity_id) }}
+            {% endif %}
+            
+            <div class="flex-1">
+                {% if badge_content %}
+                <div class="mb-1">{{ badge_content|safe }}</div>
+                {% endif %}
+                
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-gray-900">{{ title_content|safe }}</h3>
+                    {% if value_content %}
+                    <span class="text-lg font-semibold text-gray-700">{{ value_content|safe }}</span>
+                    {% endif %}
+                </div>
+                
+                {% if secondary_info %}
+                <div class="mt-1">{{ secondary_info|safe }}</div>
+                {% endif %}
+                
+                {% if progress_config and progress_config.enabled %}
+                <div class="mt-2">
+                    {{ progress_bar(progress_config.value, progress_config.max_value or 100, progress_config.color_scheme or 'blue', progress_config.label) }}
+                </div>
+                {% endif %}
+                
+                {% if metadata_content %}
+                <div class="mt-2 text-sm text-gray-500">{{ metadata_content|safe }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if action_buttons %}
+        <div class="flex items-center space-x-2">{{ action_buttons|safe }}</div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<style>
+/* CSS for details chevron rotation in cards */
+details[data-{{ card_type }}-id] summary::-webkit-details-marker {
+    display: none;
+}
+details[data-{{ card_type }}-id][open] .details-chevron {
+    transform: rotate(180deg);
+}
+</style>
+{% endmacro %}
+
 
 {#
   Universal Field Renderer - Simplified approach for now

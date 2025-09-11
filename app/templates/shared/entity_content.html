@@ -1,14 +1,8 @@
 {# Universal HTMX Content Partial - Works for ALL entities using model metadata #}
-{% from "macros/expandable_card.html" import expandable_card, action_buttons_row %}
+{% from "macros/expandable_card.html" import css_expandable_card, action_buttons_row %}
 
-{# Alpine.js data for expand/collapse state only #}
-<div x-data="{ 
-    expandedSections: {
-        {% for group in grouped_entities %}
-        '{{ group.key }}': true{% if not loop.last %},{% endif %}
-        {% endfor %}
-    }
-}" class="space-y-4">
+{# Pure CSS/HTML version - no Alpine.js needed #}
+<div class="space-y-4">
 
     {# Show total count #}
     {% if total_count > 0 %}
@@ -17,44 +11,33 @@
         </div>
     {% endif %}
 
-    {# Render grouped entities #}
+    {# Render grouped entities using CSS details/summary #}
     {% for group in grouped_entities %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            {# Group Header #}
-            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+        <details class="bg-white rounded-lg shadow-sm border border-gray-200" data-group="{{ group.key }}" open>
+            <summary class="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg cursor-pointer list-none">
                 <div class="flex items-center justify-between">
                     <h3 class="font-medium text-gray-900 flex items-center">
-                        <button @click="expandedSections['{{ group.key }}'] = !expandedSections['{{ group.key }}']" 
-                                class="mr-2 text-gray-400 hover:text-gray-600">
-                            <svg class="w-5 h-5 transition-transform duration-200" 
-                                 :class="expandedSections['{{ group.key }}'] ? 'rotate-90' : ''" 
-                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span class="mr-2 text-gray-400 hover:text-gray-600 transition-transform duration-200 details-chevron">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
-                        </button>
+                        </span>
                         {{ group.label }}
                         <span class="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
                             {{ group.count }}
                         </span>
                     </h3>
                 </div>
-            </div>
+            </summary>
             
             {# Group Content #}
-            <div x-show="expandedSections['{{ group.key }}']" 
-                 x-transition:enter="transition-all duration-200 ease-out"
-                 x-transition:enter-start="opacity-0 max-h-0"
-                 x-transition:enter-end="opacity-100 max-h-screen"
-                 x-transition:leave="transition-all duration-200 ease-in"
-                 x-transition:leave-start="opacity-100 max-h-screen"
-                 x-transition:leave-end="opacity-0 max-h-0"
-                 class="divide-y divide-gray-200 overflow-hidden">
+            <div class="divide-y divide-gray-200">
                 
                 {% for entity in group.entities %}
                     {# Handle special task logic for parent/child relationships #}
                     {% if entity_type == 'task' and entity.task_type != 'child' %}
                         <div class="p-4">
-                            {{ expandable_card(entity_type, entity, entity.id,
+                            {{ css_expandable_card(entity_type, entity, entity.id,
                                 expansion_enabled=true,
                                 field_config=card_config,
                                 action_buttons=action_buttons_row(entity_type, entity.id)) }}
@@ -64,7 +47,7 @@
                                 <div class="ml-8 mt-4 space-y-2 border-l-2 border-gray-200 pl-4">
                                     {% for child_task in entity.child_tasks %}
                                         <div class="bg-gray-50 rounded-md p-3">
-                                            {{ expandable_card(entity_type, child_task, child_task.id,
+                                            {{ css_expandable_card(entity_type, child_task, child_task.id,
                                                 expansion_enabled=true,
                                                 field_config=card_config,
                                                 action_buttons=action_buttons_row(entity_type, child_task.id)) }}
@@ -75,7 +58,7 @@
                         </div>
                     {% elif entity_type != 'task' or entity.task_type != 'child' %}
                         <div class="p-4">
-                            {{ expandable_card(entity_type, entity, entity.id,
+                            {{ css_expandable_card(entity_type, entity, entity.id,
                                 expansion_enabled=true,
                                 field_config=card_config,
                                 action_buttons=action_buttons_row(entity_type, entity.id)) }}
@@ -89,7 +72,7 @@
                     </div>
                 {% endif %}
             </div>
-        </div>
+        </details>
     {% endfor %}
 
     {# No results message #}
@@ -117,3 +100,13 @@
     {% endif %}
 
 </div>
+
+<style>
+/* CSS for details chevron rotation in entity groups */
+details[data-group] summary::-webkit-details-marker {
+    display: none;
+}
+details[data-group][open] .details-chevron {
+    transform: rotate(90deg);
+}
+</style>
