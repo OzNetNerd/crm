@@ -1,0 +1,140 @@
+{% from 'macros/base/icons.html' import icon %}
+{# Utility Components - General purpose UI utilities and helpers #}
+
+{#
+  Empty State - Consistent empty state display
+  
+  Parameters:
+  - title (required): Empty state title
+  - description (optional): Empty state description
+  - action_button (optional): HTML for action button
+  - icon (optional): Custom icon HTML
+  
+  Usage:
+  {{ empty_state('No companies found', 'Get started by adding your first company', '<button>Add Company</button>') }}
+#}
+{% macro empty_state(title, description='', action_button='', icon='') %}
+<div class="text-center py-12">
+    {% if icon %}
+    <div class="mx-auto h-12 w-12 text-gray-400 mb-4">
+        {{ icon|safe }}
+    </div>
+    {% else %}
+    {{ icon('document', 'xl', 'mx-auto text-gray-400 mb-4') }}
+    {% endif %}
+    
+    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ title }}</h3>
+    
+    {% if description %}
+    <p class="text-gray-500 mb-6">{{ description }}</p>
+    {% endif %}
+    
+    {% if action_button %}
+    {{ action_button|safe }}
+    {% endif %}
+</div>
+{% endmacro %}
+
+{#
+  Loading Spinner - Consistent loading indicator
+  
+  Parameters:
+  - size (optional): Size class ('sm', 'md', 'lg')
+  - text (optional): Loading text to display
+  
+  Usage:
+  {{ loading_spinner('md', 'Loading companies...') }}
+#}
+{% macro loading_spinner(size='md', text='') %}
+{%- set size_classes = {'sm': 'h-4 w-4', 'md': 'h-6 w-6', 'lg': 'h-8 w-8'} -%}
+<div class="flex items-center justify-center space-x-2">
+    {{ icon('spinner', size or 'md', 'animate-spin text-blue-600') }}
+    {% if text %}
+    <span class="text-sm text-gray-600">{{ text }}</span>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{#
+  Entity Link Button - Standardized link button for entity detail pages
+  
+  Parameters:
+  - url (required): URL to navigate to
+  - text (optional): Button text (default: 'View Details')
+  - classes (optional): CSS classes for styling
+  
+  Usage:
+  {{ entity_link_button(url_for('companies.detail', company_id=company.id)) }}
+  {{ entity_link_button('/contacts/' + contact.id|string, 'View Stakeholder') }}
+#}
+{% macro entity_link_button(url, text='View Details', classes='mt-3 block w-full text-center bg-gray-50 text-gray-700 py-2 rounded-md hover:bg-gray-100') %}
+<a href="{{ url }}" class="{{ classes }}">{{ text }}</a>
+{% endmacro %}
+
+{#
+  Generic Bulk Actions Bar
+  
+  Displays a blue banner when items are selected for bulk operations.
+  Customizable for different entity types and actions.
+  
+  Parameters:
+  - entity_type: Singular name of entity type (e.g., 'task', 'opportunity')
+  - entity_plural: Plural name for display (e.g., 'tasks', 'opportunities')  
+  - primary_action: Primary bulk action config {label, onclick, color}
+  - secondary_action: Secondary bulk action config {label, onclick, color}
+  
+  Usage:
+  {{ bulk_actions_bar('task', 'tasks', 
+       {'label': 'Update Status', 'onclick': 'bulkUpdateStatus()', 'color': 'blue'},
+       {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
+#}
+{% macro bulk_actions_bar(entity_type, entity_plural, primary_action, secondary_action) %}
+<div id="bulk-actions-bar" 
+     style="display: none;" 
+     class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+    <div class="flex items-center space-x-4">
+        <span class="text-blue-800 font-medium" id="selected-count">0 {{ entity_plural }} selected</span>
+        
+        {% if primary_action %}
+        <button hx-post="{{ primary_action.url if primary_action.url else '#' }}" 
+                hx-include="[name='selected_items']:checked"
+                class="bg-{{ primary_action.color }}-600 text-white px-3 py-1.5 rounded text-sm hover:bg-{{ primary_action.color }}-700">
+            {{ primary_action.label }}
+        </button>
+        {% endif %}
+        
+        {% if secondary_action %}
+        <button hx-post="{{ secondary_action.url if secondary_action.url else '#' }}" 
+                hx-include="[name='selected_items']:checked"
+                class="bg-{{ secondary_action.color }}-600 text-white px-3 py-1.5 rounded text-sm hover:bg-{{ secondary_action.color }}-700">
+            {{ secondary_action.label }}
+        </button>
+        {% endif %}
+    </div>
+    
+    <button onclick="clearSelection()" class="text-blue-600 hover:text-blue-800">
+        {{ icon('x-mark', 'md') }}
+    </button>
+</div>
+{% endmacro %}
+
+{#
+  CSS Expand/Collapse Controls - Pure CSS/vanilla JS controls for details elements
+  
+  Parameters:
+  - data_group (optional): Group identifier for targeting specific details elements
+  - additional_classes (optional): Extra CSS classes for the container
+  
+  Usage:
+  {{ css_expand_collapse_controls() }}
+  {{ css_expand_collapse_controls('tasks', 'ml-4') }}
+#}
+{% macro css_expand_collapse_controls(data_group='', additional_classes='') %}
+<div class="flex items-center gap-4 border-l pl-4 {{ additional_classes }}">
+    <button onclick="document.querySelectorAll('details{% if data_group %}[data-group=\"{{ data_group }}\"]{% endif %}').forEach(d => d.open = true)"
+            class="text-secondary-dark hover:text-gray-900">Expand All</button>
+    <div class="border-l border-gray-300 h-5"></div>
+    <button onclick="document.querySelectorAll('details{% if data_group %}[data-group=\"{{ data_group }}\"]{% endif %}').forEach(d => d.open = false)"
+            class="text-secondary-dark hover:text-gray-900">Collapse All</button>
+</div>
+{% endmacro %}
