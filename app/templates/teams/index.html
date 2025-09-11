@@ -1,18 +1,16 @@
 {% extends "base/layout.html" %}
 
+{# Import core components #}
 {% from "macros/base/layout.html" import page_layout %}
 {% from "macros/ui_elements.html" import enhanced_filter_controls, dynamic_entity_section, bulk_actions_bar %}
 {% from "macros/expandable_card.html" import expandable_card, team_header_content, team_title_content, team_metadata_content, action_buttons_row %}
-{% from "macros/imports/entity_imports.html" import include_common_modals %}
 {% from "macros/base/icons.html" import plus_icon %}
+{% from "macros/imports/universal.html" import include_common_modals %}
+{% from "macros/modals/confirmation.html" import confirmation_modal %}
 
 {% block title %}Account Teams - CRM{% endblock %}
 
 {% block content %}
-{% set entity_name = "Account Teams" %}
-{% set entity_description = "Manage your account team members" %}
-{% set entity_type = "team" %}
-
 {% set entity_stats = {
     'title': 'Account Team Overview',
     'stats': [
@@ -50,46 +48,31 @@
     }
 ] %}
 
-{% set entity_filter_controls %}
-{{ enhanced_filter_controls(
-    group_options=get_groupable_fields(User),
-    sort_options=get_sortable_fields(User),
-    show_completed_label='Show All',
-    show_completed_name='show_all',
-    primary_filter_options=get_field_options(User, 'job_title'),
-    primary_filter_label='All Roles'
-) }}
-{% endset %}
+{% call page_layout("Account Teams", "Manage your account team members", buttons=entity_buttons, summary_data=entity_stats) %}
 
-{% set entity_buttons = [
-    {
-        'label': 'New Team Member',
-        'hx_get': '/modals/TeamMember/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'color': 'blue',
-        'icon': plus_icon('w-4 h-4')
-    }
-] %}
-
-{% call page_layout(entity_name, entity_description, buttons=entity_buttons, summary_data=entity_stats) %}
-
-<div x-data="createEntityManager(get{{ entity_type|title }}Config('{{ today if today else '' }}'))" class="space-y-6">
+<div x-data="createEntityManager(getTeamConfig('{{ today if today else '' }}'))" class="space-y-6">
 
     <!-- Bulk Actions Bar -->
-    {{ bulk_actions_bar(entity_type, entity_type + 's', 
+    {{ bulk_actions_bar('team', 'teams', 
          {'label': 'Delete Selected', 'onclick': 'bulkDelete()', 'color': 'red'}) }}
 
     <!-- Enhanced Filters -->
-    {{ entity_filter_controls }}
+    {{ enhanced_filter_controls(
+        group_options=get_groupable_fields(User),
+        sort_options=get_sortable_fields(User),
+        show_completed_label='Show All',
+        show_completed_name='show_all',
+        primary_filter_options=get_field_options(User, 'job_title'),
+        primary_filter_label='All Roles'
+    ) }}
 
     <!-- Dynamic Entity Section -->
-    <div id="{{ entity_type }}-content">
+    <div id="team-content">
         {{ dynamic_entity_section() }}
     </div>
 
     <!-- Entity Cards Cache -->
-    <div style="display: none;" id="{{ entity_type }}-cards-cache">
+    <div style="display: none;" id="team-cards-cache">
 {% for member in team_members %}
     <div id="team-card-{{ member.id }}">
         {{ expandable_card('team', member, member.id,
@@ -108,7 +91,6 @@
 {% endblock %}
 
 {% block modals %}
-{% from "macros/modals/confirmation.html" import confirmation_modal %}
 {{ confirmation_modal('team-confirmation-modal') }}
 {{ include_common_modals() }}
 {% endblock %}
@@ -120,6 +102,7 @@ data-opportunities="{{ opportunities | tojson | forceescape }}"
 {% endblock %}
 
 {% block scripts %}
+{# Teams requires specific JavaScript functionality #}
 <script src="{{ url_for('static', filename='js/features/dashboard/dashboard.js') }}"></script>
 <script src="{{ url_for('static', filename='js/core/entity-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/core/entity-configs.js') }}"></script>

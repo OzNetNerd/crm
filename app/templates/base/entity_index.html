@@ -10,8 +10,13 @@
 #}
 
 {# Universal imports - ALL common imports consolidated #}
-{% from "macros/imports/universal.html" import activate_universal_imports, include_common_modals %}
-{{ activate_universal_imports() }}
+{% from "macros/imports/universal.html" import include_common_modals %}
+
+{# Import all the core components that every entity needs #}
+{% from "macros/base/layout.html" import page_layout %}
+{% from "macros/ui_elements.html" import htmx_enhanced_filter_controls, loading_spinner %}
+{% from "macros/base/icons.html" import plus_icon %}
+{% from "macros/modals/confirmation.html" import confirmation_modal %}
 
 {# Entity-specific configuration blocks - each entity overrides these #}
 {% block entity_config %}
