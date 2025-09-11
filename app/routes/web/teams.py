@@ -122,13 +122,33 @@ def index():
         'name': 'job_title_filter'
     }
 
+    # Entity buttons for header actions
+    entity_buttons = [
+        {
+            'label': 'New Team Member',
+            'onclick': 'openNewTeamMemberModal()',
+            'icon': 'plus',
+            'classes': 'btn-primary'
+        }
+    ]
+    
+    # Team member stats for overview
+    entity_stats = {
+        'Total Team Members': len(team_members),
+        'Active Assignments': sum(len(member.get_company_assignments()) + len(member.get_opportunity_assignments()) for member in team_members),
+        'Companies Covered': len(companies_data),
+        'Opportunities Managed': len(opportunities_data)
+    }
+
     return render_template(
-        "teams/index.html",
+        "base/entity_index.html",
         entity_name="Account Teams",
         entity_description="Manage team members and assignments",
         entity_type="team", 
         entity_endpoint="teams",
         dropdown_configs=dropdown_configs,
+        entity_buttons=entity_buttons,
+        entity_stats=entity_stats,
         team_members=team_members,
         team_data=team_data,
     )

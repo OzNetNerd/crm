@@ -1,0 +1,192 @@
+<!-- Chat Widget Component for CRM -->
+<div id="chat-widget" class="fixed bottom-4 right-4 z-50">
+    <!-- Chat Toggle Button -->
+    <button 
+        onclick="toggleChat()" 
+        id="chat-toggle-btn"
+        class="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transition-all duration-200"
+    >
+        <span id="chat-icon" class="text-2xl">💬</span>
+    </button>
+    
+    <!-- Chat Panel -->
+    <div 
+        id="chat-panel"
+        class="absolute bottom-20 right-0 w-80 h-96 bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col hidden"
+    >
+        <!-- Chat Header -->
+        <div class="bg-blue-500 text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
+            <h3 class="font-semibold">CRM Assistant</h3>
+            <div class="flex items-center space-x-2">
+                <span 
+                    id="connection-indicator"
+                    class="w-2 h-2 rounded-full bg-red-400"
+                ></span>
+                <span id="connection-status" class="text-xs">disconnected</span>
+            </div>
+        </div>
+        
+        <!-- Messages Area -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3">
+            <!-- Welcome Message -->
+            <div id="welcome-message" class="text-gray-500 text-sm text-center py-8">
+                <div class="text-2xl mb-2">🤖</div>
+                <p>Hello! I'm your CRM assistant.</p>
+                <p class="mt-1">Ask me about your companies, contacts, tasks, or meetings!</p>
+            </div>
+        </div>
+        
+        <!-- Input Area -->
+        <div class="border-t border-gray-200 p-4">
+            <form onsubmit="sendMessage(event)" class="flex space-x-2">
+                <input 
+                    type="text" 
+                    id="chat-input"
+                    placeholder="Type your message..."
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled
+                >
+                <button 
+                    type="submit"
+                    id="send-button"
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 disabled:bg-gray-300"
+                    disabled
+                >
+                    Send
+                </button>
+            </form>
+            
+            <!-- Connection Status Message -->
+            <div id="connection-message" class="mt-2 text-xs text-center">
+                <span class="text-red-600">
+                    Connection lost. 
+                    <button onclick="reconnect()" class="underline hover:no-underline">Reconnect</button>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let ws = null;
+let chatOpen = false;
+let messages = [];
+
+function toggleChat() {
+    const panel = document.getElementById('chat-panel');
+    const icon = document.getElementById('chat-icon');
+    const btn = document.getElementById('chat-toggle-btn');
+    
+    chatOpen = !chatOpen;
+    
+    if (chatOpen) {
+        panel.classList.remove('hidden');
+        icon.textContent = '✕';
+        btn.classList.add('scale-110');
+        connectWebSocket();
+    } else {
+        panel.classList.add('hidden');
+        icon.textContent = '💬';
+        btn.classList.remove('scale-110');
+        if (ws) {
+            ws.close();
+        }
+    }
+}
+
+function connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${protocol}//localhost:8023/ws/chat`);
+    
+    updateConnectionStatus('connecting');
+    
+    ws.onopen = function() {
+        updateConnectionStatus('connected');
+    };
+    
+    ws.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        addMessage('assistant', data.response);
+    };
+    
+    ws.onclose = function() {
+        updateConnectionStatus('disconnected');
+    };
+    
+    ws.onerror = function() {
+        updateConnectionStatus('disconnected');
+    };
+}
+
+function updateConnectionStatus(status) {
+    const indicator = document.getElementById('connection-indicator');
+    const statusText = document.getElementById('connection-status');
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-button');
+    const message = document.getElementById('connection-message');
+    
+    indicator.className = `w-2 h-2 rounded-full ${
+        status === 'connected' ? 'bg-green-400' : 
+        status === 'connecting' ? 'bg-yellow-400' : 'bg-red-400'
+    }`;
+    statusText.textContent = status;
+    
+    if (status === 'connected') {
+        input.disabled = false;
+        sendBtn.disabled = false;
+        message.style.display = 'none';
+    } else {
+        input.disabled = true;
+        sendBtn.disabled = true;
+        message.style.display = status === 'connecting' ? 'none' : 'block';
+    }
+}
+
+function sendMessage(event) {
+    event.preventDefault();
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    
+    if (!message || !ws || ws.readyState !== WebSocket.OPEN) return;
+    
+    addMessage('user', message);
+    ws.send(JSON.stringify({ message: message }));
+    input.value = '';
+}
+
+function addMessage(type, content) {
+    const messagesContainer = document.getElementById('chat-messages');
+    const welcomeMessage = document.getElementById('welcome-message');
+    
+    if (messages.length === 0) {
+        welcomeMessage.style.display = 'none';
+    }
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'}`;
+    
+    messageDiv.innerHTML = `
+        <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg text-sm ${
+            type === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'
+        }">
+            <p>${content}</p>
+            <div class="text-xs mt-1 opacity-70">${formatTime(new Date())}</div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    messages.push({ type, content, timestamp: new Date() });
+}
+
+function formatTime(date) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function reconnect() {
+    if (chatOpen) {
+        connectWebSocket();
+    }
+}
+</script>
