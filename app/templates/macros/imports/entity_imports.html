@@ -1,7 +1,7 @@
 {# Smart Entity Imports System - DRY consolidation with entity-specific customization #}
 
 {# Import all common icons - make them available in current template context #}
-{% from "macros/icons.html" import 
+{% from "macros/base/icons.html" import 
     building_office_icon,
     user_icon,
     chevron_right_icon,
@@ -38,7 +38,7 @@
 %}
 
 {# Import page layout component #}
-{% from "macros/page_template.html" import page_layout %}
+{% from "macros/base/layout.html" import page_layout %}
 
 {# 
 Main macro to set up entity-specific imports for index templates

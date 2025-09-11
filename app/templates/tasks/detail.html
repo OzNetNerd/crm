@@ -1,6 +1,6 @@
 {% extends "base/layout.html" %}
-{% from "macros/page_template.html" import page_layout %}
-{% from "macros/icons.html" import pencil_icon, arrow_left_icon %}
+{% from "macros/base/layout.html" import page_layout %}
+{% from "macros/base/icons.html" import pencil_icon, arrow_left_icon %}
 
 {% block title %}{{ task.description[:50] }}... - Tasks - CRM{% endblock %}
 

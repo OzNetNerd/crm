@@ -43,7 +43,7 @@
        expanded_content=opportunity_expanded_content(opportunity)) }}
 #}
 {% from "macros/ui_elements.html" import bulk_selection_checkbox, pluralized_count %}
-{% from "macros/progress_bar.html" import progress_bar %}
+{% from "macros/ui/progress.html" import progress_bar %}
 
 
 {#
@@ -478,7 +478,7 @@
      ]) }}
 #}
 {% macro action_buttons_row(entity_type, entity_id, actions=none, disabled_condition='') %}
-{% from "macros/icons.html" import pencil_icon, trash_icon, check_icon %}
+{% from "macros/base/icons.html" import pencil_icon, trash_icon, check_icon %}
 
 {%- set default_actions = {
     'task': [

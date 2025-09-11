@@ -60,7 +60,7 @@
     {% block modals %}{% endblock %}
     
     <!-- Chat Widget -->
-    {% include 'macros/chat_widget.html' %}
+    {% include 'macros/widgets/chat.html' %}
     
     <!-- Data container for clean server-to-client data passing -->
     <div id="app-data" style="display: none;"
@@ -71,7 +71,7 @@
     <script src="{{ url_for('static', filename='js/core/api-client.js') }}"></script>
     <script src="{{ url_for('static', filename='js/features/search.js') }}"></script>
     <script src="{{ url_for('static', filename='js/features/data-initializer.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/components/filters/entity-filter-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/macros/filters/entity-filter-manager.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
