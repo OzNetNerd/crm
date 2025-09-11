@@ -1,49 +1,32 @@
 {% from 'macros/base/icons.html' import icon %}
 {# Modal Base Components - Core modal functionality and structure #}
 
-{% macro base_modal(modal_id, show_var="show", backdrop_click_close=true) %}
-<div x-show="{{ show_var }}" 
-     x-cloak 
-     x-transition:enter="modal-fade-enter"
-     x-transition:enter-end="modal-fade-enter-to"
-     x-transition:leave="modal-fade-leave"
-     x-transition:leave-end="modal-fade-leave-to"
-     class="modal-overlay"
+{% macro base_modal(modal_id, backdrop_click_close=true) %}
+<div id="{{ modal_id }}" 
+     class="modal-overlay hidden"
      aria-labelledby="{{ modal_id }}-title" 
      role="dialog" 
      aria-modal="true">
     
     <div class="modal-container">
-        <div x-show="{{ show_var }}" 
-             x-transition:enter="modal-fade-enter"
-             x-transition:enter-end="modal-fade-enter-to"
-             x-transition:leave="modal-fade-leave"
-             x-transition:leave-end="modal-fade-leave-to"
-             class="modal-backdrop"
-             {% if backdrop_click_close %}@click="{{ show_var }} = false"{% endif %}></div>
+        <div class="modal-backdrop"
+             {% if backdrop_click_close %}onclick="closeModal('{{ modal_id }}')"{% endif %}></div>
 
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
         
-        <div x-show="{{ show_var }}"
-             x-transition:enter="modal-scale-enter"
-             x-transition:enter-end="modal-scale-enter-to"
-             x-transition:leave="modal-scale-leave"
-             x-transition:leave-end="modal-scale-leave-to"
-             class="modal-content"
-             @click.stop>
-            
+        <div class="modal-content" onclick="event.stopPropagation()">
             {{ caller() }}
         </div>
     </div>
 </div>
 {% endmacro %}
 
-{% macro modal_header(title, show_var="show") %}
+{% macro modal_header(title, modal_id) %}
 <div class="modal-header">
     <h3 class="modal-title" id="modal-title">
         {{ title }}
     </h3>
-    <button @click="{{ show_var }} = false" class="modal-close-button">
+    <button onclick="closeModal('{{ modal_id }}')" class="modal-close-button">
         {{ icon('x-mark', 'lg') }}
     </button>
 </div>
@@ -64,9 +47,9 @@
 {# Notes Section - Now handled by template components in components/notes/ #}
 
 {# Generic Detail Modal - Reusable detail display #}
-{% macro generic_detail_modal(modal_id, title, entity, fields, show_var="show") %}
-{% call base_modal(modal_id, show_var) %}
-    {{ modal_header(title, show_var) }}
+{% macro generic_detail_modal(modal_id, title, entity, fields) %}
+{% call base_modal(modal_id) %}
+    {{ modal_header(title, modal_id) }}
     
     {% call modal_body() %}
         <div class="space-y-4">
@@ -98,10 +81,60 @@
     {% endcall %}
     
     {% call modal_footer() %}
-        <button @click="{{ show_var }} = false" 
+        <button onclick="closeModal('{{ modal_id }}')" 
                 class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
             Close
         </button>
     {% endcall %}
 {% endcall %}
 {% endmacro %}
+
+{# Modal utility JavaScript functions #}
+<script>
+// Modal management functions - CSS-based, no Alpine.js
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Add animation classes
+        modal.classList.add('modal-fade-in');
+        // Prevent body scrolling when modal is open
+        document.body.classList.add('modal-open');
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        // Add fade out animation
+        modal.classList.add('modal-fade-out');
+        
+        // Remove the modal after animation completes
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('modal-fade-in', 'modal-fade-out');
+            document.body.classList.remove('modal-open');
+        }, 300);
+    }
+}
+
+// Keyboard support - ESC to close modal
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const visibleModal = document.querySelector('.modal-overlay:not(.hidden)');
+        if (visibleModal) {
+            closeModal(visibleModal.id);
+        }
+    }
+});
+
+// Auto-attach modal open handlers to elements with data-modal attribute  
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-modal]').forEach(function(element) {
+        element.addEventListener('click', function() {
+            const modalId = this.getAttribute('data-modal');
+            openModal(modalId);
+        });
+    });
+});
+</script>

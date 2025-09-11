@@ -12,6 +12,10 @@ from app.utils.template_globals import (
     get_groupable_fields,
     get_model_form_fields,
     get_model_config,
+    get_create_modal_config,
+    get_detail_modal_config,
+    get_all_modal_configs,
+    get_all_detail_modal_configs,
     PRIORITY_OPTIONS,
     SIZE_OPTIONS,
 )

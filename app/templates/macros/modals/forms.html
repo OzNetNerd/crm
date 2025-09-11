@@ -5,28 +5,33 @@
 {% from "macros/modals/base.html" import base_modal, modal_header, modal_body, modal_footer %}
 
 {# Company Forms #}
-{% macro company_new_modal() %}
-{% call base_modal('companyModal', 'showCompanyModal') %}
-    {{ modal_header('New Company', 'showCompanyModal') }}
+{% macro company_create_modal() %}
+{% call base_modal('companyModal') %}
+    {{ modal_header('New Company', 'companyModal') }}
     
     {% call modal_body() %}
-        <form @submit.prevent="submitCompanyForm()" class="space-y-4">
-            {{ text_input('name', 'Company Name', 'newCompany.name', 'Enter company name', required=true) }}
-            {{ text_input('website', 'Website', 'newCompany.website', 'https://example.com') }}
-            {{ text_input('phone', 'Phone', 'newCompany.phone', '(555) 123-4567') }}
-            {{ text_input('email', 'Email', 'newCompany.email', 'contact@company.com') }}
-            {{ textarea_input('address', 'Address', 'newCompany.address', 'Enter full address', rows=3) }}
-            {{ select_input('industry', 'Industry', 'newCompany.industry', industries, empty_option="Select Industry") }}
-            {{ textarea_input('notes', 'Notes', 'newCompany.notes', 'Additional notes...', rows=3) }}
+        <form id="company-form"
+              hx-post="/companies/create" 
+              hx-target="body" 
+              hx-swap="beforeend"
+              hx-on::after-request="handleFormResponse('companyModal', event)"
+              class="space-y-4">
+            {{ text_input('name', 'Company Name', '', 'Enter company name', required=true) }}
+            {{ text_input('website', 'Website', '', 'https://example.com') }}
+            {{ text_input('phone', 'Phone', '', '(555) 123-4567') }}
+            {{ text_input('email', 'Email', '', 'contact@company.com') }}
+            {{ textarea_input('address', 'Address', '', 'Enter full address', rows=3) }}
+            {{ select_input('industry', 'Industry', '', industries, empty_option="Select Industry") }}
+            {{ textarea_input('notes', 'Notes', '', 'Additional notes...', rows=3) }}
         </form>
     {% endcall %}
     
     {% call modal_footer() %}
-        <button @click="showCompanyModal = false" 
+        <button onclick="closeModal('companyModal')" 
                 class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 mr-2">
             Cancel
         </button>
-        <button @click="submitCompanyForm()" 
+        <button type="submit" form="company-form"
                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
             Create Company
         </button>
@@ -35,7 +40,7 @@
 {% endmacro %}
 
 {# Opportunity Forms #}
-{% macro opportunity_new_modal() %}
+{% macro opportunity_create_modal() %}
 {% call base_modal('opportunityModal', 'showOpportunityModal') %}
     {{ modal_header('New Opportunity', 'showOpportunityModal') }}
     
@@ -66,7 +71,7 @@
 {% endmacro %}
 
 {# Stakeholder Forms #}
-{% macro stakeholder_new_modal() %}
+{% macro stakeholder_create_modal() %}
 {% call base_modal('stakeholderModal', 'showStakeholderModal') %}
     {{ modal_header('New Stakeholder', 'showStakeholderModal') }}
     
@@ -97,7 +102,7 @@
 {% endmacro %}
 
 {# Task Forms #}
-{% macro task_new_modal() %}
+{% macro task_create_modal() %}
 {% call base_modal('taskModal', 'showTaskModal') %}
     {{ modal_header('New Task', 'showTaskModal') }}
     
