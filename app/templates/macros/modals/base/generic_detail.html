@@ -6,6 +6,7 @@
 <div x-data="{
         ...createCRUDMixin('{{ entity_type }}', {}, {}),
         ...createNotesMixin('{{ entity_type }}'),
+        readOnly: false,
         
         {% if config.tabs %}
         activeTab: '{{ config.tabs[0].key }}',
@@ -15,7 +16,8 @@
         },
         {% endif %}
         
-        async load{{ entity_type|title }}(id) {
+        async load{{ entity_type|title }}(id, readOnly = false) {
+            this.readOnly = readOnly;
             await this.loadEntity(id);
             this.openModal();
         },
@@ -24,7 +26,7 @@
             return await this.saveEntity();
         }
      }" 
-     @open-detail-{{ entity_type }}-modal.window="load{{ entity_type|title }}($event.detail.id)"
+     @open-detail-{{ entity_type }}-modal.window="load{{ entity_type|title }}($event.detail.id, $event.detail.readOnly || false)"
      @close-modal.window="closeModal()">
 
     {% call base_modal(entity_type + '-detail-modal', backdrop_click_close=false) %}
@@ -75,7 +77,12 @@
             {% endif %}
         </div>
         
-        {{ modal_footer(save_action="save" + entity_type|title + "Details()", save_text="Save Changes") }}
+        <div x-show="!readOnly">
+            {{ modal_footer(save_action="save" + entity_type|title + "Details()", save_text="Save Changes") }}
+        </div>
+        <div x-show="readOnly">
+            {{ modal_footer() }}
+        </div>
     {% endcall %}
 </div>
 {% endmacro %}
@@ -86,21 +93,24 @@
             <div>
                 <label class="text-form-label">{{ field.label }}</label>
                 <input type="text" x-model="{{ entity_type }}.{{ field.name }}" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       :readonly="readOnly"
+                       :class="readOnly ? 'w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50' : 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'"
                        placeholder="{{ field.placeholder | default('') }}">
             </div>
         {% elif field.type == 'textarea' %}
             <div>
                 <label class="text-form-label">{{ field.label }}</label>
                 <textarea x-model="{{ entity_type }}.{{ field.name }}" 
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          :readonly="readOnly"
+                          :class="readOnly ? 'w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50' : 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'"
                           rows="{{ field.rows | default(3) }}"></textarea>
             </div>
         {% elif field.type == 'select' %}
             <div>
                 <label class="text-form-label">{{ field.label }}</label>
                 <select x-model="{{ entity_type }}.{{ field.name }}" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        :disabled="readOnly"
+                        :class="readOnly ? 'w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50' : 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'">
                     {% for option in field.options %}
                     <option value="{{ option.value if option is mapping else option }}">
                         {{ option.label if option is mapping else option|title }}
@@ -112,7 +122,8 @@
             <div>
                 <label class="text-form-label">{{ field.label }}</label>
                 <input type="date" x-model="{{ entity_type }}.{{ field.name }}" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                       :readonly="readOnly"
+                       :class="readOnly ? 'w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50' : 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'">
             </div>
         {% elif field.type == 'grid' %}
             <div class="grid grid-cols-{{ field.columns | default(2) }} gap-4">
