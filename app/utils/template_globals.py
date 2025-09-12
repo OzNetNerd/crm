@@ -2,8 +2,8 @@
 
 from app.models import db, Company, Stakeholder, Task, Opportunity, User
 from app.utils.model_introspection import ModelIntrospector, get_model_by_name
-from app.utils.modal_configs import get_modal_config, MODAL_CONFIGS
-from app.utils.detail_modal_configs import get_detail_modal_config, DETAIL_MODAL_CONFIGS
+# Modal configs removed - using WTForms modal system now
+# from app.utils.detail_modal_configs import get_detail_modal_config, DETAIL_MODAL_CONFIGS
 from sqlalchemy import distinct
 
 
@@ -136,14 +136,14 @@ def get_detail_modal_config(entity_type):
     return get_detail_modal_config(entity_type)
 
 
-def get_all_modal_configs():
-    """Get all modal configurations for bulk operations."""
-    return MODAL_CONFIGS
+# Modal config functions removed - using WTForms modal system now
+# def get_all_modal_configs():
+#     """Get all modal configurations for bulk operations."""
+#     return MODAL_CONFIGS
 
-
-def get_all_detail_modal_configs():
-    """Get all detail modal configurations for bulk operations."""
-    return DETAIL_MODAL_CONFIGS
+# def get_all_detail_modal_configs():
+#     """Get all detail modal configurations for bulk operations.""" 
+#     return DETAIL_MODAL_CONFIGS
 
 
 def get_dashboard_buttons():

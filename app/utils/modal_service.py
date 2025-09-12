@@ -11,6 +11,7 @@ from app.models import db
 from app.utils.model_introspection import ModelIntrospector, get_model_by_name
 from app.utils.dynamic_form_builder import DynamicFormBuilder
 from app.forms.base_forms import BaseForm
+from app.utils.entity_icons import get_entity_icon_html
 
 
 class ModalService:
@@ -46,6 +47,7 @@ class ModalService:
             'action_url': f'/modals/{model_name}/create',
             'modal_title': f'Create {model_name}',
             'is_edit': False,
+            'get_entity_icon_html': get_entity_icon_html,
             **kwargs
         }
         
@@ -84,6 +86,7 @@ class ModalService:
             'action_url': f'/modals/{model_name}/{entity_id}/update',
             'modal_title': f'Edit {model_name}',
             'is_edit': True,
+            'get_entity_icon_html': get_entity_icon_html,
             **kwargs
         }
         
@@ -166,6 +169,7 @@ class ModalService:
                     'action_url': action_url,
                     'modal_title': modal_title,
                     'is_edit': bool(entity_id),
+                    'get_entity_icon_html': get_entity_icon_html,
                 }
                 
                 if entity_id:

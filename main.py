@@ -14,8 +14,8 @@ from app.utils.template_globals import (
     get_model_config,
     get_create_modal_config,
     get_detail_modal_config,
-    get_all_modal_configs,
-    get_all_detail_modal_configs,
+    # get_all_modal_configs,  # Removed - using WTForms modal system now
+    # get_all_detail_modal_configs,  # Removed - using WTForms modal system now
     get_dashboard_buttons,
     PRIORITY_OPTIONS,
     SIZE_OPTIONS,
@@ -87,17 +87,17 @@ def create_app():
     app.jinja_env.globals["get_model_config"] = get_model_config
     app.jinja_env.globals["get_create_modal_config"] = get_create_modal_config
     app.jinja_env.globals["get_detail_modal_config"] = get_detail_modal_config
-    app.jinja_env.globals["get_all_modal_configs"] = get_all_modal_configs
-    app.jinja_env.globals["get_all_detail_modal_configs"] = get_all_detail_modal_configs
+    # app.jinja_env.globals["get_all_modal_configs"] = get_all_modal_configs  # Removed
+    # app.jinja_env.globals["get_all_detail_modal_configs"] = get_all_detail_modal_configs  # Removed
     app.jinja_env.globals["get_dashboard_buttons"] = get_dashboard_buttons
     app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
     app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
     
-    # Make modal configs directly available
-    from app.utils.modal_configs import MODAL_CONFIGS
-    from app.utils.detail_modal_configs import DETAIL_MODAL_CONFIGS
-    app.jinja_env.globals["modal_configs"] = MODAL_CONFIGS
-    app.jinja_env.globals["detail_modal_configs"] = DETAIL_MODAL_CONFIGS
+    # Modal configs removed - using WTForms modal system now
+    # from app.utils.modal_configs import MODAL_CONFIGS
+    # from app.utils.detail_modal_configs import DETAIL_MODAL_CONFIGS
+    # app.jinja_env.globals["modal_configs"] = MODAL_CONFIGS
+    # app.jinja_env.globals["detail_modal_configs"] = DETAIL_MODAL_CONFIGS
 
     # Make model classes available to templates
     app.jinja_env.globals["Company"] = Company

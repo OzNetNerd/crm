@@ -14,7 +14,9 @@
   - is_edit: Boolean indicating if this is an edit operation
   - entity: Entity object (for edit operations)
 #}
-<div class="modal-overlay fixed inset-0 z-50 flex items-center justify-center">
+<div class="modal-overlay fixed inset-0 z-50 flex items-center justify-center" 
+     tabindex="-1" 
+     onkeydown="if(event.key === 'Escape') this.remove()">
     <!-- Backdrop -->
     <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50" 
          onclick="this.parentElement.remove()"></div>
@@ -23,9 +25,14 @@
     <div class="modal-content relative bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-screen overflow-y-auto">
         <!-- Header -->
         <div class="modal-header flex items-center justify-between p-6 border-b">
-            <h3 class="modal-title text-lg font-semibold text-gray-900">
-                {{ modal_title }}
-            </h3>
+            <div class="flex items-center gap-3">
+                <div class="entity-icon">
+                    {{ get_entity_icon_html(model_name, 'header') | safe }}
+                </div>
+                <h3 class="modal-title text-lg font-semibold text-gray-900">
+                    {{ modal_title }}
+                </h3>
+            </div>
             <button onclick="this.closest('.modal-overlay').remove()" 
                     class="modal-close-button text-gray-400 hover:text-gray-600 transition-colors">
                 {{ icon('x-mark', 'lg') }}
@@ -77,11 +84,68 @@
                     Cancel
                 </button>
                 <button type="submit" 
-                        class="modal-save-button px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    {% if is_edit %}Update{% else %}Create{% endif %} {{ model_name }}
+                        id="modal-save-button"
+                        class="modal-save-button px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700"
+                        disabled>
+                    Save
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+// Auto-focus modal for keyboard navigation and escape key handling
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+        modal.focus();
+        initializeModalValidation(modal);
+    }
+});
+
+// Also focus when modal is dynamically added via HTMX
+document.addEventListener('htmx:afterSwap', function(event) {
+    const modal = event.target.querySelector('.modal-overlay');
+    if (modal) {
+        modal.focus();
+        initializeModalValidation(modal);
+    }
+});
+
+function initializeModalValidation(modal) {
+    const form = modal.querySelector('form');
+    const saveButton = modal.querySelector('#modal-save-button');
+    
+    if (!form || !saveButton) return;
+    
+    // Get all required fields
+    const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+    
+    // Function to check if all required fields are filled
+    function checkRequiredFields() {
+        let allFilled = true;
+        
+        requiredFields.forEach(field => {
+            if (field.type === 'checkbox') {
+                if (!field.checked) allFilled = false;
+            } else {
+                if (!field.value.trim()) allFilled = false;
+            }
+        });
+        
+        saveButton.disabled = !allFilled;
+    }
+    
+    // Initial check
+    checkRequiredFields();
+    
+    // Add event listeners to all form inputs
+    const allInputs = form.querySelectorAll('input, select, textarea');
+    allInputs.forEach(input => {
+        input.addEventListener('input', checkRequiredFields);
+        input.addEventListener('change', checkRequiredFields);
+    });
+}
+</script>
 
