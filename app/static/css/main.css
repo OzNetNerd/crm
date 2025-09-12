@@ -60,6 +60,7 @@
 @import url('06-components/typography.css');
 @import url('06-components/icons.css');
 @import url('06-components/cards.css');
+@import url('06-components/dropdowns.css');
 @import url('modals.css'); /* Existing modal styles - to be refactored */
 @import url('chatbot.css'); /* Chatbot-specific styles */
 
