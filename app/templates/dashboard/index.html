@@ -46,13 +46,13 @@
 
 <!-- Task Quick Stats -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    {{ metric_card(task_stats.overdue, 'Overdue Tasks', 'text-red-600') }}
+    {{ metric_card('Overdue Tasks', task_stats.overdue, '', 'red') }}
 
-    {{ metric_card(task_stats.today, 'Due Today', 'text-orange-600') }}
+    {{ metric_card('Due Today', task_stats.today, '', 'orange') }}
 
-    {{ metric_card(task_stats.this_week, 'This Week', 'text-blue-600') }}
+    {{ metric_card('This Week', task_stats.this_week, '', 'blue') }}
 
-    {{ metric_card(task_stats.completed_today, 'Completed Today', 'text-green-600') }}
+    {{ metric_card('Completed Today', task_stats.completed_today, '', 'green') }}
 </div>
 
 <!-- Pipeline Overview -->
