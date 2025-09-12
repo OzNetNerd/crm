@@ -1,0 +1,22 @@
+{% macro sprite_icon(name, size='lg', additional_class='') %}
+{# Modern SVG Sprite Icon System - Optimized for Performance #}
+{% set size_classes = {
+  'xs': 'w-3 h-3',
+  'sm': 'w-4 h-4', 
+  'md': 'w-5 h-5',
+  'lg': 'w-6 h-6',
+  'xl': 'w-8 h-8',
+  '2xl': 'w-10 h-10'
+} %}
+{% set size_class = size_classes.get(size, size if 'w-' in size else size_classes.lg) %}
+<svg class="{{ size_class }} {{ additional_class }}" aria-hidden="true">
+  <use href="#icon-{{ name }}"></use>
+</svg>
+{% endmacro %}
+
+{% macro icon_sprite_loader() %}
+{# Include the SVG sprite - call once in your base template #}
+{% include 'static/icons/sprite.svg' %}
+{% endmacro %}
+
+{# Available icons in sprite: academic-cap, arrow-left, arrow-path, bars-3, bell, bolt, building-office, building-office-alt, calendar, calendar-days, chart-bar, check, check-circle, check-circle-solid, chevron-down, chevron-right, clipboard-list, clock, cog-6-tooth, currency-dollar, currency-dollar-circle, document, ellipsis-horizontal, envelope, exclamation-circle-solid, exclamation-triangle, eye, eye-slash, fire, fire-solid, funnel, heart, heart-solid, home, information-circle, link, list-bullet, magnifying-glass, pencil, phone, plus, question-mark-circle, spinner, square-3-stack-3d, squares-2x2, star, star-solid, trash, user, users, x-mark #}

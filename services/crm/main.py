@@ -71,6 +71,9 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = get_database_path()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+    # Enable Jinja2 do extension for template logic
+    app.jinja_env.add_extension('jinja2.ext.do')
+
     db.init_app(app)
 
     # Register API and web blueprints
