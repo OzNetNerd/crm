@@ -1,8 +1,8 @@
 from datetime import date
 from flask import Blueprint, render_template, request
 from app.models import User, Company, Opportunity
-from app.utils.route_helpers import BaseRouteHandler, EntityFilterManager, EntityGrouper
-from app.utils.model_introspection import ModelIntrospector
+from app.utils.core.base_handlers import BaseRouteHandler, EntityFilterManager, EntityGrouper
+from app.utils.core.model_introspection import ModelIntrospector
 from collections import defaultdict
 
 teams_bp = Blueprint("teams", __name__)
@@ -126,7 +126,8 @@ def index():
     today = date.today()
     
     # Ultra-DRY dropdown and entity configuration generation
-    from app.utils.form_configs import DropdownConfigGenerator, EntityConfigGenerator
+    from app.utils.forms.form_builder import DropdownConfigGenerator
+    from app.utils.entities.entity_config import EntityConfigGenerator
     dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('teams', group_by, sort_by, sort_direction, primary_filter)
     
     # Get unique job titles for dynamic filter (since User model doesn't have predefined job title choices)

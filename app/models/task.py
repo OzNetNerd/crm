@@ -1,6 +1,6 @@
 from datetime import datetime
 from . import db
-from app.utils.model_helpers import (
+from app.utils.core.model_helpers import (
     create_choice_field_info,
     create_date_field_info,
     create_model_choice_methods,
@@ -318,7 +318,7 @@ class Task(db.Model):
 
     def to_dict(self):
         """Convert task to dictionary for JSON serialization"""
-        from app.utils.model_helpers import auto_serialize
+        from app.utils.entities.entity_config import auto_serialize
         
         # Define properties to include beyond database columns
         include_properties = [

@@ -6,7 +6,8 @@ across all entity index functions by providing a single, consistent interface.
 """
 
 from flask import request
-from app.utils.form_configs import DropdownConfigGenerator, EntityConfigGenerator
+from app.utils.forms.form_builder import DropdownConfigGenerator
+from app.utils.entities.entity_config import EntityConfigGenerator
 
 
 class UniversalIndexHelper:

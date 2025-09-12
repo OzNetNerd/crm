@@ -3,7 +3,7 @@ Entity management utilities for CRM
 Provides reusable functions for entity relationships, stakeholder management, and teams
 """
 
-from app.models import db, Company, Stakeholder, Opportunity, User, Task
+from app.models import db
 
 
 class EntityManager:
@@ -12,6 +12,8 @@ class EntityManager:
     @staticmethod
     def get_all_entities_for_selection():
         """Get all entities formatted for form selection dropdowns"""
+        from app.models import Company, Stakeholder, Opportunity
+        
         companies = Company.query.order_by(Company.name).all()
         contacts = Stakeholder.query.order_by(Stakeholder.name).all()
         opportunities = Opportunity.query.order_by(Opportunity.name).all()

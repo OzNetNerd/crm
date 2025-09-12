@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.utils.form_configs import FormConfigManager
+from app.utils.forms.form_builder import FormConfigManager
 from app.forms.entity_forms import (
     CompanyForm,
     StakeholderForm,

@@ -6,8 +6,8 @@ leveraging the ModelIntrospector and ModalService systems.
 """
 
 from flask import Blueprint, request, jsonify
-from app.utils.modal_service import ModalService
-from app.utils.model_introspection import get_model_by_name
+from app.utils.ui.modal_service import ModalService
+from app.utils.core.model_introspection import get_model_by_name
 
 modals_bp = Blueprint('modals', __name__, url_prefix='/modals')
 

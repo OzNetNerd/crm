@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.models import db, Task
-from app.utils.route_helpers import NotesAPIHandler
+from app.utils.core.base_handlers import NotesAPIHandler
 from datetime import timedelta, date
 
 tasks_api_bp = Blueprint("tasks_api", __name__, url_prefix="/api/tasks")

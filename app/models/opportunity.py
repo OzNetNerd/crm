@@ -147,13 +147,13 @@ class Opportunity(db.Model):
     @classmethod
     def get_stage_choices(cls):
         """Get stage choices from model metadata"""
-        from app.utils.model_introspection import ModelIntrospector
+        from app.utils.core.model_introspection import ModelIntrospector
         return ModelIntrospector.get_field_choices(cls, 'stage')
     
     @classmethod
     def get_stage_css_class(cls, stage_value):
         """Get CSS class for a stage value"""
-        from app.utils.model_introspection import ModelIntrospector
+        from app.utils.core.model_introspection import ModelIntrospector
         return ModelIntrospector.get_field_css_class(cls, 'stage', stage_value)
 
     def get_stakeholders(self):
@@ -222,7 +222,7 @@ class Opportunity(db.Model):
 
     def to_dict(self):
         """Convert opportunity to dictionary for JSON serialization"""
-        from app.utils.model_helpers import auto_serialize
+        from app.utils.entities.entity_config import auto_serialize
         
         # Define properties to include beyond database columns
         include_properties = ["calculated_priority", "deal_age"]

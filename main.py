@@ -4,9 +4,9 @@ from flask import Flask
 from app.models import db
 from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
-from app.utils.template_filters import register_template_filters
+from app.utils.ui.template_filters import register_template_filters
 from app.models import Company, Stakeholder, Task, Opportunity, User
-from app.utils.template_globals import (
+from app.utils.ui.template_globals import (
     get_field_options,
     get_sortable_fields,
     get_groupable_fields,
@@ -94,8 +94,8 @@ def create_app():
     app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
     
     # Make modal configs directly available
-    from app.utils.modal_configs import MODAL_CONFIGS
-    from app.utils.detail_modal_configs import DETAIL_MODAL_CONFIGS
+    from app.utils.ui.modal_configs import MODAL_CONFIGS
+    from app.utils.ui.modal_configs import DETAIL_MODAL_CONFIGS
     app.jinja_env.globals["modal_configs"] = MODAL_CONFIGS
     app.jinja_env.globals["detail_modal_configs"] = DETAIL_MODAL_CONFIGS
 

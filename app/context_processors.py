@@ -3,9 +3,8 @@ Flask Context Processors
 Automatically makes data available to all templates without explicit passing
 """
 
-from app.utils.model_introspection import get_all_model_configs
-from app.utils.modal_configs import MODAL_CONFIGS
-from app.utils.detail_modal_configs import DETAIL_MODAL_CONFIGS
+from app.utils.core.model_introspection import get_all_model_configs
+from app.utils.ui.modal_configs import MODAL_CONFIGS, DETAIL_MODAL_CONFIGS
 
 
 def inject_model_configs():

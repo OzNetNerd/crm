@@ -1,9 +1,8 @@
 """Clean template global functions - no more string-based hacks."""
 
-from app.models import db, Company, Stakeholder, Task, Opportunity, User
-from app.utils.model_introspection import ModelIntrospector, get_model_by_name
-from app.utils.modal_configs import get_modal_config, MODAL_CONFIGS
-from app.utils.detail_modal_configs import get_detail_modal_config, DETAIL_MODAL_CONFIGS
+from app.models import db
+from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
+from app.utils.ui.modal_configs import get_modal_config, get_detail_modal_config, MODAL_CONFIGS, DETAIL_MODAL_CONFIGS
 from sqlalchemy import distinct
 
 
@@ -26,6 +25,8 @@ def get_field_options(model_class, field_name):
 
 def get_sortable_fields(model_class, exclude=None):
     """Get sortable field options for a model."""
+    from app.models import Task, Opportunity, Company, Stakeholder, User
+    
     exclude = exclude or ["id", "created_at", "updated_at"]
     options = []
 
@@ -55,6 +56,8 @@ def get_sortable_fields(model_class, exclude=None):
 
 def get_groupable_fields(model_class):
     """Get fields suitable for grouping."""
+    from app.models import Task, Opportunity, Company, Stakeholder, User
+    
     options = []
 
     if model_class == Company:
@@ -148,5 +151,5 @@ def get_all_detail_modal_configs():
 
 def get_dashboard_buttons():
     """Get centralized dashboard buttons for DRY system."""
-    from app.utils.entity_icons import get_dashboard_buttons
+    from app.utils.entities.entity_icons import get_dashboard_buttons
     return get_dashboard_buttons()
