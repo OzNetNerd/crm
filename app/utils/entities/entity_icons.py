@@ -138,7 +138,7 @@ def generate_entity_buttons(entities_config, context='dashboard'):
                 'hx_target': 'body', 
                 'hx_swap': 'beforeend',
                 'icon': get_entity_icon_html(entity_name),
-                'classes': f'btn-new-{entity_name.lower()}'
+                'classes': f'c-button c-button--entity c-button--{entity_name.lower()}'
             }
         else:
             # Full entity configuration dict
@@ -149,7 +149,7 @@ def generate_entity_buttons(entities_config, context='dashboard'):
                 'hx_target': 'body',
                 'hx_swap': 'beforeend',
                 'icon': get_entity_icon_html(icon_name),
-                'classes': f"btn-new-{entity_config.get('endpoint_name', 'item')}"
+                'classes': f"c-button c-button--entity c-button--{entity_config.get('endpoint_name', 'item')}"
             }
         
         buttons.append(button)
@@ -206,13 +206,13 @@ def get_dashboard_buttons():
             label = f"New {entity_config.get('display_name_singular', entity_class_name)}"
             modal_path = entity_config.get('modal_path', f'/modals/{entity_class_name}')
             endpoint_name = entity_config.get('endpoint_name', entity_class_name.lower())
-            classes = f"btn-new-{endpoint_name}"
+            classes = f"c-button c-button--entity c-button--{endpoint_name}"
         else:
             icon_name = entity_class_name
             label = f"New {entity_class_name}"
             modal_path = f'/modals/{entity_class_name}'
             endpoint_name = entity_class_name.lower()
-            classes = f'btn-new-{endpoint_name}'
+            classes = f'c-button c-button--entity c-button--{endpoint_name}'
         
         # Get semantic category for this entity
         semantic = get_entity_semantic(endpoint_name)
