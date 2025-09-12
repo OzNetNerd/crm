@@ -58,7 +58,6 @@ class Stakeholder(db.Model):
         nullable=False,
         info={
             'display_label': 'Full Name',
-            'sortable': True,
             'required': True
         }
     )
@@ -66,48 +65,26 @@ class Stakeholder(db.Model):
         db.String(100),
         info={
             'display_label': 'Job Title',
-            'groupable': True,
-            'sortable': True,
             'common_roles': {
                 'ceo': {
                     'label': 'CEO',
-                    'css_class': 'role-executive',
-                    'groupable': True,
-                    'sortable': True,
-                    'icon': 'star',
-                    'order': 1
+                    'description': 'Chief Executive Officer'
                 },
                 'cto': {
                     'label': 'CTO',
-                    'css_class': 'role-technical',
-                    'groupable': True,
-                    'sortable': True,
-                    'icon': 'cpu-chip',
-                    'order': 2
+                    'description': 'Chief Technology Officer'
                 },
                 'vp_sales': {
                     'label': 'VP Sales',
-                    'css_class': 'role-sales',
-                    'groupable': True,
-                    'sortable': True,
-                    'icon': 'chart-bar',
-                    'order': 3
+                    'description': 'Vice President of Sales'
                 },
                 'director': {
                     'label': 'Director',
-                    'css_class': 'role-management',
-                    'groupable': True,
-                    'sortable': True,
-                    'icon': 'user-group',
-                    'order': 4
+                    'description': 'Director level management'
                 },
                 'manager': {
                     'label': 'Manager',
-                    'css_class': 'role-management',
-                    'groupable': True,
-                    'sortable': True,
-                    'icon': 'briefcase',
-                    'order': 5
+                    'description': 'Manager level role'
                 }
             }
         }
@@ -116,7 +93,6 @@ class Stakeholder(db.Model):
         db.String(255),
         info={
             'display_label': 'Email Address',
-            'sortable': True,
             'contact_field': True
         }
     )
@@ -124,7 +100,6 @@ class Stakeholder(db.Model):
         db.String(50),
         info={
             'display_label': 'Phone Number',
-            'sortable': True,
             'contact_field': True
         }
     )
@@ -206,7 +181,7 @@ class Stakeholder(db.Model):
 
     def to_dict(self):
         """Convert stakeholder to dictionary for JSON serialization"""
-        from app.utils.model_helpers import auto_serialize
+        from app.utils.entities.entity_config import auto_serialize
         
         # Define properties to include beyond database columns
         include_properties = [

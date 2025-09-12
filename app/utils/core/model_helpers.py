@@ -20,22 +20,16 @@ def create_choice_field_info(display_label, choices, groupable=True, sortable=Tr
     # Process choices dictionary - normalize format
     for key, choice_data in choices.items():
         if isinstance(choice_data, dict):
-            # Already in full format
+            # Already in full format - only keep essential fields
             choice_info = {
-                'groupable': groupable,
-                'sortable': sortable,
-                **choice_data
+                'label': choice_data.get('label', key),
+                'description': choice_data.get('description', choice_data.get('label', key))
             }
         else:
-            # Simple string - create full format
+            # Simple string - create minimal format
             choice_info = {
                 'label': choice_data,
-                'css_class': f'choice-{key}',
-                'groupable': groupable,
-                'sortable': sortable,
-                'description': choice_data,
-                'icon': 'circle',
-                'order': len(info['choices']) + 1
+                'description': choice_data
             }
         
         info['choices'][key] = choice_info
@@ -61,11 +55,12 @@ def create_date_field_info(display_label, groupable=True, sortable=True, date_gr
     return info
 
 
-def create_text_field_info(display_label, sortable=True, required=False, **kwargs):
+def create_text_field_info(display_label, sortable=True, groupable=True, required=False, **kwargs):
     """Factory function to create standardized text field metadata"""
     info = {
         'display_label': display_label,
-        'sortable': sortable
+        'sortable': sortable,
+        'groupable': groupable
     }
     
     if required:
@@ -111,129 +106,84 @@ def create_model_choice_methods(field_names):
 PRIORITY_CHOICES = {
     'high': {
         'label': 'High',
-        'css_class': 'priority-urgent',
-        'description': 'Urgent priority',
-        'icon': 'exclamation',
-        'order': 1
+        'description': 'Urgent priority'
     },
     'medium': {
         'label': 'Medium',
-        'css_class': 'priority-normal',
-        'description': 'Normal priority',
-        'icon': 'minus',
-        'order': 2
+        'description': 'Normal priority'
     },
     'low': {
         'label': 'Low',
-        'css_class': 'priority-low',
-        'description': 'Low priority',
-        'icon': 'arrow-down',
-        'order': 3
+        'description': 'Low priority'
     }
 }
 
 STATUS_CHOICES = {
     'todo': {
         'label': 'To Do',
-        'css_class': 'status-todo',
-        'description': 'Not started',
-        'icon': 'circle',
-        'order': 1
+        'description': 'Not started'
     },
     'in-progress': {
         'label': 'In Progress',
-        'css_class': 'status-progress',
-        'description': 'Currently working on',
-        'icon': 'clock',
-        'order': 2
+        'description': 'Currently working on'
     },
     'complete': {
         'label': 'Complete',
-        'css_class': 'status-complete',
-        'description': 'Finished',
-        'icon': 'check-circle',
-        'order': 3
+        'description': 'Finished'
     }
 }
 
 NEXT_STEP_TYPE_CHOICES = {
     'call': {
         'label': 'Call',
-        'css_class': 'step-call',
-        'description': 'Phone call',
-        'icon': 'phone',
-        'order': 1
+        'description': 'Phone call'
     },
     'email': {
         'label': 'Email',
-        'css_class': 'step-email',
-        'description': 'Send email',
-        'icon': 'mail',
-        'order': 2
+        'description': 'Send email'
     },
     'meeting': {
         'label': 'Meeting',
-        'css_class': 'step-meeting',
-        'description': 'In-person or video meeting',
-        'icon': 'users',
-        'order': 3
+        'description': 'In-person or video meeting'
     },
     'demo': {
         'label': 'Demo',
-        'css_class': 'step-demo',
-        'description': 'Product demonstration',
-        'icon': 'presentation-chart-line',
-        'order': 4
+        'description': 'Product demonstration'
     }
 }
 
 TASK_TYPE_CHOICES = {
     'single': {
         'label': 'Single Task',
-        'css_class': 'type-single',
-        'description': 'Standalone task',
-        'icon': 'document',
-        'order': 1
+        'description': 'Standalone task'
     },
     'parent': {
         'label': 'Parent Task',
-        'css_class': 'type-parent',
-        'description': 'Task with subtasks',
-        'icon': 'folder',
-        'order': 2
+        'description': 'Task with subtasks'
     },
     'child': {
         'label': 'Child Task',
-        'css_class': 'type-child',
-        'description': 'Subtask of parent',
-        'icon': 'document-duplicate',
-        'order': 3
+        'description': 'Subtask of parent'
     }
 }
 
 DEPENDENCY_TYPE_CHOICES = {
     'parallel': {
         'label': 'Parallel',
-        'css_class': 'dep-parallel',
-        'description': 'Can run simultaneously',
-        'icon': 'arrows-right-left',
-        'order': 1
+        'description': 'Can run simultaneously'
     },
     'sequential': {
         'label': 'Sequential',
-        'css_class': 'dep-sequential',
-        'description': 'Must complete in order',
-        'icon': 'arrow-right',
-        'order': 2
+        'description': 'Must complete in order'
     }
 }
 
 DUE_DATE_GROUPINGS = {
-    'overdue': {'label': 'Overdue', 'css_class': 'date-overdue'},
-    'today': {'label': 'Due Today', 'css_class': 'date-today'},
-    'this_week': {'label': 'This Week', 'css_class': 'date-soon'},
-    'later': {'label': 'Later', 'css_class': 'date-future'},
-    'no_date': {'label': 'No Due Date', 'css_class': 'date-missing'}
+    'overdue': 'Overdue',
+    'today': 'Due Today',
+    'this_week': 'This Week',
+    'later': 'Later',
+    'no_date': 'No Due Date'
 }
 
 

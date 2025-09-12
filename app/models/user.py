@@ -18,27 +18,19 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False, info={
-        'sortable': True, 
-        'groupable': True,
-        'label': 'Name',
         'display_label': 'Name'
     })
     email = db.Column(db.String(255), unique=True, info={
-        'sortable': True, 
-        'label': 'Email',
         'display_label': 'Email'
     })
     job_title = db.Column(db.String(100), info={
-        'sortable': True, 
-        'groupable': True,
-        'label': 'Job Title',
         'display_label': 'Job Title'
     })  # Single source of truth for role
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, info={'sortable': True, 'label': 'Created At'})
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, info={'display_label': 'Created At'})
 
     def to_dict(self):
         """Convert user to dictionary for JSON serialization"""
-        from app.utils.model_helpers import auto_serialize
+        from app.utils.entities.entity_config import auto_serialize
         return auto_serialize(self)
 
     def get_company_assignments(self):
@@ -97,7 +89,7 @@ class CompanyAccountTeam(db.Model):
 
     def to_dict(self):
         """Convert to dictionary for JSON serialization"""
-        from app.utils.model_helpers import auto_serialize
+        from app.utils.entities.entity_config import auto_serialize
         
         result = auto_serialize(self)
         
@@ -133,7 +125,7 @@ class OpportunityAccountTeam(db.Model):
 
     def to_dict(self):
         """Convert to dictionary for JSON serialization"""
-        from app.utils.model_helpers import auto_serialize
+        from app.utils.entities.entity_config import auto_serialize
         
         result = auto_serialize(self)
         
