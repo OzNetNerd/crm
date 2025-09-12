@@ -138,22 +138,20 @@
   {{ overview_section('Sales Pipeline', 'Total: $125K', my_stats) }}
 #}
 {% macro overview_section(title, summary_text=None, stats=[], additional_classes='mb-8') %}
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 {{ additional_classes }}">
-    <div class="card-padded-lg">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-section-title">{{ title }}</h2>
-        {% if summary_text %}
-          <div class="text-secondary">{{ summary_text }}</div>
-        {% endif %}
-      </div>
-      <div class="c-overview-grid">
-        {% for stat in stats %}
-          <div class="text-center">
-            <div class="text-2xl font-bold text-{{ stat.value_color }}-600">{{ stat.value }}</div>
-            <div class="text-metric-heading">{{ stat.label }}</div>
-          </div>
-        {% endfor %}
-      </div>
+  <div class="card-padded-lg {{ additional_classes }}">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-section-title">{{ title }}</h2>
+      {% if summary_text %}
+        <div class="text-secondary">{{ summary_text }}</div>
+      {% endif %}
+    </div>
+    <div class="c-overview-grid">
+      {% for stat in stats %}
+        <div class="text-center">
+          <div class="text-2xl font-bold text-{{ stat.value_color }}-600">{{ stat.value }}</div>
+          <div class="text-metric-heading">{{ stat.label }}</div>
+        </div>
+      {% endfor %}
     </div>
   </div>
 {% endmacro %}

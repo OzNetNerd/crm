@@ -166,3 +166,138 @@
     --btn-hover: var(--color-user-hover);
     --btn-ring: var(--color-user-ring);
 }
+
+/* ========================================
+ * LEGACY ENTITY BUTTON CLASSES
+ * Auto-generated button classes from Python code
+ * ======================================== */
+
+.btn-new-task {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background-color: var(--color-task);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    transform: scale(1);
+}
+
+.btn-new-task:hover {
+    background-color: var(--color-task-hover);
+    transform: scale(1.05);
+}
+
+.btn-new-task:focus {
+    outline: 2px solid transparent;
+    box-shadow: 0 0 0 2px var(--color-task-ring);
+}
+
+.btn-new-company {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background-color: var(--color-company);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    transform: scale(1);
+}
+
+.btn-new-company:hover {
+    background-color: var(--color-company-hover);
+    transform: scale(1.05);
+}
+
+.btn-new-company:focus {
+    outline: 2px solid transparent;
+    box-shadow: 0 0 0 2px var(--color-company-ring);
+}
+
+.btn-new-opportunity {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background-color: var(--color-opportunity);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    transform: scale(1);
+}
+
+.btn-new-opportunity:hover {
+    background-color: var(--color-opportunity-hover);
+    transform: scale(1.05);
+}
+
+.btn-new-opportunity:focus {
+    outline: 2px solid transparent;
+    box-shadow: 0 0 0 2px var(--color-opportunity-ring);
+}
+
+.btn-new-stakeholder {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background-color: var(--color-stakeholder);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    transform: scale(1);
+}
+
+.btn-new-stakeholder:hover {
+    background-color: var(--color-stakeholder-hover);
+    transform: scale(1.05);
+}
+
+.btn-new-stakeholder:focus {
+    outline: 2px solid transparent;
+    box-shadow: 0 0 0 2px var(--color-stakeholder-ring);
+}
+
+.btn-new-contact {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background-color: var(--color-stakeholder);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    transform: scale(1);
+}
+
+.btn-new-contact:hover {
+    background-color: var(--color-stakeholder-hover);
+    transform: scale(1.05);
+}
+
+.btn-new-contact:focus {
+    outline: 2px solid transparent;
+    box-shadow: 0 0 0 2px var(--color-stakeholder-ring);
+}
