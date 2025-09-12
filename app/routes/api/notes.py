@@ -1,6 +1,6 @@
 from flask import Blueprint
 from app.models import Company, Stakeholder, Opportunity
-from app.utils.route_helpers import NotesAPIHandler
+from app.utils.core.base_handlers import NotesAPIHandler
 
 api_notes_bp = Blueprint("api_notes", __name__, url_prefix="/api")
 

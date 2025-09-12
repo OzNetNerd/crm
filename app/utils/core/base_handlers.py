@@ -1,6 +1,6 @@
 from flask import request, jsonify, redirect, url_for
 from app.models import db
-from app.utils.model_introspection import ModelIntrospector
+from .model_introspection import ModelIntrospector
 from collections import defaultdict
 from datetime import date
 

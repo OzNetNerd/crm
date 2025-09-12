@@ -147,13 +147,13 @@ class Company(db.Model):
     @classmethod
     def get_industry_choices(cls):
         """Get industry choices from model metadata"""
-        from app.utils.model_introspection import ModelIntrospector
+        from app.utils.core.model_introspection import ModelIntrospector
         return ModelIntrospector.get_field_choices(cls, 'industry')
     
     @classmethod
     def get_industry_css_class(cls, industry_value):
         """Get CSS class for an industry value"""
-        from app.utils.model_introspection import ModelIntrospector
+        from app.utils.core.model_introspection import ModelIntrospector
         return ModelIntrospector.get_field_css_class(cls, 'industry', industry_value)
     
     @property
@@ -171,7 +171,7 @@ class Company(db.Model):
 
     def to_dict(self):
         """Convert company to dictionary for JSON serialization"""
-        from app.utils.model_helpers import auto_serialize
+        from app.utils.entities.entity_config import auto_serialize
         
         # Define properties to include beyond database columns
         include_properties = ["size_category", "account_team"]

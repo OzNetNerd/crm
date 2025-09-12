@@ -2,14 +2,14 @@ from datetime import datetime, date, timedelta
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from app.models import db, Task, Company, Stakeholder, Opportunity
 from app.forms import MultiTaskForm
-from app.utils.route_helpers import (
+from app.utils.core.base_handlers import (
     BaseRouteHandler,
     parse_int_field,
     get_entity_data_for_forms,
     EntityFilterManager,
     EntityGrouper,
 )
-from app.utils.model_introspection import ModelIntrospector
+from app.utils.core.model_introspection import ModelIntrospector
 from collections import defaultdict
 
 tasks_bp = Blueprint("tasks", __name__)
@@ -200,7 +200,7 @@ def content():
 
 @tasks_bp.route("/")
 def index():
-    from app.utils.index_helpers import UniversalIndexHelper
+    from app.utils.ui.index_helpers import UniversalIndexHelper
     
     # Get all context data for frontend-only filtering
     context = get_all_tasks_context()

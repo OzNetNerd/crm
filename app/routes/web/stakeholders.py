@@ -1,8 +1,8 @@
 from datetime import date
 from flask import Blueprint, render_template, request
 from app.models import Stakeholder, Company, Opportunity
-from app.utils.route_helpers import BaseRouteHandler, EntityFilterManager, EntityGrouper
-from app.utils.model_introspection import ModelIntrospector
+from app.utils.core.base_handlers import BaseRouteHandler, EntityFilterManager, EntityGrouper
+from app.utils.core.model_introspection import ModelIntrospector
 from collections import defaultdict
 
 stakeholders_bp = Blueprint("stakeholders", __name__)
@@ -79,13 +79,13 @@ def stakeholder_custom_groupers(entities, group_by):
 
 @stakeholders_bp.route("/")
 def index():
-    from app.utils.index_helpers import UniversalIndexHelper
+    from app.utils.ui.index_helpers import UniversalIndexHelper
     
     # Get all stakeholders for stats
     stakeholders = Stakeholder.query.join(Company).all()
 
     # Get standardized context using universal helper
-    from app.utils.form_configs import EntityConfigGenerator
+    from app.utils.entities.entity_config import EntityConfigGenerator
     entity_stats = EntityConfigGenerator.generate_entity_stats('stakeholders', stakeholders, Stakeholder)
     
     context = UniversalIndexHelper.get_standardized_index_context(

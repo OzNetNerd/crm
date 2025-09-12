@@ -1,8 +1,8 @@
 from datetime import date
 from flask import Blueprint, render_template, request
 from app.models import Company, Stakeholder, Opportunity, db
-from app.utils.route_helpers import BaseRouteHandler, EntityFilterManager, EntityGrouper
-from app.utils.model_introspection import ModelIntrospector
+from app.utils.core.base_handlers import BaseRouteHandler, EntityFilterManager, EntityGrouper
+from app.utils.core.model_introspection import ModelIntrospector
 from collections import defaultdict
 
 companies_bp = Blueprint("companies", __name__)
@@ -78,7 +78,7 @@ def content():
 
 @companies_bp.route("/")
 def index():
-    from app.utils.index_helpers import UniversalIndexHelper
+    from app.utils.ui.index_helpers import UniversalIndexHelper
     
     # Get all companies with relationships
     companies = Company.query.all()
@@ -130,7 +130,7 @@ def index():
     ]
 
     # Generate entity stats
-    from app.utils.form_configs import EntityConfigGenerator
+    from app.utils.entities.entity_config import EntityConfigGenerator
     entity_stats = EntityConfigGenerator.generate_entity_stats('companies', companies, Company)
     
     # Get standardized context using universal helper

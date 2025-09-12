@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.models import db, Task, Stakeholder, Company, Opportunity
-from app.utils.model_helpers import EntityConfigGenerator
+from app.utils.entities.entity_config import EntityConfigGenerator
 
 api_entities_bp = Blueprint("api_entities", __name__, url_prefix="/api")
 
