@@ -125,6 +125,99 @@
     font-weight: var(--font-medium);
 }
 
+/* ========================================
+ * CSS CLASS GENERATION PATTERNS
+ * Auto-generated classes from Jinja templates
+ * ======================================== */
+
+/* Priority-based badge classes */
+.badge-high {
+    background-color: var(--color-danger-light);
+    color: var(--color-danger-hover);
+}
+
+.badge-medium {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning-hover);
+}
+
+.badge-low {
+    background-color: var(--color-secondary-light);
+    color: var(--color-secondary-hover);
+}
+
+/* Opportunity stage classes */
+.badge-prospect {
+    background-color: var(--color-secondary-light);
+    color: var(--color-secondary-hover);
+}
+
+.badge-qualified {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-hover);
+}
+
+.badge-proposal {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning-hover);
+}
+
+.badge-negotiation {
+    background-color: #fff7ed; /* orange-100 */
+    color: #9a3412; /* orange-800 */
+}
+
+/* Generic status classes */
+.badge-completed {
+    background-color: var(--color-secondary-light);
+    color: var(--color-secondary-hover);
+}
+
+.badge-pending {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning-hover);
+}
+
+.badge-overdue {
+    background-color: var(--color-danger-light);
+    color: var(--color-danger-hover);
+}
+
+.badge-active {
+    background-color: var(--color-secondary-light);
+    color: var(--color-secondary-hover);
+}
+
+.badge-inactive {
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-800);
+}
+
+/* Text color variants for entity types */
+.text-company {
+    color: var(--color-company);
+}
+
+.text-stakeholder {
+    color: var(--color-stakeholder);
+}
+
+.text-opportunity {
+    color: var(--color-opportunity);
+}
+
+.text-task {
+    color: var(--color-task);
+}
+
+.text-deal {
+    color: var(--color-opportunity);
+}
+
+.text-user {
+    color: var(--color-user);
+}
+
 /* Legacy classes removed - use modern BEM naming:
  * .badge-red → .c-badge.c-badge--danger
  * .badge-task → .c-badge.c-badge--task
