@@ -171,54 +171,16 @@ async def get_chat_widget():
     <html>
     <head>
         <title>Chat Widget Test</title>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            #chat-container { max-width: 400px; height: 500px; border: 1px solid #ccc; display: flex; flex-direction: column; }
-            #messages { flex: 1; overflow-y: auto; padding: 10px; background: #f5f5f5; }
-            #input-area { display: flex; padding: 10px; border-top: 1px solid #ccc; }
-            #message-input { flex: 1; padding: 8px; border: 1px solid #ccc; }
-            #send-button { padding: 8px 16px; margin-left: 5px; background: #007bff; color: white; border: none; cursor: pointer; }
-            .message { margin: 5px 0; padding: 8px; border-radius: 5px; }
-            .user-message { background: #007bff; color: white; text-align: right; }
-            .bot-message { background: white; border: 1px solid #ccc; }
-            
-            .typing-indicator {
-                display: flex;
-                align-items: center;
-            }
-            
-            .typing-indicator span:not(:last-child) {
-                height: 8px;
-                width: 8px;
-                background-color: #007bff;
-                border-radius: 50%;
-                display: inline-block;
-                margin-right: 3px;
-                animation: typing 1.4s infinite ease-in-out;
-            }
-            
-            .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-            .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-            .typing-indicator span:nth-child(3) { animation-delay: 0s; }
-            
-            @keyframes typing {
-                0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-                40% { transform: scale(1); opacity: 1; }
-            }
-            
-            input:disabled, button:disabled {
-                opacity: 0.6;
-                cursor: not-allowed;
-            }
-        </style>
+        <link rel="stylesheet" href="../app/static/css/components.css">
+        <link rel="stylesheet" href="../app/static/css/chatbot.css">
     </head>
-    <body>
+    <body class="chatbot-test-body">
         <h2>Chatbot Test Interface</h2>
-        <div id="chat-container">
-            <div id="messages"></div>
-            <div id="input-area">
-                <input type="text" id="message-input" placeholder="Type your message...">
-                <button id="send-button">Send</button>
+        <div id="chat-container" class="chatbot-test-container">
+            <div id="messages" class="chatbot-test-messages"></div>
+            <div id="input-area" class="chatbot-test-input-area">
+                <input type="text" id="message-input" class="chatbot-test-message-input" placeholder="Type your message...">
+                <button id="send-button" class="chatbot-test-send-button">Send</button>
             </div>
         </div>
 
@@ -231,13 +193,13 @@ async def get_chat_widget():
 
             function addMessage(content, isUser = false, isTyping = false) {
                 const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+                messageDiv.className = `chatbot-test-message ${isUser ? 'chatbot-test-user-message' : 'chatbot-test-bot-message'}`;
                 
                 if (isTyping) {
                     messageDiv.innerHTML = `
-                        <div class="typing-indicator">
+                        <div class="chatbot-test-typing-indicator">
                             <span></span><span></span><span></span>
-                            <span style="margin-left: 10px;">Assistant is thinking...</span>
+                            <span class="chatbot-test-typing-text">Assistant is thinking...</span>
                         </div>
                     `;
                     messageDiv.id = 'typing-message';
