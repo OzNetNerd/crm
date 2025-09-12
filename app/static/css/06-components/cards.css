@@ -227,6 +227,19 @@
     }
 }
 
+/* ========================================
+ * LEGACY COMPATIBILITY LAYER
+ * Temporary bridge for template migration
+ * ======================================== */
+
+.card-padded-lg {
+    background-color: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-gray-200);
+    padding: var(--spacing-xl);
+}
+
 /* Legacy classes removed - use modern BEM naming:
  * .card → .c-card
  * .card-padded → .c-card.c-card--padded  
