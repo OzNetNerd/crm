@@ -1,8 +1,8 @@
 # Architecture Decision Record (ADR)
 
-## ADR-001: JavaScript Template Separation and Safe JSON Serialization
+## ADR-004: JavaScript Template Separation and Safe JSON Serialization
 
-**Status:** Accepted  
+**Status:** Implemented  
 **Date:** 09-09-25-15h-42m-00s  
 **Session:** /home/will/.claude/projects/-home-will-code-crm--worktrees-fixes/bbe390d4-9b3e-47a8-b1a8-3625614f7dc9.jsonl  
 **Todo:** Compliance assessment and architectural documentation  

@@ -1,8 +1,8 @@
 # Architecture Decision Record (ADR)
 
-## ADR-001: Restructure Templates/Components to Macros Directory System
+## ADR-005: Restructure Templates/Components to Macros Directory System
 
-**Status:** Accepted  
+**Status:** Implemented  
 **Date:** 11-09-25-09h-15m-30s  
 **Session:** /home/will/.claude/projects/-home-will-code-crm--worktrees-macros-new/1f165cdd-25ba-4537-aa57-2f591584ea73.jsonl  
 **Todo:** N/A (Single comprehensive refactoring)  
