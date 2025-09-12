@@ -243,17 +243,32 @@
 }
 
 /* Semantic color classes */
-.text-error-color { @apply text-red-600; }
+.text-error-color { 
+    color: #dc2626; /* text-red-600 */
+}
 
 /* Error and status messages */
-.text-error-inline { @apply text-xs text-red-600 mt-1; }
+.text-error-inline { 
+    font-size: 0.75rem; /* text-xs */
+    color: #dc2626; /* text-red-600 */
+    margin-top: 0.25rem; /* mt-1 */
+}
 
 /* Common text patterns for small text with colors */
-.text-xs-gray-500 { @apply text-xs text-gray-500; }
-.text-xs-gray-400 { @apply text-xs text-gray-400; }
+.text-xs-gray-500 { 
+    font-size: 0.75rem; /* text-xs */
+    color: #6b7280; /* text-gray-500 */
+}
+.text-xs-gray-400 { 
+    font-size: 0.75rem; /* text-xs */
+    color: #9ca3af; /* text-gray-400 */
+}
 
 /* Common text patterns for small text with alignment */
-.text-xs-center { @apply text-xs text-center; }
+.text-xs-center { 
+    font-size: 0.75rem; /* text-xs */
+    text-align: center;
+}
 
 /* Metadata and small secondary text */
 .text-metadata { 
@@ -304,7 +319,15 @@
 }
 
 /* Navigation */
-.text-nav-link { @apply text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium; }
+.text-nav-link { 
+    color: #4b5563; /* text-gray-600 */
+    padding: 0.5rem 0.75rem; /* px-3 py-2 */
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 500; /* font-medium */
+}
+.text-nav-link:hover {
+    color: #111827; /* hover:text-gray-900 */
+}
 
 /* Status colors with semantic meaning */
 .text-success { 
@@ -316,15 +339,21 @@
 .text-success-hover:hover {
     color: #166534; /* hover:text-green-800 */
 }
-.text-warning { @apply text-yellow-800; }
-.text-danger { @apply text-red-600; }
+.text-warning { 
+    color: #a16207; /* text-yellow-800 */
+}
+.text-danger { 
+    color: #dc2626; /* text-red-600 */
+}
 .text-danger-hover { 
     color: #dc2626; /* text-red-600 */
 }
 .text-danger-hover:hover {
     color: #991b1b; /* hover:text-red-800 */
 }
-.text-info { @apply text-blue-600; }
+.text-info { 
+    color: #2563eb; /* text-blue-600 */
+}
 .text-info-hover { 
     color: #2563eb; /* text-blue-600 */
 }
