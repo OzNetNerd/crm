@@ -1,8 +1,9 @@
-{# Universal Imports - Updated for modern macro architecture #}
-
-{# === MODERN IMPORT SYSTEM === #}
-{# Use the new modern imports system for better organization #}
-{% from "macros/imports/modern.html" import activate_imports, modal_container %}
+{# 
+  Universal Imports - Modern macro architecture only
+  
+  Clean import system without legacy compatibility layers.
+  Use modern.html for new templates. This file provides direct access to all modern macros.
+#}
 
 {# === CORE FOUNDATION === #}
 {% from "macros/base/icons.html" import icon %}
@@ -21,6 +22,7 @@
 {% from "macros/ui/sections.html" import css_details_section, section_group_header, dynamic_entity_section %}
 {% from "macros/ui/utilities.html" import loading_spinner, bulk_actions_bar, entity_link_button %}
 {% from "macros/ui/progress.html" import progress_bar %}
+{% from "macros/ui/metadata_display.html" import metadata_row, metadata_section %}
 
 {# === CONTROLS === #}
 {% from "macros/controls.html" import expand_collapse_controls, view_mode_toggle %}
@@ -43,33 +45,23 @@
 {# === EMPTY STATES === #}
 {% from "macros/empty_state.html" import empty_state, group_empty_state, inline_empty_state %}
 
-{# === LEGACY COMPATIBILITY === #}
-{# For templates still using old ui_elements.html - limited support #}
-{% from "macros/ui_elements.html" import 
-    task_section_group,
-    htmx_enhanced_filter_controls
-%}
-
-{# === HELPER MACROS === #}
-
 {#
-  Activate Universal Imports - Backward compatibility
+  Activate Modern Imports - Makes all imports available
   
-  This maintains compatibility with existing templates while encouraging
-  migration to the new activate_imports() function.
+  Call this macro in templates to activate all modern macro imports.
 #}
-{% macro activate_universal_imports() %}
-{# Delegate to modern import system #}
-{{ activate_imports() }}
+{% macro activate_imports() %}
+{# Import context is now established - all modern macros are available #}
 {% endmacro %}
 
 {#
-  Include Common Modals - Backward compatibility
-  
-  Maintains compatibility with existing templates while providing
-  the modern modal container functionality.
+  Modal Container - Modern modal system integration
 #}
-{% macro include_common_modals() %}
-{# Delegate to modern modal container #}
-{{ modal_container() }}
+{% macro modal_container() %}
+<div id="modal-container" 
+     hx-target="this" 
+     hx-swap="innerHTML"
+     role="dialog"
+     aria-live="polite"
+     aria-label="Modal dialogs"></div>
 {% endmacro %}
