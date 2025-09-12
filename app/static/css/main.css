@@ -70,9 +70,8 @@
 /* Future: overrides.css, shame.css */
 
 /* ========================================
- * LEGACY COMPATIBILITY
- * Temporary support for existing styles
- * TODO: Phase out as templates are updated
+ * ESSENTIAL UTILITIES
+ * Core functionality that must remain
  * ======================================== */
 
 /* Hide all loading animations and indicators */
@@ -97,69 +96,12 @@
     display: none !important;
 }
 
-/* Text styling compatibility */
-.text-label { 
-    font-size: var(--text-sm);
-    font-weight: var(--font-medium);
-    color: var(--color-gray-500);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.text-entity-base {
-    font-size: var(--text-lg);
-    font-weight: var(--font-semibold);
-}
-
-/* Entity color classes */
-.text-color-task { color: var(--color-task); }
-.text-color-company { color: var(--color-company); }
-.text-color-stakeholder { color: var(--color-stakeholder); }
-.text-color-opportunity { color: var(--color-opportunity); }
-.text-color-teams { color: var(--color-teams); }
-.text-color-user { color: var(--color-user); }
-.text-color-default { color: var(--color-gray-900); }
-.text-color-deal { color: var(--color-deal-amount); }
-
-/* Quick actions layout */
-.quick-actions-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-}
-
-/* Action button rows */
-.action-btn-row {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-}
-
-/* Contact methods */
-.contact-methods {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.contact-method-link {
-    padding: var(--spacing-xs);
-    transition: var(--transition-normal);
-}
-
-.contact-method-email {
-    color: var(--color-primary);
-}
-
-.contact-method-email:hover {
-    color: var(--color-primary-hover);
-}
-
-.contact-method-phone {
-    color: var(--color-secondary);
-}
-
-.contact-method-phone:hover {
-    color: var(--color-secondary-hover);
-}
+/* Legacy text and layout classes removed - use modern alternatives:
+ * .text-label → .u-text-sm.u-font-medium.u-text-gray-500
+ * .text-entity-base → .u-text-lg.u-font-semibold  
+ * .text-color-task → .u-text-primary (or .c-icon--task for icons)
+ * .quick-actions-grid → .u-flex.u-gap-sm
+ * .action-btn-row → .u-flex.u-items-center.u-gap-xs
+ * .contact-methods → .u-flex.u-items-center.u-gap-sm
+ * etc.
+ */

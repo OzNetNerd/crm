@@ -201,43 +201,11 @@
     height: 1rem;
 }
 
-/* ========================================
- * LEGACY COMPATIBILITY
- * Support for existing icon classes
- * TODO: Phase out in favor of BEM naming
- * ======================================== */
-
-.entity-avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-full);
-    color: white;
-    font-weight: var(--font-medium);
-    flex-shrink: 0;
-    width: 2.5rem;
-    height: 2.5rem;
-}
-
-.entity-avatar-company {
-    background-color: var(--color-primary);
-}
-
-.entity-avatar-contact-complete {
-    background-color: var(--color-primary);
-}
-
-.entity-avatar-contact-email {
-    background-color: var(--color-secondary);
-}
-
-.entity-avatar-contact-phone {
-    background-color: var(--color-warning);
-}
-
-.entity-avatar-contact-missing {
-    background-color: var(--color-danger);
-}
+/* Legacy classes removed - use modern BEM naming:
+ * .entity-avatar → .c-avatar.c-avatar--lg  
+ * .entity-avatar-company → .c-avatar.c-avatar--company
+ * etc.
+ */
 
 /* ========================================
  * CONTEXTUAL ICON STYLING

@@ -54,6 +54,17 @@
 .u-m-xl { margin: var(--spacing-xl); }
 .u-m-2xl { margin: var(--spacing-2xl); }
 
+/* Directional margin utilities */
+.u-m-left-sm { margin-left: var(--spacing-sm); }
+.u-m-left-md { margin-left: var(--spacing-md); }
+.u-m-right-sm { margin-right: var(--spacing-sm); }
+.u-m-top-sm { margin-top: var(--spacing-sm); }
+.u-m-bottom-sm { margin-bottom: var(--spacing-sm); }
+
+/* Display utilities */
+.u-block { display: block; }
+.u-w-full { width: 100%; }
+
 /* Gap utilities for flex/grid */
 .u-gap-xs { gap: var(--spacing-xs); }
 .u-gap-sm { gap: var(--spacing-sm); }

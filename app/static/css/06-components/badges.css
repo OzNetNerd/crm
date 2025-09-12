@@ -125,84 +125,8 @@
     font-weight: var(--font-medium);
 }
 
-/* ========================================
- * LEGACY COMPATIBILITY
- * Backward compatibility with existing template classes
- * TODO: Phase out in favor of BEM naming
- * ======================================== */
-
-.badge-standard {
-    display: inline-flex;
-    align-items: center;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: var(--text-xs);
-    font-weight: var(--font-medium);
-    border-radius: var(--radius-full);
-}
-
-/* Legacy color classes - map to new system */
-.badge-red {
-    background-color: var(--color-danger-light);
-    color: var(--color-danger-hover);
-}
-
-.badge-yellow {
-    background-color: var(--color-warning-light);
-    color: var(--color-warning-hover);
-}
-
-.badge-green {
-    background-color: var(--color-secondary-light);
-    color: var(--color-secondary-hover);
-}
-
-.badge-blue {
-    background-color: var(--color-primary-light);
-    color: var(--color-primary-hover);
-}
-
-.badge-orange {
-    background-color: #fff7ed;
-    color: #9a3412;
-}
-
-.badge-gray {
-    background-color: var(--color-gray-100);
-    color: var(--color-gray-800);
-}
-
-.badge-purple {
-    background-color: var(--color-accent-light);
-    color: var(--color-accent-hover);
-}
-
-/* Legacy entity classes */
-.badge-task {
-    background-color: var(--color-task-light);
-    color: var(--color-task-hover);
-}
-
-.badge-company {
-    background-color: var(--color-company-light);
-    color: var(--color-company-hover);
-}
-
-.badge-opportunity {
-    background-color: var(--color-opportunity-light);
-    color: var(--color-opportunity-hover);
-}
-
-.badge-stakeholder {
-    background-color: var(--color-stakeholder-light);
-    color: var(--color-stakeholder-hover);
-}
-
-.badge-teams {
-    background-color: var(--color-teams-light);
-    color: var(--color-teams-hover);
-}
-
-.badge-user {
-    background-color: var(--color-user-light);
-    color: var(--color-user-hover);
-}
+/* Legacy classes removed - use modern BEM naming:
+ * .badge-red → .c-badge.c-badge--danger
+ * .badge-task → .c-badge.c-badge--task
+ * etc.
+ */

@@ -39,25 +39,25 @@
   {{ enhanced_button('Edit', icon=pencil_icon('w-4 h-4'), style='secondary', size='sm') }}
 #}
 {% macro enhanced_button(text, onclick=None, url=None, icon='', style='primary', size='md', disabled=false, id=None) %}
-{%- set size_classes = {'sm': 'px-2 py-1 text-sm', 'md': 'px-4 py-2 text-sm', 'lg': 'px-6 py-3 text-base'} -%}
+{%- set size_classes = {'sm': 'c-button--sm', 'md': '', 'lg': 'c-button--lg'} -%}
 {%- set style_classes = {
-  'primary': 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-  'secondary': 'bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500', 
-  'accent': 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
-  'danger': 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-  'gray': 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500'
+  'primary': 'c-button--primary',
+  'secondary': 'c-button--secondary', 
+  'accent': 'c-button--success',
+  'danger': 'c-button--danger',
+  'gray': 'c-button--secondary'
 } -%}
 
 {% if url %}
 <a href="{{ url }}" 
-   class="inline-flex items-center gap-2 {{ size_classes[size] or size_classes['md'] }} font-medium rounded-md shadow-sm {{ style_classes[style] or style_classes['primary'] }} focus:outline-none focus:ring-2 focus:ring-offset-2 {{ 'opacity-50 cursor-not-allowed' if disabled }}"
+   class="c-button {{ size_classes[size] or '' }} {{ style_classes[style] or 'c-button--primary' }} {{ 'u-disabled' if disabled }}"
    {% if id %}id="{{ id }}"{% endif %}
    {% if disabled %}aria-disabled="true"{% endif %}>
     {{ icon|safe }}{{ text }}
 </a>
 {% else %}
 <button {% if onclick %}onclick="{{ onclick }}"{% endif %} 
-        class="inline-flex items-center gap-2 {{ size_classes[size] or size_classes['md'] }} font-medium rounded-md shadow-sm {{ style_classes[style] or style_classes['primary'] }} focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="c-button {{ size_classes[size] or '' }} {{ style_classes[style] or 'c-button--primary' }}"
         {% if id %}id="{{ id }}"{% endif %}
         {% if disabled %}disabled{% endif %}>
     {{ icon|safe }}{{ text }}
@@ -77,6 +77,6 @@
   {{ entity_link_button(url_for('companies.detail', id=company.id)) }}
   {{ entity_link_button('/stakeholders/123', 'View Stakeholder') }}
 #}
-{% macro entity_link_button(url, text='View Details', classes='mt-3 block w-full text-center bg-gray-50 text-gray-700 py-2 rounded-md hover:bg-gray-100') %}
+{% macro entity_link_button(url, text='View Details', classes='u-m-top-sm u-block u-w-full u-text-center c-button c-button--secondary') %}
 <a href="{{ url }}" class="{{ classes }}">{{ text }}</a>
 {% endmacro %}
