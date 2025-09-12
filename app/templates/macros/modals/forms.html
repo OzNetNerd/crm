@@ -1,7 +1,7 @@
 {# Entity Form Modals - Combined forms for all entity types #}
 
 {# Import required macros #}
-{% from "macros/base/forms.html" import text_input, textarea_input, select_input, date_input %}
+{% from "macros/base/forms.html" import text_input, textarea_input, select_input, date_input, searchable_input %}
 {% from "macros/modals/base.html" import base_modal, modal_header, modal_body, modal_footer %}
 
 {# Company Forms #}
@@ -46,12 +46,22 @@
     
     {% call modal_body() %}
         <form @submit.prevent="submitOpportunityForm()" class="space-y-4">
-            {{ text_input('name', 'Opportunity Name', 'newOpportunity.name', 'Enter opportunity name', required=true) }}
-            {{ select_input('company_id', 'Company', 'newOpportunity.company_id', companies, required=true, empty_option="Select Company") }}
-            {{ text_input('value', 'Value ($)', 'newOpportunity.value', '0', type='number') }}
-            {{ select_input('stage', 'Stage', 'newOpportunity.stage', stages, required=true, empty_option="Select Stage") }}
-            {{ text_input('probability', 'Probability (%)', 'newOpportunity.probability', '50', type='number') }}
-            {{ date_input('expected_close_date', 'Expected Close Date', 'newOpportunity.expected_close_date') }}
+            {# Row 1: Opportunity Name + Deal Value #}
+            <div class="grid grid-cols-3 gap-4">
+                {{ text_input('name', 'Opportunity Name', 'newOpportunity.name', 'Enter opportunity name', required=true, class='col-span-2') }}
+                {{ text_input('value', 'Deal Value ($)', 'newOpportunity.value', '0', type='number', class='col-span-1') }}
+            </div>
+            
+            {# Row 2: Company (full width searchable) #}
+            {{ searchable_input('company_id', 'Company', 'Search companies...', required=true) }}
+            
+            {# Row 3: Pipeline Stage + Win Probability + Expected Close Date #}
+            <div class="grid grid-cols-3 gap-4">
+                {{ select_input('stage', 'Pipeline Stage', 'newOpportunity.stage', stages, required=true, empty_option="Select Stage", class='col-span-1') }}
+                {{ text_input('probability', 'Win Probability (%)', 'newOpportunity.probability', '50', type='number', class='col-span-1') }}
+                {{ date_input('expected_close_date', 'Expected Close Date', 'newOpportunity.expected_close_date', class='col-span-1') }}
+            </div>
+            
             {{ textarea_input('description', 'Description', 'newOpportunity.description', 'Opportunity details...', rows=3) }}
             {{ textarea_input('notes', 'Notes', 'newOpportunity.notes', 'Additional notes...', rows=3) }}
         </form>
