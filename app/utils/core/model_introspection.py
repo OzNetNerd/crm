@@ -540,7 +540,6 @@ def get_model_by_name(model_name: str):
     model_map = {
         'company': Company,
         'stakeholder': Stakeholder,
-        'contact': Stakeholder,  # Legacy support
         'opportunity': Opportunity,
         'task': Task,
         'User': User,
