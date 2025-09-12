@@ -822,7 +822,7 @@ details[open] .details-chevron {
   {{ opportunity_header_content(opportunity) }}
 #}
 {% macro opportunity_header_content(opportunity) %}
-{% from "macros/list_section.html" import status_badge %}
+{% from "macros/ui/list_section.html" import status_badge %}
 {{ status_badge(opportunity.stage, 'green' if opportunity.stage == 'Prospect' else 'blue') }}
 {% endmacro %}
 
@@ -836,7 +836,7 @@ details[open] .details-chevron {
   {{ task_header_content(task) }}
 #}
 {% macro task_header_content(task) %}
-{% from "macros/list_section.html" import status_badge %}
+{% from "macros/ui/list_section.html" import status_badge %}
 {% set priority_color = 'red' if task.priority == 'high' else
                       'yellow' if task.priority == 'medium' else
                       'green' %}

@@ -1,10 +1,10 @@
 {% extends "base/layout.html" %}
 {% from "macros/imports/universal.html" import include_common_modals %}
-{% from "macros/summary_section.html" import metric_card, metric_grid, status_breakdown_grid %}
-{% from "macros/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
+{% from "macros/ui/summary_section.html" import metric_card, metric_grid, status_breakdown_grid %}
+{% from "macros/ui/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
 {% from "macros/base/layout.html" import simple_page_header %}
-{% from "macros/quick_actions.html" import default_dashboard_actions %}
-{% from "macros/metadata_display.html" import standard_card_metadata %}
+{% from "macros/ui/quick_actions.html" import default_dashboard_actions %}
+{% from "macros/ui/metadata_display.html" import standard_card_metadata %}
 {% from "macros/base/icons.html" import building_office_icon, user_icon, currency_dollar_icon, clipboard_list_icon, exclamation_circle_icon_solid, calendar_days_icon %}
 {% from "macros/formatting.html" import format_currency %}
 
@@ -21,7 +21,7 @@
 
 {% block content %}
 {# Dashboard header with buttons #}
-{% from "macros/quick_actions.html" import generate_dashboard_buttons %}
+{% from "macros/ui/quick_actions.html" import entity_buttons %}
 
 <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
@@ -29,7 +29,7 @@
         <p class="text-secondary-dark">Overview of your CRM performance and activity</p>
     </div>
     <div class="flex-shrink-0">
-        {{ generate_dashboard_buttons(['companies', 'tasks', 'opportunities', 'stakeholders']) }}
+        {{ entity_buttons(['companies', 'tasks', 'opportunities', 'stakeholders']) }}
     </div>
 </div>
 

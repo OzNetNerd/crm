@@ -1,6 +1,10 @@
 import argparse
+import sys
 from pathlib import Path
 from flask import Flask
+
+# Add project root to Python path so we can import app modules
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from app.models import db
 from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
@@ -59,7 +63,7 @@ def get_database_path():
 
 
 def create_app():
-    app = Flask(__name__, template_folder="app/templates", static_folder="app/static")
+    app = Flask(__name__, template_folder="../../app/templates", static_folder="../../app/static")
     app.config["SECRET_KEY"] = "dev-secret-key"
     app.config["SQLALCHEMY_DATABASE_URI"] = get_database_path()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False

@@ -8,9 +8,9 @@ import uvicorn
 import sys
 from pathlib import Path
 
-# Add chatbot directory to Python path
-chatbot_dir = Path(__file__).parent / "chatbot"
-sys.path.insert(0, str(chatbot_dir))
+# Add current directory to Python path (all chatbot files are here now)
+current_dir = Path(__file__).parent
+sys.path.insert(0, str(current_dir))
 
 
 def main():

@@ -1,6 +1,6 @@
 {# Page Template - Unified layout system for consistent page structure #}
 
-{% from "macros/quick_actions.html" import quick_actions_buttons %}
+{% from "macros/ui/quick_actions.html" import entity_buttons %}
 {% from 'macros/base/icons.html' import icon %}
 
 {#
@@ -9,7 +9,7 @@
   Parameters:
   - title (required): Page title text (e.g., "Companies", "Tasks")
   - subtitle (required): Page description text (e.g., "Manage your company relationships")
-  - buttons (optional): Array of button objects for quick_actions_buttons macro
+  - buttons (optional): Array of button objects for entity_buttons macro
   - summary_data (optional): Dict with 'title' and 'stats' array for metric display
   - additional_header_content (optional): Extra content to display in header area
   - with_filters (optional): Include space for filter controls
@@ -30,7 +30,7 @@
     </div>
     {% if buttons %}
     <div class="flex-shrink-0">
-        {{ quick_actions_buttons(buttons) }}
+        {{ entity_buttons(buttons) }}
     </div>
     {% endif %}
 </div>
@@ -88,7 +88,7 @@
     </div>
     {% if buttons %}
     <div class="flex-shrink-0">
-        {{ quick_actions_buttons(buttons) }}
+        {{ entity_buttons(buttons) }}
     </div>
     {% endif %}
 </div>
@@ -125,7 +125,7 @@
         </div>
         {% if buttons %}
         <div class="flex-shrink-0">
-            {{ quick_actions_buttons(buttons) }}
+            {{ entity_buttons(buttons) }}
         </div>
         {% endif %}
     </div>
@@ -197,7 +197,7 @@
         
         {% if primary_actions %}
         <div class="flex-shrink-0">
-            {{ quick_actions_buttons(primary_actions) }}
+            {{ entity_buttons(primary_actions) }}
         </div>
         {% endif %}
     </div>

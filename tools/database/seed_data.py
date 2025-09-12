@@ -8,10 +8,15 @@ Creates comprehensive realistic test data for all CRM entities with:
 """
 
 import random
+import sys
 from datetime import datetime, date, timedelta
+from pathlib import Path
+
+# Add project root to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app.models import db, Company, Stakeholder, Opportunity, Task, Note
-from main import create_app
+from services.crm.main import create_app
 
 # Enhanced sample data for comprehensive testing
 INDUSTRIES = [

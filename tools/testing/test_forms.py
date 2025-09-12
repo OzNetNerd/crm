@@ -6,8 +6,9 @@ Tests form instantiation and field generation without requiring full web app.
 import sys
 import os
 
-# Add current directory to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add project root to Python path
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 def test_form_imports():
     """Test that all form classes can be imported successfully"""
@@ -22,12 +23,12 @@ def test_form_imports():
 def test_form_instantiation():
     """Test that forms can be instantiated without errors"""
     try:
-        from main import create_app
+        from services.crm.main import create_app
         app = create_app()
         
         with app.app_context():
             with app.test_request_context():
-            from app.forms.task_forms import TaskForm, QuickTaskForm, ChildTaskForm, MultiTaskForm
+                from app.forms.task_forms import TaskForm, QuickTaskForm, ChildTaskForm, MultiTaskForm
             
             # Test TaskForm
             task_form = TaskForm()
@@ -53,7 +54,7 @@ def test_form_instantiation():
 def test_field_choices():
     """Test that SelectField choices are properly generated from model metadata"""
     try:
-        from main import create_app
+        from services.crm.main import create_app
         app = create_app()
         
         with app.app_context():
