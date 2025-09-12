@@ -57,17 +57,62 @@ class FieldFactory:
         )
     
     @staticmethod
-    def create_priority_field(model_class):
+    def create_priority_field(model_class=None, **kwargs):
         """Create a standardized priority SelectField using DynamicFormBuilder"""
-        return DynamicFormBuilder.build_select_field(model_class, 'priority')
+        if model_class:
+            return DynamicFormBuilder.build_select_field(model_class, 'priority', **kwargs)
+        else:
+            # Fallback for backward compatibility - use Task model
+            from app.models.task import Task
+            return DynamicFormBuilder.build_select_field(Task, 'priority', **kwargs)
     
     @staticmethod
-    def create_due_date_field(model_class=None, label="Due Date"):
+    def create_status_field(model_class=None, **kwargs):
+        """Create a standardized status SelectField using DynamicFormBuilder"""
+        if model_class:
+            return DynamicFormBuilder.build_select_field(model_class, 'status', **kwargs)
+        else:
+            # Fallback for backward compatibility - use Task model
+            from app.models.task import Task
+            return DynamicFormBuilder.build_select_field(Task, 'status', **kwargs)
+    
+    @staticmethod
+    def create_next_step_type_field(model_class=None, **kwargs):
+        """Create a standardized next_step_type SelectField using DynamicFormBuilder"""
+        if model_class:
+            return DynamicFormBuilder.build_select_field(model_class, 'next_step_type', **kwargs)
+        else:
+            # Fallback for backward compatibility - use Task model
+            from app.models.task import Task
+            return DynamicFormBuilder.build_select_field(Task, 'next_step_type', **kwargs)
+    
+    @staticmethod
+    def create_task_type_field(model_class=None, **kwargs):
+        """Create a standardized task_type SelectField using DynamicFormBuilder"""
+        if model_class:
+            return DynamicFormBuilder.build_select_field(model_class, 'task_type', **kwargs)
+        else:
+            # Fallback for backward compatibility - use Task model
+            from app.models.task import Task
+            return DynamicFormBuilder.build_select_field(Task, 'task_type', **kwargs)
+    
+    @staticmethod
+    def create_dependency_type_field(model_class=None, **kwargs):
+        """Create a standardized dependency_type SelectField using DynamicFormBuilder"""
+        if model_class:
+            return DynamicFormBuilder.build_select_field(model_class, 'dependency_type', **kwargs)
+        else:
+            # Fallback for backward compatibility - use Task model
+            from app.models.task import Task
+            return DynamicFormBuilder.build_select_field(Task, 'dependency_type', **kwargs)
+    
+    @staticmethod
+    def create_due_date_field(model_class=None, label="Due Date", **kwargs):
         """Create a standardized due date field"""
         if model_class:
-            return DynamicFormBuilder.build_date_field(model_class, 'due_date')
+            return DynamicFormBuilder.build_date_field(model_class, 'due_date', label=label, **kwargs)
         else:
-            return DateField(label, validators=[Optional()], default=None)
+            return DateField(label, validators=[Optional()], default=None, **kwargs)
 
 
 class FormConstants:
@@ -84,3 +129,11 @@ class FormConstants:
     DESCRIPTION_ROWS = 3
     CHILD_TASK_ROWS = 2
     NOTE_ROWS = 4
+    
+    # Entity type choices for forms
+    ENTITY_TYPE_CHOICES = [
+        ("", "None"),
+        ("company", "Company"),
+        ("stakeholder", "Stakeholder"), 
+        ("opportunity", "Opportunity")
+    ]

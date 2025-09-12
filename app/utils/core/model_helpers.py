@@ -209,3 +209,46 @@ def create_simple_entity_property(entity_type, property_source, property_name, f
         return fallback_value
     
     return property_getter
+
+
+def auto_serialize(model_instance, include_properties=None, field_transforms=None):
+    """
+    Auto-serialize a model instance to a dictionary.
+    
+    Args:
+        model_instance: SQLAlchemy model instance
+        include_properties: List of property names to include
+        field_transforms: Dict of field_name -> transform_function
+        
+    Returns:
+        Dictionary representation of the model
+    """
+    from datetime import datetime, date
+    
+    result = {}
+    field_transforms = field_transforms or {}
+    include_properties = include_properties or []
+    
+    # Get model columns
+    if hasattr(model_instance, '__table__'):
+        for column in model_instance.__table__.columns:
+            field_name = column.name
+            value = getattr(model_instance, field_name, None)
+            
+            # Apply field transforms if available
+            if field_name in field_transforms:
+                result[field_name] = field_transforms[field_name](value)
+            else:
+                # Standard serialization
+                if isinstance(value, (datetime, date)):
+                    result[field_name] = value.isoformat() if value else None
+                else:
+                    result[field_name] = value
+    
+    # Include additional properties
+    for prop_name in include_properties:
+        if hasattr(model_instance, prop_name):
+            prop_value = getattr(model_instance, prop_name)
+            result[prop_name] = prop_value
+            
+    return result
