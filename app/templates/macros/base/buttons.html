@@ -1,4 +1,5 @@
 {# Button Macros - Standardized button components for consistent interface #}
+{% from "macros/base/icons.html" import icon %}
 
 {#
   Unified Button - Single button macro supporting all use cases
@@ -17,8 +18,8 @@
   - classes (optional): Additional CSS classes for custom styling
   
   Usage:
-  {{ button('New Task', url='/modals/Task/create', icon=plus_icon('w-4 h-4')) }}
-  {{ button(icon='⋯', onclick='openModal()', style='action', size='sm') }}
+  {{ button('New Task', url='/modals/Task/create', icon=icon('plus', 'sm')) }}
+  {{ button(icon=icon('ellipsis-horizontal', 'sm'), onclick='openModal()', style='action', size='sm') }}
   {{ button('Edit', style='secondary', size='sm') }}
 #}
 {% macro button(text='', onclick=None, url=None, icon='', style='primary', size='md', disabled=false, id=None, classes='') %}
@@ -92,17 +93,17 @@
 
 {%- set default_configs = {
     'edit': {
-        'icon': pencil_icon("w-4 h-4"),
+        'icon': icon('pencil', 'sm'),
         'title': 'Edit',
         'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
     },
     'delete': {
-        'icon': trash_icon("w-4 h-4"), 
+        'icon': icon('trash', 'sm'), 
         'title': 'Delete',
         'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'
     },
     'complete': {
-        'icon': check_icon("w-4 h-4"),
+        'icon': icon('check', 'sm'),
         'title': 'Complete',
         'classes': 'text-green-600 hover:text-green-800 hover:bg-green-50'
     }

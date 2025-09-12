@@ -70,6 +70,9 @@ def create_app():
     if not app.debug:
         logging.basicConfig(level=logging.INFO)
         app.logger.info('CRM Application startup')
+        
+    # Enable Jinja2 do extension for template logic
+    app.jinja_env.add_extension('jinja2.ext.do')
 
     db.init_app(app)
 

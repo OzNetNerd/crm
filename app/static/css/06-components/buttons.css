@@ -299,17 +299,6 @@
                 0 0 0 4px color-mix(in srgb, var(--color-gray-500) 25%, transparent);
 }
 
-/* Icon styles within buttons */
-[class*="icon-"] {
-    width: 1rem;
-    height: 1rem;
-    display: inline-block;
-}
-
-.icon-task::before { content: "✓"; }
-.icon-company::before { content: "🏢"; }
-.icon-opportunity::before { content: "💎"; }
-.icon-stakeholder::before { content: "👤"; }
-.icon-user::before { content: "👤"; }
-.icon-team::before { content: "👥"; }
-.icon-default::before { content: "+"; }
+/* Legacy icon styles removed - use centralized icon system in icons.html instead
+   Modern usage: {{ icon('building-office', 'sm') }} within button templates
+   This ensures DRY principles and consistent icon styling */
