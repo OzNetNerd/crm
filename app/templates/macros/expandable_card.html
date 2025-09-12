@@ -58,7 +58,7 @@
 } -%}
 
 {% if expansion_enabled %}
-<details class="{{ base_classes }} {{ color_classes.get(card_type, '') }} {{ card_classes }}" 
+<details class="{{ base_classes }} {{ color_classes.get(card_type, 'ring-2 ring-gray-200 bg-gray-50') }} {{ card_classes }}" 
          data-{{ card_type }}-id="{{ entity_id }}">
     <summary class="cursor-pointer list-none flex items-center justify-between">
         <div class="flex-1 flex items-center justify-between">
@@ -108,7 +108,7 @@
 </details>
 {% else %}
 <!-- Non-expandable version -->
-<div class="{{ base_classes }} {{ color_classes.get(card_type, '') }} {{ card_classes }}" 
+<div class="{{ base_classes }} {{ color_classes.get(card_type, 'ring-2 ring-gray-200 bg-gray-50') }} {{ card_classes }}" 
      data-{{ card_type }}-id="{{ entity_id }}">
     <div class="flex items-center justify-between">
         <div class="flex items-center space-x-3 flex-1">
@@ -525,7 +525,7 @@ details[open] .details-chevron {
 {%- set base_classes = card_type + '-card card-padded relative mb-3' -%}
 {%- set color_classes = {
     'task': 'ring-2 ring-gray-200 bg-gray-50',
-    'opportunity': 'ring-2 ring-blue-200 bg-blue-50',
+    'opportunity': 'ring-2 ring-blue-200 bg-blue-50', 
     'contact': 'ring-2 ring-green-200 bg-green-50',
     'stakeholder': 'ring-2 ring-green-200 bg-green-50',
     'company': 'ring-2 ring-blue-200 bg-blue-50'
@@ -535,7 +535,7 @@ details[open] .details-chevron {
 {{ auto_extract_fields(entity, field_config, title_content, badge_content, value_content, secondary_info, metadata_content) }}
 
 {% if expansion_enabled %}
-<details class="{{ base_classes }} {{ color_classes.get(card_type, '') }} {{ card_classes }}" 
+<details class="{{ base_classes }} {{ color_classes.get(card_type, 'ring-2 ring-gray-200 bg-gray-50') }} {{ card_classes }}" 
          data-{{ card_type }}-id="{{ entity_id }}" 
          {% if notes_enabled %}hx-trigger="toggle" hx-get="/api/{{ card_type }}s/{{ entity_id }}/notes" hx-target="#notes-{{ entity_id }}"{% endif %}>
     <summary class="cursor-pointer list-none flex items-center justify-between">
@@ -554,9 +554,9 @@ details[open] .details-chevron {
             <div class="flex items-center space-x-2">{{ action_buttons|safe }}</div>
             {% endif %}
             
-            <!-- Task-specific reschedule buttons -->
+            <!-- Entity-specific action buttons -->
             {% if card_type == 'task' %}
-            {{ task_reschedule_buttons_htmx(entity_id) }}
+                {{ reschedule_buttons_htmx(card_type, entity_id) }}
             {% endif %}
             
             <!-- Expand chevron -->
@@ -589,7 +589,7 @@ details[open] .details-chevron {
 </details>
 {% else %}
 <!-- Non-expandable version -->
-<div class="{{ base_classes }} {{ color_classes.get(card_type, '') }} {{ card_classes }}" data-{{ card_type }}-id="{{ entity_id }}">
+<div class="{{ base_classes }} {{ color_classes.get(card_type, 'ring-2 ring-gray-200 bg-gray-50') }} {{ card_classes }}" data-{{ card_type }}-id="{{ entity_id }}">
     <div class="flex items-center justify-between">
         <div class="flex items-center space-x-3 flex-1">
             {% if bulk_selection_enabled %}
@@ -603,8 +603,9 @@ details[open] .details-chevron {
         <div class="flex items-center space-x-2">{{ action_buttons|safe }}</div>
         {% endif %}
         
+        <!-- Entity-specific action buttons -->
         {% if card_type == 'task' %}
-        {{ task_reschedule_buttons_htmx(entity_id) }}
+            {{ reschedule_buttons_htmx(card_type, entity_id) }}
         {% endif %}
     </div>
 </div>
@@ -745,36 +746,36 @@ details[open] .details-chevron {
 {% endmacro %}
 
 {# htmx-powered task reschedule buttons #}
-{% macro task_reschedule_buttons_htmx(task_id) %}
+{% macro reschedule_buttons_htmx(entity_type, entity_id) %}
 <div class="relative flex-shrink-0">
     <div class="flex items-center space-x-1">
-        <button hx-post="/tasks/{{ task_id }}/reschedule" 
+        <button hx-post="/{{ entity_type }}s/{{ entity_id }}/reschedule" 
                 hx-vals='{"days": -7}'
-                hx-target="#task-metadata-{{ task_id }}"
+                hx-target="#{{ entity_type }}-metadata-{{ entity_id }}"
                 hx-swap="innerHTML"
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule -1 week">
             -1w
         </button>
-        <button hx-post="/tasks/{{ task_id }}/reschedule" 
+        <button hx-post="/{{ entity_type }}s/{{ entity_id }}/reschedule" 
                 hx-vals='{"days": -1}'
-                hx-target="#task-metadata-{{ task_id }}"
+                hx-target="#{{ entity_type }}-metadata-{{ entity_id }}"
                 hx-swap="innerHTML"
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule -1 day">
             -1d
         </button>
-        <button hx-post="/tasks/{{ task_id }}/reschedule" 
+        <button hx-post="/{{ entity_type }}s/{{ entity_id }}/reschedule" 
                 hx-vals='{"days": 1}'
-                hx-target="#task-metadata-{{ task_id }}"
+                hx-target="#{{ entity_type }}-metadata-{{ entity_id }}"
                 hx-swap="innerHTML"
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule +1 day">
             +1d
         </button>
-        <button hx-post="/tasks/{{ task_id }}/reschedule" 
+        <button hx-post="/{{ entity_type }}s/{{ entity_id }}/reschedule" 
                 hx-vals='{"days": 7}'
-                hx-target="#task-metadata-{{ task_id }}"
+                hx-target="#{{ entity_type }}-metadata-{{ entity_id }}"
                 hx-swap="innerHTML"
                 class="px-1.5 py-0.5 rounded text-info-hover text-xs hover:bg-blue-50 transition-colors duration-200" 
                 title="Reschedule +1 week">
@@ -1000,15 +1001,15 @@ details[open] .details-chevron {
   Task Reschedule Buttons - Reschedule functionality for tasks
   
   Parameters:
-  - task_id (required): Task ID for the reschedule actions
+  - entity_id (required): Task ID for the reschedule actions
   
   Usage:
   {{ task_reschedule_buttons(task.id) }}
 #}
-{% macro task_reschedule_buttons(task_id) %}
+{% macro task_reschedule_buttons(entity_id) %}
 <div class="relative flex-shrink-0">
     <div class="flex items-center space-x-1">
-        <button hx-post="/api/tasks/{{ task_id }}/reschedule"
+        <button hx-post="/api/{{ entity_type }}s/{{ entity_id }}/reschedule"
                 hx-vals='{"days": -7}'
                 hx-target="closest(.task-card)"
                 hx-swap="outerHTML"
@@ -1017,7 +1018,7 @@ details[open] .details-chevron {
                 title="Reschedule -1 week">
             -1w
         </button>
-        <button hx-post="/api/tasks/{{ task_id }}/reschedule"
+        <button hx-post="/api/{{ entity_type }}s/{{ entity_id }}/reschedule"
                 hx-vals='{"days": -1}'
                 hx-target="closest(.task-card)"
                 hx-swap="outerHTML"
@@ -1026,7 +1027,7 @@ details[open] .details-chevron {
                 title="Reschedule -1 day">
             -1d
         </button>
-        <button hx-post="/api/tasks/{{ task_id }}/reschedule"
+        <button hx-post="/api/{{ entity_type }}s/{{ entity_id }}/reschedule"
                 hx-vals='{"days": 1}'
                 hx-target="closest(.task-card)"
                 hx-swap="outerHTML"
@@ -1035,7 +1036,7 @@ details[open] .details-chevron {
                 title="Reschedule +1 day">
             +1d
         </button>
-        <button hx-post="/api/tasks/{{ task_id }}/reschedule"
+        <button hx-post="/api/{{ entity_type }}s/{{ entity_id }}/reschedule"
                 hx-vals='{"days": 7}'
                 hx-target="closest(.task-card)"
                 hx-swap="outerHTML"
@@ -1144,27 +1145,21 @@ details[open] .details-chevron {
     {% endif %}
 {% endfor %}
 
-{# Build secondary fields - look for relationship and contact fields #}
-{% if entity_type == 'stakeholder' %}
-    {% set _ = auto_config.secondary_fields.append({'field': 'company.name', 'type': 'text'}) %}
-    {% set _ = auto_config.secondary_fields.append({'field': 'email', 'type': 'text'}) %}
-{% elif entity_type == 'opportunity' %}
-    {% set _ = auto_config.secondary_fields.append({'field': 'company.name', 'type': 'text'}) %}
-    {% set _ = auto_config.secondary_fields.append({'field': 'contact.name', 'type': 'text'}) %}
-{% elif entity_type == 'task' %}
-    {# Tasks have special handling in template already #}
-{% endif %}
-
-{# Build metadata fields - look for date and status fields #}
+{# Build secondary fields dynamically from model relationships #}
 {% for field_name, field_info in model_config.fields.items() %}
-    {% if field_name in ['phone', 'created_at', 'due_date', 'close_date'] %}
-        {% if field_name == 'created_at' %}
-            {% set _ = auto_config.metadata_fields.append({'field': field_name, 'type': 'date', 'format': '%m/%d/%y'}) %}
-        {% elif 'date' in field_name %}
-            {% set _ = auto_config.metadata_fields.append({'field': field_name, 'type': 'date', 'format': '%d/%m/%y'}) %}
-        {% else %}
-            {% set _ = auto_config.metadata_fields.append({'field': field_name, 'type': 'text'}) %}
-        {% endif %}
+    {% if field_info.type == 'relationship' and field_info.related_model %}
+        {% set _ = auto_config.secondary_fields.append({'field': field_name + '.name', 'type': 'text'}) %}
+    {% elif 'email' in field_name.lower() %}
+        {% set _ = auto_config.secondary_fields.append({'field': field_name, 'type': 'text'}) %}
+    {% endif %}
+{% endfor %}
+
+{# Build metadata fields dynamically from model introspection #}
+{% for field_name, field_info in model_config.fields.items() %}
+    {% if field_info.type == 'date' or field_name.endswith('_at') or 'date' in field_name.lower() %}
+        {% set _ = auto_config.metadata_fields.append({'field': field_name, 'type': 'date'}) %}
+    {% elif field_name == 'phone' or 'phone' in field_name.lower() %}
+        {% set _ = auto_config.metadata_fields.append({'field': field_name, 'type': 'text'}) %}
     {% endif %}
 {% endfor %}
 
