@@ -757,6 +757,15 @@ details[open] .details-chevron {
             title="Edit opportunity">
         {{ pencil_icon("w-4 h-4") }}
     </button>
+    <button hx-delete="/api/opportunities/{{ entity_id }}"
+            hx-confirm="Are you sure you want to delete this opportunity?"
+            hx-target="closest(.opportunity-card)"
+            hx-swap="outerHTML"
+            onclick="event.stopPropagation()"
+            class="px-2 py-1 rounded text-action-sm transition-colors duration-200 text-red-600 hover:text-red-800 hover:bg-red-50" 
+            title="Delete opportunity">
+        {{ trash_icon("w-4 h-4") }}
+    </button>
 
 {% elif entity_type == 'contact' or entity_type == 'stakeholder' %}
     <button hx-get="/modals/Stakeholder/{{ entity_id }}/edit"
