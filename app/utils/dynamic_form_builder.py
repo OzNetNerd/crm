@@ -95,7 +95,7 @@ class DynamicFormBuilder:
         field_info = getattr(model_class, field_name, None)
         if field_info and hasattr(field_info.property, 'columns'):
             column = field_info.property.columns[0]
-            info = column.info or {}  # Handle empty info or {}  # Handle empty info
+            info = column.info or {}  # Handle empty info
             
             # Set display label
             label = kwargs.get('label', info.get('display_label', field_name.replace('_', ' ').title()))
