@@ -1,5 +1,5 @@
 {% extends "base/layout.html" %}
-{% from "macros/imports/universal.html" import include_common_modals %}
+{% from "macros/imports/universal.html" import modal_container %}
 {% from "macros/ui/summary_section.html" import metric_card, metric_grid, status_breakdown_grid %}
 {% from "macros/ui/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
 {% from "macros/base/layout.html" import page_layout %}
@@ -134,7 +134,7 @@
 {% endblock %}
 
 {% block modals %}
-{{ include_common_modals() }}
+{{ modal_container() }}
 {% endblock %}
 
 {% block scripts %}
