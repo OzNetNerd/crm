@@ -60,7 +60,67 @@
 } -%}
 
 {# Auto-extract fields when field_config is provided #}
-{{ auto_extract_fields(entity, field_config, title_content, badge_content, value_content, secondary_info, metadata_content) }}
+{% if field_config.get('auto_extract') %}
+  {# Extract content directly instead of using helper macro #}
+  {% if not title_content %}
+    {% set title_content = entity.name or entity.description or 'Untitled' %}
+  {% endif %}
+  
+  {% if not badge_content %}
+    {% set badge_value = entity.stage or entity.status or entity.job_title or entity.industry or entity.priority %}
+    {% if badge_value %}
+      {% set badge_css_class = 'bg-blue-100 text-blue-800' %}
+      {% if entity.priority == 'high' %}
+        {% set badge_css_class = 'bg-red-100 text-red-800' %}
+      {% elif entity.priority == 'medium' %}
+        {% set badge_css_class = 'bg-yellow-100 text-yellow-800' %}
+      {% elif entity.priority == 'low' %}
+        {% set badge_css_class = 'bg-green-100 text-green-800' %}
+      {% endif %}
+      {% set badge_content = '<span class="px-2 py-1 text-xs font-medium rounded-full ' + badge_css_class + '">' + (badge_value|string|title) + '</span>' %}
+    {% endif %}
+  {% endif %}
+  
+  {% if not value_content and entity.value %}
+    {% if entity.value is number %}
+      {% set value_content = '${:,.0f}'.format(entity.value) %}
+    {% else %}
+      {% set value_content = entity.value|string %}
+    {% endif %}
+  {% endif %}
+  
+  {% if not secondary_info %}
+    {% set secondary_parts = [] %}
+    {% if entity.company and entity.company.name %}
+      {% set _ = secondary_parts.append('<span class="text-gray-600">' + entity.company.name + '</span>') %}
+    {% endif %}
+    {% if entity.email %}
+      {% set _ = secondary_parts.append('<a href="mailto:' + entity.email + '" class="text-blue-600 hover:text-blue-800" onclick="event.stopPropagation()">' + entity.email + '</a>') %}
+    {% endif %}
+    {% if secondary_parts %}
+      {% set secondary_info = secondary_parts | join(' • ') %}
+    {% endif %}
+  {% endif %}
+  
+  {% if not metadata_content %}
+    {% set metadata_parts = [] %}
+    {% if entity.created_at %}
+      {% set _ = metadata_parts.append(entity.created_at.strftime('%m/%d/%y')) %}
+    {% endif %}
+    {% if entity.due_date %}
+      {% set _ = metadata_parts.append('Due: ' + entity.due_date.strftime('%m/%d/%y')) %}
+    {% endif %}
+    {% if entity.expected_close_date %}
+      {% set _ = metadata_parts.append('Close: ' + entity.expected_close_date.strftime('%m/%d/%y')) %}
+    {% endif %}
+    {% if entity.close_date %}
+      {% set _ = metadata_parts.append('Close: ' + entity.close_date.strftime('%m/%d/%y')) %}
+    {% endif %}
+    {% if metadata_parts %}
+      {% set metadata_content = metadata_parts | join(' • ') %}
+    {% endif %}
+  {% endif %}
+{% endif %}
 
 {% if expansion_enabled %}
 <details class="{{ base_classes }} {{ color_classes.get(card_type, '') }} {{ card_classes }}" 
@@ -156,65 +216,6 @@ details[open] .details-chevron {
 
 {# ========== HELPER MACROS ========== #}
 
-{# Auto-extract fields from entity when field_config is provided #}
-{% macro auto_extract_fields(entity, field_config, title_content, badge_content, value_content, secondary_info, metadata_content) %}
-{%- if field_config -%}
-  {# Auto-extract title content #}
-  {%- if not title_content -%}
-    {%- set title_content = entity.name|default('') -%}
-  {%- endif -%}
-  
-  {# Badge content based on entity type #}
-  {%- if not badge_content -%}
-    {%- set badge_value = entity.stage|default('') or entity.status|default('') or entity.job_title|default('') or entity.industry|default('') or entity.priority|default('') -%}
-    {%- if badge_value -%}
-      {%- set badge_css_class = 'bg-blue-100 text-blue-800' -%}
-      {%- set badge_content = '<span class="px-2 py-1 text-xs font-medium rounded-full ' + badge_css_class + '">' + (badge_value|string|title) + '</span>' -%}
-    {%- endif -%}
-  {%- endif -%}
-  
-  {# Value content (currency formatting for deals) #}
-  {%- if not value_content -%}
-    {%- set raw_value = entity.value|default(none) -%}
-    {%- if raw_value is number -%}
-      {%- set value_content = '${:,.0f}'.format(raw_value) -%}
-    {%- elif raw_value -%}
-      {%- set value_content = raw_value|string -%}
-    {%- endif -%}
-  {%- endif -%}
-  
-  {# Secondary info from relationships #}
-  {%- if not secondary_info -%}
-    {%- set secondary_parts = [] -%}
-    {%- if entity.company and entity.company.name -%}
-      {%- set _ = secondary_parts.append('<span class="text-gray-600">' + entity.company.name + '</span>') -%}
-    {%- endif -%}
-    {%- if entity.email -%}
-      {%- set _ = secondary_parts.append('<a href="mailto:' + entity.email + '" class="text-blue-600 hover:text-blue-800">' + entity.email + '</a>') -%}
-    {%- endif -%}
-    {%- if secondary_parts -%}
-      {%- set secondary_info = secondary_parts | join(' • ') -%}
-    {%- endif -%}
-  {%- endif -%}
-  
-  {# Metadata from date fields #}
-  {%- if not metadata_content -%}
-    {%- set metadata_parts = [] -%}
-    {%- if entity.created_at -%}
-      {%- set _ = metadata_parts.append(entity.created_at.strftime('%m/%d/%y')) -%}
-    {%- endif -%}
-    {%- if entity.due_date -%}
-      {%- set _ = metadata_parts.append('Due: ' + entity.due_date.strftime('%m/%d/%y')) -%}
-    {%- endif -%}
-    {%- if entity.expected_close_date -%}
-      {%- set _ = metadata_parts.append('Close: ' + entity.expected_close_date.strftime('%m/%d/%y')) -%}
-    {%- endif -%}
-    {%- if metadata_parts -%}
-      {%- set metadata_content = metadata_parts | join(' • ') -%}
-    {%- endif -%}
-  {%- endif -%}
-{%- endif -%}
-{% endmacro %}
 
 {# Reusable card content section #}
 {% macro card_content_section(badge_content, title_content, value_content, secondary_info, progress_config, metadata_content) %}
