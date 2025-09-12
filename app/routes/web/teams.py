@@ -59,16 +59,8 @@ def team_custom_groupers(entities, group_by):
 
 @teams_bp.route("/")
 def index():
-    # Get filter parameters for initial state and URL persistence
-    group_by = request.args.get("group_by", "job_title")
-    sort_by = request.args.get("sort_by", "name")
-    sort_direction = request.args.get("sort_direction", "asc")
-    primary_filter = (
-        request.args.get("primary_filter", "").split(",")
-        if request.args.get("primary_filter")
-        else []
-    )
-
+    from app.utils.ui.index_helpers import UniversalIndexHelper
+    
     # Get all account team members
     team_members = User.query.all()
 
@@ -122,44 +114,6 @@ def index():
                 ),
             }
         )
-
-    today = date.today()
-    
-    # Generate dropdown configs and entity config directly
-    from app.forms.base.builders import DropdownConfigGenerator
-    dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('teams', group_by, sort_by, sort_direction, primary_filter)
-    
-    # Get unique job titles for dynamic filter
-    job_title_options = []
-    job_titles = User.query.with_entities(User.job_title).distinct().all()
-    for job_title_tuple in job_titles:
-        job_title = job_title_tuple[0]
-        if job_title:
-            job_title_options.append({'value': job_title, 'label': job_title})
-    
-    # Override primary filter with dynamic job titles
-    dropdown_configs['primary_filter'] = {
-        'button_text': 'All Job Titles',
-        'options': job_title_options,
-        'current_values': primary_filter,
-        'name': 'primary_filter'
-    }
-
-    # Use model config directly
-    entity_config = {
-        'entity_name': User.__entity_config__.get('display_name', 'Team Members'),
-        'entity_name_singular': User.__entity_config__.get('display_name_singular', 'Team Member'),
-        'entity_description': User.__entity_config__.get('description', 'Manage your team'),
-        'entity_type': 'team_member',
-        'entity_endpoint': 'teams',
-        'entity_buttons': [{
-            'label': f'New {User.__entity_config__.get("display_name_singular", "Team Member")}',
-            'hx_get': f'{User.__entity_config__.get("modal_path", "/modals/User")}/create',
-            'hx_target': 'body',
-            'hx_swap': 'beforeend',
-            'entity': 'teams'
-        }]
-    }
     
     # Generate team stats directly
     entity_stats = {
@@ -183,15 +137,20 @@ def index():
             }
         ]
     }
-
-    return render_template(
-        "base/entity_index.html",
-        **entity_config,
-        dropdown_configs=dropdown_configs,
-        entity_stats=entity_stats,
-        team_members=team_members,
-        team_data=team_data,
+    
+    # Get standardized context using universal helper
+    context = UniversalIndexHelper.get_standardized_index_context(
+        entity_name='teams',
+        default_group_by='job_title',
+        default_sort_by='name',
+        additional_context={
+            'entity_stats': entity_stats,
+            'team_members': team_members,
+            'team_data': team_data,
+        }
     )
+
+    return render_template("base/entity_index.html", **context)
 
 
 def get_filtered_team_context():
