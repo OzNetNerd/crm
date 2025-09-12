@@ -1,3 +1,4 @@
+{% from 'macros/base/icons.html' import icon %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,10 +31,17 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <input type="text" 
-                           id="global-search"
-                           placeholder="Search companies, contacts, opportunities..." 
-                           class="px-3 py-2 border border-gray-300 rounded-md text-sm w-64">
+                    <div class="relative flex items-center">
+                        <input type="text" 
+                               id="global-search"
+                               placeholder="Search companies, contacts, opportunities..." 
+                               class="px-3 py-2 pr-10 border border-gray-300 rounded-md text-sm w-64">
+                        <button id="advanced-search-btn" 
+                                class="absolute right-2 p-1 hover:bg-gray-100 rounded"
+                                title="Advanced Search">
+                            {{ icon('funnel', 'sm', 'text-gray-400 hover:text-gray-600') }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -44,6 +52,9 @@
     </main>
 
     {% block modals %}{% endblock %}
+    
+    <!-- Advanced Search Modal -->
+    {% include 'components/modals/advanced_search_modal.html' %}
     
     <!-- Chat Widget -->
     {% include 'macros/widgets/chat.html' %}
