@@ -411,19 +411,9 @@ class EntityFilterManager:
         context = self.get_filtered_context(custom_filters, custom_sorting, custom_grouper, joins)
         
         # Add universal template configuration
-        # Plural mapping for proper English (only irregular plurals)
-        plural_map = {
-            'opportunity': 'opportunities',
-            'company': 'companies', 
-            'category': 'categories',
-            'activity': 'activities',
-            'entity': 'entities',
-            'priority': 'priorities',
-            'industry': 'industries',
-            'team_member': 'team members'
-        }
-        
-        entity_plural = plural_map.get(self.entity_name, f"{self.entity_name}s")
+        # Use centralized pluralization utility
+        from app.utils.text import PluralUtils
+        entity_plural = PluralUtils.pluralize(self.entity_name)
         
         context.update({
             'entity_type': self.entity_name,

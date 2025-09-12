@@ -16,37 +16,11 @@
   {{ pluralized_count(company.contacts|length, 'contact') }}
   {{ pluralized_count(items|length, 'item', 'items') }}
 #}
-{% macro pluralized_count(count, singular, plural=None, short=false, show_zero=false) %}
-{%- if count > 0 or show_zero -%}
-    {%- set display_singular = singular -%}
-    {%- if plural -%}
-        {%- set display_plural = plural -%}
-    {%- else -%}
-        {%- set plural_map = {
-            'opportunity': 'opportunities',
-            'company': 'companies', 
-            'category': 'categories',
-            'activity': 'activities',
-            'entity': 'entities',
-            'priority': 'priorities',
-            'industry': 'industries',
-            'stakeholder': 'stakeholders',
-            'task': 'tasks',
-            'note': 'notes'
-        } -%}
-        {%- set display_plural = plural_map.get(singular, singular + 's') -%}
-    {%- endif -%}
-    
-    {%- if short -%}
-        {%- if singular == 'opportunity' -%}
-            {%- set display_singular = 'opp' -%}
-            {%- set display_plural = 'opps' -%}
-        {%- endif -%}
-    {%- endif -%}
-    
-    {{ count }} {{ display_singular if count == 1 else display_plural }}
-{%- endif -%}
-{% endmacro %}
+{# 
+  Pluralized Count - Use centralized Python utility
+  This macro is now just a wrapper around the Python PluralUtils.pluralized_count function
+  The global pluralized_count function is registered in main.py
+#}
 
 {#
   Expand/Collapse Controls - Controls for expanding/collapsing sections

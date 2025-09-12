@@ -18,7 +18,7 @@
   - Icon positioning fix: actions grouped with chevron
 #}
 {% from "macros/base/forms.html" import bulk_selection_checkbox %}
-{% from "macros/ui/controls.html" import pluralized_count %}
+{# pluralized_count is now a global function registered in main.py #}
 {% from "macros/ui/progress.html" import progress_bar %}
 
 {# ========== CONTAINER SYSTEM ========== #}
@@ -207,7 +207,7 @@ details[open] .details-chevron {
 #}
 {% macro render_field(entity, field_config) %}
 {%- set field_name = field_config.name -%}
-{%- set field_value = entity.__dict__[field_name] if (entity and field_name and field_name in entity.__dict__) else None -%}
+{%- set field_value = entity[field_name] if entity and field_name else None -%}
 {%- set field_type = field_config.get('type', 'text') -%}
 {%- set default_value = field_config.get('default', '') -%}
 
@@ -283,7 +283,7 @@ details[open] .details-chevron {
     {% elif field_type == 'relationship' %}
         {% set related_object = field_value %}
         {% set related_field = field_config.get('related_field', 'name') %}
-        {% if related_object and related_field in related_object %}
+        {% if related_object %}
             {{ related_object[related_field] }}
         {% endif %}
     
@@ -790,7 +790,7 @@ details[open] .details-chevron {
   The goal was to eliminate if/elif chains in templates, but sometimes
   a small chain in infrastructure code is acceptable to keep the API clean.
 #}
-{% macro render_field(entity, field_config) %}
+{% macro render_field_legacy(entity, field_config) %}
 {%- if field_config.type == 'text' -%}
     {{ field_config.get('prefix', '') }}{{ entity[field_config.field] }}
 {%- elif field_config.type == 'count' -%}
