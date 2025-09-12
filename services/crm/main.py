@@ -78,8 +78,7 @@ def create_app():
     register_template_filters(app)
     
     # Register context processors for global template data
-    from app.context_processors import inject_model_configs
-    app.context_processor(inject_model_configs)
+    # Context processor removed - model configs accessed directly via get_all_model_configs() where needed
 
     # Register clean template functions - no more string hacks!
     app.jinja_env.globals["get_field_options"] = get_field_options
@@ -103,12 +102,7 @@ def create_app():
     # app.jinja_env.globals["modal_configs"] = MODAL_CONFIGS
     # app.jinja_env.globals["detail_modal_configs"] = DETAIL_MODAL_CONFIGS
 
-    # Make model classes available to templates
-    app.jinja_env.globals["Company"] = Company
-    app.jinja_env.globals["Stakeholder"] = Stakeholder
-    app.jinja_env.globals["Task"] = Task
-    app.jinja_env.globals["Opportunity"] = Opportunity
-    app.jinja_env.globals["User"] = User
+    # Model class globals removed - use get_all_model_configs() for model metadata
 
     with app.app_context():
         db.create_all()
