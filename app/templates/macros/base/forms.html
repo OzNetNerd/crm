@@ -246,3 +246,37 @@
         {% endif %}
     </div>
 {% endmacro %}
+
+{#
+  Child Task Form - Truly DRY WTForms-based component using render_wtforms_field
+  
+  Parameters:
+  - child_form (required): WTForms ChildTaskForm instance
+  - task_number (required): Display number (1-based) for user interface
+  - visible_class (optional): CSS class for visibility control (default: '')
+  
+  Usage:
+  {{ child_task_form(form.child_tasks[0], 1) }}
+  {{ child_task_form(form.child_tasks[2], 3, 'hidden') }}
+#}
+{% macro child_task_form(child_form, task_number, visible_class='') %}
+<div class="child-task border border-gray-200 rounded-lg p-4 bg-gray-50 {{ visible_class }}">
+    <div class="flex justify-between items-start mb-3">
+        <h4 class="text-md font-medium text-gray-900">Child Task {{ task_number }}</h4>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="md:col-span-2">
+            {{ render_wtforms_field(child_form.description) }}
+        </div>
+        <div>
+            {{ render_wtforms_field(child_form.priority) }}
+        </div>
+        <div>
+            {{ render_wtforms_field(child_form.due_date) }}
+        </div>
+        <div>
+            {{ render_wtforms_field(child_form.next_step_type) }}
+        </div>
+    </div>
+</div>
+{% endmacro %}
