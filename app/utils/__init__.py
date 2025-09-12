@@ -26,14 +26,8 @@ from .core import (
     get_entity_data_for_forms
 )
 
-# Form utilities  
-from .forms import (
-    DynamicFormBuilder,
-    FormConfigManager,
-    DynamicChoiceProvider,
-    DropdownConfigGenerator,
-    create_form_for_model
-)
+# Form utilities have been moved to app.forms module
+# Import directly from app.forms for new code
 
 # Entity utilities
 from .entities import (
@@ -79,10 +73,8 @@ __all__ = [
     'EntityFilterManager',
     'EntityGrouper',
     
-    # Forms
-    'DynamicFormBuilder',
-    'DropdownConfigGenerator',
-    'create_form_for_model',
+    # Forms (moved to app.forms module)
+    # Import from app.forms for new code
     
     # Entities
     'EntityManager',

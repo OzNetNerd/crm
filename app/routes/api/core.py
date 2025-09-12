@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.utils.forms.form_builder import FormConfigManager
+from app.forms.base.builders import FormConfigManager
 
 api_core_bp = Blueprint("api_core", __name__, url_prefix="/api")
 

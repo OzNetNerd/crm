@@ -1,0 +1,94 @@
+{# 
+  Form Layout Macros - DRY layout components for consistent form structure
+  
+  These macros provide consistent layouts for forms across the application.
+#}
+
+{% macro form_section(title, content) %}
+{% if title %}
+<div class="space-y-5">
+    <h4 class="text-md font-semibold text-gray-900 pb-2 border-b border-gray-100">{{ title }}</h4>
+    {{ content }}
+</div>
+{% else %}
+<div class="space-y-5">
+    {{ content }}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro grid_2_columns(left_content, right_content) %}
+<div class="grid grid-cols-2 gap-4">
+    <div>{{ left_content }}</div>
+    <div>{{ right_content }}</div>
+</div>
+{% endmacro %}
+
+{% macro grid_3_columns(col1_content, col2_content, col3_content) %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div>{{ col1_content }}</div>
+    <div>{{ col2_content }}</div>
+    <div>{{ col3_content }}</div>
+</div>
+{% endmacro %}
+
+{#
+  Quick Notes Form - DRY component for adding notes
+  
+  Parameters:
+  - entity_type (required): Type of entity (company, stakeholder, etc.)
+  - entity_id (required): ID of the entity
+  - placeholder (optional): Placeholder text for input
+  
+  Usage:
+  {{ quick_notes_form('company', company.id, 'Add a note about this company...') }}
+#}
+{% macro quick_notes_form(entity_type, entity_id, placeholder='Add a note...') %}
+<form hx-post="/api/{{ entity_type }}s/{{ entity_id }}/notes" 
+      hx-target="#notes-{{ entity_id }}" 
+      hx-swap="afterbegin"
+      hx-on::after-request="this.reset()"
+      class="notes-form mt-4">
+    
+    <div class="flex space-x-2">
+        <input type="text" 
+               name="content" 
+               placeholder="{{ placeholder }}"
+               required
+               class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        
+        <input type="hidden" name="is_internal" value="true">
+        
+        <button type="submit" 
+                class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Add
+        </button>
+    </div>
+</form>
+{% endmacro %}
+
+{#
+  Form Field Group - Groups related form fields together
+  
+  Parameters:
+  - title (optional): Group title
+  - fields (required): List of field content to render
+  - layout (optional): 'grid' for grid layout, 'vertical' for stacked (default)
+  
+  Usage:
+  {% call form_field_group("Contact Information") %}
+    {{ render_wtforms_field(form.email) }}
+    {{ render_wtforms_field(form.phone) }}
+  {% endcall %}
+#}
+{% macro form_field_group(title='', layout='vertical') %}
+<div class="form-field-group">
+    {% if title %}
+    <h5 class="text-sm font-medium text-gray-700 mb-3">{{ title }}</h5>
+    {% endif %}
+    
+    <div class="{% if layout == 'grid' %}grid grid-cols-1 md:grid-cols-2 gap-4{% else %}space-y-4{% endif %}">
+        {{ caller() }}
+    </div>
+</div>
+{% endmacro %}

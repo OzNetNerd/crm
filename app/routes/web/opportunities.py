@@ -112,7 +112,7 @@ def index():
     today = date.today()
 
     # Generate dropdown configs and entity config directly
-    from app.utils.forms.form_builder import DropdownConfigGenerator
+    from app.forms.base.builders import DropdownConfigGenerator
     dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('opportunities', group_by, sort_by, sort_direction, primary_filter)
     
     # Use model config directly

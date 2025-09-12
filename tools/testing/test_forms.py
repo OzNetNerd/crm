@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 def test_form_imports():
     """Test that all form classes can be imported successfully"""
     try:
-        from app.forms.task_forms import TaskForm, QuickTaskForm, ChildTaskForm, MultiTaskForm
+        from app.forms import TaskForm, QuickTaskForm, ChildTaskForm, MultiTaskForm
         print("✅ All form classes imported successfully")
         return True
     except Exception as e:
@@ -28,7 +28,7 @@ def test_form_instantiation():
         
         with app.app_context():
             with app.test_request_context():
-                from app.forms.task_forms import TaskForm, QuickTaskForm, ChildTaskForm, MultiTaskForm
+                from app.forms import TaskForm, QuickTaskForm, ChildTaskForm, MultiTaskForm
             
             # Test TaskForm
             task_form = TaskForm()
@@ -59,7 +59,7 @@ def test_field_choices():
         
         with app.app_context():
             with app.test_request_context():
-            from app.forms.task_forms import TaskForm
+            from app.forms import TaskForm
             
             form = TaskForm()
             
