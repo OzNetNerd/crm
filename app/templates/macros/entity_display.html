@@ -2,6 +2,16 @@
 {# Entity Display System - Unified display management for all entity pages #}
 
 {#
+  Empty State Sub-macro - Reusable empty state message
+  
+  Parameters:
+  - message: Custom message to display (defaults to standard message)
+#}
+{% macro empty_state(message="No matching items found") %}
+<p class="text-empty-state p-6">{{ message }}</p>
+{% endmacro %}
+
+{#
   Entity Display Container - Manages grid/list views and dynamic grouping
   
   Extracted from tasks page sophistication, this provides consistent
@@ -23,12 +33,9 @@
     
     <!-- Grid View -->
     <div x-show="viewMode === 'grid'" class="space-y-6">
-        <!-- Dynamic Client-Side Grouping -->
         <template x-for="group in getGroupedItems()" :key="group.key">
             <div class="entity-group-section mb-6">
-                <!-- Group Section -->
                 <div :class="group.containerClass">
-                    <!-- Group Header -->
                     <div :class="group.headerBgClass" 
                          class="cursor-pointer"
                          @click="toggleSection(group.key)">
@@ -47,13 +54,11 @@
                         </div>
                     </div>
                     
-                    <!-- Group Content -->
                     <div class="entity-group-content" 
                          x-show="expandedSections[group.key]" 
                          x-cloak 
                          x-transition>
                         <template x-if="group.items.length > 0">
-                            <!-- Grid Layout for Items -->
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
                                 <template x-for="item in group.items" :key="item.id">
                                     <div x-html="renderItemCard(item, group.key, '{{ render_item_macro }}')"></div>
@@ -61,7 +66,7 @@
                             </div>
                         </template>
                         <template x-if="group.items.length === 0">
-                            <p class="text-empty-state p-6">No matching items found</p>
+                            {{ empty_state() }}
                         </template>
                     </div>
                 </div>
@@ -71,12 +76,9 @@
 
     <!-- List View -->
     <div x-show="viewMode === 'list'" class="space-y-6">
-        <!-- Dynamic Client-Side Grouping for List View -->
         <template x-for="group in getGroupedItems()" :key="group.key">
             <div class="entity-group-section mb-6">
-                <!-- Group Section -->
                 <div :class="group.containerClass">
-                    <!-- Group Header (same as grid) -->
                     <div :class="group.headerBgClass" 
                          class="cursor-pointer"
                          @click="toggleSection(group.key)">
@@ -95,7 +97,6 @@
                         </div>
                     </div>
                     
-                    <!-- Group Content -->
                     <div class="entity-group-content divide-y divide-gray-200" 
                          x-show="expandedSections[group.key]" 
                          x-cloak 
@@ -108,7 +109,7 @@
                             </div>
                         </template>
                         <template x-if="group.items.length === 0">
-                            <p class="text-empty-state p-6">No matching items found</p>
+                            {{ empty_state() }}
                         </template>
                     </div>
                 </div>
