@@ -11,7 +11,7 @@ from app.models import db
 from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
 from app.utils.forms.form_builder import DynamicFormBuilder
 from app.forms.base_forms import BaseForm
-from app.utils.entity_icons import get_entity_icon_html
+from app.utils.entities.entity_icons import get_entity_icon_html
 
 
 class ModalService:
