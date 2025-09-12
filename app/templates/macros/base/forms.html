@@ -171,3 +171,68 @@
     </div>
 </div>
 {% endmacro %}
+
+{#
+  Child Task Form - Reusable form component for multi-task creation
+  
+  Parameters:
+  - task_number (required): Display number (1-based) for user interface and form field naming
+  - is_required (optional): Whether the form is required (default: false)
+  - visible_class (optional): CSS class for visibility control (default: '')
+  
+  Usage:
+  {{ child_task_form(1, true) }}
+  {{ child_task_form(3, false, 'hidden') }}
+#}
+{% macro child_task_form(task_number, is_required=false, visible_class='') %}
+{%- set task_index = task_number - 1 -%}
+{%- set priority_options = [
+    {'value': 'medium', 'label': 'Medium'},
+    {'value': 'high', 'label': 'High'},
+    {'value': 'low', 'label': 'Low'}
+] -%}
+{%- set next_step_options = [
+    {'value': '', 'label': 'None'},
+    {'value': 'call', 'label': 'Call'},
+    {'value': 'email', 'label': 'Email'},
+    {'value': 'meeting', 'label': 'Meeting'},
+    {'value': 'demo', 'label': 'Demo'}
+] -%}
+
+<div class="child-task border border-gray-200 rounded-lg p-4 bg-gray-50 {{ visible_class }}">
+    <div class="flex justify-between items-start mb-3">
+        <h4 class="text-md font-medium text-gray-900">Child Task {{ task_number }}</h4>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700">Description</label>
+            <textarea name="child_tasks[{{ task_index }}][description]" rows="2" {{ 'required' if is_required }}
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Child task description..."></textarea>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Priority</label>
+            <select name="child_tasks[{{ task_index }}][priority]" {{ 'required' if is_required }}
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                {% for option in priority_options %}
+                <option value="{{ option.value }}">{{ option.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Due Date</label>
+            <input type="date" name="child_tasks[{{ task_index }}][due_date]"
+                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Next Step Type</label>
+            <select name="child_tasks[{{ task_index }}][next_step_type]"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                {% for option in next_step_options %}
+                <option value="{{ option.value }}">{{ option.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+</div>
+{% endmacro %}
