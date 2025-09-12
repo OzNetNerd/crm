@@ -1,66 +1,57 @@
 {# Button Macros - Standardized button components for consistent interface #}
 
 {#
-  Action Button - Standardized clickable action button with consistent styling
+  Unified Button - Single button macro supporting all use cases
+  
+  Replaces action_button and enhanced_button with one DRY solution
   
   Parameters:
-  - onclick (required): JavaScript function call to execute on click
-  - icon (optional): Symbol or text to display (default: '')
-  - classes (optional): CSS classes for styling (default: standard gray styling)
-  - id (optional): HTML id attribute
-  
-  Usage:
-  {{ action_button('openStakeholderModal(' + contact.id|string + ')') }}
-  {{ action_button('openModal()', '⋯', 'text-blue-400 hover:text-blue-600') }}
-#}
-{% macro action_button(onclick, icon='', classes='text-gray-400 hover:text-gray-600', id=None) %}
-<button onclick="{{ onclick }}" 
-        class="{{ classes }}"
-        {% if id %}id="{{ id }}"{% endif %}>
-    {{ icon }}
-</button>
-{% endmacro %}
-
-{#
-  Enhanced Button - Modern button with icon and text support
-  
-  Parameters:
-  - text (required): Button text content
-  - onclick (optional): JavaScript function call to execute on click
+  - text (optional): Button text content (omit for icon-only buttons)
+  - onclick (optional): JavaScript function call to execute on click  
   - url (optional): URL for href (use instead of onclick for links)
   - icon (optional): Icon HTML from icon macros
-  - style (optional): Button style ('primary', 'secondary', 'accent', 'danger', 'gray') - default: 'primary'
+  - style (optional): Button style ('primary', 'secondary', 'accent', 'danger', 'gray', 'action') - default: 'primary'
   - size (optional): Button size ('sm', 'md', 'lg') - default: 'md'
   - disabled (optional): Whether button is disabled - default: false
   - id (optional): HTML id attribute
+  - classes (optional): Additional CSS classes for custom styling
   
   Usage:
-  {{ enhanced_button('New Task', url='/modals/Task/create', icon=plus_icon('w-4 h-4')) }}
-  {{ enhanced_button('Edit', icon=pencil_icon('w-4 h-4'), style='secondary', size='sm') }}
+  {{ button('New Task', url='/modals/Task/create', icon=plus_icon('w-4 h-4')) }}
+  {{ button(icon='⋯', onclick='openModal()', style='action', size='sm') }}
+  {{ button('Edit', style='secondary', size='sm') }}
 #}
-{% macro enhanced_button(text, onclick=None, url=None, icon='', style='primary', size='md', disabled=false, id=None) %}
+{% macro button(text='', onclick=None, url=None, icon='', style='primary', size='md', disabled=false, id=None, classes='') %}
 {%- set size_classes = {'sm': 'c-button--sm', 'md': '', 'lg': 'c-button--lg'} -%}
 {%- set style_classes = {
   'primary': 'c-button--primary',
   'secondary': 'c-button--secondary', 
   'accent': 'c-button--success',
   'danger': 'c-button--danger',
-  'gray': 'c-button--secondary'
+  'gray': 'c-button--secondary',
+  'action': 'text-gray-400 hover:text-gray-600'
 } -%}
+
+{%- set button_classes = (
+  'c-button ' + (size_classes[size] or '') + ' ' +
+  (style_classes[style] or 'c-button--primary') + ' ' +
+  (classes or '') + 
+  (' u-disabled' if disabled and url else '')
+).strip() -%}
 
 {% if url %}
 <a href="{{ url }}" 
-   class="c-button {{ size_classes[size] or '' }} {{ style_classes[style] or 'c-button--primary' }} {{ 'u-disabled' if disabled }}"
+   class="{{ button_classes }}"
    {% if id %}id="{{ id }}"{% endif %}
    {% if disabled %}aria-disabled="true"{% endif %}>
-    {{ icon|safe }}{{ text }}
+    {{ icon|safe }}{% if text and icon %} {% endif %}{{ text }}
 </a>
 {% else %}
 <button {% if onclick %}onclick="{{ onclick }}"{% endif %} 
-        class="c-button {{ size_classes[size] or '' }} {{ style_classes[style] or 'c-button--primary' }}"
+        class="{{ button_classes if style != 'action' else (style_classes['action'] + ' ' + (classes or '')) }}"
         {% if id %}id="{{ id }}"{% endif %}
         {% if disabled %}disabled{% endif %}>
-    {{ icon|safe }}{{ text }}
+    {{ icon|safe }}{% if text and icon %} {% endif %}{{ text }}
 </button>
 {% endif %}
 {% endmacro %}

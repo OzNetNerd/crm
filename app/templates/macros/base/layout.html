@@ -4,25 +4,31 @@
 {% from 'macros/base/icons.html' import icon %}
 
 {#
-  Page Layout Macro - Standardized page structure with consistent header, summary, and content areas
+  Unified Page Layout - Single flexible macro for all page layouts
+  
+  Replaces page_layout, simple_page_header, and entity_page_layout with one DRY solution
   
   Parameters:
-  - title (required): Page title text (e.g., "Companies", "Tasks")
-  - subtitle (required): Page description text (e.g., "Manage your company relationships")
+  - title (required): Page title text
+  - subtitle (required): Page description text
   - buttons (optional): Array of button objects for entity_buttons macro
   - summary_data (optional): Dict with 'title' and 'stats' array for metric display
   - additional_header_content (optional): Extra content to display in header area
-  - with_filters (optional): Include space for filter controls
   - filter_content (optional): Custom filter content to include
+  - entity_name (optional): Entity name for color theming
+  - bulk_actions (optional): Bulk action buttons (disabled in current implementation)
+  - header_only (optional): Only render header without content wrapper
   
   Usage:
-  {% call page_layout("Companies", "Manage your company relationships", buttons=company_buttons, summary_data=company_stats, with_filters=true) %}
-    <!-- Page-specific content goes here -->
+  {% call page_layout("Companies", "Manage relationships", buttons=buttons, summary_data=stats, filter_content=filters) %}
+    <!-- Page content -->
   {% endcall %}
+  
+  Header only: {{ page_layout("Title", "Subtitle", buttons=buttons, header_only=true) }}
 #}
-{% macro page_layout(title, subtitle, buttons=None, summary_data=None, additional_header_content=None, with_filters=false, filter_content=None, entity_name=None) %}
+{% macro page_layout(title, subtitle, buttons=None, summary_data=None, additional_header_content=None, filter_content=None, entity_name=None, bulk_actions=None, header_only=false) %}
 <!-- Standardized Page Header -->
-<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4{% if bulk_actions %} mb-4{% endif %}">
     <div>
         <h1 class="text-page-title">{{ title }}</h1>
         <p class="text-secondary-dark">{{ subtitle }}</p>
@@ -35,6 +41,12 @@
     {% endif %}
 </div>
 
+<!-- Bulk Actions Bar - Disabled (Alpine.js removed) -->
+{% if bulk_actions %}
+<!-- Bulk actions temporarily disabled during Alpine.js to HTMX conversion -->
+{% endif %}
+
+{% if not header_only %}
 <!-- Optional Summary Section -->
 {% if summary_data %}
 <div class="mb-8 card-padded-lg">
@@ -53,16 +65,9 @@
 {% endif %}
 
 <!-- Optional Filter Section -->
-{% if with_filters or filter_content %}
+{% if filter_content %}
 <div class="mb-6">
-    {% if filter_content %}
-        {{ filter_content|safe }}
-    {% else %}
-        <!-- Default filter placeholder -->
-        <div class="card-padded">
-            <div class="text-secondary-dark text-sm">Filter controls would go here</div>
-        </div>
-    {% endif %}
+    {{ filter_content|safe }}
 </div>
 {% endif %}
 
@@ -70,98 +75,7 @@
 <div class="space-y-6">
     {{ caller() }}
 </div>
-{% endmacro %}
-
-{#
-  Simple Page Header - For pages that only need header without summary
-  
-  Parameters:
-  - title (required): Page title
-  - subtitle (required): Page description  
-  - buttons (optional): Button array for actions
-#}
-{% macro simple_page_header(title, subtitle, buttons=None) %}
-<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div>
-        <h1 class="text-page-title">{{ title }}</h1>
-        <p class="text-secondary-dark">{{ subtitle }}</p>
-    </div>
-    {% if buttons %}
-    <div class="flex-shrink-0">
-        {{ entity_buttons(buttons) }}
-    </div>
-    {% endif %}
-</div>
-{% endmacro %}
-
-{#
-  Entity Page Layout - Enhanced layout specifically for entity index pages
-  
-  Provides all the features needed for modern entity pages with filtering,
-  view modes, and consistent structure.
-  
-  Parameters:
-  - title (required): Page title
-  - subtitle (required): Page description
-  - entity_type (required): Type of entity (for Alpine.js data)
-  - buttons (optional): Action buttons
-  - summary_data (optional): Summary statistics
-  - filter_controls (optional): Custom filter control HTML
-  - bulk_actions (optional): Bulk action buttons
-  
-  Usage:
-  {% call entity_page_layout("Companies", "Manage relationships", "companies", 
-       buttons=buttons, summary_data=stats, filter_controls=filters) %}
-    <!-- Entity display content -->
-  {% endcall %}
-#}
-{% macro entity_page_layout(title, subtitle, entity_type, buttons=None, summary_data=None, filter_controls=None, bulk_actions=None) %}
-<!-- Enhanced Page Header with Bulk Actions -->
-<div class="mb-8">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-        <div>
-            <h1 class="text-page-title">{{ title }}</h1>
-            <p class="text-secondary-dark">{{ subtitle }}</p>
-        </div>
-        {% if buttons %}
-        <div class="flex-shrink-0">
-            {{ entity_buttons(buttons) }}
-        </div>
-        {% endif %}
-    </div>
-    
-    <!-- Bulk Actions Bar - Disabled (Alpine.js removed) -->
-    {% if bulk_actions %}
-    <!-- Bulk actions temporarily disabled during Alpine.js to HTMX conversion -->
-    {% endif %}
-</div>
-
-<!-- Summary Section -->
-{% if summary_data %}
-<div class="mb-8 card-padded-lg">
-    <h2 class="text-section-title mb-4">{{ summary_data.title }}</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-center min-h-[80px]">
-        {% for stat in summary_data.stats %}
-        <div class="text-center flex flex-col justify-center">
-            <div class="text-2xl font-bold {{ ('text-color-' + entity_name) if entity_name else 'text-gray-900' }}">
-                {{ stat.value }}
-            </div>
-            <div class="text-secondary">{{ stat.label }}</div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
 {% endif %}
-
-<!-- Filter Controls Section -->
-{% if filter_controls %}
-{{ filter_controls|safe }}
-{% endif %}
-
-<!-- Main Content Area -->
-<div class="space-y-6">
-    {{ caller() }}
-</div>
 {% endmacro %}
 
 {#

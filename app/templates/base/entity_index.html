@@ -18,7 +18,6 @@
 
 {# Import core components #}
 {% from "macros/base/layout.html" import page_layout %}
-{# config_driven_filter_controls removed - macro no longer exists in optimized structure #}
 {% from "macros/modals/confirmation.html" import confirmation_modal %}
 
 {# Set page title based on entity context #}
@@ -27,23 +26,27 @@
 {% block content %}
 {# Generate filter controls based on entity type #}
 {% set entity_filter_controls %}
-{% from "macros/ui_elements.html" import htmx_enhanced_filter_controls %}
-{{ htmx_enhanced_filter_controls(
-    group_options=dropdown_configs.group_by.options if dropdown_configs.group_by else [],
-    sort_options=dropdown_configs.sort_by.options if dropdown_configs.sort_by else [],
-    group_by=dropdown_configs.group_by.current_value if dropdown_configs.group_by else '',
-    sort_by=dropdown_configs.sort_by.current_value if dropdown_configs.sort_by else '',
-    sort_direction=dropdown_configs.sort_direction.current_value if dropdown_configs.sort_direction else 'asc',
-    primary_filter_options=dropdown_configs.primary_filter.options if dropdown_configs.primary_filter else [],
-    primary_filter_label=dropdown_configs.primary_filter.button_text if dropdown_configs.primary_filter else 'All Filters',
-    primary_filter_values=dropdown_configs.primary_filter.current_values if dropdown_configs.primary_filter else [],
-    group_by_target=dropdown_configs.group_by.hx_target if dropdown_configs.group_by else None,
-    group_by_url=dropdown_configs.group_by.hx_get if dropdown_configs.group_by else None,
-    sort_by_target=dropdown_configs.sort_by.hx_target if dropdown_configs.sort_by else None,
-    sort_by_url=dropdown_configs.sort_by.hx_get if dropdown_configs.sort_by else None,
-    sort_direction_target=dropdown_configs.sort_direction.hx_target if dropdown_configs.sort_direction else None,
-    sort_direction_url=dropdown_configs.sort_direction.hx_get if dropdown_configs.sort_direction else None
-) }}
+<form hx-get="{{ url_for(entity_endpoint + '.content') }}" 
+      hx-target="#{{ entity_type }}-content"
+      hx-trigger="change, submit">
+    {% from "macros/ui_elements.html" import htmx_enhanced_filter_controls %}
+    {{ htmx_enhanced_filter_controls(
+        group_options=dropdown_configs.group_by.options if dropdown_configs.group_by else [],
+        sort_options=dropdown_configs.sort_by.options if dropdown_configs.sort_by else [],
+        group_by=dropdown_configs.group_by.current_value if dropdown_configs.group_by else '',
+        sort_by=dropdown_configs.sort_by.current_value if dropdown_configs.sort_by else '',
+        sort_direction=dropdown_configs.sort_direction.current_value if dropdown_configs.sort_direction else 'asc',
+        primary_filter_options=dropdown_configs.primary_filter.options if dropdown_configs.primary_filter else [],
+        primary_filter_label=dropdown_configs.primary_filter.button_text if dropdown_configs.primary_filter else 'All Filters',
+        primary_filter_values=dropdown_configs.primary_filter.current_values if dropdown_configs.primary_filter else [],
+        group_by_target=dropdown_configs.group_by.hx_target if dropdown_configs.group_by else None,
+        group_by_url=dropdown_configs.group_by.hx_get if dropdown_configs.group_by else None,
+        sort_by_target=dropdown_configs.sort_by.hx_target if dropdown_configs.sort_by else None,
+        sort_by_url=dropdown_configs.sort_by.hx_get if dropdown_configs.sort_by else None,
+        sort_direction_target=dropdown_configs.sort_direction.hx_target if dropdown_configs.sort_direction else None,
+        sort_direction_url=dropdown_configs.sort_direction.hx_get if dropdown_configs.sort_direction else None
+    ) }}
+</form>
 {% endset %}
 
 {% call page_layout(
@@ -51,25 +54,17 @@
     entity_description or "Manage entities", 
     buttons=entity_buttons or [], 
     summary_data=entity_stats or {},
+    filter_content=entity_filter_controls,
     entity_name=entity_name
 ) %}
 
-<div class="space-y-6">
-    <!-- HTMX Enhanced Filter Controls -->
-    <form hx-get="{{ url_for(entity_endpoint + '.content') }}" 
-          hx-target="#{{ entity_type }}-content"
-          hx-trigger="change, submit">
-        {{ entity_filter_controls|safe }}
-    </form>
-
-    <!-- Dynamic Content Area -->
-    <div id="{{ entity_type }}-content" 
-         hx-get="{{ url_for(entity_endpoint + '.content') }}?{{ request.query_string.decode('utf-8') }}"
-         hx-trigger="load">
-        <!-- Content will be loaded here via HTMX -->
-        <div class="p-8 text-center text-gray-500">
-            Loading {{ entity_name|lower }}...
-        </div>
+<!-- Dynamic Content Area -->
+<div id="{{ entity_type }}-content" 
+     hx-get="{{ url_for(entity_endpoint + '.content') }}?{{ request.query_string.decode('utf-8') }}"
+     hx-trigger="load">
+    <!-- Content will be loaded here via HTMX -->
+    <div class="p-8 text-center text-gray-500">
+        Loading {{ entity_name|lower }}...
     </div>
 </div>
 
