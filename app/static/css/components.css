@@ -902,121 +902,87 @@
     background-color: #fef3c7; /* hover:bg-yellow-200 */
 }
 
-/* Entity-specific Button Colors */
-/* Auto-generated classes based on button labels */
-.btn-new-task {
-    background-color: #2563eb; /* blue-600 */
+/* ========================================================================= */
+/* DYNAMIC BUTTON SYSTEM - Single Source of Truth for All Entity Buttons   */
+/* ========================================================================= */
+
+/* Dynamic color application for all btn-new-* classes */
+[class*="btn-new-"] {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
     color: white;
-    padding: 0.5rem 1rem; /* px-4 py-2 */
-    font-size: 0.875rem; /* text-sm */
-    font-weight: 500; /* font-medium */
-    border-radius: 0.5rem; /* rounded-lg */
+    text-decoration: none;
     border: none;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
     transform: scale(1);
+    outline: none;
+    
+    /* Use CSS custom properties for dynamic colors */
+    background-color: var(--btn-color, #6b7280);
 }
 
-.btn-new-task:hover {
-    background-color: #1d4ed8; /* blue-700 */
+[class*="btn-new-"]:hover {
+    background-color: var(--btn-hover, #4b5563);
     transform: scale(1.05);
 }
 
-.btn-new-task:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px rgba(59, 130, 246, 0.5); /* ring-2 ring-blue-500 ring-offset-2 */
+[class*="btn-new-"]:active {
+    transform: scale(0.95);
+}
+
+[class*="btn-new-"]:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--btn-ring, #6b7280), 0 0 0 4px color-mix(in srgb, var(--btn-ring, #6b7280) 25%, transparent);
+}
+
+/* Auto-generated entity color custom properties */
+.btn-new-task {
+    --btn-color: #2563eb;
+    --btn-hover: #1d4ed8;
+    --btn-ring: #3b82f6;
 }
 
 .btn-new-company {
-    background-color: #16a34a; /* green-600 */
-    color: white;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 0.5rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    transform: scale(1);
-}
-
-.btn-new-company:hover {
-    background-color: #15803d; /* green-700 */
-    transform: scale(1.05);
-}
-
-.btn-new-company:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #22c55e, 0 0 0 4px rgba(34, 197, 94, 0.5);
+    --btn-color: #16a34a;
+    --btn-hover: #15803d;
+    --btn-ring: #22c55e;
 }
 
 .btn-new-opportunity {
-    background-color: #9333ea; /* purple-600 */
-    color: white;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 0.5rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    transform: scale(1);
-}
-
-.btn-new-opportunity:hover {
-    background-color: #7c3aed; /* purple-700 */
-    transform: scale(1.05);
-}
-
-.btn-new-opportunity:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #a855f7, 0 0 0 4px rgba(168, 85, 247, 0.5);
-}
-
-.btn-new-contact {
-    background-color: #ca8a04; /* yellow-600 */
-    color: white;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 0.5rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    transform: scale(1);
-}
-
-.btn-new-contact:hover {
-    background-color: #a16207; /* yellow-700 */
-    transform: scale(1.05);
-}
-
-.btn-new-contact:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #eab308, 0 0 0 4px rgba(234, 179, 8, 0.5);
+    --btn-color: #9333ea;
+    --btn-hover: #7c3aed;
+    --btn-ring: #a855f7;
 }
 
 .btn-new-stakeholder {
-    background-color: #ca8a04; /* yellow-600 */
-    color: white;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 0.5rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    transform: scale(1);
+    --btn-color: #ca8a04;
+    --btn-hover: #a16207;
+    --btn-ring: #eab308;
 }
 
-.btn-new-stakeholder:hover {
-    background-color: #a16207; /* yellow-700 */
-    transform: scale(1.05);
+.btn-new-teams {
+    --btn-color: #dc2626;
+    --btn-hover: #b91c1c;
+    --btn-ring: #ef4444;
 }
 
-.btn-new-stakeholder:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #eab308, 0 0 0 4px rgba(234, 179, 8, 0.5);
+.btn-new-user {
+    --btn-color: #dc2626;
+    --btn-hover: #b91c1c;
+    --btn-ring: #ef4444;
+}
+
+.btn-new-default {
+    --btn-color: #6b7280;
+    --btn-hover: #4b5563;
+    --btn-ring: #6b7280;
 }
 
 
