@@ -228,6 +228,23 @@
 }
 
 /* ========================================
+ * OVERVIEW GRID COMPONENT
+ * Auto-sizing grid for overview sections
+ * ======================================== */
+
+.c-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+    .c-overview-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ========================================
  * LEGACY COMPATIBILITY LAYER
  * Temporary bridge for template migration
  * ======================================== */
