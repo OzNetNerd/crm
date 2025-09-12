@@ -115,6 +115,8 @@
  * ======================================== */
 
 .text-secondary {
+    font-size: 0.875rem; /* 14px */
+    font-weight: 600; /* semibold */
     color: #6b7280; /* text-gray-500 - secondary text color */
 }
 
