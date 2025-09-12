@@ -3,20 +3,18 @@
 {% macro quick_actions_buttons(buttons) %}
 <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
     {% for button in buttons %}
-    {% set entity_type = button['label'].split(' ')[1].lower() if button['label'].split(' ')|length > 1 else 'user' %}
-    {% set btn_class = 'c-button c-button--entity c-button--' + entity_type %}
     {% if button['hx_get'] or button['hx_post'] %}
         <button {% if button['hx_get'] %}hx-get="{{ button['hx_get'] }}"{% endif %}
                 {% if button['hx_post'] %}hx-post="{{ button['hx_post'] }}"{% endif %}
                 {% if button['hx_target'] %}hx-target="{{ button['hx_target'] }}"{% endif %}
                 {% if button['hx_swap'] %}hx-swap="{{ button['hx_swap'] }}"{% endif %}
-                class="flex items-center gap-2 {{ btn_class }}">
+                class="flex items-center gap-2 {{ button.get('classes', '') }}">
             {{ button['icon']|safe }}
             {{ button['label'] }}
         </button>
     {% else %}
         <a href="{{ button['url'] or '#' }}" 
-           class="flex items-center gap-2 {{ btn_class }}">
+           class="flex items-center gap-2 {{ button.get('classes', '') }}">
             {{ button['icon']|safe }}
             {{ button['label'] }}
         </a>
