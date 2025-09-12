@@ -1,0 +1,139 @@
+{# UI Mixins - Composable utility patterns for common interface elements #}
+
+{#
+  Summary Statistics Grid - Reusable stats display component
+  
+  Parameters:
+  - stats (required): Array of stat objects with 'value' and 'label'
+  - title (optional): Section title text
+  - entity_name (optional): Entity name for color theming
+  - columns (optional): Grid columns ('2', '3', '4') - default: '4'
+  - spacing (optional): Vertical spacing class - default: 'mb-8'
+  
+  Usage:
+  {{ summary_stats_grid(company_stats, title="Company Overview", entity_name="companies") }}
+#}
+{% macro summary_stats_grid(stats, title=None, entity_name=None, columns='4', spacing='mb-8') %}
+<div class="{{ spacing }} card-padded-lg">
+    {% if title %}
+    <h2 class="text-section-title mb-4">{{ title }}</h2>
+    {% endif %}
+    <div class="grid grid-cols-2 md:grid-cols-{{ columns }} gap-4 items-center min-h-[80px]">
+        {% for stat in stats %}
+        <div class="text-center flex flex-col justify-center">
+            <div class="text-2xl font-bold {{ ('text-color-' + entity_name) if entity_name else 'text-gray-900' }}">
+                {{ stat.value }}
+            </div>
+            <div class="text-secondary">{{ stat.label }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  Page Header - Reusable header component with title, subtitle, and actions
+  
+  Parameters:
+  - title (required): Page title text
+  - subtitle (required): Page description text
+  - buttons (optional): Array of button objects
+  - additional_content (optional): Extra content to display
+  - spacing (optional): Bottom margin class - default: 'mb-8'
+  
+  Usage:
+  {{ page_header("Companies", "Manage relationships", buttons=action_buttons) }}
+#}
+{% macro page_header(title, subtitle, buttons=None, additional_content=None, spacing='mb-8') %}
+{% from "macros/ui/quick_actions.html" import entity_buttons %}
+<div class="{{ spacing }} flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <h1 class="text-page-title">{{ title }}</h1>
+        <p class="text-secondary-dark">{{ subtitle }}</p>
+        {% if additional_content %}{{ additional_content }}{% endif %}
+    </div>
+    {% if buttons %}
+    <div class="flex-shrink-0">
+        {{ entity_buttons(buttons) }}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{#
+  Filter Section - Reusable filter controls wrapper
+  
+  Parameters:
+  - content (required): Filter control HTML content
+  - spacing (optional): Bottom margin class - default: 'mb-6'
+  
+  Usage:
+  {{ filter_section(my_filter_controls) }}
+#}
+{% macro filter_section(content, spacing='mb-6') %}
+<div class="{{ spacing }}">
+    {{ content|safe }}
+</div>
+{% endmacro %}
+
+{#
+  Content Wrapper - Standardized content area with consistent spacing
+  
+  Parameters:
+  - spacing (optional): Spacing class - default: 'space-y-6'
+  
+  Usage:
+  {% call content_wrapper() %}
+    <!-- Page content -->
+  {% endcall %}
+#}
+{% macro content_wrapper(spacing='space-y-6') %}
+<div class="{{ spacing }}">
+    {{ caller() }}
+</div>
+{% endmacro %}
+
+{#
+  Empty State - Reusable empty state component
+  
+  Parameters:
+  - title (required): Empty state title
+  - message (required): Empty state description
+  - icon (optional): Icon HTML
+  - action_button (optional): Button HTML for primary action
+  - spacing (optional): Padding class - default: 'p-8'
+  
+  Usage:
+  {{ empty_state("No tasks found", "Create your first task to get started", action_button=create_button_html) }}
+#}
+{% macro empty_state(title, message, icon='', action_button='', spacing='p-8') %}
+<div class="{{ spacing }} text-center text-gray-500">
+    {% if icon %}
+    <div class="mb-4">{{ icon|safe }}</div>
+    {% endif %}
+    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ title }}</h3>
+    <p class="mb-4">{{ message }}</p>
+    {% if action_button %}
+    <div>{{ action_button|safe }}</div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{#
+  Loading State - Reusable loading component  
+  
+  Parameters:
+  - message (optional): Loading message text - default: "Loading..."
+  - size (optional): Spinner size ('sm', 'md', 'lg') - default: 'md'
+  - spacing (optional): Padding class - default: 'p-8'
+  
+  Usage:
+  {{ loading_state("Loading companies...") }}
+#}
+{% macro loading_state(message="Loading...", size='md', spacing='p-8') %}
+{% from "macros/ui/utilities.html" import loading_spinner %}
+<div class="{{ spacing }} text-center">
+    {{ loading_spinner(size) }}
+    <p class="mt-2 text-gray-500">{{ message }}</p>
+</div>
+{% endmacro %}
