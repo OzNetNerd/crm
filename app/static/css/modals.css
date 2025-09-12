@@ -199,18 +199,18 @@
 
 /* Primary button (save, submit actions) */
 .modal-button-primary {
-    background-color: #2563eb;
+    background-color: var(--color-primary);
     color: white;
     box-shadow: var(--shadow-sm);
 }
 
 .modal-button-primary:hover:not(:disabled) {
-    background-color: #1d4ed8;
+    background-color: var(--color-primary-hover);
 }
 
 .modal-button-primary:focus {
     outline: none;
-    box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 0 2px var(--color-primary), 0 0 0 4px color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 /* Secondary button (cancel, dismiss actions) */
@@ -280,18 +280,18 @@
     justify-content: center;
     text-decoration: none;
     /* Primary button styling */
-    background-color: #2563eb;
+    background-color: var(--color-primary);
     color: white;
     box-shadow: var(--shadow-sm);
 }
 
 .modal-save-button:hover:not(:disabled) {
-    background-color: #1d4ed8;
+    background-color: var(--color-primary-hover);
 }
 
 .modal-save-button:focus {
     outline: none;
-    box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 0 2px var(--color-primary), 0 0 0 4px color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 .modal-save-button:disabled {
@@ -436,7 +436,7 @@
 }
 
 .form-checkbox {
-    color: #2563eb;
+    color: var(--color-primary);
     border: 1px solid var(--color-gray-300);
     border-radius: var(--radius-sm);
 }
@@ -448,7 +448,7 @@
 
 .form-radio {
     margin-right: 0.5rem;
-    color: #2563eb;
+    color: var(--color-primary);
     border: 1px solid var(--color-gray-300);
     border-radius: var(--radius-sm);
 }
@@ -561,7 +561,7 @@
     height: 2rem;
     width: 2rem;
     border: 2px solid transparent;
-    border-bottom-color: #2563eb;
+    border-bottom-color: var(--color-primary);
 }
 
 @keyframes spin {
@@ -626,7 +626,7 @@
 }
 
 .modal-note-delete:hover {
-    color: #dc2626;
+    color: var(--color-danger);
 }
 
 .modal-note-input-container {
@@ -668,18 +668,18 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background-color: #2563eb;
+    background-color: var(--color-primary);
     color: white;
     box-shadow: var(--shadow-sm);
 }
 
 .modal-note-add-button:hover:not(:disabled) {
-    background-color: #1d4ed8;
+    background-color: var(--color-primary-hover);
 }
 
 .modal-note-add-button:focus {
     outline: none;
-    box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 0 2px var(--color-primary), 0 0 0 4px color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 .modal-note-add-button:disabled {
@@ -764,8 +764,8 @@
 }
 
 .modal-status-complete {
-    background-color: #dcfce7;
-    color: #166534;
+    background-color: var(--color-secondary-light);
+    color: var(--color-secondary-hover);
 }
 
 .modal-status-pending {
@@ -774,13 +774,13 @@
 }
 
 .modal-status-in-progress {
-    background-color: #fef3c7;
-    color: #92400e;
+    background-color: var(--color-warning-light);
+    color: var(--color-warning-hover);
 }
 
 .modal-status-cancelled {
-    background-color: #fee2e2;
-    color: #991b1b;
+    background-color: var(--color-danger-light);
+    color: var(--color-danger-hover);
 }
 
 /* ========== Priority Indicators ========== */

@@ -496,7 +496,7 @@ class EntityConfigGenerator:
             {
                 'value': len(entities),
                 'label': f'Total {display_name}',
-                'color_class': 'text-blue-600'
+                'color_class': 'text-color-default'
             }
         ]
         
@@ -507,7 +507,7 @@ class EntityConfigGenerator:
                 {
                     'value': f"${total_value:,}",
                     'label': 'Total Pipeline Value',
-                    'color_class': 'text-green-600'
+                    'color_class': 'text-color-company'
                 },
                 {
                     'value': len([e for e in entities if getattr(e, 'stage', None) == 'closed-won']),
@@ -517,7 +517,7 @@ class EntityConfigGenerator:
                 {
                     'value': len(set(getattr(e, 'company_id', None) for e in entities if getattr(e, 'company_id', None))),
                     'label': 'Companies in Pipeline',
-                    'color_class': 'text-purple-600'
+                    'color_class': 'text-color-opportunity'
                 }
             ])
         elif entity_name == 'companies':
@@ -525,17 +525,17 @@ class EntityConfigGenerator:
                 {
                     'value': len([c for c in entities if getattr(c, 'industry', None)]),
                     'label': 'With Industry',
-                    'color_class': 'text-green-600'
+                    'color_class': 'text-color-company'
                 },
                 {
                     'value': sum(len(getattr(c, 'stakeholders', []) or []) for c in entities),
                     'label': 'Total Stakeholders',
-                    'color_class': 'text-purple-600'
+                    'color_class': 'text-color-opportunity'
                 },
                 {
                     'value': sum(len(getattr(c, 'opportunities', []) or []) for c in entities),
                     'label': 'Total Opportunities',
-                    'color_class': 'text-yellow-600'
+                    'color_class': 'text-color-stakeholder'
                 }
             ])
         elif entity_name == 'stakeholders':
@@ -543,17 +543,17 @@ class EntityConfigGenerator:
                 {
                     'value': len([s for s in entities if getattr(s, 'phone', None)]),
                     'label': 'With Phone',
-                    'color_class': 'text-green-600'
+                    'color_class': 'text-color-company'
                 },
                 {
                     'value': len([s for s in entities if getattr(s, 'email', None)]),
                     'label': 'With Email',
-                    'color_class': 'text-purple-600'
+                    'color_class': 'text-color-opportunity'
                 },
                 {
                     'value': len(set([getattr(s, 'company_id', None) for s in entities if getattr(s, 'company_id', None)])),
                     'label': 'Companies Represented',
-                    'color_class': 'text-yellow-600'
+                    'color_class': 'text-color-stakeholder'
                 }
             ])
         elif entity_name == 'tasks':
@@ -564,12 +564,12 @@ class EntityConfigGenerator:
                 {
                     'value': completed_tasks,
                     'label': 'Completed',
-                    'color_class': 'text-green-600'
+                    'color_class': 'text-color-company'
                 },
                 {
                     'value': len(entities) - completed_tasks,
                     'label': 'Active',
-                    'color_class': 'text-blue-600'
+                    'color_class': 'text-color-default'
                 },
                 {
                     'value': overdue_tasks,
