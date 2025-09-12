@@ -1,11 +1,5 @@
 from flask import Blueprint, request, jsonify
 from app.utils.forms.form_builder import FormConfigManager
-from app.forms.entity_forms import (
-    CompanyForm,
-    StakeholderForm,
-    OpportunityForm,
-    NoteForm,
-)
 
 api_core_bp = Blueprint("api_core", __name__, url_prefix="/api")
 
@@ -25,6 +19,14 @@ def get_form_config(entity_type):
     template configs by generating configurations directly from WTForms.
     """
     try:
+        # Import forms inside function to avoid app context issues
+        from app.forms import (
+            CompanyForm,
+            StakeholderForm,
+            OpportunityForm,
+            NoteForm,
+        )
+        
         # Map entity types to form classes
         form_classes = {
             "company": CompanyForm,

@@ -372,7 +372,18 @@ class FormConfigManager:
         }
 
         # Process each field in the form
-        for field_name, field in form_class._formfields.items():
+        # Get fields from the form class by checking for Field instances
+        form_fields = {}
+        for attr_name in dir(form_class):
+            attr = getattr(form_class, attr_name)
+            # Check if this is a WTForms field
+            if hasattr(attr, '__class__') and hasattr(attr.__class__, '__mro__'):
+                # Check if it's a subclass of Field
+                from wtforms import Field
+                if any(Field in base.__mro__ for base in attr.__class__.__mro__):
+                    form_fields[attr_name] = attr
+            
+        for field_name, field in form_fields.items():
             field_config = cls._get_field_config(field_name, field, context)
             config["fields"].append(field_config)
 
