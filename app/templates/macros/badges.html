@@ -13,7 +13,7 @@
 {% macro contact_info_badge(contact, additional_classes='') %}
 {% set info_type = get_contact_info_type(contact) %}
 {% set badge_configs = get_contact_badge_configs() %}
-<span class="badge-standard badge-{{ badge_configs[info_type].color }} {{ additional_classes }}">{{ badge_configs[info_type].label }}</span>
+<span class="badge-standard badge-contact-{{ info_type }} {{ additional_classes }}">{{ badge_configs[info_type].label }}</span>
 {% endmacro %}
 
 {% macro get_contact_info_type(contact) %}
@@ -26,10 +26,10 @@
 
 {% macro get_contact_badge_configs() %}
 {
-    'complete': {'color': 'green', 'label': 'Complete Info'},
-    'email_only': {'color': 'blue', 'label': 'Email Only'}, 
-    'phone_only': {'color': 'yellow', 'label': 'Phone Only'},
-    'missing': {'color': 'red', 'label': 'Missing Info'}
+    'complete': {'label': 'Complete Info'},
+    'email_only': {'label': 'Email Only'}, 
+    'phone_only': {'label': 'Phone Only'},
+    'missing': {'label': 'Missing Info'}
 }
 {% endmacro %}
 
@@ -45,12 +45,10 @@
   {{ status_badge(task.status) }}
   {{ status_badge(company.status, {'active': 'green', 'inactive': 'red'}) }}
 #}
-{% macro status_badge(status, color_map=None, size='md') %}
-{%- set color = get_status_color(status, color_map) -%}
-
+{% macro status_badge(status, color_map=None, size='md', entity_type=None) %}
 {%- set size_classes = {'sm': 'px-2 py-1 text-xs', 'md': 'px-2.5 py-0.5 text-sm', 'lg': 'px-3 py-1 text-base'} -%}
 
-<span class="inline-flex items-center {{ size_classes[size] or size_classes['md'] }} font-medium rounded-full badge-{{ color }}">
+<span class="inline-flex items-center {{ size_classes[size] or size_classes['md'] }} font-medium rounded-full badge-status-{{ status }}{% if entity_type %} badge-entity-{{ entity_type }}{% endif %}">
     {{ status|title }}
 </span>
 {% endmacro %}
@@ -105,7 +103,7 @@
 {%- else -%}
     {%- set count = 0 -%}
 {%- endif -%}
-<span class="ml-2 badge-standard badge-{{ color }}">{{ count }}</span>
+<span class="ml-2 badge-standard badge-count-{{ color }}">{{ count }}</span>
 {%- endmacro %}
 
 {#
@@ -126,33 +124,8 @@
         {{ badge_count_helper(filter_config.type, filter_config.value, badge_color) }}
     {%- endif -%}
 {%- else -%}
-    <span class="ml-2 badge-standard badge-{{ badge_color }}">0</span>
+    <span class="ml-2 badge-standard badge-count-{{ badge_color }}">0</span>
 {%- endif -%}
 {% endmacro %}
 
-{#
-  Helper macro for status color determination - eliminates if/elif chains
-#}
-{% macro get_status_color(status, color_map=None) %}
-{%- if color_map -%}
-    {{ color_map.get(status, 'gray') }}
-{%- else -%}
-    {% set default_colors = get_default_status_colors() %}
-    {% set found_color = '' %}
-    {% for color_group, statuses in default_colors.items() %}
-        {% if status in statuses and not found_color %}
-            {% set found_color = color_group %}
-        {% endif %}
-    {% endfor %}
-    {{ found_color or 'gray' }}
-{%- endif -%}
-{% endmacro %}
-
-{% macro get_default_status_colors() %}
-{
-    'green': ['complete', 'completed', 'done', 'active', 'open'],
-    'yellow': ['in-progress', 'in_progress', 'pending', 'working'],
-    'red': ['overdue', 'late', 'failed', 'error'],
-    'blue': ['todo', 'new', 'draft']
-}
-{% endmacro %}
+{# Status colors now use dynamic CSS classes: badge-status-{status} #}
