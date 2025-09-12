@@ -121,3 +121,12 @@
         </div>
     {% endif %}
 {% endmacro %}
+
+{# Task Metadata - Specific metadata formatting for tasks with due dates #}
+{% macro task_metadata(task, today=none) %}
+    {{ standard_card_metadata(task, {
+        'include_date': true,
+        'today': today or task.due_date.today() if task.due_date else none,
+        'return_string': true
+    }) or 'No due date' }}
+{% endmacro %}
