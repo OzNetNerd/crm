@@ -463,7 +463,7 @@ class EntityConfigGenerator:
                 'hx_target': 'body',
                 'hx_swap': 'beforeend', 
                 'icon': icon_html,
-                'classes': f'c-button c-button--entity c-button--{entity_name.rstrip("s")}'
+                'classes': f'btn-entity-{entity_name.rstrip("s")}'
             }
         ]
         
