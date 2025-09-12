@@ -5,7 +5,7 @@
 {% from "macros/base/layout.html" import page_layout %}
 {% from "macros/ui/quick_actions.html" import default_dashboard_actions %}
 {% from "macros/ui/metadata_display.html" import task_metadata %}
-{% from "macros/base/icons.html" import building_office_icon, user_icon, currency_dollar_icon, clipboard_list_icon, exclamation_circle_icon_solid, calendar_days_icon %}
+{% from "macros/base/icons.html" import icon %}
 {% from "macros/formatting.html" import format_currency %}
 
 
@@ -16,10 +16,10 @@
 
 <!-- Key Metrics -->
 {% call metric_grid(4, 6, 'mb-8') %}
-    {{ metric_card('Companies', metrics.total_companies, building_office_icon('c-icon c-icon--lg c-icon--company'), 'blue') }}
-    {{ metric_card('Stakeholders', metrics.total_contacts, user_icon('c-icon c-icon--lg c-icon--stakeholder'), 'green') }}
-    {{ metric_card('Opportunities', metrics.total_opportunities, currency_dollar_icon('c-icon c-icon--lg c-icon--opportunity'), 'yellow') }}
-    {{ metric_card('Total Tasks', metrics.total_tasks, clipboard_list_icon('c-icon c-icon--lg c-icon--task'), 'purple') }}
+    {{ metric_card('Companies', metrics.total_companies, icon('building-office', 'lg', 'c-icon--company'), 'blue') }}
+    {{ metric_card('Stakeholders', metrics.total_contacts, icon('user', 'lg', 'c-icon--stakeholder'), 'green') }}
+    {{ metric_card('Opportunities', metrics.total_opportunities, icon('currency-dollar', 'lg', 'c-icon--opportunity'), 'yellow') }}
+    {{ metric_card('Total Tasks', metrics.total_tasks, icon('clipboard-list', 'lg', 'c-icon--task'), 'purple') }}
 {% endcall %}
 
 <!-- Task Quick Stats -->
@@ -65,7 +65,7 @@
     <div class="space-y-6">
         <!-- Overdue Tasks Alert -->
         {% if overdue_tasks %}
-        {% call list_section('Overdue Tasks', href='/tasks/', theme_color='red', icon_macro=exclamation_circle_icon_solid('c-icon c-icon--md c-icon--danger')) %}
+        {% call list_section('Overdue Tasks', href='/tasks/', theme_color='red', icon_macro=icon('exclamation-circle-solid', 'md', 'c-icon--danger')) %}
             {% for task in overdue_tasks %}
                 {{ alert_list_item(
                     title=task.description,
@@ -79,7 +79,7 @@
 
         <!-- Closing Soon Opportunities -->
         {% if closing_soon %}
-        {% call list_section('Closing Soon', href='/opportunities/', theme_color='yellow', icon_macro=calendar_days_icon('c-icon c-icon--md c-icon--warning')) %}
+        {% call list_section('Closing Soon', href='/opportunities/', theme_color='yellow', icon_macro=icon('calendar-days', 'md', 'c-icon--warning')) %}
             {% for opp in closing_soon %}
                 {{ alert_list_item(
                     title=opp.name,
