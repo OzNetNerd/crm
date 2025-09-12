@@ -21,9 +21,6 @@ from .entity_icons import (
     generate_entity_buttons
 )
 
-from .entity_config import (
-    EntityConfigGenerator
-)
 
 __all__ = [
     'EntityManager',
@@ -39,5 +36,4 @@ __all__ = [
     'get_entity_semantic',
     'get_dashboard_entities',
     'generate_entity_buttons',
-    'EntityConfigGenerator'
 ]
