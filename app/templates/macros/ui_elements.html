@@ -1,4 +1,5 @@
 {% from 'macros/base/icons.html' import icon %}
+{% from "macros/expandable_card.html" import card %}
 {# Common UI Elements - Reusable macros for consistent interface components #}
 
 {# action_button removed - use the one from macros/base/buttons.html instead #}
@@ -72,12 +73,16 @@
             {% if task_matches_filter(task, filter_config) == 'true' %}
                 {% set _ = has_tasks.append(task) %}
                 <div x-show="shouldShowTask({priority: '{{ task.priority }}', entity_type: {{ "'" + task.entity_type + "'" if task.entity_type else "'unrelated'" }}, status: '{{ task.status }}'})" {% if additional_classes %}class="{{ additional_classes }}"{% endif %}>
-                    {% call expandable_card('task', task, task.id,
-                                           expansion_enabled=true,
-                                           group_key=section_key,
-                                           action_content=task_reschedule_buttons(task.id)) %}
-                        {{ task_header_content(task) }}
-                    {% endcall %}
+                    {{ card('task', task, overrides={
+                        'actions': {
+                            'type': 'custom', 
+                            'content': task_reschedule_buttons(task.id)
+                        },
+                        'expanded': {
+                            'type': 'html',
+                            'content': task_header_content(task)
+                        }
+                    }) }}
                 </div>
             {% endif %}
         {% endfor %}

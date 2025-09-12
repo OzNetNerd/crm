@@ -95,12 +95,7 @@ function toggleChat() {
 }
 
 function connectWebSocket() {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-<<<<<<< Updated upstream
-    ws = new WebSocket(`${protocol}//localhost:8030/ws/chat`);
-=======
     ws = new WebSocket(`${protocol}//localhost:8028/ws/chat`);
->>>>>>> Stashed changes
     
     updateConnectionStatus('connecting');
     
