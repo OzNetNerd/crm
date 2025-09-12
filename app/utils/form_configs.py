@@ -450,17 +450,10 @@ class EntityConfigGenerator:
         # Get entity config from model
         entity_config = getattr(model_class, '__entity_config__', {})
         
-        # Icon mapping from string names to actual HTML
-        icon_mapping = {
-            'plus': EntityConfigGenerator._render_icon_html('plus_icon'),
-            'users': EntityConfigGenerator._render_icon_html('users_icon'),
-            'building-office': EntityConfigGenerator._render_icon_html('building_office_icon'),
-            'currency-dollar': EntityConfigGenerator._render_icon_html('currency_dollar_icon'),
-            'user': EntityConfigGenerator._render_icon_html('user_icon'),
-        }
-        
+        # Use centralized entity icon system
+        from app.utils.entity_icons import get_entity_icon_html
         icon_name = entity_config.get('icon', 'plus')
-        icon_html = icon_mapping.get(icon_name, icon_mapping['plus'])
+        icon_html = get_entity_icon_html(icon_name, 'button')
         
         # Generate entity buttons with proper HTMX attributes and rendered icons
         entity_buttons = [
@@ -485,27 +478,6 @@ class EntityConfigGenerator:
         }
         
         return entity_info
-    
-    @staticmethod
-    def _render_icon_html(icon_function_name: str) -> str:
-        """Render icon HTML from icon function name"""
-        from flask import render_template_string
-        
-        # Create a template that calls the icon macro
-        icon_template = f"""
-        {{% from "macros/base/icons.html" import {icon_function_name} %}}
-        {{{{ {icon_function_name}('w-4 h-4') }}}}
-        """
-        
-        try:
-            return render_template_string(icon_template).strip()
-        except Exception:
-            # Fallback to plus icon if icon function doesn't exist
-            fallback_template = """
-            {% from "macros/base/icons.html" import plus_icon %}
-            {{ plus_icon('w-4 h-4') }}
-            """
-            return render_template_string(fallback_template).strip()
     
     @staticmethod
     def generate_entity_stats(entity_name: str, entities: List, model_class=None) -> Dict[str, Any]:

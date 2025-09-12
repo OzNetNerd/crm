@@ -5,7 +5,7 @@
 {% from "macros/base/layout.html" import simple_page_header %}
 {% from "macros/quick_actions.html" import default_dashboard_actions %}
 {% from "macros/metadata_display.html" import standard_card_metadata %}
-{% from "macros/base/icons.html" import plus_icon, building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon %}
+{% from "macros/base/icons.html" import plus_icon, building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon, clipboard_list_icon %}
 
 {# Use standard metadata macro for consistency #}
 {% macro task_metadata(task) %}
@@ -19,36 +19,8 @@
 {% block title %}Dashboard - CRM{% endblock %}
 
 {% block content %}
-{% set dashboard_buttons = [
-    {
-        'label': 'New Task',
-        'hx_get': '/modals/Task/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': plus_icon('w-4 h-4')
-    },
-    {
-        'label': 'New Company',
-        'hx_get': '/modals/Company/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': plus_icon('w-4 h-4')
-    },
-    {
-        'label': 'New Stakeholder',
-        'hx_get': '/modals/Stakeholder/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': plus_icon('w-4 h-4')
-    },
-    {
-        'label': 'New Opportunity',
-        'hx_get': '/modals/Opportunity/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': plus_icon('w-4 h-4')
-    }
-] %}
+{# Use centralized DRY button generation system #}
+{% set dashboard_buttons = get_dashboard_buttons() %}
 
 {{ simple_page_header("Dashboard", "Overview of your CRM performance and activity", buttons=dashboard_buttons) }}
 

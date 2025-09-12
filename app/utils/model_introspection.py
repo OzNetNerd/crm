@@ -519,7 +519,7 @@ def get_model_by_name(model_name: str):
     Returns:
         Model class or None if not found
     """
-    from app.models import Company, Stakeholder, Opportunity, Task
+    from app.models import Company, Stakeholder, Opportunity, Task, User
     
     model_map = {
         'company': Company,
@@ -527,6 +527,10 @@ def get_model_by_name(model_name: str):
         'contact': Stakeholder,  # Legacy support
         'opportunity': Opportunity,
         'task': Task,
+        'User': User,
+        'user': User,
+        'TeamMember': User,  # Alias for teams
+        'team_member': User,
     }
     
     return model_map.get(model_name.lower())

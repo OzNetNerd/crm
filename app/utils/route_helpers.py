@@ -401,7 +401,7 @@ class EntityFilterManager:
         context = self.get_filtered_context(custom_filters, custom_sorting, custom_grouper, joins)
         
         # Add universal template configuration
-        # Plural mapping for proper English
+        # Plural mapping for proper English (only irregular plurals)
         plural_map = {
             'opportunity': 'opportunities',
             'company': 'companies', 
@@ -410,9 +410,7 @@ class EntityFilterManager:
             'entity': 'entities',
             'priority': 'priorities',
             'industry': 'industries',
-            'stakeholder': 'stakeholders',
-            'task': 'tasks',
-            'note': 'notes'
+            'team_member': 'team members'
         }
         
         entity_plural = plural_map.get(self.entity_name, f"{self.entity_name}s")
@@ -434,6 +432,18 @@ class EntityGrouper:
     def __init__(self, model_class, entity_name):
         self.model_class = model_class
         self.entity_name = entity_name
+        
+        # Plural mapping for proper English (only irregular plurals)
+        self.plural_map = {
+            'opportunity': 'opportunities',
+            'company': 'companies', 
+            'category': 'categories',
+            'activity': 'activities',
+            'entity': 'entities',
+            'priority': 'priorities',
+            'industry': 'industries',
+            'team_member': 'team members'
+        }
     
     def group_by_field(self, entities, group_by, custom_grouper=None):
         """Group entities by specified field with support for custom grouper function"""
@@ -469,7 +479,7 @@ class EntityGrouper:
         # Fallback: return all entities in one group
         return [{
             "key": "all",
-            "label": f"All {self.entity_name.title()}s",
+            "label": f"All {self.plural_map.get(self.entity_name, f'{self.entity_name}s').title()}",
             "entities": entities,
             "count": len(entities)
         }]

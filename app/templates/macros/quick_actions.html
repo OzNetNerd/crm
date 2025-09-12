@@ -3,8 +3,8 @@
 {% macro quick_actions_buttons(buttons) %}
 <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
     {% for button in buttons %}
-    {% set entity_type = button['label'].split(' ')[1].lower() if button['label'].split(' ')|length > 1 else 'default' %}
-    {% set btn_class = 'btn-new-' + entity_type %}
+    {# Use button's provided classes instead of auto-generating conflicting ones #}
+    {% set btn_class = button.get('classes', 'btn-new-default') %}
     {% if button['hx_get'] or button['hx_post'] %}
         <button {% if button['hx_get'] %}hx-get="{{ button['hx_get'] }}"{% endif %}
                 {% if button['hx_post'] %}hx-post="{{ button['hx_post'] }}"{% endif %}
@@ -26,29 +26,9 @@
 {% endmacro %}
 
 {% macro default_dashboard_actions() %}
-{{ quick_actions_buttons([
-    {
-        'label': 'New Task',
-        'hx_get': '/modals/Task/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': plus_icon('w-4 h-4')
-    },
-    {
-        'label': 'New Company',
-        'hx_get': '/modals/Company/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': building_office_icon('w-4 h-4')
-    },
-    {
-        'label': 'New Opportunity',
-        'hx_get': '/modals/Opportunity/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': currency_dollar_icon('w-4 h-4')
-    }
-]) }}
+{# Use centralized DRY button generation system #}
+{% set entity_buttons = get_dashboard_buttons() %}
+{{ quick_actions_buttons(entity_buttons) }}
 {% endmacro %}
 
 {# 
