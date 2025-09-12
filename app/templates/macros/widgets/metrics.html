@@ -55,7 +55,7 @@
       </div>
       <div class="ml-5 w-0 flex-1">
         <dl>
-          <dt class="text-label">{{ title }}</dt>
+          <dt class="text-metric-heading">{{ title }}</dt>
           <dd class="text-metric-value">{{ value }}</dd>
         </dl>
       </div>
@@ -105,7 +105,7 @@
   <{{ container_tag }} {{ container_attrs|safe }} class="card-padded-lg {{ hover_classes }} {{ additional_classes }}">
     <div class="text-center">
       <div class="text-3xl font-bold {{ value_color }}">{{ value }}</div>
-      <div class="text-label">{{ label }}</div>
+      <div class="text-metric-heading">{{ label }}</div>
     </div>
   </{{ container_tag }}>
 {% endmacro %}

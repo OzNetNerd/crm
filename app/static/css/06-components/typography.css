@@ -31,6 +31,14 @@
     color: #111827; /* text-gray-900 */
 }
 
+.text-metric-heading {
+    font-size: 1em; /* 16px equivalent */
+    font-weight: 500; /* font-medium - same as text-label */
+    color: #6b7280; /* text-gray-500 - same as text-label */
+    white-space: nowrap;
+    overflow: hidden;
+}
+
 /* ========================================
  * ENTITY TEXT STYLING
  * Large, prominent text for entity names and titles
