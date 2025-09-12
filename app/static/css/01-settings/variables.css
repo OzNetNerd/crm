@@ -165,12 +165,12 @@
 }
 
 /* ========================================
- * THEME OVERRIDES
- * Priority-specific theme colors from layout
+ * PRIORITY COLORS
+ * Task priority-specific colors for consistent theming
  * ======================================== */
 
-@theme {
-    --color-priority-high: #fef2f2;
-    --color-priority-medium: #fffbeb;
-    --color-priority-low: #f0fdf4;
+:root {
+    --color-priority-high: #fef2f2; /* red-50 for high priority backgrounds */
+    --color-priority-medium: #fffbeb; /* amber-50 for medium priority backgrounds */
+    --color-priority-low: #f0fdf4; /* green-50 for low priority backgrounds */
 }

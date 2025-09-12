@@ -23,6 +23,17 @@
     white-space: nowrap;
 }
 
+/* Standard badge class - used throughout templates */
+.badge-standard {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    border-radius: var(--radius-full);
+    white-space: nowrap;
+}
+
 /* ========================================
  * SEMANTIC BADGE VARIANTS
  * Color variants for different states and meanings
@@ -54,8 +65,8 @@
 }
 
 .c-badge--orange {
-    background-color: #fff7ed; /* bg-orange-100 */
-    color: #9a3412; /* text-orange-800 */
+    background-color: var(--color-warning-lighter); /* Using warning-lighter for orange-100 equivalent */
+    color: var(--color-warning-hover); /* Using warning-hover for orange-800 equivalent */
 }
 
 .c-badge--gray {
@@ -206,8 +217,8 @@
 }
 
 .badge-count-orange {
-    background-color: #fff7ed; /* bg-orange-100 */
-    color: #9a3412; /* text-orange-800 */
+    background-color: var(--color-warning-lighter); /* Using warning-lighter for orange-100 equivalent */
+    color: var(--color-warning-hover); /* Using warning-hover for orange-800 equivalent */
 }
 
 .badge-count-purple {
@@ -265,8 +276,8 @@
 }
 
 .badge-negotiation {
-    background-color: #fff7ed; /* orange-100 */
-    color: #9a3412; /* orange-800 */
+    background-color: var(--color-warning-lighter); /* Using warning-lighter for orange-100 equivalent */
+    color: var(--color-warning-hover); /* Using warning-hover for orange-800 equivalent */
 }
 
 /* Generic status classes */
