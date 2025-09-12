@@ -21,12 +21,12 @@
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-8">
                     <a href="{{ url_for('dashboard.index') }}" class="text-brand">CRM</a>
-                    <div class="flex space-x-6">
-                        <a href="{{ url_for('companies.index') }}" class="text-nav-link">Companies</a>
-                        <a href="{{ url_for('stakeholders.index') }}" class="text-nav-link">Stakeholders</a>
-                        <a href="{{ url_for('opportunities.index') }}" class="text-nav-link">Opportunities</a>
-                        <a href="{{ url_for('tasks.index') }}" class="text-nav-link">Tasks</a>
-                        <a href="{{ url_for('teams.index') }}" class="text-nav-link">Account Teams</a>
+                    <div class="flex space-x-2">
+                        <a href="{{ url_for('companies.index') }}" class="text-nav-link{% if request.endpoint and request.endpoint.startswith('companies.') %} text-nav-link--active{% endif %}">Companies</a>
+                        <a href="{{ url_for('stakeholders.index') }}" class="text-nav-link{% if request.endpoint and request.endpoint.startswith('stakeholders.') %} text-nav-link--active{% endif %}">Stakeholders</a>
+                        <a href="{{ url_for('opportunities.index') }}" class="text-nav-link{% if request.endpoint and request.endpoint.startswith('opportunities.') %} text-nav-link--active{% endif %}">Opportunities</a>
+                        <a href="{{ url_for('tasks.index') }}" class="text-nav-link{% if request.endpoint and request.endpoint.startswith('tasks.') %} text-nav-link--active{% endif %}">Tasks</a>
+                        <a href="{{ url_for('teams.index') }}" class="text-nav-link{% if request.endpoint and request.endpoint.startswith('teams.') %} text-nav-link--active{% endif %}">Account Teams</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
