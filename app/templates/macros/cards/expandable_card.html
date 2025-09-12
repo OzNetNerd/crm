@@ -44,7 +44,7 @@
 #}
 {% macro auto_card(entity_type, entity, expansion_enabled=true, overrides={}, card_classes='') %}
 {# Simplified auto card - uses existing expandable_card with basic field extraction #}
-{{ expandable_card(entity_type, entity, entity.id, expansion_enabled=expansion_enabled, card_classes=card_classes, field_config={'auto_extract': true}) }}
+{{ expandable_card(entity_type, entity, entity.id, expansion_enabled=expansion_enabled, card_classes=card_classes, field_config={'auto_extract': true}, action_buttons=generate_action_buttons(entity_type, entity.id)) }}
 {% endmacro %}
 
 {# Main expandable card macro - htmx-enhanced with server-side state management #}
@@ -139,7 +139,7 @@
             
             <!-- Right side actions -->
             {% if action_buttons %}
-            <div class="flex items-center space-x-2">{{ action_buttons|safe }}</div>
+            {{ action_buttons|safe }}
             {% endif %}
             
             <!-- Task-specific reschedule buttons -->
@@ -149,7 +149,7 @@
             
             <!-- Expand chevron -->
             <div class="ml-4 transition-transform duration-200 details-chevron">
-                {{ icon('chevron-down', 'md', 'text-gray-400') }}
+                {{ icon('chevron-right', 'md', 'text-gray-400') }}
             </div>
         </div>
     </summary>
@@ -188,7 +188,7 @@
         </div>
         
         {% if action_buttons %}
-        <div class="flex items-center space-x-2">{{ action_buttons|safe }}</div>
+        {{ action_buttons|safe }}
         {% endif %}
         
         {% if card_type == 'task' %}
@@ -402,45 +402,67 @@ details[open] .details-chevron {
        {'type': 'delete', 'hx_delete': '/api/tasks/' + task.id|string, 'hx_confirm': 'Are you sure?', 'hx_target': 'closest(.task-card)', 'hx_swap': 'outerHTML'} 
      ]) }}
 #}
-{% macro action_buttons_row(entity_type, entity_id, actions=none, disabled_condition='') %}
-{% from "macros/base/icons.html" import pencil_icon, trash_icon, check_icon %}
+{% macro generate_action_buttons(entity_type, entity_id) %}
+{% from 'macros/base/icons.html' import icon %}
 
-{%- set default_actions = {
-    'task': [
-        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'hx_delete': '/api/tasks/' + entity_id|string, 'hx_confirm': 'Are you sure you want to delete this task?', 'hx_target': 'closest(.task-card)', 'hx_swap': 'outerHTML', 'title': 'Delete task', 'classes': 'text-danger-hover hover:bg-red-50'},
-        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Task/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit task', 'classes': 'text-info-hover hover:bg-blue-50'},
-        {'type': 'complete', 'icon': check_icon("w-4 h-4"), 'hx_post': '/api/tasks/' + entity_id|string + '/complete', 'hx_target': 'closest(.task-card)', 'hx_swap': 'outerHTML', 'title': 'Complete task', 'classes': 'text-success-hover hover:bg-green-50'}
-    ],
-    'opportunity': [
-        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Opportunity/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit opportunity', 'classes': 'text-info-hover hover:bg-blue-50'}
-    ],
-    'contact': [
-        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Stakeholder/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit contact', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
-        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'hx_delete': '/api/stakeholders/' + entity_id|string, 'hx_confirm': 'Are you sure you want to delete this contact?', 'hx_target': 'closest(.contact-card)', 'hx_swap': 'outerHTML', 'title': 'Delete contact', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
-    ],
-    'stakeholder': [
-        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Stakeholder/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit stakeholder', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
-        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'hx_delete': '/api/stakeholders/' + entity_id|string, 'hx_confirm': 'Are you sure you want to delete this stakeholder?', 'hx_target': 'closest(.stakeholder-card)', 'hx_swap': 'outerHTML', 'title': 'Delete stakeholder', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
-    ]
-} -%}
+{# Single configuration array - loop through this #}
+{% set action_config = [
+  {
+    'type': 'edit',
+    'icon': 'pencil',
+    'endpoint': '/modals/' + entity_type|title + '/' + entity_id|string + '/edit',
+    'method': 'hx-get',
+    'target': 'body',
+    'swap': 'beforeend',
+    'confirm': false,
+    'color': 'blue'
+  },
+  {
+    'type': 'delete', 
+    'icon': 'trash',
+    'endpoint': '/api/' + entity_type + 's/' + entity_id|string,
+    'method': 'hx-delete',
+    'target': 'closest(.' + entity_type + '-card)',
+    'swap': 'outerHTML',
+    'confirm': true,
+    'color': 'red'
+  },
+  {
+    'type': 'complete',
+    'icon': 'check', 
+    'endpoint': '/api/tasks/' + entity_id|string + '/complete',
+    'method': 'hx-post',
+    'target': 'closest(.task-card)',
+    'swap': 'outerHTML',
+    'confirm': false,
+    'color': 'green',
+    'show_for': ['task']
+  }
+] %}
 
-{%- set button_actions = actions or default_actions.get(entity_type, []) -%}
-
-<div class="flex items-center space-x-1" {% if disabled_condition %}:class="{ 'opacity-50 pointer-events-none': {{ disabled_condition }} }"{% endif %}>
-    {% for action in button_actions %}
-    <button {% if action.get('hx_get') %}hx-get="{{ action.hx_get }}"{% endif %}
-            {% if action.get('hx_post') %}hx-post="{{ action.hx_post }}"{% endif %}
-            {% if action.get('hx_delete') %}hx-delete="{{ action.hx_delete }}"{% endif %}
-            {% if action.get('hx_target') %}hx-target="{{ action.hx_target }}"{% endif %}
-            {% if action.get('hx_swap') %}hx-swap="{{ action.hx_swap }}"{% endif %}
-            {% if action.get('hx_confirm') %}hx-confirm="{{ action.hx_confirm }}"{% endif %}
+<div class="flex items-center space-x-1 ml-auto">
+  {% for action in action_config %}
+    {# Skip action if it has show_for restriction and entity_type not in it #}
+    {% if action.get('show_for') and entity_type not in action.show_for %}
+      {% continue %}
+    {% endif %}
+    
+    <button {{ action.method }}="{{ action.endpoint }}"
+            {% if action.get('target') %}hx-target="{{ action.target }}"{% endif %}
+            {% if action.get('swap') %}hx-swap="{{ action.swap }}"{% endif %}
+            {% if action.confirm %}hx-confirm="Are you sure you want to {{ action.type }} this {{ entity_type }}?"{% endif %}
             onclick="event.stopPropagation()"
-            class="px-2 py-1 rounded text-action-sm transition-colors duration-200 {{ action.classes }}" 
-            title="{{ action.title }}">
-        {{ action.icon|safe }}
+            class="px-2 py-1 rounded transition-colors duration-200 text-{{ action.color }}-600 hover:text-{{ action.color }}-800 hover:bg-{{ action.color }}-50"
+            title="{{ action.type|title }} {{ entity_type }}">
+      {{ icon(action.icon, 'w-4 h-4') }}
     </button>
-    {% endfor %}
+  {% endfor %}
 </div>
+{% endmacro %}
+
+{# Legacy alias for backwards compatibility #}
+{% macro action_buttons_row(entity_type, entity_id, actions=none, disabled_condition='') %}
+{{ generate_action_buttons(entity_type, entity_id) }}
 {% endmacro %}
 
 {# ========== CONTENT GENERATION HELPERS ========== #}
@@ -696,5 +718,5 @@ details[open] .details-chevron {
     expansion_enabled=expansion_enabled,
     bulk_selection_enabled=bulk_selection_enabled,
     field_config=auto_config,
-    action_buttons=action_buttons_row(entity_type, entity_id)) }}
+    action_buttons=generate_action_buttons(entity_type, entity_id)) }}
 {% endmacro %}
