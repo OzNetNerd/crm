@@ -9,10 +9,10 @@ import logging
 from pathlib import Path
 
 # Add project paths to Python path BEFORE importing modules
-project_root = Path(__file__).parent.parent
+project_root = Path(__file__).parent.parent.parent  # tools/maintenance -> project root
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "app"))
-sys.path.insert(0, str(project_root / "chatbot"))
+sys.path.insert(0, str(project_root / "services" / "chatbot"))
 
 # Now safe to import after path setup
 from flask import Flask  # noqa: E402
@@ -25,7 +25,7 @@ from app.models import (  # noqa: E402
     Note,
 )
 from chatbot.services.qdrant_service import get_qdrant_service  # noqa: E402
-from main import get_database_path  # noqa: E402
+from services.crm.main import get_database_path  # noqa: E402
 
 # Configure logging
 logging.basicConfig(

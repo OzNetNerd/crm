@@ -42,7 +42,7 @@ echo "📝 Claude Code: Use this URL to access the application"
 
 # Start chatbot service in background
 # echo "   Starting chatbot service..."
-# python3 chatbot_main.py --port "$CHATBOT_PORT" > chatbot.log 2>&1 &
+# python3 services/chatbot/chatbot_main.py --port "$CHATBOT_PORT" > chatbot.log 2>&1 &
 # CHATBOT_PID=$!
 
 # Give chatbot a moment to start
@@ -60,4 +60,4 @@ echo "📝 Claude Code: Use this URL to access the application"
 # sed -i "s/localhost:[0-9]\{4,5\}\/ws\/chat/localhost:$CHATBOT_PORT\/ws\/chat/g" app/templates/components/chat_widget.html
 
 # Start the Flask application (this will block)
-python3 main.py --port "$CRM_PORT"
+python3 services/crm/main.py --port "$CRM_PORT"
