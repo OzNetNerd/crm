@@ -170,8 +170,7 @@ class EntityConfigGenerator:
                 'hx_get': f'{entity_config.get("modal_path", "/modals/Item")}/create',
                 'hx_target': 'body',
                 'hx_swap': 'beforeend', 
-                'icon': icon_html,
-                'classes': f'btn-{entity_name.rstrip("s")}'
+                'entity': entity_name
             }
         ]
         

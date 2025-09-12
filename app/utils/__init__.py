@@ -48,7 +48,7 @@ from .entities import (
     get_icon_function_name,
     get_entity_icon_html,
     get_entity_semantic,
-    get_dashboard_buttons,
+    get_dashboard_entities,
     generate_entity_buttons,
     EntityConfigGenerator
 )
@@ -98,7 +98,7 @@ __all__ = [
     # Entities
     'EntityManager',
     'get_entities_for_forms',
-    'get_dashboard_buttons',
+    'get_dashboard_entities',
     'EntityConfigGenerator',
     
     # UI

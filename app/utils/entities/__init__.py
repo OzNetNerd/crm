@@ -17,7 +17,7 @@ from .entity_icons import (
     get_icon_function_name,
     get_entity_icon_html,
     get_entity_semantic,
-    get_dashboard_buttons,
+    get_dashboard_entities,
     generate_entity_buttons
 )
 
@@ -37,7 +37,7 @@ __all__ = [
     'get_icon_function_name', 
     'get_entity_icon_html',
     'get_entity_semantic',
-    'get_dashboard_buttons',
+    'get_dashboard_entities',
     'generate_entity_buttons',
     'EntityConfigGenerator'
 ]

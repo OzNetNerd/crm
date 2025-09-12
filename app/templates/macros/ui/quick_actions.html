@@ -1,52 +1,22 @@
 {% from "macros/base/icons.html" import plus_icon, building_office_icon, currency_dollar_icon %}
 
-{% macro quick_actions_buttons(buttons) %}
+
+{% macro entity_buttons(entities) %}
 <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-    {% for button in buttons %}
-    {% if button['hx_get'] or button['hx_post'] %}
-        <button {% if button['hx_get'] %}hx-get="{{ button['hx_get'] }}"{% endif %}
-                {% if button['hx_post'] %}hx-post="{{ button['hx_post'] }}"{% endif %}
-                {% if button['hx_target'] %}hx-target="{{ button['hx_target'] }}"{% endif %}
-                {% if button['hx_swap'] %}hx-swap="{{ button['hx_swap'] }}"{% endif %}
-                class="flex items-center gap-2 {{ button.get('classes', '') }}">
-            {{ button['icon']|safe }}
-            {{ button['label'] }}
-        </button>
-    {% else %}
-        <a href="{{ button['url'] or '#' }}" 
-           class="flex items-center gap-2 {{ button.get('classes', '') }}">
-            {{ button['icon']|safe }}
-            {{ button['label'] }}
-        </a>
-    {% endif %}
+    {% for entity in entities %}
+    <button hx-get="/modals/{{ entity|title }}/create"
+            hx-target="body"
+            hx-swap="beforeend"
+            class="flex items-center gap-2 btn-{{ entity|lower }}">
+        <span class="icon-{{ entity|lower }}"></span>
+        New {{ entity|title }}
+    </button>
     {% endfor %}
 </div>
 {% endmacro %}
 
 {% macro default_dashboard_actions() %}
-{{ quick_actions_buttons([
-    {
-        'label': 'New Task',
-        'hx_get': '/modals/Task/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': plus_icon('w-4 h-4')
-    },
-    {
-        'label': 'New Company',
-        'hx_get': '/modals/Company/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': building_office_icon('w-4 h-4')
-    },
-    {
-        'label': 'New Opportunity',
-        'hx_get': '/modals/Opportunity/create',
-        'hx_target': 'body',
-        'hx_swap': 'beforeend',
-        'icon': currency_dollar_icon('w-4 h-4')
-    }
-]) }}
+{{ entity_buttons(get_dashboard_entities()) }}
 {% endmacro %}
 
 {# 

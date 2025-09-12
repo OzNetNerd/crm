@@ -9,9 +9,9 @@ class Opportunity(db.Model):
         'display_name': 'Opportunities',
         'display_name_singular': 'Opportunity',
         'description': 'Manage your sales opportunities',
-        'icon': 'currency-dollar',
         'endpoint_name': 'opportunities', 
-        'modal_path': '/modals/Opportunity'
+        'modal_path': '/modals/Opportunity',
+        'show_dashboard_button': True
     }
 
     id = db.Column(db.Integer, primary_key=True)
