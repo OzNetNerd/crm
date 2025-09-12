@@ -1,5 +1,5 @@
-{% from 'macros/base/icons.html' import icon %}
-{# Notes Display Component - Shows list of notes (read-only) #}
+{% from 'macros/expandable_card.html' import action_buttons_row %}
+{# Notes Display Component - Shows list of notes with standardized action buttons #}
 <div class="notes-list space-y-3" id="notes-{{ entity_id }}">
     {% for note in notes %}
         <div class="note-item bg-gray-50 rounded-lg p-3" id="note-{{ note.id }}">
@@ -9,13 +9,9 @@
                     <p class="text-xs text-gray-500 mt-1">{{ note.created_at.strftime('%m/%d/%y') if note.created_at else 'Today' }}</p>
                 </div>
                 {% if show_delete|default(true) %}
-                <button hx-delete="/api/notes/{{ note.id }}"
-                        hx-target="#note-{{ note.id }}"
-                        hx-swap="outerHTML"
-                        hx-confirm="Delete this note?"
-                        class="ml-2 text-gray-400 hover:text-red-600 transition-colors duration-200">
-                    {{ icon('trash', 'sm') }}
-                </button>
+                <div class="ml-2">
+                    {{ action_buttons_row('note', note.id) }}
+                </div>
                 {% endif %}
             </div>
         </div>
