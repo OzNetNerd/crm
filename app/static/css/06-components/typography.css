@@ -110,6 +110,19 @@
 }
 
 /* ========================================
+ * SECONDARY TEXT STYLES
+ * Secondary text colors and variants
+ * ======================================== */
+
+.text-secondary {
+    color: #6b7280; /* text-gray-500 - secondary text color */
+}
+
+.text-secondary-dark {
+    color: #4b5563; /* text-gray-600 - darker secondary text */
+}
+
+/* ========================================
  * METADATA TEXT
  * Small secondary text for additional information
  * ======================================== */

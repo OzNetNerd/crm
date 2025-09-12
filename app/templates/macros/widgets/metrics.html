@@ -175,7 +175,7 @@
         {% set color_class = text_colors.get(stat.value_color, 'text-gray-600') %}
         <div class="text-center">
           <div class="text-2xl font-bold {{ color_class }}">{{ stat.value }}</div>
-          <div class="text-secondary">{{ stat.label }}</div>
+          <div class="text-metric-heading">{{ stat.label }}</div>
         </div>
       {% endfor %}
     </div>
