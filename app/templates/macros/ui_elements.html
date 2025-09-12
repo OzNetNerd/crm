@@ -214,33 +214,5 @@
     </div>
 </div>
 
-{{ dropdown_close_script() }}
 {% endmacro %}
 
-{#
-  Dropdown Close Script - Utility script for closing dropdowns on outside click
-  
-  Extracted to reduce inline JavaScript and improve reusability
-#}
-{% macro dropdown_close_script() %}
-<script>
-// Close all dropdowns when clicking outside
-document.addEventListener('click', function(event) {
-    const isDropdownButton = event.target.closest('[onclick*="classList.toggle"]');
-    const isInsideDropdown = event.target.closest('.absolute');
-    const isSearchRelated = event.target.closest('#global-search') || event.target.closest('#search-results');
-    
-    if (!isDropdownButton && !isInsideDropdown && !isSearchRelated) {
-        // Only close dropdown-type elements, not search results
-        document.querySelectorAll('.absolute.hidden:not(#search-results)').forEach(dropdown => {
-            if (!dropdown.classList.contains('hidden')) {
-                dropdown.classList.add('hidden');
-            }
-        });
-        document.querySelectorAll('.absolute:not(.hidden):not(#search-results)').forEach(dropdown => {
-            dropdown.classList.add('hidden');
-        });
-    }
-});
-</script>
-{% endmacro %}
