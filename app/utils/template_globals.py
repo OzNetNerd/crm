@@ -126,14 +126,14 @@ def get_model_config(model_class):
     return ModelIntrospector.get_model_config(model_class)
 
 
-def get_create_modal_config(entity_type):
-    """Get create modal configuration for a specific entity type."""
-    return get_modal_config(entity_type)
+# Modal config functions removed - using WTForms modal system now
+# def get_create_modal_config(entity_type):
+#     """Get create modal configuration for a specific entity type."""
+#     return get_modal_config(entity_type)
 
-
-def get_detail_modal_config(entity_type):
-    """Get detail modal configuration for a specific entity type."""  
-    return get_detail_modal_config(entity_type)
+# def get_detail_modal_config(entity_type):
+#     """Get detail modal configuration for a specific entity type."""  
+#     return get_detail_modal_config(entity_type)
 
 
 # Modal config functions removed - using WTForms modal system now

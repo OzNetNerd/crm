@@ -12,8 +12,8 @@ from app.utils.template_globals import (
     get_groupable_fields,
     get_model_form_fields,
     get_model_config,
-    get_create_modal_config,
-    get_detail_modal_config,
+    # get_create_modal_config,  # Removed - using WTForms modal system now
+    # get_detail_modal_config,  # Removed - using WTForms modal system now
     # get_all_modal_configs,  # Removed - using WTForms modal system now
     # get_all_detail_modal_configs,  # Removed - using WTForms modal system now
     get_dashboard_buttons,
@@ -85,8 +85,8 @@ def create_app():
     app.jinja_env.globals["get_groupable_fields"] = get_groupable_fields
     app.jinja_env.globals["get_model_form_fields"] = get_model_form_fields
     app.jinja_env.globals["get_model_config"] = get_model_config
-    app.jinja_env.globals["get_create_modal_config"] = get_create_modal_config
-    app.jinja_env.globals["get_detail_modal_config"] = get_detail_modal_config
+    # app.jinja_env.globals["get_create_modal_config"] = get_create_modal_config  # Removed
+    # app.jinja_env.globals["get_detail_modal_config"] = get_detail_modal_config  # Removed
     # app.jinja_env.globals["get_all_modal_configs"] = get_all_modal_configs  # Removed
     # app.jinja_env.globals["get_all_detail_modal_configs"] = get_all_detail_modal_configs  # Removed
     app.jinja_env.globals["get_dashboard_buttons"] = get_dashboard_buttons
