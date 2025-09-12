@@ -84,8 +84,8 @@
  * ======================================== */
 
 .text-metric-value {
-    font-size: 2rem; /* text-3xl */
-    font-weight: 700; /* font-bold */
+    font-size: var(--text-3xl); /* 1.875rem - matches text-3xl exactly */
+    font-weight: var(--font-bold); /* 700 - matches font-bold */
     color: #111827; /* text-gray-900 */
     line-height: 1.2;
 }
