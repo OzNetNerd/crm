@@ -877,12 +877,13 @@ details[open] .details-chevron {
 
 {%- set default_actions = {
     'task': [
-        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'hx_delete': '/api/tasks/' + entity_id|string, 'hx_confirm': 'Are you sure you want to delete this task?', 'hx_target': 'closest(.task-card)', 'hx_swap': 'outerHTML', 'title': 'Delete task', 'classes': 'text-danger-hover hover:bg-red-50'},
-        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Task/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit task', 'classes': 'text-info-hover hover:bg-blue-50'},
-        {'type': 'complete', 'icon': check_icon("w-4 h-4"), 'hx_post': '/api/tasks/' + entity_id|string + '/complete', 'hx_target': 'closest(.task-card)', 'hx_swap': 'outerHTML', 'title': 'Complete task', 'classes': 'text-success-hover hover:bg-green-50'}
+        {'type': 'complete', 'icon': check_icon("w-4 h-4"), 'hx_post': '/api/tasks/' + entity_id|string + '/complete', 'hx_target': 'closest(.task-card)', 'hx_swap': 'outerHTML', 'title': 'Complete task', 'classes': 'text-green-600 hover:text-green-800 hover:bg-green-50'},
+        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Task/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit task', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
+        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'hx_delete': '/api/tasks/' + entity_id|string, 'hx_confirm': 'Are you sure you want to delete this task?', 'hx_target': 'closest(.task-card)', 'hx_swap': 'outerHTML', 'title': 'Delete task', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
     ],
     'opportunity': [
-        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Opportunity/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit opportunity', 'classes': 'text-info-hover hover:bg-blue-50'}
+        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Opportunity/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit opportunity', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
+        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'hx_delete': '/api/opportunities/' + entity_id|string, 'hx_confirm': 'Are you sure you want to delete this opportunity?', 'hx_target': 'closest(.opportunity-card)', 'hx_swap': 'outerHTML', 'title': 'Delete opportunity', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
     ],
     'contact': [
         {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Stakeholder/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit contact', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
@@ -891,6 +892,9 @@ details[open] .details-chevron {
     'stakeholder': [
         {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Stakeholder/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit stakeholder', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
         {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'hx_delete': '/api/stakeholders/' + entity_id|string, 'hx_confirm': 'Are you sure you want to delete this stakeholder?', 'hx_target': 'closest(.stakeholder-card)', 'hx_swap': 'outerHTML', 'title': 'Delete stakeholder', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
+    ],
+    'note': [
+        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'hx_delete': '/api/notes/' + entity_id|string, 'hx_confirm': 'Delete this note?', 'hx_target': '#note-' + entity_id|string, 'hx_swap': 'outerHTML', 'title': 'Delete note', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
     ]
 } -%}
 
