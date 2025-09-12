@@ -1,6 +1,6 @@
 {% extends "base/layout.html" %}
 {% from "macros/imports/universal.html" import include_common_modals %}
-{% from "macros/widgets/metrics.html" import metric_card, stat_card, overview_section %}
+{% from "macros/summary_section.html" import metric_card, metric_grid %}
 {% from "macros/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
 {% from "macros/base/layout.html" import simple_page_header %}
 {% from "macros/quick_actions.html" import default_dashboard_actions %}
@@ -20,10 +20,11 @@
 {% block title %}Dashboard - CRM{% endblock %}
 
 {% block content %}
-{# Use centralized DRY button generation system #}
-{% set dashboard_buttons = get_dashboard_buttons() %}
+{# Dashboard buttons generated in templates using Jinja macros #}
+{% from "macros/quick_actions.html" import generate_dashboard_buttons %}
+{% set dashboard_buttons_html = generate_dashboard_buttons(['companies', 'tasks', 'opportunities', 'stakeholders']) %}
 
-{{ simple_page_header("Dashboard", "Overview of your CRM performance and activity", buttons=dashboard_buttons) }}
+{{ simple_page_header("Dashboard", "Overview of your CRM performance and activity", custom_buttons_html=dashboard_buttons_html) }}
 
 <!-- Key Metrics -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

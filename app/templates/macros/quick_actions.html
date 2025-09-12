@@ -1,4 +1,4 @@
-{% from "macros/entity_config.html" import entity_icons %}
+{# Quick Actions - Pure Jinja approach using entity names + concatenation #}
 
 {% macro quick_actions_buttons(buttons) %}
 <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -11,17 +11,13 @@
                 {% if button['hx_target'] %}hx-target="{{ button['hx_target'] }}"{% endif %}
                 {% if button['hx_swap'] %}hx-swap="{{ button['hx_swap'] }}"{% endif %}
                 class="flex items-center gap-2 {{ btn_class }}">
-            <svg class="c-icon c-icon--sm c-icon--{{ button.entity_type }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <use href="#{{ entity_icons[button.entity_type] }}"/>
-            </svg>
+            <span class="icon-{{ button.entity_type }}"></span>
             {{ button['label'] }}
         </button>
     {% else %}
         <a href="{{ button['url'] or '#' }}" 
            class="flex items-center gap-2 {{ btn_class }}">
-            <svg class="c-icon c-icon--sm c-icon--{{ button.entity_type }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <use href="#{{ entity_icons[button.entity_type] }}"/>
-            </svg>
+            <span class="icon-{{ button.entity_type }}"></span>
             {{ button['label'] }}
         </a>
     {% endif %}
@@ -29,12 +25,42 @@
 </div>
 {% endmacro %}
 
+{% macro generate_dashboard_buttons(entity_names) %}
+{# 
+  Generate dashboard buttons from entity names - Pure Jinja approach
+  
+  Parameters:
+  - entity_names: List of entity names (e.g., ['companies', 'tasks', 'opportunities'])
+  
+  Usage:
+  {{ generate_dashboard_buttons(['companies', 'tasks', 'opportunities', 'stakeholders']) }}
+#}
+{% set buttons = [] %}
+{% for entity_name in entity_names %}
+    {% set singular = entity_name.rstrip('s') %}
+    {% set button = {
+        'label': 'New ' + singular.title(),
+        'hx_get': '/modals/' + singular + '/create',
+        'hx_target': 'body',
+        'hx_swap': 'beforeend',
+        'entity_type': singular
+    } %}
+    {{ buttons.append(button) or "" }}
+{% endfor %}
+{{ quick_actions_buttons(buttons) }}
+{% endmacro %}
+
 {% macro default_dashboard_actions() %}
-{{ quick_actions_buttons(get_dashboard_buttons()) }}
+{# Default dashboard buttons - Python just passes entity names #}
+{{ generate_dashboard_buttons(['companies', 'tasks', 'opportunities', 'stakeholders', 'teams']) }}
 {% endmacro %}
 
 {# 
-  Page-specific action button macros removed - now handled by EntityConfigGenerator
-  in form_configs.py for true DRY implementation. All entity pages use the 
-  entity_buttons context variable generated automatically from model __entity_config__.
+  Pure Jinja approach: Python passes simple entity names, Jinja handles:
+  - Button label generation (New + singular form)
+  - Modal path construction (/modals/{singular}/create)
+  - Icon class generation (icon-{entity_name})
+  - CSS class generation (c-button--{entity_name})
+  
+  No hardcoded mappings needed - everything derived from entity names!
 #}

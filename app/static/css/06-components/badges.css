@@ -114,6 +114,108 @@
 }
 
 /* ========================================
+ * CONTACT STATUS BADGE VARIANTS
+ * Dynamic badges based on contact info status
+ * ======================================== */
+
+.badge-contact-complete {
+    background-color: var(--color-secondary-light);
+    color: var(--color-secondary-hover);
+}
+
+.badge-contact-email_only {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-hover);
+}
+
+.badge-contact-phone_only {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning-hover);
+}
+
+.badge-contact-missing {
+    background-color: var(--color-danger-light);
+    color: var(--color-danger-hover);
+}
+
+/* ========================================
+ * STATUS-BASED BADGE VARIANTS
+ * Dynamic badges based on entity status
+ * ======================================== */
+
+.badge-status-complete,
+.badge-status-completed,
+.badge-status-done,
+.badge-status-active,
+.badge-status-open {
+    background-color: var(--color-secondary-light);
+    color: var(--color-secondary-hover);
+}
+
+.badge-status-in-progress,
+.badge-status-in_progress,
+.badge-status-pending,
+.badge-status-working {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning-hover);
+}
+
+.badge-status-overdue,
+.badge-status-late,
+.badge-status-failed,
+.badge-status-error {
+    background-color: var(--color-danger-light);
+    color: var(--color-danger-hover);
+}
+
+.badge-status-todo,
+.badge-status-new,
+.badge-status-draft {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-hover);
+}
+
+/* ========================================
+ * COUNT BADGE VARIANTS  
+ * Dynamic count badges with colors
+ * ======================================== */
+
+.badge-count-red {
+    background-color: var(--color-danger-light);
+    color: var(--color-danger-hover);
+}
+
+.badge-count-green {
+    background-color: var(--color-secondary-light);
+    color: var(--color-secondary-hover);
+}
+
+.badge-count-blue {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-hover);
+}
+
+.badge-count-yellow {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning-hover);
+}
+
+.badge-count-gray {
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-800);
+}
+
+.badge-count-orange {
+    background-color: #fff7ed; /* bg-orange-100 */
+    color: #9a3412; /* text-orange-800 */
+}
+
+.badge-count-purple {
+    background-color: var(--color-accent-light);
+    color: var(--color-accent-hover);
+}
+
+/* ========================================
  * OVERDUE BADGE COMPONENT
  * Specialized badge for overdue status
  * ======================================== */

@@ -16,7 +16,8 @@
 {% endmacro %}
 
 {% macro default_dashboard_actions() %}
-{{ entity_buttons(get_dashboard_entities()) }}
+{# Default dashboard buttons - Python just passes entity names #}
+{{ entity_buttons(['companies', 'tasks', 'opportunities', 'stakeholders', 'teams']) }}
 {% endmacro %}
 
 {# 
