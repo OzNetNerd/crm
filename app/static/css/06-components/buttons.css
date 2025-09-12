@@ -1,16 +1,14 @@
 /**
- * ITCSS Layer 6: Components
- * Button Components
+ * ITCSS Layer 6: Components - Buttons
+ * Modern button component system using BEM methodology
  * 
- * Comprehensive button system with consistent styling and behavior.
- * Uses CSS custom properties for dynamic entity-based coloring.
- * 
- * Usage: <button class="c-button c-button--primary">Save</button>
+ * Uses CSS custom properties for consistent theming and entity-based coloring.
+ * Clean semantic naming with c-button base class and modifier pattern.
  */
 
 /* ========================================
  * BASE BUTTON COMPONENT
- * Foundation button styling
+ * Foundation button styling using BEM
  * ======================================== */
 
 .c-button {
@@ -112,19 +110,9 @@
                 0 0 0 4px color-mix(in srgb, var(--color-danger) 25%, transparent);
 }
 
-.c-button--success {
-    background-color: var(--color-secondary);
-    color: white;
-    box-shadow: var(--shadow-sm);
-}
-
-.c-button--success:hover:not(:disabled) {
-    background-color: var(--color-secondary-hover);
-}
-
 /* ========================================
- * DYNAMIC ENTITY BUTTONS
- * Buttons that use CSS custom properties for entity-specific colors
+ * ENTITY-SPECIFIC BUTTONS
+ * Dynamic colors using CSS custom properties
  * ======================================== */
 
 .c-button--entity {
@@ -142,7 +130,7 @@
                 0 0 0 4px color-mix(in srgb, var(--btn-ring, var(--color-gray-500)) 25%, transparent);
 }
 
-/* Entity-specific button variants */
+/* Entity color variants */
 .c-button--task {
     --btn-color: var(--color-task);
     --btn-hover: var(--color-task-hover);
@@ -180,91 +168,133 @@
 }
 
 /* ========================================
- * ACTION BUTTONS
- * Small buttons for inline actions
+ * DRY ENTITY BUTTON SYSTEM
+ * Base class + entity modifiers for consistent styling
  * ======================================== */
 
-.c-action-button {
+/* Base entity button class with common styling */
+[class*="btn-entity-"] {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    padding: var(--spacing-sm);
-    border-radius: var(--radius-md);
-    font-size: var(--text-sm);
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    transition: var(--transition-normal);
-}
-
-.c-action-button--edit {
-    color: var(--color-primary);
-}
-
-.c-action-button--edit:hover {
-    color: var(--color-primary-hover);
-    background-color: var(--color-primary-lighter);
-}
-
-.c-action-button--delete {
-    color: var(--color-danger);
-}
-
-.c-action-button--delete:hover {
-    color: var(--color-danger-hover);
-    background-color: var(--color-danger-lighter);
-}
-
-.c-action-button--complete {
-    color: var(--color-secondary);
-}
-
-.c-action-button--complete:hover {
-    color: var(--color-secondary-hover);
-    background-color: var(--color-secondary-lighter);
-}
-
-/* ========================================
- * QUICK ACTION BUTTONS
- * Contextual buttons for entity cards
- * ======================================== */
-
-.c-quick-action {
-    padding: var(--spacing-xs) var(--spacing-md);
-    border-radius: var(--radius-md);
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
     font-size: var(--text-sm);
     font-weight: var(--font-medium);
-    border: none;
+    line-height: 1.25;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
     cursor: pointer;
+    text-decoration: none;
     transition: var(--transition-normal);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.c-quick-action--primary {
-    background-color: var(--color-primary-light);
-    color: var(--color-primary-hover);
-}
-
-.c-quick-action--primary:hover {
-    background-color: var(--color-primary);
+    transform: scale(1);
+    outline: none;
+    white-space: nowrap;
     color: white;
+    box-shadow: var(--shadow-sm);
 }
 
-.c-quick-action--secondary {
-    background-color: var(--color-secondary-light);
-    color: var(--color-secondary-hover);
+[class*="btn-entity-"]:hover:not(:disabled) {
+    transform: scale(1.05);
 }
 
-.c-quick-action--secondary:hover {
-    background-color: var(--color-secondary);
-    color: white;
+[class*="btn-entity-"]:active:not(:disabled) {
+    transform: scale(0.95);
 }
 
-/* Legacy classes removed - use modern BEM naming:
- * .btn-primary → .c-button.c-button--primary  
- * .btn-danger → .c-button.c-button--danger
- * .btn-new-task → .c-button.c-button--entity.c-button--task
- * etc.
- */
+[class*="btn-entity-"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Entity-specific colors using CSS custom properties */
+.btn-entity-task {
+    background-color: var(--color-task);
+}
+
+.btn-entity-task:hover:not(:disabled) {
+    background-color: var(--color-task-hover);
+}
+
+.btn-entity-task:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-task-ring), 
+                0 0 0 4px color-mix(in srgb, var(--color-task-ring) 25%, transparent);
+}
+
+.btn-entity-company {
+    background-color: var(--color-company);
+}
+
+.btn-entity-company:hover:not(:disabled) {
+    background-color: var(--color-company-hover);
+}
+
+.btn-entity-company:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-company-ring), 
+                0 0 0 4px color-mix(in srgb, var(--color-company-ring) 25%, transparent);
+}
+
+.btn-entity-opportunity {
+    background-color: var(--color-opportunity);
+}
+
+.btn-entity-opportunity:hover:not(:disabled) {
+    background-color: var(--color-opportunity-hover);
+}
+
+.btn-entity-opportunity:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-opportunity-ring), 
+                0 0 0 4px color-mix(in srgb, var(--color-opportunity-ring) 25%, transparent);
+}
+
+.btn-entity-stakeholder {
+    background-color: var(--color-stakeholder);
+}
+
+.btn-entity-stakeholder:hover:not(:disabled) {
+    background-color: var(--color-stakeholder-hover);
+}
+
+.btn-entity-stakeholder:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-stakeholder-ring), 
+                0 0 0 4px color-mix(in srgb, var(--color-stakeholder-ring) 25%, transparent);
+}
+
+.btn-entity-user, .btn-entity-team {
+    background-color: var(--color-user);
+}
+
+.btn-entity-user:hover:not(:disabled), .btn-entity-team:hover:not(:disabled) {
+    background-color: var(--color-user-hover);
+}
+
+.btn-entity-user:focus, .btn-entity-team:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-user-ring), 
+                0 0 0 4px color-mix(in srgb, var(--color-user-ring) 25%, transparent);
+}
+
+/* Alias for contact (same as stakeholder) */
+.btn-entity-contact {
+    background-color: var(--color-stakeholder);
+}
+
+.btn-entity-contact:hover:not(:disabled) {
+    background-color: var(--color-stakeholder-hover);
+}
+
+.btn-entity-contact:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-stakeholder-ring), 
+                0 0 0 4px color-mix(in srgb, var(--color-stakeholder-ring) 25%, transparent);
+}

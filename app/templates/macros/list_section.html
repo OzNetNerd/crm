@@ -29,7 +29,7 @@
   {% set container_attrs = 'href="' + href + '"' if href else '' %}
   {% set hover_classes = 'hover:underline transition-all duration-200' if href else '' %}
   
-  <div class="{{ bg_class }} rounded-lg shadow-sm p-6 {{ additional_classes }}">
+  <div class="card-padded-lg mb-8 {{ additional_classes }}">
     <{{ container_tag }} {{ container_attrs|safe }} class="text-lg font-semibold {{ title_class }} mb-4 {{ hover_classes }} {{ 'flex items-center gap-2' if icon_macro else 'block' }}">
       {% if icon_macro %}{{ icon_macro }}{% endif %}{{ title }}
     </{{ container_tag }}>
@@ -60,7 +60,7 @@
   } %}
   {% set badge_class = badge_classes.get(badge_color, badge_classes['gray']) %}
   
-  <div class="flex items-center justify-between bg-white p-3 rounded border {{ additional_classes }}">
+  <div class="flex items-center justify-between bg-white p-3 rounded border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors duration-200 {{ additional_classes }}">
     <div>
       <div class="text-label-primary">{{ title|safe }}</div>
       <div class="text-metadata">{{ subtitle|safe }}</div>
@@ -95,7 +95,7 @@
   {% set warning_class = warning_classes.get(warning_color, warning_classes['red']) %}
   {% set action_class = action_classes.get(warning_color, action_classes['red']) %}
   
-  <div class="flex items-center justify-between bg-white p-3 rounded border {{ additional_classes }}">
+  <div class="flex items-center justify-between bg-white p-3 rounded border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors duration-200 {{ additional_classes }}">
     <div>
       <div class="text-label-primary">{{ title }}</div>
       <div class="text-xs {{ warning_class }} mt-1">{{ warning_text }}</div>

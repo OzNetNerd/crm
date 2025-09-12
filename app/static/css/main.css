@@ -57,6 +57,7 @@
 
 @import url('06-components/badges.css');
 @import url('06-components/buttons.css');
+@import url('06-components/typography.css');
 @import url('06-components/icons.css');
 @import url('06-components/cards.css');
 @import url('modals.css'); /* Existing modal styles - to be refactored */
@@ -96,12 +97,8 @@
     display: none !important;
 }
 
-/* Legacy text and layout classes removed - use modern alternatives:
- * .text-label → .u-text-sm.u-font-medium.u-text-gray-500
- * .text-entity-base → .u-text-lg.u-font-semibold  
- * .text-color-task → .u-text-primary (or .c-icon--task for icons)
- * .quick-actions-grid → .u-flex.u-gap-sm
- * .action-btn-row → .u-flex.u-items-center.u-gap-xs
- * .contact-methods → .u-flex.u-items-center.u-gap-sm
- * etc.
+/* Modern ITCSS architecture with semantic component classes:
+ * Buttons: .c-button .c-button--primary, .c-button--entity .c-button--task
+ * Typography: .text-label, .text-entity-base, .text-color-{entity}
+ * Layout: Use utility classes or semantic component classes as needed
  */

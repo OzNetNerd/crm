@@ -55,7 +55,7 @@
       </div>
       <div class="ml-5 w-0 flex-1">
         <dl>
-          <dt class="text-label">{{ title }}</dt>
+          <dt class="text-metric-heading">{{ title }}</dt>
           <dd class="text-metric-value">{{ value }}</dd>
         </dl>
       </div>
@@ -105,7 +105,7 @@
   <{{ container_tag }} {{ container_attrs|safe }} class="card-padded-lg {{ hover_classes }} {{ additional_classes }}">
     <div class="text-center">
       <div class="text-3xl font-bold {{ value_color }}">{{ value }}</div>
-      <div class="text-secondary mt-1">{{ label }}</div>
+      <div class="text-metric-heading">{{ label }}</div>
     </div>
   </{{ container_tag }}>
 {% endmacro %}
@@ -138,31 +138,6 @@
   {{ overview_section('Sales Pipeline', 'Total: $125K', my_stats) }}
 #}
 {% macro overview_section(title, summary_text=None, stats=[], additional_classes='mb-8') %}
-  {# Dynamic grid sizing based on stats count #}
-  {% set stats_count = stats|length %}
-  {% if stats_count <= 2 %}
-    {% set grid_classes = 'grid-cols-' + stats_count|string %}
-  {% elif stats_count == 3 %}
-    {% set grid_classes = 'grid-cols-3' %}
-  {% elif stats_count == 4 %}
-    {% set grid_classes = 'grid-cols-2 md:grid-cols-4' %}
-  {% elif stats_count == 5 %}
-    {% set grid_classes = 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5' %}
-  {% else %}
-    {% set grid_classes = 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6' %}
-  {% endif %}
-  
-  {# Map value_color to text classes (reuse existing color system) #}
-  {% set text_colors = {
-    'red': 'text-red-600',
-    'orange': 'text-orange-600', 
-    'blue': 'text-blue-600',
-    'green': 'text-green-600',
-    'purple': 'text-purple-600',
-    'yellow': 'text-yellow-600',
-    'gray': 'text-gray-600'
-  } %}
-  
   <div class="card-padded-lg {{ additional_classes }}">
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-section-title">{{ title }}</h2>
@@ -170,12 +145,11 @@
         <div class="text-secondary">{{ summary_text }}</div>
       {% endif %}
     </div>
-    <div class="grid {{ grid_classes }} gap-4">
+    <div class="c-overview-grid">
       {% for stat in stats %}
-        {% set color_class = text_colors.get(stat.value_color, 'text-gray-600') %}
         <div class="text-center">
-          <div class="text-2xl font-bold {{ color_class }}">{{ stat.value }}</div>
-          <div class="text-secondary">{{ stat.label }}</div>
+          <div class="text-2xl font-bold text-{{ stat.value_color }}-600">{{ stat.value }}</div>
+          <div class="text-metric-heading">{{ stat.label }}</div>
         </div>
       {% endfor %}
     </div>
