@@ -1,6 +1,6 @@
 {% extends "base/layout.html" %}
 {% from "macros/imports/universal.html" import include_common_modals %}
-{% from "macros/summary_section.html" import metric_card, metric_grid %}
+{% from "macros/summary_section.html" import metric_card, metric_grid, status_breakdown_grid %}
 {% from "macros/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
 {% from "macros/base/layout.html" import simple_page_header %}
 {% from "macros/quick_actions.html" import default_dashboard_actions %}
@@ -20,11 +20,18 @@
 {% block title %}Dashboard - CRM{% endblock %}
 
 {% block content %}
-{# Dashboard buttons generated in templates using Jinja macros #}
+{# Dashboard header with buttons #}
 {% from "macros/quick_actions.html" import generate_dashboard_buttons %}
-{% set dashboard_buttons_html = generate_dashboard_buttons(['companies', 'tasks', 'opportunities', 'stakeholders']) %}
 
-{{ simple_page_header("Dashboard", "Overview of your CRM performance and activity", custom_buttons_html=dashboard_buttons_html) }}
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <h1 class="text-page-title">Dashboard</h1>
+        <p class="text-secondary-dark">Overview of your CRM performance and activity</p>
+    </div>
+    <div class="flex-shrink-0">
+        {{ generate_dashboard_buttons(['companies', 'tasks', 'opportunities', 'stakeholders']) }}
+    </div>
+</div>
 
 <!-- Key Metrics -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -39,13 +46,13 @@
 
 <!-- Task Quick Stats -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    {{ stat_card('Overdue Tasks', task_stats.overdue, 'red') }}
+    {{ metric_card(task_stats.overdue, 'Overdue Tasks', 'text-red-600') }}
 
-    {{ stat_card('Due Today', task_stats.today, 'orange') }}
+    {{ metric_card(task_stats.today, 'Due Today', 'text-orange-600') }}
 
-    {{ stat_card('This Week', task_stats.this_week, 'blue') }}
+    {{ metric_card(task_stats.this_week, 'This Week', 'text-blue-600') }}
 
-    {{ stat_card('Completed Today', task_stats.completed_today, 'green') }}
+    {{ metric_card(task_stats.completed_today, 'Completed Today', 'text-green-600') }}
 </div>
 
 <!-- Pipeline Overview -->
@@ -72,11 +79,11 @@
   }
 ] %}
 
-{{ overview_section(
-  'Sales Pipeline', 
-  'Total: ' + format_currency(pipeline_stats.total_value) + ' (' + pipeline_stats.total_count|string + ' opportunities)',
-  pipeline_stats_list
-) }}
+<div class="mb-6">
+  <h2 class="text-section-title mb-2">Sales Pipeline</h2>
+  <p class="text-secondary-dark mb-4">Total: {{ format_currency(pipeline_stats.total_value) }} ({{ pipeline_stats.total_count }} opportunities)</p>
+  {{ status_breakdown_grid('', pipeline_stats_list) }}
+</div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
     <!-- Critical Alerts -->
