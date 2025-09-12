@@ -89,6 +89,42 @@ class Stakeholder(db.Model):
             }
         }
     )  # Their actual job: "VP Sales", "CTO", etc.
+    
+    # Virtual field for forms only - MEDDPICC roles are stored in junction table
+    meddpicc_role = db.Column(
+        db.String(50),
+        info={
+            'display_label': 'MEDDPICC Role',
+            'form_exclude': True,  # Don't include in auto-generated forms
+            'choices': {
+                'economic_buyer': {
+                    'label': 'Economic Buyer',
+                    'description': 'Person who controls the budget'
+                },
+                'decision_maker': {
+                    'label': 'Decision Maker',
+                    'description': 'Person who makes the final decision'
+                },
+                'influencer': {
+                    'label': 'Influencer',
+                    'description': 'Person who influences the decision'
+                },
+                'champion': {
+                    'label': 'Champion',
+                    'description': 'Internal advocate for the solution'
+                },
+                'user': {
+                    'label': 'User',
+                    'description': 'End user of the solution'
+                },
+                'other': {
+                    'label': 'Other',
+                    'description': 'Other role type'
+                }
+            }
+        }
+    )
+    
     email = db.Column(
         db.String(255),
         info={

@@ -41,6 +41,28 @@ class Opportunity(db.Model):
             'max_value': 100
         }
     )  # 0-100 percentage
+    
+    priority = db.Column(
+        db.String(50),
+        info={
+            'display_label': 'Priority',
+            'choices': {
+                'low': {
+                    'label': 'Low',
+                    'description': 'Low priority opportunity'
+                },
+                'medium': {
+                    'label': 'Medium', 
+                    'description': 'Medium priority opportunity'
+                },
+                'high': {
+                    'label': 'High',
+                    'description': 'High priority opportunity'
+                }
+            }
+        }
+    )
+    
     expected_close_date = db.Column(
         db.Date,
         info={
