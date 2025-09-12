@@ -1,6 +1,5 @@
 {# Universal HTMX Content Partial - Works for ALL entities using new modular card system #}
 {% from "macros/expandable_card.html" import card, auto_card, expandable_card, generate_action_buttons %}
-{# pluralized_count is now a global function registered in main.py #}
 {% from "macros/empty_state.html" import empty_state, group_empty_state %}
 {% from "macros/task_renderer.html" import render_task_entity %}
 {% from 'macros/base/icons.html' import icon %}
@@ -11,7 +10,7 @@
     {# Show total count #}
     {% if total_count > 0 %}
         <div class="text-sm text-gray-600 mb-4">
-            Showing {{ pluralized_count(total_count, entity_name_singular) }}
+            Showing {{ total_count }} {{ entity_name_singular if total_count == 1 else entity_name }}
         </div>
     {% endif %}
 

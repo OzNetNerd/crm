@@ -18,7 +18,6 @@
   - Icon positioning fix: actions grouped with chevron
 #}
 {% from "macros/base/forms.html" import bulk_selection_checkbox %}
-{# pluralized_count is now a global function registered in main.py #}
 {% from "macros/ui/progress.html" import progress_bar %}
 
 {# ========== CONTAINER SYSTEM ========== #}
@@ -238,9 +237,11 @@ details[open] .details-chevron {
     
     {% elif field_type == 'count' %}
         {% if field_value is iterable %}
-            {{ pluralized_count(field_value|length, field_config.get('label', 'item')) }}
+            {% set count = field_value|length %}
+            {{ count }} {{ field_config.get('label', 'item') }}{{ '' if count == 1 else 's' }}
         {% else %}
-            {{ pluralized_count(field_value, field_config.get('label', 'item')) }}
+            {% set count = field_value %}
+            {{ count }} {{ field_config.get('label', 'item') }}{{ '' if count == 1 else 's' }}
         {% endif %}
     
     {% elif field_type == 'link' %}
@@ -794,7 +795,8 @@ details[open] .details-chevron {
 {%- if field_config.type == 'text' -%}
     {{ field_config.get('prefix', '') }}{{ entity[field_config.field] }}
 {%- elif field_config.type == 'count' -%}
-    {{ pluralized_count(entity[field_config.field]|length, field_config.label) }}
+    {% set count = entity[field_config.field]|length %}
+    {{ count }} {{ field_config.label }}{{ '' if count == 1 else 's' }}
 {%- elif field_config.type == 'link' -%}
     {%- if entity[field_config.field] -%}
     <a href="{{ entity[field_config.field] }}" target="_blank" class="text-link hover:text-link-hover" onclick="event.stopPropagation()">{{ entity[field_config.field] }}</a>
