@@ -374,11 +374,21 @@ class EntityFilterManager:
         }
     
     def _parse_filter_param(self, param_name):
-        """Parse comma-separated filter parameters"""
-        param_value = request.args.get(param_name)
-        if not param_value:
+        """Parse multiple parameter values and comma-separated filter parameters"""
+        param_values = request.args.getlist(param_name)
+        if not param_values:
             return []
-        return [p.strip() for p in param_value.split(",") if p.strip()]
+        # Handle both multiple parameters AND comma-separated values
+        all_values = []
+        for value in param_values:
+            if ',' in value:
+                # Handle comma-separated values within single parameter
+                all_values.extend([p.strip() for p in value.split(",") if p.strip()])
+            else:
+                # Handle individual parameter values
+                if value.strip():
+                    all_values.append(value.strip())
+        return all_values
     
     def _apply_default_sorting(self, query, sort_by, sort_direction):
         """Apply default sorting logic"""

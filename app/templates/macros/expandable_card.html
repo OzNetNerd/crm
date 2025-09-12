@@ -1,28 +1,499 @@
 {% from 'macros/base/icons.html' import icon %}
 {#
-  Expandable Card Component - Modernized modular card system with object composition
+  Modern Card System - Container-based architecture with composable content
   
-  This file now provides both the new modular system and backwards compatibility.
+  NEW CONTAINER SYSTEM (RECOMMENDED):
+  {{ card('task', task) }}
+  {{ card('opportunity', opportunity, content=custom_content_object) }}
   
-  NEW RECOMMENDED USAGE:
+  LEGACY COMPATIBILITY (still supported):
   {{ auto_card('task', task) }}
-  {{ auto_card('opportunity', opportunity, overrides={'badge_style': 'green'}) }}
-  
-  LEGACY USAGE (still supported):
   {{ expandable_card('task', task, task.id, title_content=task.name, ...) }}
   
-  The new system uses:
-  - Smart entity configuration that automatically determines what to display
-  - Composable content objects instead of 20+ parameters
-  - Flexible field renderers for any data type
-  - Complete backwards compatibility via adapter macros
+  Architecture:
+  - Universal card container that accepts content objects
+  - Composable content blocks (header, body, actions, footer)
+  - Field renderers for all common data types
+  - Smart entity configuration system
+  - Icon positioning fix: actions grouped with chevron
 #}
 {% from "macros/base/forms.html" import bulk_selection_checkbox %}
 {% from "macros/ui/controls.html" import pluralized_count %}
 {% from "macros/ui/progress.html" import progress_bar %}
-{% from "macros/card_system.html" import auto_entity_card, render_field %}
 
-{# ========== NEW MODULAR SYSTEM ========== #}
+{# ========== CONTAINER SYSTEM ========== #}
+
+{#
+  Universal Card Container - The foundation of the modern card system
+  
+  This replaces the legacy expandable_card macro with a clean, flexible container
+  that accepts content objects to define what gets displayed.
+  
+  Parameters:
+  - card_type (required): Entity type for styling and data attributes
+  - entity_id (required): Unique identifier
+  - expansion_enabled (optional): Allow expand/collapse (default: true)
+  - card_classes (optional): Additional CSS classes
+  - content (required): Content object with sections
+  
+  Content Object Structure:
+  {
+    'header': { /* header content config */ },
+    'body': { /* body content config */ },
+    'actions': { /* action buttons config */ },
+    'footer': { /* footer content config */ },
+    'expanded': { /* expanded content config */ }
+  }
+  
+  Usage:
+  {{ card_container('task', task.id, content=task_content_config) }}
+#}
+{% macro card_container(card_type, entity_id, expansion_enabled=true, card_classes='', content={}) %}
+{%- set base_classes = card_type + '-card card-padded relative mb-3' -%}
+{%- set color_classes = {
+    'task': 'ring-2 ring-gray-200 bg-gray-50',
+    'opportunity': 'ring-2 ring-blue-200 bg-blue-50', 
+    'contact': 'ring-2 ring-green-200 bg-green-50',
+    'stakeholder': 'ring-2 ring-green-200 bg-green-50',
+    'company': 'ring-2 ring-blue-200 bg-blue-50'
+} -%}
+
+{% if expansion_enabled %}
+<details class="{{ base_classes }} {{ color_classes.get(card_type, '') }} {{ card_classes }}" 
+         data-{{ card_type }}-id="{{ entity_id }}">
+    <summary class="cursor-pointer list-none flex items-center justify-between">
+        <div class="flex-1 flex items-center justify-between">
+            <!-- Header content -->
+            <div class="flex items-center space-x-3">
+                {% if content.get('bulk_selection', true) %}
+                {{ bulk_selection_checkbox(entity_id) }}
+                {% endif %}
+                
+                {% if content.header %}
+                {{ render_content_section(content.header) }}
+                {% endif %}
+            </div>
+            
+            <!-- Action buttons and chevron grouped together (ICON FIX) -->
+            <div class="flex items-center space-x-2">
+                {% if content.actions %}
+                {{ render_action_section(content.actions) }}
+                {% endif %}
+                
+                <!-- Expand chevron -->
+                <div class="transition-transform duration-200 details-chevron">
+                    {{ icon('chevron-down', 'md', 'text-gray-400') }}
+                </div>
+            </div>
+        </div>
+    </summary>
+    
+    <!-- Expanded content -->
+    <div class="mt-4 pt-4 border-t border-gray-200">
+        {% if content.body %}
+        {{ render_content_section(content.body) }}
+        {% endif %}
+        
+        {% if content.expanded %}
+        {{ render_content_section(content.expanded) }}
+        {% endif %}
+        
+        {% if content.footer %}
+        {{ render_content_section(content.footer) }}
+        {% endif %}
+        
+        {% if caller %}
+        {{ caller() }}
+        {% endif %}
+    </div>
+</details>
+{% else %}
+<!-- Non-expandable version -->
+<div class="{{ base_classes }} {{ color_classes.get(card_type, '') }} {{ card_classes }}" 
+     data-{{ card_type }}-id="{{ entity_id }}">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3 flex-1">
+            {% if content.get('bulk_selection', true) %}
+            {{ bulk_selection_checkbox(entity_id) }}
+            {% endif %}
+            
+            {% if content.header %}
+            {{ render_content_section(content.header) }}
+            {% endif %}
+        </div>
+        
+        <!-- Action buttons (no chevron in non-expandable) -->
+        {% if content.actions %}
+        <div class="flex items-center space-x-2">
+            {{ render_action_section(content.actions) }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<style>
+/* Universal chevron rotation for all card types */
+details[data-task-id] summary::-webkit-details-marker,
+details[data-opportunity-id] summary::-webkit-details-marker,
+details[data-contact-id] summary::-webkit-details-marker,
+details[data-stakeholder-id] summary::-webkit-details-marker,
+details[data-company-id] summary::-webkit-details-marker {
+    display: none;
+}
+details[open] .details-chevron {
+    transform: rotate(90deg);
+}
+</style>
+{% endmacro %}
+
+{# ========== CONTENT RENDERERS ========== #}
+
+{#
+  Content Section Renderer - Renders any content section based on its configuration
+#}
+{% macro render_content_section(section_config) %}
+{% if section_config.type == 'fields' %}
+    {{ render_field_section(section_config) }}
+{% elif section_config.type == 'html' %}
+    {{ section_config.content|safe }}
+{% elif section_config.type == 'template' %}
+    {% include section_config.template %}
+{% elif section_config.type == 'composite' %}
+    {% for subsection in section_config.sections %}
+        {{ render_content_section(subsection) }}
+    {% endfor %}
+{% else %}
+    {{ render_field_section(section_config) }}
+{% endif %}
+{% endmacro %}
+
+{#
+  Field Section Renderer - Renders an array of fields with layout
+#}
+{% macro render_field_section(section_config) %}
+{%- set layout = section_config.get('layout', 'stacked') -%}
+{%- set entity = section_config.entity -%}
+
+{% if layout == 'inline' %}
+<div class="flex items-center space-x-2">
+    {% for field in section_config.fields %}
+        <div class="{{ field.get('classes', '') }}">
+            {{ render_field(entity, field) }}
+        </div>
+    {% endfor %}
+</div>
+{% elif layout == 'grid' %}
+<div class="grid grid-cols-2 gap-4">
+    {% for field in section_config.fields %}
+        <div class="{{ field.get('classes', '') }}">
+            {{ render_field(entity, field) }}
+        </div>
+    {% endfor %}
+</div>
+{% else %} {# stacked layout #}
+<div class="space-y-2">
+    {% for field in section_config.fields %}
+        <div class="{{ field.get('classes', '') }}">
+            {{ render_field(entity, field) }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{#
+  Enhanced Universal Field Renderer
+#}
+{% macro render_field(entity, field_config) %}
+{%- set field_name = field_config.name -%}
+{%- set field_value = entity.__dict__[field_name] if (entity and field_name and field_name in entity.__dict__) else None -%}
+{%- set field_type = field_config.get('type', 'text') -%}
+{%- set default_value = field_config.get('default', '') -%}
+
+{% if not field_value and field_type != 'custom' %}
+    {% if default_value %}
+        <span class="text-gray-500">{{ default_value }}</span>
+    {% endif %}
+{% else %}
+    {% if field_type == 'text' %}
+        {{ field_config.get('prefix', '') }}{{ field_value }}{{ field_config.get('suffix', '') }}
+    
+    {% elif field_type == 'badge' %}
+        <span class="badge-standard badge-{{ field_config.get('style', 'blue') }}">
+            {{ field_value }}
+        </span>
+    
+    {% elif field_type == 'date' %}
+        {% if field_value %}
+            {{ field_value.strftime(field_config.get('format', '%m/%d/%y')) }}
+        {% endif %}
+    
+    {% elif field_type == 'currency' %}
+        {% if field_value is number %}
+            {{ field_config.get('symbol', '$') }}{{ "{:,.0f}".format(field_value) }}
+        {% else %}
+            {{ field_value }}
+        {% endif %}
+    
+    {% elif field_type == 'count' %}
+        {% if field_value is iterable %}
+            {{ pluralized_count(field_value|length, field_config.get('label', 'item')) }}
+        {% else %}
+            {{ pluralized_count(field_value, field_config.get('label', 'item')) }}
+        {% endif %}
+    
+    {% elif field_type == 'link' %}
+        {% if field_value %}
+            <a href="{{ field_value }}" target="_blank" 
+               class="{{ field_config.get('link_class', 'text-blue-600 hover:text-blue-800') }}"
+               onclick="event.stopPropagation()">
+                {{ field_config.get('text', field_value) }}
+            </a>
+        {% endif %}
+    
+    {% elif field_type == 'email' %}
+        {% if field_value %}
+            <a href="mailto:{{ field_value }}" 
+               class="{{ field_config.get('link_class', 'text-blue-600 hover:text-blue-800') }}"
+               onclick="event.stopPropagation()">
+                {{ field_value }}
+            </a>
+        {% endif %}
+    
+    {% elif field_type == 'phone' %}
+        {% if field_value %}
+            <a href="tel:{{ field_value }}" 
+               class="{{ field_config.get('link_class', 'text-blue-600 hover:text-blue-800') }}"
+               onclick="event.stopPropagation()">
+                {{ field_value }}
+            </a>
+        {% endif %}
+    
+    {% elif field_type == 'progress' %}
+        {% if field_value is number %}
+            {{ progress_bar(
+                field_value, 
+                field_config.get('max_value', 100),
+                field_config.get('color_scheme', 'blue'),
+                field_config.get('label')
+            ) }}
+        {% endif %}
+    
+    {% elif field_type == 'relationship' %}
+        {% set related_object = field_value %}
+        {% set related_field = field_config.get('related_field', 'name') %}
+        {% if related_object and related_field in related_object %}
+            {{ related_object[related_field] }}
+        {% endif %}
+    
+    {% else %}
+        {# Fallback to simple text display #}
+        {{ field_value }}
+    {% endif %}
+{% endif %}
+{% endmacro %}
+
+{#
+  Action Section Renderer - Renders action buttons based on configuration
+#}
+{% macro render_action_section(action_config) %}
+{% if action_config.type == 'buttons' %}
+    <div class="flex items-center space-x-1">
+        {% for action in action_config.actions %}
+            {{ render_action_button(action) }}
+        {% endfor %}
+    </div>
+{% elif action_config.type == 'dropdown' %}
+    {# Future enhancement: dropdown action menus #}
+    <!-- Dropdown actions not yet implemented -->
+{% elif action_config.type == 'custom' %}
+    {{ action_config.content|safe }}
+{% endif %}
+{% endmacro %}
+
+{#
+  Individual Action Button Renderer
+#}
+{% macro render_action_button(action) %}
+{% from "macros/base/icons.html" import pencil_icon, trash_icon, check_icon %}
+
+{%- set default_icons = {
+    'edit': pencil_icon("w-4 h-4"),
+    'delete': trash_icon("w-4 h-4"), 
+    'complete': check_icon("w-4 h-4")
+} -%}
+
+{%- set default_classes = {
+    'edit': 'text-info-hover hover:bg-blue-50',
+    'delete': 'text-danger-hover hover:bg-red-50',
+    'complete': 'text-success-hover hover:bg-green-50'
+} -%}
+
+<button onclick="event.stopPropagation(); {{ action.onclick }}" 
+        class="px-2 py-1 rounded text-action-sm transition-colors duration-200 {{ action.get('classes', default_classes.get(action.type, '')) }}" 
+        title="{{ action.get('title', action.type.title()) }}">
+    {{ action.get('icon', default_icons.get(action.type, ''))|safe }}
+</button>
+{% endmacro %}
+
+{# ========== CONTENT BUILDERS ========== #}
+
+{#
+  Main Card Macro - The new recommended API
+  
+  This is the primary interface for the new card system. It automatically
+  builds content objects based on entity type and renders using the container.
+  
+  Parameters:
+  - entity_type (required): 'task' | 'opportunity' | 'contact' | 'stakeholder' | 'company'
+  - entity (required): Entity object
+  - expansion_enabled (optional): Enable expand/collapse (default: true)
+  - card_classes (optional): Additional CSS classes
+  - content (optional): Override with custom content object
+  - overrides (optional): Override specific content sections
+  
+  Usage:
+  {{ card('task', task) }}
+  {{ card('opportunity', opportunity, expansion_enabled=false) }}
+  {{ card('task', task, content=custom_content, overrides={'actions': custom_actions}) }}
+#}
+{% macro card(entity_type, entity, expansion_enabled=true, card_classes='', content=none, overrides={}) %}
+{% if content %}
+    {# Use provided content object #}
+    {% set final_content = content %}
+{% else %}
+    {# Build content object automatically based on entity type #}
+    {% if entity_type == 'task' %}
+        {% set final_content = {
+            'header': {
+                'type': 'fields',
+                'layout': 'stacked', 
+                'entity': entity,
+                'fields': [
+                    {'name': 'priority', 'type': 'badge', 'style': ('red' if entity.priority == 'high' else ('yellow' if entity.priority == 'medium' else 'green'))},
+                    {'name': 'description', 'type': 'text', 'classes': 'text-lg font-medium text-gray-900'},
+                    {'name': 'next_step_type', 'type': 'text', 'classes': 'text-gray-600'},
+                    {'name': 'due_date', 'type': 'date', 'format': '%d/%m/%y', 'prefix': 'Due: ', 'classes': 'text-sm text-gray-500'},
+                    {'name': 'created_at', 'type': 'date', 'format': '%m/%d/%y', 'classes': 'text-sm text-gray-500'}
+                ]
+            },
+            'actions': {
+                'type': 'buttons',
+                'actions': [
+                    {
+                        'type': 'complete',
+                        'onclick': 'htmx.ajax("POST", "/api/tasks/' + entity.id|string + '/complete", {target: "closest(.task-card)", swap: "outerHTML"})',
+                        'title': 'Complete task'
+                    },
+                    {
+                        'type': 'edit', 
+                        'onclick': 'htmx.ajax("GET", "/modals/Task/' + entity.id|string + '/edit", {target: "body", swap: "beforeend"})',
+                        'title': 'Edit task'
+                    },
+                    {
+                        'type': 'delete',
+                        'onclick': 'if(confirm("Are you sure you want to delete this task?")) htmx.ajax("DELETE", "/api/tasks/' + entity.id|string + '", {target: "closest(.task-card)", swap: "outerHTML"})',
+                        'title': 'Delete task'
+                    }
+                ]
+            },
+            'body': {
+                'type': 'fields',
+                'layout': 'stacked',
+                'entity': entity,
+                'fields': [{'name': 'notes', 'type': 'text', 'classes': 'text-sm text-gray-700'}] if entity.notes else []
+            }
+        } %}
+    {% elif entity_type == 'opportunity' %}
+        {% set final_content = {
+            'header': {
+                'type': 'fields',
+                'layout': 'stacked',
+                'entity': entity,
+                'fields': [
+                    {'name': 'stage', 'type': 'badge', 'style': ('green' if entity.stage == 'Prospect' else 'blue')},
+                    {'name': 'name', 'type': 'text', 'classes': 'text-lg font-medium text-gray-900'},
+                    {'name': 'value', 'type': 'currency', 'classes': 'text-lg font-semibold text-gray-700'},
+                    {'name': 'company', 'type': 'relationship', 'related_field': 'name', 'classes': 'text-gray-600'},
+                    {'name': 'close_date', 'type': 'date', 'format': '%d/%m/%y', 'prefix': 'Close: ', 'classes': 'text-sm text-gray-500'},
+                    {'name': 'probability', 'type': 'text', 'suffix': '% probability', 'classes': 'text-sm text-gray-500'}
+                ]
+            },
+            'actions': {
+                'type': 'buttons',
+                'actions': [
+                    {
+                        'type': 'edit',
+                        'onclick': 'htmx.ajax("GET", "/modals/Opportunity/' + entity.id|string + '/edit", {target: "body", swap: "beforeend"})',
+                        'title': 'Edit opportunity'
+                    },
+                    {
+                        'type': 'delete',
+                        'onclick': 'if(confirm("Are you sure you want to delete this opportunity?")) htmx.ajax("DELETE", "/api/opportunities/' + entity.id|string + '", {target: "closest(.opportunity-card)", swap: "outerHTML"})',
+                        'title': 'Delete opportunity'
+                    }
+                ]
+            }
+        } %}
+    {% elif entity_type in ['contact', 'stakeholder'] %}
+        {% set final_content = {
+            'header': {
+                'type': 'fields',
+                'layout': 'stacked',
+                'entity': entity,
+                'fields': [
+                    {'name': 'job_title', 'type': 'badge', 'style': 'blue'},
+                    {'name': 'name', 'type': 'text', 'classes': 'text-lg font-medium text-gray-900'},
+                    {'name': 'company', 'type': 'relationship', 'related_field': 'name', 'classes': 'text-gray-600'},
+                    {'name': 'email', 'type': 'email', 'classes': 'text-blue-600 hover:text-blue-800'},
+                    {'name': 'phone', 'type': 'phone', 'classes': 'text-sm text-gray-500'},
+                    {'name': 'created_at', 'type': 'date', 'format': '%m/%d/%y', 'classes': 'text-sm text-gray-500'}
+                ]
+            },
+            'actions': {
+                'type': 'buttons',
+                'actions': [
+                    {
+                        'type': 'edit',
+                        'onclick': 'htmx.ajax("GET", "/modals/Stakeholder/' + entity.id|string + '/edit", {target: "body", swap: "beforeend"})',
+                        'title': 'Edit stakeholder'
+                    },
+                    {
+                        'type': 'delete',
+                        'onclick': 'if(confirm("Are you sure you want to delete this stakeholder?")) htmx.ajax("DELETE", "/api/stakeholders/' + entity.id|string + '", {target: "closest(.stakeholder-card)", swap: "outerHTML"})',
+                        'title': 'Delete stakeholder'
+                    }
+                ]
+            }
+        } %}
+    {% else %}
+        {# Generic fallback #}
+        {% set final_content = {
+            'header': {
+                'type': 'fields',
+                'layout': 'stacked',
+                'entity': entity,
+                'fields': [
+                    {'name': 'name', 'type': 'text', 'classes': 'text-lg font-medium text-gray-900'},
+                    {'name': 'created_at', 'type': 'date', 'format': '%m/%d/%y', 'classes': 'text-sm text-gray-500'}
+                ]
+            },
+            'actions': {'type': 'buttons', 'actions': []}
+        } %}
+    {% endif %}
+{% endif %}
+
+{# Apply any overrides #}
+{% for key, value in overrides.items() %}
+    {% set _ = final_content.update({key: value}) %}
+{% endfor %}
+
+{{ card_container(entity_type, entity.id, expansion_enabled, card_classes, final_content) }}
+{% endmacro %}
+
+
+{# ========== LEGACY SYSTEM ========== #}
 
 {#
   Auto Card - The new recommended way to create entity cards
@@ -43,10 +514,11 @@
   {{ auto_card('contact', contact, expansion_enabled=false) }}
 #}
 {% macro auto_card(entity_type, entity, expansion_enabled=true, overrides={}, card_classes='') %}
-{{ auto_entity_card(entity_type, entity, expansion_enabled, card_classes, overrides) }}
+{# Backward compatibility wrapper - delegates to new card system #}
+{{ card(entity_type, entity, expansion_enabled, card_classes, none, overrides) }}
 {% endmacro %}
 
-{# Main expandable card macro - htmx-enhanced with server-side state management #}
+{# DEPRECATED: Legacy expandable_card macro - Use the new card() macro instead #}
 {% macro expandable_card(card_type, entity, entity_id, expansion_enabled=true, progress_config=none, bulk_selection_enabled=false, card_classes='', field_config={}, model_class=none, badge_content='', title_content='', value_content='', secondary_info='', metadata_content='', action_buttons='', expanded_content='', notes_enabled=false) %}
 {# Setup card styling and auto-field extraction #}
 {%- set base_classes = card_type + '-card card-padded relative mb-3' -%}
@@ -405,12 +877,13 @@ details[open] .details-chevron {
 
 {%- set default_actions = {
     'task': [
-        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'hx_delete': '/api/tasks/' + entity_id|string, 'hx_confirm': 'Are you sure you want to delete this task?', 'hx_target': 'closest(.task-card)', 'hx_swap': 'outerHTML', 'title': 'Delete task', 'classes': 'text-danger-hover hover:bg-red-50'},
-        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Task/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit task', 'classes': 'text-info-hover hover:bg-blue-50'},
-        {'type': 'complete', 'icon': check_icon("w-4 h-4"), 'hx_post': '/api/tasks/' + entity_id|string + '/complete', 'hx_target': 'closest(.task-card)', 'hx_swap': 'outerHTML', 'title': 'Complete task', 'classes': 'text-success-hover hover:bg-green-50'}
+        {'type': 'complete', 'icon': check_icon("w-4 h-4"), 'hx_post': '/api/tasks/' + entity_id|string + '/complete', 'hx_target': 'closest(.task-card)', 'hx_swap': 'outerHTML', 'title': 'Complete task', 'classes': 'text-green-600 hover:text-green-800 hover:bg-green-50'},
+        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Task/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit task', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
+        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'hx_delete': '/api/tasks/' + entity_id|string, 'hx_confirm': 'Are you sure you want to delete this task?', 'hx_target': 'closest(.task-card)', 'hx_swap': 'outerHTML', 'title': 'Delete task', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
     ],
     'opportunity': [
-        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Opportunity/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit opportunity', 'classes': 'text-info-hover hover:bg-blue-50'}
+        {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Opportunity/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit opportunity', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
+        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'hx_delete': '/api/opportunities/' + entity_id|string, 'hx_confirm': 'Are you sure you want to delete this opportunity?', 'hx_target': 'closest(.opportunity-card)', 'hx_swap': 'outerHTML', 'title': 'Delete opportunity', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
     ],
     'contact': [
         {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Stakeholder/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit contact', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
@@ -419,6 +892,9 @@ details[open] .details-chevron {
     'stakeholder': [
         {'type': 'edit', 'icon': pencil_icon("w-4 h-4"), 'hx_get': '/modals/Stakeholder/' + entity_id|string + '/edit', 'hx_target': 'body', 'hx_swap': 'beforeend', 'title': 'Edit stakeholder', 'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'},
         {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'hx_delete': '/api/stakeholders/' + entity_id|string, 'hx_confirm': 'Are you sure you want to delete this stakeholder?', 'hx_target': 'closest(.stakeholder-card)', 'hx_swap': 'outerHTML', 'title': 'Delete stakeholder', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
+    ],
+    'note': [
+        {'type': 'delete', 'icon': trash_icon("w-4 h-4"), 'hx_delete': '/api/notes/' + entity_id|string, 'hx_confirm': 'Delete this note?', 'hx_target': '#note-' + entity_id|string, 'hx_swap': 'outerHTML', 'title': 'Delete note', 'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'}
     ]
 } -%}
 

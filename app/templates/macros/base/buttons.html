@@ -66,6 +66,76 @@
 {% endmacro %}
 
 {#
+  Action Button Set - Standardized group of action buttons with consistent styling
+  
+  Creates a set of action buttons using the standardized styling patterns from 
+  the expandable card system. Provides consistent hover effects and spacing.
+  
+  Parameters:
+  - buttons (required): Array of button configurations
+  - container_classes (optional): Additional CSS classes for container
+  
+  Button Configuration:
+  {
+    'type': 'edit' | 'delete' | 'complete' | 'custom',
+    'onclick': 'javascript_function_call',
+    'hx_get': '/endpoint' (for HTMX GET),
+    'hx_post': '/endpoint' (for HTMX POST), 
+    'hx_delete': '/endpoint' (for HTMX DELETE),
+    'hx_target': 'selector',
+    'hx_swap': 'strategy',
+    'hx_confirm': 'confirmation_message',
+    'title': 'tooltip_text',
+    'icon': 'icon_html',
+    'classes': 'additional_css_classes'
+  }
+  
+  Usage:
+  {{ action_button_set([
+      {'type': 'edit', 'hx_get': '/modals/Task/123/edit', 'hx_target': 'body'},
+      {'type': 'delete', 'hx_delete': '/api/tasks/123', 'hx_confirm': 'Are you sure?'}
+  ]) }}
+#}
+{% macro action_button_set(buttons, container_classes='flex items-center space-x-1') %}
+{% from "macros/base/icons.html" import pencil_icon, trash_icon, check_icon %}
+
+{%- set default_configs = {
+    'edit': {
+        'icon': pencil_icon("w-4 h-4"),
+        'title': 'Edit',
+        'classes': 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
+    },
+    'delete': {
+        'icon': trash_icon("w-4 h-4"), 
+        'title': 'Delete',
+        'classes': 'text-red-600 hover:text-red-800 hover:bg-red-50'
+    },
+    'complete': {
+        'icon': check_icon("w-4 h-4"),
+        'title': 'Complete',
+        'classes': 'text-green-600 hover:text-green-800 hover:bg-green-50'
+    }
+} -%}
+
+<div class="{{ container_classes }}">
+    {% for button in buttons %}
+    {%- set config = default_configs.get(button.type, {}) -%}
+    <button onclick="event.stopPropagation(){% if button.onclick %}; {{ button.onclick }}{% endif %}"
+            {% if button.hx_get %}hx-get="{{ button.hx_get }}"{% endif %}
+            {% if button.hx_post %}hx-post="{{ button.hx_post }}"{% endif %}
+            {% if button.hx_delete %}hx-delete="{{ button.hx_delete }}"{% endif %}
+            {% if button.hx_target %}hx-target="{{ button.hx_target }}"{% endif %}
+            {% if button.hx_swap %}hx-swap="{{ button.hx_swap }}"{% endif %}
+            {% if button.hx_confirm %}hx-confirm="{{ button.hx_confirm }}"{% endif %}
+            class="px-2 py-1 rounded text-sm transition-colors duration-200 {{ button.get('classes', config.get('classes', 'text-gray-400 hover:text-gray-600')) }}"
+            title="{{ button.get('title', config.get('title', button.type.title())) }}">
+        {{ button.get('icon', config.get('icon', ''))|safe }}
+    </button>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+{#
   Entity Link Button - Standardized link button for entity details
   
   Parameters:
