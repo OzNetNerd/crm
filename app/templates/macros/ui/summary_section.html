@@ -46,14 +46,20 @@
   Simple Metric Card - Individual metric display card
   
   Parameters:
-  - value (required): Main metric value (e.g., "42", "$1,234")
   - label (required): Metric description (e.g., "Total Tasks", "Revenue")
-  - color_class (optional): CSS class for value color (e.g., "text-green-600")
+  - value (required): Main metric value (e.g., "42", "$1,234")
+  - icon (optional): Icon HTML to display (e.g., building_office_icon())
+  - color (optional): Color theme for the card (e.g., "blue", "green")
   - additional_classes (optional): Extra CSS classes for container
 #}
-{% macro metric_card(value, label, additional_classes='', entity_name=None) %}
-<div class="text-center {{ additional_classes }}">
-    <div class="text-2xl font-bold {{ ('text-color-' + entity_name) if entity_name else 'text-gray-900' }}">
+{% macro metric_card(label, value, icon='', color='', additional_classes='') %}
+<div class="text-center p-6 bg-white rounded-lg shadow {{ additional_classes }}">
+    {% if icon %}
+    <div class="flex justify-center mb-2">
+        {{ icon|safe }}
+    </div>
+    {% endif %}
+    <div class="text-2xl font-bold {{ ('text-' + color + '-600') if color else 'text-gray-900' }}">
         {{ value }}
     </div>
     <div class="text-secondary">{{ label }}</div>
