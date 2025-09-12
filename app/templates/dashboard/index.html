@@ -5,7 +5,6 @@
 {% from "macros/base/layout.html" import simple_page_header %}
 {% from "macros/quick_actions.html" import default_dashboard_actions %}
 {% from "macros/metadata_display.html" import standard_card_metadata %}
-{% from "macros/base/icons.html" import plus_icon, building_office_icon, user_icon, currency_dollar_icon, check_icon, exclamation_circle_icon_solid, calendar_days_icon, clipboard_list_icon %}
 
 {# Use standard metadata macro for consistency #}
 {% macro task_metadata(task) %}
@@ -20,19 +19,19 @@
 
 {% block content %}
 {# Use centralized DRY button generation system #}
-{% set dashboard_buttons = get_dashboard_entities() %}
+{% set dashboard_buttons = get_dashboard_buttons() %}
 
 {{ simple_page_header("Dashboard", "Overview of your CRM performance and activity", buttons=dashboard_buttons) }}
 
 <!-- Key Metrics -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    {{ metric_card('Companies', metrics.total_companies, building_office_icon(), 'blue') }}
+    {{ metric_card('Companies', metrics.total_companies, '<svg class="c-icon c-icon--lg c-icon--company" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l8-4v18M9 9h1m0 0h1m-1 0v1m0-1V8m3 1h1m0 0h1m-1 0v1m0-1V8"/></svg>'|safe, 'blue') }}
 
-    {{ metric_card('Stakeholders', metrics.total_contacts, user_icon(), 'green') }}
+    {{ metric_card('Stakeholders', metrics.total_contacts, '<svg class="c-icon c-icon--lg c-icon--stakeholder" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>'|safe, 'green') }}
 
-    {{ metric_card('Opportunities', metrics.total_opportunities, currency_dollar_icon(), 'yellow') }}
+    {{ metric_card('Opportunities', metrics.total_opportunities, '<svg class="c-icon c-icon--lg c-icon--opportunity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>'|safe, 'yellow') }}
 
-    {{ metric_card('Total Tasks', metrics.total_tasks, check_icon(), 'purple') }}
+    {{ metric_card('Total Tasks', metrics.total_tasks, '<svg class="c-icon c-icon--lg c-icon--task" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>'|safe, 'purple') }}
 </div>
 
 <!-- Task Quick Stats -->
@@ -81,7 +80,7 @@
     <div class="space-y-6">
         <!-- Overdue Tasks Alert -->
         {% if overdue_tasks %}
-        {% call list_section('Overdue Tasks', href='/tasks/', theme_color='red', icon_macro=exclamation_circle_icon_solid('w-5 h-5 text-red-600')) %}
+        {% call list_section('Overdue Tasks', href='/tasks/', theme_color='red', icon_macro='<svg class="c-icon c-icon--md c-icon--danger" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"/></svg>'|safe) %}
             {% for task in overdue_tasks %}
                 {{ alert_list_item(
                     title=task.description,
@@ -95,7 +94,7 @@
 
         <!-- Closing Soon Opportunities -->
         {% if closing_soon %}
-        {% call list_section('Closing Soon', href='/opportunities/', theme_color='yellow', icon_macro=calendar_days_icon('w-5 h-5 text-yellow-600')) %}
+        {% call list_section('Closing Soon', href='/opportunities/', theme_color='yellow', icon_macro='<svg class="c-icon c-icon--md c-icon--warning" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>'|safe) %}
             {% for opp in closing_soon %}
                 {{ alert_list_item(
                     title=opp.name,

@@ -1,197 +1,53 @@
 """
-Entity to Icon Mapping Utility - Single Source of Truth for DRY Button System
-Centralized mapping system for all CRM entities, their icons, and button generation
+Entity Configuration - Clean Python approach
+Python only passes entity names, Jinja handles CSS class generation
 """
 
-from typing import Dict, List, Any, Optional
-
-# Entity semantic mapping removed - model metadata is now the single source of truth
-
-# Entity to icon name mapping - supports both string icon names and model entity configs  
-ENTITY_ICON_MAPPING = {
-    # Direct entity class names
-    'Company': 'building-office',
-    'Stakeholder': 'user', 
-    'Opportunity': 'currency-dollar',
-    'Task': 'clipboard-list',
-    'User': 'user',  # Individual user/team member
-    
-    # Entity plural names (for routes/endpoints)  
-    'companies': 'building-office',
-    'stakeholders': 'user',
-    'opportunities': 'currency-dollar', 
-    'tasks': 'clipboard-list',
-    'teams': 'users',  # Teams page uses plural users icon
-    
-    # Icon string names from model __entity_config__
-    'building-office': 'building-office',
-    'user': 'user',
-    'users': 'users', 
-    'currency-dollar': 'currency-dollar',
-    'clipboard-list': 'clipboard-list'
-}
-
-# Icon to macro function mapping
-ICON_FUNCTION_MAPPING = {
-    'building-office': 'building_office_icon',
-    'user': 'user_icon',
-    'users': 'users_icon',  # Note: This needs to exist in icons.html
-    'currency-dollar': 'currency_dollar_icon', 
-    'clipboard-list': 'clipboard_list_icon',
-    'plus': 'plus_icon'
-}
-
-# Icon size mapping for different contexts
-ICON_SIZE_MAPPING = {
-    'button': 'w-4 h-4',
-    'metric': 'w-6 h-6', 
-    'header': 'w-5 h-5',
-    'small': 'w-3 h-3'
-}
-
-def get_entity_icon_name(entity_identifier):
+def get_dashboard_buttons():
     """
-    Get icon name for any entity identifier
-    
-    Args:
-        entity_identifier (str): Entity name, plural name, or icon name
+    Generate dashboard buttons - Python just passes entity names
+    Jinja handles icon names and CSS class concatenation
     
     Returns:
-        str: Standardized icon name
+        list: Simple button configurations with just entity names
     """
-    return ENTITY_ICON_MAPPING.get(entity_identifier, 'plus')
-
-def get_icon_function_name(icon_name):
-    """
-    Get the macro function name for an icon
+    # Import here to avoid circular imports
+    from app.models import Task, Company, Stakeholder, Opportunity, User
     
-    Args:
-        icon_name (str): Icon name (e.g., 'building-office', 'user')
+    # Get entity configs from models
+    entities = [
+        (Task, 'Task'),
+        (Company, 'Company'), 
+        (Stakeholder, 'Stakeholder'),
+        (Opportunity, 'Opportunity'),
+        (User, 'User')
+    ]
     
-    Returns:  
-        str: Macro function name (e.g., 'building_office_icon')
-    """
-    return ICON_FUNCTION_MAPPING.get(icon_name, 'plus_icon')
-
-def get_entity_icon_html(entity_identifier, size='button'):
-    """
-    Generate icon HTML for templates using Jinja2 rendering
-    
-    Args:
-        entity_identifier (str): Entity name, plural, or icon name
-        size (str): Size context ('button', 'metric', 'header', 'small')
-    
-    Returns:
-        str: Rendered icon HTML
-    """
-    from flask import render_template_string
-    
-    icon_name = get_entity_icon_name(entity_identifier)
-    function_name = get_icon_function_name(icon_name)
-    size_class = ICON_SIZE_MAPPING.get(size, 'w-4 h-4')
-    
-    # Render the icon using Jinja2
-    icon_template = f"""
-    {{% from "macros/base/icons.html" import {function_name} %}}
-    {{{{ {function_name}('{size_class}') }}}}
-    """
-    
-    try:
-        return render_template_string(icon_template.strip())
-    except:
-        # Fallback to plus icon if specific icon fails
-        fallback_template = f"""
-        {{% from "macros/base/icons.html" import plus_icon %}}
-        {{{{ plus_icon('{size_class}') }}}}
-        """
-        return render_template_string(fallback_template.strip())
-
-def generate_entity_buttons(entities_config, context='dashboard'):
-    """
-    Generate standardized buttons for multiple entities
-    
-    Args:
-        entities_config (list): List of entity configurations or entity names
-        context (str): Context for button generation ('dashboard', 'page', 'quick_actions')
-    
-    Returns:
-        list: List of standardized button configurations
-    """
     buttons = []
-    
-    for entity_config in entities_config:
-        if isinstance(entity_config, str):
-            # Simple entity name - need to get model config
-            entity_name = entity_config
-            # This would need to be enhanced to look up model configs
-            button = {
-                'label': f'New {entity_name.title()}',
-                'hx_get': f'/modals/{entity_name.title()}/create',
-                'hx_target': 'body', 
-                'hx_swap': 'beforeend',
-                'entity': entity_name
-            }
-        else:
-            # Full entity configuration dict
-            icon_name = entity_config.get('icon', 'plus')
-            button = {
-                'label': f"New {entity_config.get('display_name_singular', 'Item')}",
-                'hx_get': f"{entity_config.get('modal_path', '/modals/Item')}/create",
-                'hx_target': 'body',
-                'hx_swap': 'beforeend',
-                'entity': entity_config.get('endpoint_name', 'item')
-            }
+    for model_class, entity_class_name in entities:
+        entity_config = getattr(model_class, '__entity_config__', {})
         
+        # Use entity config if available, otherwise fall back to class name
+        if entity_config:
+            label = f"New {entity_config.get('display_name_singular', entity_class_name)}"
+            modal_path = entity_config.get('modal_path', f'/modals/{entity_class_name}')
+            endpoint_name = entity_config.get('endpoint_name', entity_class_name.lower())
+        else:
+            label = f"New {entity_class_name}"
+            modal_path = f'/modals/{entity_class_name}'
+            endpoint_name = entity_class_name.lower()
+        
+        button = {
+            'label': label,
+            'hx_get': f'{modal_path}/create',
+            'hx_target': 'body',
+            'hx_swap': 'beforeend',
+            'entity_type': endpoint_name  # Just the entity name - Jinja handles the rest
+        }
         buttons.append(button)
     
     return buttons
 
-def get_entity_semantic(entity_identifier):
-    """
-    Get semantic category for an entity (colors now in CSS)
-    
-    Args:
-        entity_identifier (str): Entity name, plural, or endpoint name
-        
-    Returns:
-        str: Semantic category name
-    """
-    # Normalize entity identifier to lowercase
-    entity_key = entity_identifier.lower()
-    
-    # Direct lookup
-    if entity_key in ENTITY_SEMANTICS:
-        return ENTITY_SEMANTICS[entity_key]
-    
-    # Fallback to default
-    return 'default'
-
-
+# Keep get_dashboard_entities as alias for backwards compatibility
 def get_dashboard_entities():
-    """
-    Auto-discover dashboard buttons from all models with __entity_config__
-    
-    Returns:
-        list: Dashboard button configs for models that want dashboard buttons
-    """
-    from app.models import db
-    import inspect
-    
-    buttons = []
-    
-    # Get all SQLAlchemy model classes
-    for name, obj in inspect.getmembers(db.Model.registry._class_registry.data):
-        if inspect.isclass(obj) and hasattr(obj, '__tablename__'):
-            entity_config = getattr(obj, '__entity_config__', {})
-            
-            # Only create button if model explicitly wants it
-            if entity_config.get('show_dashboard_button', False):
-                endpoint_name = entity_config.get('endpoint_name', name.lower())
-                
-                button = {
-                    'label': f"New {entity_config.get('display_name_singular', name)}",
-                    'entity': endpoint_name,
-                }
-                buttons.append(button)
-    
-    return buttons
+    return get_dashboard_buttons()

@@ -1,4 +1,4 @@
-{% from "macros/base/icons.html" import plus_icon, building_office_icon, currency_dollar_icon %}
+{% from "macros/entity_config.html" import entity_icons %}
 
 {% macro quick_actions_buttons(buttons) %}
 <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -11,13 +11,17 @@
                 {% if button['hx_target'] %}hx-target="{{ button['hx_target'] }}"{% endif %}
                 {% if button['hx_swap'] %}hx-swap="{{ button['hx_swap'] }}"{% endif %}
                 class="flex items-center gap-2 {{ btn_class }}">
-            {{ button['icon']|safe }}
+            <svg class="c-icon c-icon--sm c-icon--{{ button.entity_type }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <use href="#{{ entity_icons[button.entity_type] }}"/>
+            </svg>
             {{ button['label'] }}
         </button>
     {% else %}
         <a href="{{ button['url'] or '#' }}" 
            class="flex items-center gap-2 {{ btn_class }}">
-            {{ button['icon']|safe }}
+            <svg class="c-icon c-icon--sm c-icon--{{ button.entity_type }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <use href="#{{ entity_icons[button.entity_type] }}"/>
+            </svg>
             {{ button['label'] }}
         </a>
     {% endif %}
@@ -26,7 +30,7 @@
 {% endmacro %}
 
 {% macro default_dashboard_actions() %}
-{{ entity_buttons(get_dashboard_entities()) }}
+{{ quick_actions_buttons(get_dashboard_buttons()) }}
 {% endmacro %}
 
 {# 

@@ -1,4 +1,4 @@
-{% from 'macros/base/icons.html' import icon %}
+{% from 'macros/entity_config.html' import entity_icons %}
 {#
   Read-Only View Modal Template
   
@@ -10,7 +10,7 @@
   - modal_title: Title for the modal
   - model_name: Name of the model being viewed
   - config: Configuration dict with field definitions
-  - get_entity_icon_html: Function to get entity icon HTML
+  - get_entity_icon_classes: Function to get entity icon classes
 #}
 <div class="modal-overlay fixed inset-0 z-50 flex items-center justify-center" 
      tabindex="-1" 
@@ -25,7 +25,9 @@
         <div class="modal-header flex items-center justify-between p-6 border-b">
             <div class="flex items-center gap-3">
                 <div class="entity-icon">
-                    {{ get_entity_icon_html(model_name, 'header') | safe }}
+                    <svg class="c-icon c-icon--md c-icon--{{ model_name }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <use href="#{{ entity_icons[model_name] }}"/>
+                    </svg>
                 </div>
                 <h3 class="modal-title text-lg font-semibold text-gray-900">
                     {{ modal_title }}
