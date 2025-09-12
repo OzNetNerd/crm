@@ -60,7 +60,6 @@ class Task(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime)
 
-    # Legacy entity linking removed - now using task_entities junction table
 
     # Multi Task support
     task_type = db.Column(

@@ -39,23 +39,6 @@ def health_check():
     return {"status": "healthy", "service": "chatbot"}
 
 
-@app.get("/api/chat/test-db")
-def test_database(session: Session = Depends(get_sync_session)):
-    """Test database connectivity"""
-    try:
-        # Test basic query
-        companies = session.query(Company).limit(5).all()
-
-        return {
-            "status": "success",
-            "message": "Database connection working",
-            "sample_data": {
-                "companies_count": len(companies),
-                "companies": [{"id": c.id, "name": c.name} for c in companies],
-            },
-        }
-    except Exception as e:
-        return {"status": "error", "message": f"Database connection failed: {str(e)}"}
 
 
 @app.websocket("/ws/chat/{session_id}")

@@ -270,7 +270,6 @@ def index():
     # Add custom entity filter for tasks
     ENTITY_TYPES = [
         {'value': 'company', 'label': Company.__name__},
-        {'value': 'contact', 'label': 'Contact'},  # Legacy name for Stakeholder
         {'value': 'opportunity', 'label': Opportunity.__name__}
     ]
     base_context['dropdown_configs']['entity_filter'] = {
@@ -456,25 +455,3 @@ def delete_task(task_id):
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
-@tasks_bp.route("/debug-data")
-def debug_data():
-    """Debug endpoint to test data flow"""
-    context = get_all_tasks_context()
-    tasks_data = [task.to_dict() for task in context["all_tasks"]]
-
-    companies_data = [
-        {"id": c.id, "name": c.name} for c in Company.query.order_by(Company.name).all()
-    ]
-
-    return jsonify(
-        {
-            "data_counts": {
-                "tasks": len(tasks_data),
-                "companies": len(companies_data),
-                "database_tasks": Task.query.count(),
-                "database_companies": Company.query.count(),
-            },
-            "sample_task": tasks_data[0] if tasks_data else None,
-            "sample_company": companies_data[0] if companies_data else None,
-        }
-    )
