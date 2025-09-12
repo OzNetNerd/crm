@@ -23,7 +23,6 @@ from .template_globals import (
     get_groupable_fields,
     get_model_form_fields,
     get_model_config,
-    get_dashboard_entities,
     PRIORITY_OPTIONS,
     SIZE_OPTIONS
 )
@@ -46,7 +45,6 @@ __all__ = [
     'get_groupable_fields',
     'get_model_form_fields',
     'get_model_config',
-    'get_dashboard_entities',
     'UniversalIndexHelper',
     'PRIORITY_OPTIONS',
     'SIZE_OPTIONS'

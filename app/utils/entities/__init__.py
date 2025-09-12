@@ -12,14 +12,7 @@ from .entity_manager import (
     get_entity_tasks
 )
 
-from .entity_icons import (
-    get_entity_icon_name,
-    get_icon_function_name,
-    get_entity_icon_html,
-    get_entity_semantic,
-    get_dashboard_entities,
-    generate_entity_buttons
-)
+# Entity icons now use dynamic CSS classes via Jinja: icon-{entity_name}
 
 
 __all__ = [
@@ -30,10 +23,4 @@ __all__ = [
     'get_entities_for_forms',
     'assign_stakeholder_role',
     'get_entity_tasks',
-    'get_entity_icon_name',
-    'get_icon_function_name', 
-    'get_entity_icon_html',
-    'get_entity_semantic',
-    'get_dashboard_entities',
-    'generate_entity_buttons',
 ]

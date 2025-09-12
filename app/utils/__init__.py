@@ -44,12 +44,6 @@ from .entities import (
     get_entities_for_forms,
     assign_stakeholder_role,
     get_entity_tasks,
-    get_entity_icon_name,
-    get_icon_function_name,
-    get_entity_icon_html,
-    get_entity_semantic,
-    get_dashboard_entities,
-    generate_entity_buttons,
 )
 
 # UI utilities
@@ -93,7 +87,6 @@ __all__ = [
     # Entities
     'EntityManager',
     'get_entities_for_forms',
-    'get_dashboard_entities',
     
     # UI
     # 'ModalService',  # Temporarily removed
