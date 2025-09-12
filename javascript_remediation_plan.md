@@ -109,7 +109,6 @@ setTimeout(() => {
 - `app/templates/components/modals/error_modal.html:14,35`
 - `app/templates/macros/modals/base/modal_base.html:11,43,51`
 - `app/templates/macros/modals/base/generic_create.html:12,18,48`
-- `app/templates/macros/modals/forms.html:30`
 - `app/templates/macros/modals/base.html:13,29,84`
 
 **Current Pattern:**
