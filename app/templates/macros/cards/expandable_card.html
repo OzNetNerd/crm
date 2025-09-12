@@ -405,12 +405,34 @@ details[open] .details-chevron {
 {% macro generate_action_buttons(entity_type, entity_id) %}
 {% from 'macros/base/icons.html' import icon %}
 
+{# URL mapping for different entity types #}
+{% set endpoint_mapping = {
+  'task': {
+    'edit': '/modals/Task/' + entity_id|string + '/edit',
+    'delete': '/tasks/' + entity_id|string,
+    'complete': '/api/tasks/' + entity_id|string + '/complete'
+  },
+  'opportunity': {
+    'edit': '/modals/Opportunity/' + entity_id|string + '/edit', 
+    'delete': '/api/opportunities/' + entity_id|string
+  },
+  'stakeholder': {
+    'edit': '/modals/Stakeholder/' + entity_id|string + '/edit',
+    'delete': '/api/stakeholders/' + entity_id|string
+  }
+} %}
+
+{# Safety check - if entity type not in mapping, return error message #}
+{% if entity_type not in endpoint_mapping %}
+<div class="text-red-500 text-xs">DEBUG: entity_type '{{ entity_type }}' not in mapping</div>
+{% else %}
+
 {# Single configuration array - loop through this #}
 {% set action_config = [
   {
     'type': 'edit',
     'icon': 'pencil',
-    'endpoint': '/modals/' + entity_type|title + '/' + entity_id|string + '/edit',
+    'endpoint': endpoint_mapping[entity_type]['edit'],
     'method': 'hx-get',
     'target': 'body',
     'swap': 'beforeend',
@@ -420,7 +442,7 @@ details[open] .details-chevron {
   {
     'type': 'delete', 
     'icon': 'trash',
-    'endpoint': '/api/' + entity_type + 's/' + entity_id|string,
+    'endpoint': endpoint_mapping[entity_type]['delete'],
     'method': 'hx-delete',
     'target': 'closest(.' + entity_type + '-card)',
     'swap': 'outerHTML',
@@ -430,7 +452,7 @@ details[open] .details-chevron {
   {
     'type': 'complete',
     'icon': 'check', 
-    'endpoint': '/api/tasks/' + entity_id|string + '/complete',
+    'endpoint': endpoint_mapping[entity_type]['complete'],
     'method': 'hx-post',
     'target': 'closest(.task-card)',
     'swap': 'outerHTML',
@@ -458,6 +480,7 @@ details[open] .details-chevron {
     </button>
   {% endfor %}
 </div>
+{% endif %}
 {% endmacro %}
 
 {# Legacy alias for backwards compatibility #}
