@@ -110,6 +110,16 @@
 }
 
 /* ========================================
+ * BRAND TEXT STYLES
+ * Primary brand text styling
+ * ======================================== */
+
+.text-brand {
+    font-weight: 700; /* bold */
+    color: var(--color-primary); /* primary brand color */
+}
+
+/* ========================================
  * SECONDARY TEXT STYLES
  * Secondary text colors and variants
  * ======================================== */
