@@ -44,11 +44,45 @@
     --color-gray-800: #1f2937;
     --color-gray-900: #111827;
     
-    /* Entity Type Colors */
-    --color-company: #475569; /* slate-600 */
-    --color-contact: #374151; /* gray-700 */
-    --color-opportunity: #4338ca; /* indigo-600 */
-    --color-deal-amount: #059669; /* green-600 */
+    /* Entity Type Colors - Semantic Color System */
+    --color-task: #2563eb; /* blue-600 - Action/productivity */
+    --color-task-hover: #1d4ed8; /* blue-700 */
+    --color-task-ring: #3b82f6; /* blue-500 */
+    --color-task-light: #dbeafe; /* blue-100 */
+    --color-task-lighter: #eff6ff; /* blue-50 */
+    
+    --color-company: #16a34a; /* green-600 - Business/growth */
+    --color-company-hover: #15803d; /* green-700 */
+    --color-company-ring: #22c55e; /* green-500 */
+    --color-company-light: #dcfce7; /* green-100 */
+    --color-company-lighter: #f0fdf4; /* green-50 */
+    
+    --color-opportunity: #9333ea; /* purple-600 - Premium/revenue */
+    --color-opportunity-hover: #7c3aed; /* purple-700 */
+    --color-opportunity-ring: #a855f7; /* purple-500 */
+    --color-opportunity-light: #faf5ff; /* purple-100 */
+    --color-opportunity-lighter: #f3e8ff; /* purple-50 */
+    
+    --color-stakeholder: #ca8a04; /* yellow-600 - Relationships/people */
+    --color-stakeholder-hover: #a16207; /* yellow-700 */
+    --color-stakeholder-ring: #eab308; /* yellow-500 */
+    --color-stakeholder-light: #fefce8; /* yellow-100 */
+    --color-stakeholder-lighter: #fef3c7; /* yellow-50 */
+    
+    --color-teams: #dc2626; /* red-600 - Leadership/authority */
+    --color-teams-hover: #b91c1c; /* red-700 */
+    --color-teams-ring: #ef4444; /* red-500 */
+    --color-teams-light: #fee2e2; /* red-100 */
+    --color-teams-lighter: #fef2f2; /* red-50 */
+    
+    --color-user: #dc2626; /* red-600 - Same as teams */
+    --color-user-hover: #b91c1c; /* red-700 */
+    --color-user-ring: #ef4444; /* red-500 */
+    --color-user-light: #fee2e2; /* red-100 */
+    --color-user-lighter: #fef2f2; /* red-50 */
+    
+    --color-deal-amount: #059669; /* green-600 - kept for compatibility */
+    --color-contact: #374151; /* gray-700 - kept for compatibility */
     
     /* Spacing Scale */
     --spacing-xs: 0.25rem; /* 4px */
@@ -185,20 +219,29 @@
 }
 
 /* Color-only modifier classes for semantic entity types */
+.text-color-task {
+    color: var(--color-task);
+}
 .text-color-company {
-    color: #475569; /* slate-600 - professional blue-gray for companies */
+    color: var(--color-company);
 }
 .text-color-stakeholder {
-    color: #374151; /* gray-700 - warm charcoal for stakeholders/contacts */
+    color: var(--color-stakeholder);
 }
 .text-color-opportunity {
-    color: #4338ca; /* indigo-600 - rich indigo for opportunities */
+    color: var(--color-opportunity);
+}
+.text-color-teams {
+    color: var(--color-teams);
+}
+.text-color-user {
+    color: var(--color-user);
 }
 .text-color-default {
-    color: #111827; /* text-gray-900 - default text color */
+    color: var(--color-gray-900);
 }
 .text-color-deal {
-    color: #059669; /* green-600 - success green for deal amounts */
+    color: var(--color-deal-amount);
 }
 
 
@@ -479,6 +522,32 @@
 .badge-purple { 
     background-color: #faf5ff; /* bg-purple-100 */
     color: #7c3aed; /* text-purple-700 */
+}
+
+/* Entity-specific badge classes using CSS custom properties */
+.badge-task {
+    background-color: var(--color-task-light);
+    color: var(--color-task-hover);
+}
+.badge-company {
+    background-color: var(--color-company-light);
+    color: var(--color-company-hover);
+}
+.badge-opportunity {
+    background-color: var(--color-opportunity-light);
+    color: var(--color-opportunity-hover);
+}
+.badge-stakeholder {
+    background-color: var(--color-stakeholder-light);
+    color: var(--color-stakeholder-hover);
+}
+.badge-teams {
+    background-color: var(--color-teams-light);
+    color: var(--color-teams-hover);
+}
+.badge-user {
+    background-color: var(--color-user-light);
+    color: var(--color-user-hover);
 }
 
 /* Action buttons with text */
@@ -809,47 +878,47 @@
     box-shadow: 0 0 0 2px var(--btn-ring, #6b7280), 0 0 0 4px color-mix(in srgb, var(--btn-ring, #6b7280) 25%, transparent);
 }
 
-/* Auto-generated entity color custom properties */
+/* Entity button colors using CSS custom properties */
 .btn-new-task {
-    --btn-color: #2563eb;
-    --btn-hover: #1d4ed8;
-    --btn-ring: #3b82f6;
+    --btn-color: var(--color-task);
+    --btn-hover: var(--color-task-hover);
+    --btn-ring: var(--color-task-ring);
 }
 
 .btn-new-company {
-    --btn-color: #16a34a;
-    --btn-hover: #15803d;
-    --btn-ring: #22c55e;
+    --btn-color: var(--color-company);
+    --btn-hover: var(--color-company-hover);
+    --btn-ring: var(--color-company-ring);
 }
 
 .btn-new-opportunity {
-    --btn-color: #9333ea;
-    --btn-hover: #7c3aed;
-    --btn-ring: #a855f7;
+    --btn-color: var(--color-opportunity);
+    --btn-hover: var(--color-opportunity-hover);
+    --btn-ring: var(--color-opportunity-ring);
 }
 
 .btn-new-stakeholder {
-    --btn-color: #ca8a04;
-    --btn-hover: #a16207;
-    --btn-ring: #eab308;
+    --btn-color: var(--color-stakeholder);
+    --btn-hover: var(--color-stakeholder-hover);
+    --btn-ring: var(--color-stakeholder-ring);
 }
 
 .btn-new-teams {
-    --btn-color: #dc2626;
-    --btn-hover: #b91c1c;
-    --btn-ring: #ef4444;
+    --btn-color: var(--color-teams);
+    --btn-hover: var(--color-teams-hover);
+    --btn-ring: var(--color-teams-ring);
 }
 
 .btn-new-user {
-    --btn-color: #dc2626;
-    --btn-hover: #b91c1c;
-    --btn-ring: #ef4444;
+    --btn-color: var(--color-user);
+    --btn-hover: var(--color-user-hover);
+    --btn-ring: var(--color-user-ring);
 }
 
 .btn-new-default {
-    --btn-color: #6b7280;
-    --btn-hover: #4b5563;
-    --btn-ring: #6b7280;
+    --btn-color: var(--color-gray-500);
+    --btn-hover: var(--color-gray-600);
+    --btn-ring: var(--color-gray-500);
 }
 
 

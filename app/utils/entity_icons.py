@@ -5,44 +5,14 @@ Centralized mapping system for all CRM entities, their icons, and button generat
 
 from typing import Dict, List, Any, Optional
 
-# Centralized entity color system with semantic color choices
-ENTITY_COLORS = {
-    'task': {
-        'bg': '#2563eb',      # blue-600 - Action/productivity
-        'hover': '#1d4ed8',   # blue-700
-        'ring': '#3b82f6',    # blue-500
-        'semantic': 'work'
-    },
-    'company': {
-        'bg': '#16a34a',      # green-600 - Business/money
-        'hover': '#15803d',   # green-700  
-        'ring': '#22c55e',    # green-500
-        'semantic': 'growth'
-    },
-    'opportunity': {
-        'bg': '#9333ea',      # purple-600 - Premium/sales
-        'hover': '#7c3aed',   # purple-700
-        'ring': '#a855f7',    # purple-500
-        'semantic': 'revenue'
-    },
-    'stakeholder': {
-        'bg': '#ca8a04',      # yellow-600 - Relationships/communication
-        'hover': '#a16207',   # yellow-700
-        'ring': '#eab308',    # yellow-500
-        'semantic': 'people'
-    },
-    'teams': {
-        'bg': '#dc2626',      # red-600 - Leadership/authority
-        'hover': '#b91c1c',   # red-700
-        'ring': '#ef4444',    # red-500
-        'semantic': 'management'
-    },
-    'user': {               # Fallback for individual user contexts
-        'bg': '#dc2626',      # red-600 - Same as teams
-        'hover': '#b91c1c',   # red-700
-        'ring': '#ef4444',    # red-500
-        'semantic': 'management'
-    }
+# Entity semantic categories - colors now defined in CSS custom properties
+ENTITY_SEMANTICS = {
+    'task': 'work',
+    'company': 'growth', 
+    'opportunity': 'revenue',
+    'stakeholder': 'people',
+    'teams': 'management',
+    'user': 'management'
 }
 
 # Entity to icon name mapping - supports both string icon names and model entity configs  
@@ -186,35 +156,25 @@ def generate_entity_buttons(entities_config, context='dashboard'):
     
     return buttons
 
-def get_entity_color(entity_identifier):
+def get_entity_semantic(entity_identifier):
     """
-    Get color configuration for an entity
+    Get semantic category for an entity (colors now in CSS)
     
     Args:
         entity_identifier (str): Entity name, plural, or endpoint name
         
     Returns:
-        dict: Color configuration with bg, hover, ring colors
+        str: Semantic category name
     """
     # Normalize entity identifier to lowercase
     entity_key = entity_identifier.lower()
     
     # Direct lookup
-    if entity_key in ENTITY_COLORS:
-        return ENTITY_COLORS[entity_key]
+    if entity_key in ENTITY_SEMANTICS:
+        return ENTITY_SEMANTICS[entity_key]
     
-    # Try mapping through icon system
-    icon_name = get_entity_icon_name(entity_identifier)
-    if icon_name in ENTITY_COLORS:
-        return ENTITY_COLORS[icon_name]
-    
-    # Fallback to default gray
-    return {
-        'bg': '#6b7280',      # gray-500
-        'hover': '#4b5563',   # gray-600
-        'ring': '#6b7280',    # gray-500
-        'semantic': 'default'
-    }
+    # Fallback to default
+    return 'default'
 
 
 def get_dashboard_buttons():
@@ -254,8 +214,8 @@ def get_dashboard_buttons():
             endpoint_name = entity_class_name.lower()
             classes = f'btn-new-{endpoint_name}'
         
-        # Get colors for this entity to ensure they exist
-        colors = get_entity_color(endpoint_name)
+        # Get semantic category for this entity
+        semantic = get_entity_semantic(endpoint_name)
         
         button = {
             'label': label,
@@ -265,7 +225,7 @@ def get_dashboard_buttons():
             'icon': get_entity_icon_html(icon_name),
             'classes': classes,
             'entity_type': endpoint_name,  # For debugging/identification
-            'colors': colors  # Include color info for debugging
+            'semantic': semantic  # Semantic category instead of hex colors
         }
         buttons.append(button)
     

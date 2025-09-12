@@ -502,7 +502,7 @@ class ModelIntrospector:
             elif field_type == 'currency' and isinstance(value, (int, float)):
                 return f"${value:,.0f}"
             elif field_type == 'email' and value:
-                return f"<a href='mailto:{value}' class='text-blue-600 hover:text-blue-800'>{value}</a>"
+                return f"<a href='mailto:{value}' class='text-link'>{value}</a>"
             else:
                 return str(value)
         except (AttributeError, ValueError, TypeError):
