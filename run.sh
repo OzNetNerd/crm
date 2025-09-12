@@ -42,7 +42,7 @@ echo "📝 Claude Code: Use this URL to access the application"
 
 # Start chatbot service in background
 # echo "   Starting chatbot service..."
-# python3 services/chatbot/chatbot_main.py --port "$CHATBOT_PORT" > chatbot.log 2>&1 &
+# python3 services/chatbot/main.py --port "$CHATBOT_PORT" > chatbot.log 2>&1 &
 # CHATBOT_PID=$!
 
 # Give chatbot a moment to start

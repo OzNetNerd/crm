@@ -8,6 +8,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 import threading
 from qdrant_client import QdrantClient
+from ..config import ChatbotConfig
 from qdrant_client.models import (
     Distance,
     VectorParams,
@@ -27,13 +28,13 @@ class QdrantService:
 
     def __init__(
         self,
-        host: str = "localhost",
-        port: int = 6333,
+        host: str = None,
+        port: int = None,
         model_name: str = "all-mpnet-base-v2",
         collection_name: str = "crm_entities",
     ):
-        self.host = host
-        self.port = port
+        self.host = host or ChatbotConfig.QDRANT_HOST
+        self.port = port or ChatbotConfig.QDRANT_PORT
         self.model_name = model_name
         self.collection_name = collection_name
         self.client = None
