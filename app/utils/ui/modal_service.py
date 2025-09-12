@@ -93,6 +93,50 @@ class ModalService:
         return render_template('components/modals/wtforms_modal.html', **template_vars)
     
     @staticmethod
+    def render_view_modal(model_name: str, entity_id: int, **kwargs) -> str:
+        """
+        Render a read-only view modal for the specified model and entity.
+        
+        Args:
+            model_name: Name of the model (e.g., 'Task', 'Company')  
+            entity_id: ID of the entity to view
+            **kwargs: Additional template variables
+            
+        Returns:
+            Rendered HTML for the read-only modal
+        """
+        model_class = get_model_by_name(model_name)
+        if not model_class:
+            return render_template('components/modals/error_modal.html', 
+                                 error=f"Unknown model: {model_name}")
+        
+        # Get the entity
+        entity = model_class.query.get_or_404(entity_id)
+        
+        # Use existing modal configuration system
+        from app.utils.ui.modal_configs import get_detail_modal_config
+        
+        # Get configuration for this entity type
+        entity_type = model_name.lower()
+        config = get_detail_modal_config(entity_type)
+        
+        if not config:
+            return render_template('components/modals/error_modal.html', 
+                                 error=f"No view configuration found for {model_name}")
+        
+        # Render the view modal template
+        template_vars = {
+            'model_name': entity_type,
+            'entity': entity,
+            'config': config,
+            'modal_title': f'View {model_name}',
+            'get_entity_icon_html': get_entity_icon_html,
+            **kwargs
+        }
+        
+        return render_template('components/modals/view_modal.html', **template_vars)
+    
+    @staticmethod
     def process_form_submission(model_name: str, entity_id: Optional[int] = None) -> Dict[str, Any]:
         """
         Process form submission for create or update operations using WTForms validation.

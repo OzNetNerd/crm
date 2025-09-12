@@ -1,5 +1,5 @@
-{% macro text_input(name, label, model_var, placeholder="", required=false, type="text") %}
-<div class="form-field">
+{% macro text_input(name, label, model_var, placeholder="", required=false, type="text", class="") %}
+<div class="form-field {% if class %}{{ class }}{% endif %}">
     <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
     <input type="{{ type }}" 
            x-model="{{ model_var }}" 
@@ -20,8 +20,8 @@
 </div>
 {% endmacro %}
 
-{% macro select_input(name, label, model_var, options, required=false, empty_option="") %}
-<div class="form-field">
+{% macro select_input(name, label, model_var, options, required=false, empty_option="", class="") %}
+<div class="form-field {% if class %}{{ class }}{% endif %}">
     <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
     <select x-model="{{ model_var }}" 
             class="form-select"
@@ -40,12 +40,31 @@
 </div>
 {% endmacro %}
 
-{% macro date_input(name, label, model_var, required=false) %}
-<div class="form-field">
+{% macro date_input(name, label, model_var, required=false, class="") %}
+<div class="form-field {% if class %}{{ class }}{% endif %}">
     <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
     <input type="date" 
            x-model="{{ model_var }}" 
            class="form-input"
+           {% if required %}required{% endif %}>
+</div>
+{% endmacro %}
+
+{% macro searchable_input(name, label, placeholder="", required=false, class="") %}
+{% set entity_type = label.lower().replace(' ', '') %}
+{# Map singular forms to plural forms expected by API #}
+{% if entity_type == 'company' %}{% set entity_type = 'companies' %}{% endif %}
+{% if entity_type == 'contact' %}{% set entity_type = 'contacts' %}{% endif %}
+{% if entity_type == 'opportunity' %}{% set entity_type = 'opportunities' %}{% endif %}
+{% if entity_type == 'task' %}{% set entity_type = 'tasks' %}{% endif %}
+<div class="form-field {% if class %}{{ class }}{% endif %}">
+    <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
+    <input type="text" 
+           name="{{ name }}"
+           placeholder="{{ placeholder if placeholder else 'Search ' + label.lower() + '...' }}"
+           class="form-input"
+           data-searchable="{{ entity_type }}"
+           autocomplete="off"
            {% if required %}required{% endif %}>
 </div>
 {% endmacro %}

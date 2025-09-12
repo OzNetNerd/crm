@@ -1,0 +1,142 @@
+{% from 'macros/base/icons.html' import icon %}
+{#
+  Read-Only View Modal Template
+  
+  This template renders entity details in a read-only modal for viewing from global search.
+  Works with ModalService for consistent modal behavior.
+  
+  Variables:
+  - entity: Entity object to display
+  - modal_title: Title for the modal
+  - model_name: Name of the model being viewed
+  - config: Configuration dict with field definitions
+  - get_entity_icon_html: Function to get entity icon HTML
+#}
+<div class="modal-overlay fixed inset-0 z-50 flex items-center justify-center" 
+     tabindex="-1" 
+     onkeydown="if(event.key === 'Escape') this.remove()">
+    <!-- Backdrop -->
+    <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50" 
+         onclick="this.parentElement.remove()"></div>
+    
+    <!-- Modal Content -->
+    <div class="modal-content relative bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+        <!-- Header -->
+        <div class="modal-header flex items-center justify-between p-6 border-b">
+            <div class="flex items-center gap-3">
+                <div class="entity-icon">
+                    {{ get_entity_icon_html(model_name, 'header') | safe }}
+                </div>
+                <h3 class="modal-title text-lg font-semibold text-gray-900">
+                    {{ modal_title }}
+                </h3>
+            </div>
+            <button onclick="this.closest('.modal-overlay').remove()" 
+                    class="modal-close-button text-gray-400 hover:text-gray-600 transition-colors">
+                {{ icon('x-mark', 'lg') }}
+            </button>
+        </div>
+        
+        <!-- Content -->
+        <div class="modal-body p-6">
+            <div class="space-y-4">
+                {% for field in config.fields %}
+                    {% if field.type == 'text' %}
+                        <div>
+                            <label class="text-form-label">{{ field.label }}</label>
+                            <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                                {{ entity[field.name] or '' }}
+                            </div>
+                        </div>
+                    {% elif field.type == 'textarea' %}
+                        <div>
+                            <label class="text-form-label">{{ field.label }}</label>
+                            <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50 min-h-[{{ (field.rows | default(3)) * 1.5 }}rem]">
+                                {{ entity[field.name] or '' }}
+                            </div>
+                        </div>
+                    {% elif field.type == 'select' %}
+                        <div>
+                            <label class="text-form-label">{{ field.label }}</label>
+                            <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                                {% set current_value = entity[field.name] %}
+                                {% for option in field.options %}
+                                    {% if option.value == current_value %}
+                                        {{ option.label if option is mapping else option|title }}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if not current_value %}
+                                    <span class="text-gray-400">Not set</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% elif field.type == 'date' %}
+                        <div>
+                            <label class="text-form-label">{{ field.label }}</label>
+                            <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                                {{ entity[field.name] or '' }}
+                            </div>
+                        </div>
+                    {% elif field.type == 'grid' %}
+                        <div class="grid grid-cols-{{ field.columns | default(2) }} gap-4">
+                            {% for subfield in field.fields %}
+                                {% if subfield.type == 'text' %}
+                                    <div>
+                                        <label class="text-form-label">{{ subfield.label }}</label>
+                                        <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                                            {{ entity[subfield.name] or '' }}
+                                        </div>
+                                    </div>
+                                {% elif subfield.type == 'select' %}
+                                    <div>
+                                        <label class="text-form-label">{{ subfield.label }}</label>
+                                        <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                                            {% set current_value = entity[subfield.name] %}
+                                            {% for option in subfield.options %}
+                                                {% if option.value == current_value %}
+                                                    {{ option.label if option is mapping else option|title }}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% if not current_value %}
+                                                <span class="text-gray-400">Not set</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% elif subfield.type == 'date' %}
+                                    <div>
+                                        <label class="text-form-label">{{ subfield.label }}</label>
+                                        <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                                            {{ entity[subfield.name] or '' }}
+                                        </div>
+                                    </div>
+                                {% elif subfield.type == 'number' %}
+                                    <div>
+                                        <label class="text-form-label">{{ subfield.label }}</label>
+                                        <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                                            {{ entity[subfield.name] or '' }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% elif field.type == 'number' %}
+                        <div>
+                            <label class="text-form-label">{{ field.label }}</label>
+                            <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                                {{ entity[field.name] or '' }}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="modal-footer flex justify-end p-6 border-t bg-gray-50">
+            <button onclick="this.closest('.modal-overlay').remove()" 
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
