@@ -1,0 +1,208 @@
+/**
+ * ITCSS Layer 6: Components
+ * Badge Components
+ * 
+ * Badge and status indicator components with semantic color system.
+ * Composable badge classes for consistent visual hierarchy.
+ * 
+ * Usage: <span class="c-badge c-badge--success">Active</span>
+ */
+
+/* ========================================
+ * BASE BADGE COMPONENT
+ * Foundation badge styling
+ * ======================================== */
+
+.c-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    border-radius: var(--radius-full);
+    white-space: nowrap;
+}
+
+/* ========================================
+ * SEMANTIC BADGE VARIANTS
+ * Color variants for different states and meanings
+ * ======================================== */
+
+.c-badge--red {
+    background-color: var(--color-danger-light);
+    color: var(--color-danger-hover);
+}
+
+.c-badge--yellow {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning-hover);
+}
+
+.c-badge--green {
+    background-color: var(--color-secondary-light);
+    color: var(--color-secondary-hover);
+}
+
+.c-badge--blue {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-hover);
+}
+
+.c-badge--purple {
+    background-color: var(--color-accent-light);
+    color: var(--color-accent-hover);
+}
+
+.c-badge--orange {
+    background-color: #fff7ed; /* bg-orange-100 */
+    color: #9a3412; /* text-orange-800 */
+}
+
+.c-badge--gray {
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-800);
+}
+
+/* ========================================
+ * ENTITY-SPECIFIC BADGE VARIANTS
+ * Semantic badges for different entity types
+ * ======================================== */
+
+.c-badge--task {
+    background-color: var(--color-task-light);
+    color: var(--color-task-hover);
+}
+
+.c-badge--company {
+    background-color: var(--color-company-light);
+    color: var(--color-company-hover);
+}
+
+.c-badge--opportunity {
+    background-color: var(--color-opportunity-light);
+    color: var(--color-opportunity-hover);
+}
+
+.c-badge--stakeholder {
+    background-color: var(--color-stakeholder-light);
+    color: var(--color-stakeholder-hover);
+}
+
+.c-badge--teams {
+    background-color: var(--color-teams-light);
+    color: var(--color-teams-hover);
+}
+
+.c-badge--user {
+    background-color: var(--color-user-light);
+    color: var(--color-user-hover);
+}
+
+/* ========================================
+ * BADGE SIZE VARIANTS
+ * Different sizes for various contexts
+ * ======================================== */
+
+.c-badge--sm {
+    padding: 0.125rem 0.25rem; /* 2px 4px */
+    font-size: 0.6875rem; /* 11px */
+}
+
+.c-badge--lg {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--text-sm);
+}
+
+/* ========================================
+ * OVERDUE BADGE COMPONENT
+ * Specialized badge for overdue status
+ * ======================================== */
+
+.c-badge--overdue {
+    background-color: var(--color-danger-light);
+    color: var(--color-danger);
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+}
+
+/* ========================================
+ * LEGACY COMPATIBILITY
+ * Backward compatibility with existing template classes
+ * TODO: Phase out in favor of BEM naming
+ * ======================================== */
+
+.badge-standard {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    border-radius: var(--radius-full);
+}
+
+/* Legacy color classes - map to new system */
+.badge-red {
+    background-color: var(--color-danger-light);
+    color: var(--color-danger-hover);
+}
+
+.badge-yellow {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning-hover);
+}
+
+.badge-green {
+    background-color: var(--color-secondary-light);
+    color: var(--color-secondary-hover);
+}
+
+.badge-blue {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-hover);
+}
+
+.badge-orange {
+    background-color: #fff7ed;
+    color: #9a3412;
+}
+
+.badge-gray {
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-800);
+}
+
+.badge-purple {
+    background-color: var(--color-accent-light);
+    color: var(--color-accent-hover);
+}
+
+/* Legacy entity classes */
+.badge-task {
+    background-color: var(--color-task-light);
+    color: var(--color-task-hover);
+}
+
+.badge-company {
+    background-color: var(--color-company-light);
+    color: var(--color-company-hover);
+}
+
+.badge-opportunity {
+    background-color: var(--color-opportunity-light);
+    color: var(--color-opportunity-hover);
+}
+
+.badge-stakeholder {
+    background-color: var(--color-stakeholder-light);
+    color: var(--color-stakeholder-hover);
+}
+
+.badge-teams {
+    background-color: var(--color-teams-light);
+    color: var(--color-teams-hover);
+}
+
+.badge-user {
+    background-color: var(--color-user-light);
+    color: var(--color-user-hover);
+}

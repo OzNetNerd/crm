@@ -1,0 +1,165 @@
+/**
+ * Main CSS Import File
+ * ITCSS Architecture - Inverted Triangle CSS
+ * 
+ * Imports all CSS layers in specificity order from generic to specific.
+ * This file replaces the individual component imports in templates.
+ * 
+ * Layer Order (increasing specificity):
+ * 1. Settings    - Variables and design tokens
+ * 2. Tools       - Utility classes and mixins
+ * 3. Generic     - Resets and base styles
+ * 4. Elements    - Base HTML element styles
+ * 5. Objects     - Layout patterns and structures
+ * 6. Components  - UI components and widgets
+ * 7. Trumps      - Overrides and utilities
+ */
+
+/* ========================================
+ * LAYER 1: SETTINGS
+ * CSS Custom Properties and design tokens
+ * ======================================== */
+
+@import url('01-settings/variables.css');
+
+/* ========================================
+ * LAYER 2: TOOLS
+ * Utility classes and helper functions
+ * ======================================== */
+
+@import url('02-tools/utilities.css');
+
+/* ========================================
+ * LAYER 3: GENERIC
+ * Resets, normalize, and base styles
+ * ======================================== */
+
+/* Future: reset.css, normalize.css */
+
+/* ========================================
+ * LAYER 4: ELEMENTS
+ * Base HTML element styling
+ * ======================================== */
+
+/* Future: base typography, links, etc. */
+
+/* ========================================
+ * LAYER 5: OBJECTS
+ * Layout patterns and structural components
+ * ======================================== */
+
+/* Future: layout.css, containers.css */
+
+/* ========================================
+ * LAYER 6: COMPONENTS
+ * UI components and interactive elements
+ * ======================================== */
+
+@import url('06-components/badges.css');
+@import url('06-components/buttons.css');
+@import url('06-components/icons.css');
+@import url('06-components/cards.css');
+@import url('modals.css'); /* Existing modal styles - to be refactored */
+@import url('chatbot.css'); /* Chatbot-specific styles */
+
+/* ========================================
+ * LAYER 7: TRUMPS
+ * Overrides and high-specificity utilities
+ * ======================================== */
+
+/* Future: overrides.css, shame.css */
+
+/* ========================================
+ * LEGACY COMPATIBILITY
+ * Temporary support for existing styles
+ * TODO: Phase out as templates are updated
+ * ======================================== */
+
+/* Hide all loading animations and indicators */
+.htmx-indicator,
+.modal-loading,
+.modal-spinner,
+[id*="loading-indicator"],
+[class*="loading"],
+[class*="spinner"],
+.loading-spinner,
+.animate-spin {
+    display: none !important;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+    display: none !important;
+}
+
+/* Alpine.js cloak utility */
+[x-cloak] { 
+    display: none !important;
+}
+
+/* Text styling compatibility */
+.text-label { 
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-gray-500);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.text-entity-base {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+}
+
+/* Entity color classes */
+.text-color-task { color: var(--color-task); }
+.text-color-company { color: var(--color-company); }
+.text-color-stakeholder { color: var(--color-stakeholder); }
+.text-color-opportunity { color: var(--color-opportunity); }
+.text-color-teams { color: var(--color-teams); }
+.text-color-user { color: var(--color-user); }
+.text-color-default { color: var(--color-gray-900); }
+.text-color-deal { color: var(--color-deal-amount); }
+
+/* Quick actions layout */
+.quick-actions-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+/* Action button rows */
+.action-btn-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+/* Contact methods */
+.contact-methods {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.contact-method-link {
+    padding: var(--spacing-xs);
+    transition: var(--transition-normal);
+}
+
+.contact-method-email {
+    color: var(--color-primary);
+}
+
+.contact-method-email:hover {
+    color: var(--color-primary-hover);
+}
+
+.contact-method-phone {
+    color: var(--color-secondary);
+}
+
+.contact-method-phone:hover {
+    color: var(--color-secondary-hover);
+}
