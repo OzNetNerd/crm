@@ -274,7 +274,7 @@
                             value="{{ option_value }}"
                             {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
                             {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
-                            class="block w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option_value == current_value %}bg-blue-50 text-blue-700{% endif %}">
+                            class="dropdown-option {% if option_value == current_value %}bg-blue-50 text-blue-700{% endif %}">
                         {{ option_label }}
                     </button>
                 {% else %}
@@ -322,7 +322,7 @@
                         value="{{ option.value }}"
                         {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
                         {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
-                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option.value == current_sort %}bg-blue-50 text-blue-700{% endif %}">
+                        class="dropdown-option {% if option.value == current_sort %}bg-blue-50 text-blue-700{% endif %}">
                     <span class="flex items-center justify-between">
                         <span>{{ option.label }}</span>
                         {% if option.value == current_sort %}

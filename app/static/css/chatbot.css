@@ -1,0 +1,135 @@
+/* Chatbot CSS - Extracted from Python files for centralized styling */
+
+/* Main chatbot container */
+.chatbot-container {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: var(--color-gray-50);
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+}
+
+/* Header styling */
+.chatbot-header {
+    color: var(--color-gray-700);
+    text-align: center;
+}
+
+/* Status messages */
+.chatbot-status {
+    text-align: center;
+    margin: 20px 0;
+    padding: 10px;
+    background: var(--color-secondary-light);
+    border-radius: var(--radius-md);
+}
+
+/* Messages area */
+.chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: var(--color-gray-100);
+}
+
+.chatbot-messages-simple {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    background: var(--color-gray-100);
+}
+
+/* Input area */
+.chatbot-input-area {
+    display: flex;
+    padding: 15px;
+    border-top: 1px solid var(--color-gray-200);
+    background: white;
+}
+
+.chatbot-input-area-simple {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid var(--color-gray-300);
+}
+
+/* Send button */
+.chatbot-send-button {
+    padding: 12px 20px;
+    margin-left: 10px;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    transition: var(--transition-normal);
+}
+
+.chatbot-send-button:hover {
+    background: var(--color-primary-hover);
+}
+
+.chatbot-send-button-simple {
+    padding: 8px 16px;
+    margin-left: 5px;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-normal);
+}
+
+/* Message bubbles */
+.chatbot-message {
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: var(--radius-lg);
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.chatbot-message.user-message {
+    background: var(--color-primary);
+    color: white;
+    margin-left: auto;
+    text-align: right;
+}
+
+.chatbot-message.bot-message {
+    background: white;
+    border: 1px solid var(--color-gray-200);
+    margin-right: auto;
+}
+
+/* Connection status */
+.chatbot-connection-status {
+    padding: 8px 15px;
+    background: var(--color-secondary);
+    color: white;
+    font-size: 12px;
+    text-align: center;
+}
+
+.chatbot-connection-status.disconnected {
+    background: var(--color-danger);
+}
+
+/* Typing indicator */
+.chatbot-typing-indicator {
+    background-color: var(--color-primary);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}

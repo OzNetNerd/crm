@@ -17,12 +17,21 @@ class User(db.Model):
     }
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False, info={'sortable': True, 'label': 'Name'})
-    email = db.Column(db.String(255), unique=True, info={'sortable': True, 'label': 'Email'})
+    name = db.Column(db.String(255), nullable=False, info={
+        'sortable': True, 
+        'label': 'Name',
+        'display_label': 'Name'
+    })
+    email = db.Column(db.String(255), unique=True, info={
+        'sortable': True, 
+        'label': 'Email',
+        'display_label': 'Email'
+    })
     job_title = db.Column(db.String(100), info={
         'sortable': True, 
         'groupable': True,
-        'label': 'Job Title'
+        'label': 'Job Title',
+        'display_label': 'Job Title'
     })  # Single source of truth for role
     created_at = db.Column(db.DateTime, default=datetime.utcnow, info={'sortable': True, 'label': 'Created At'})
 
