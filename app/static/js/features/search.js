@@ -277,6 +277,133 @@ class SearchManager {
     }
 }
 
+// Filterable search manager for entity-specific search inputs
+class FilterableSearchManager extends SearchManager {
+    constructor(inputElement, entityFilter = 'all') {
+        super();
+        this.input = inputElement;
+        this.entityFilter = entityFilter;
+        this.resultsContainer = null;
+        this.debounceTimer = null;
+        this.currentQuery = '';
+        
+        // Override parent properties for this specific input
+        this.searchInput = inputElement;
+        this.searchResults = null;
+        
+        this.init();
+    }
+    
+    init() {
+        this.createResultsContainer();
+        this.bindEvents();
+    }
+    
+    createResultsContainer() {
+        this.searchResults = document.createElement('div');
+        this.searchResults.className = 'absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-b-md shadow-lg z-50 max-h-48 overflow-y-auto hidden';
+        
+        const container = this.input.parentElement;
+        container.style.position = 'relative';
+        container.appendChild(this.searchResults);
+        this.resultsContainer = this.searchResults;
+    }
+    
+    bindEvents() {
+        this.input.addEventListener('input', (e) => this.handleInput(e));
+        this.input.addEventListener('focus', (e) => this.handleFocus(e));
+        this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
+        
+        document.addEventListener('click', (e) => {
+            if (!this.input.contains(e.target) && !this.searchResults.contains(e.target)) {
+                this.hideResults();
+            }
+        });
+    }
+    
+    handleInput(e) {
+        const query = e.target.value.trim();
+        
+        clearTimeout(this.debounceTimer);
+        this.debounceTimer = setTimeout(() => {
+            this.performSearch(query);
+        }, 300);
+    }
+    
+    handleFocus(e) {
+        const query = e.target.value.trim();
+        this.performSearch(query);
+    }
+    
+    async performSearch(query) {
+        this.currentQuery = query;
+        
+        try {
+            const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&type=${this.entityFilter}&limit=8`);
+            if (!response.ok) throw new Error('Search failed');
+            
+            const results = await response.json();
+            this.displayResults(results);
+            
+        } catch (error) {
+            console.error('Search error:', error);
+            this.displayError();
+        }
+    }
+    
+    displayResults(results) {
+        if (results.length === 0) {
+            this.hideResults();
+            return;
+        }
+        
+        let html = '';
+        results.forEach(result => {
+            html += `
+                <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                     data-id="${result.id}"
+                     data-name="${result.title}"
+                     data-entity-type="${result.type}">
+                    <div class="text-label-primary">
+                        ${this.highlightQuery(result.title)}
+                    </div>
+                    ${result.subtitle ? `<div class="text-xs-gray-500">${result.subtitle}</div>` : ''}
+                </div>
+            `;
+        });
+        
+        this.searchResults.innerHTML = html;
+        this.bindResultEvents();
+        this.showResults();
+    }
+    
+    bindResultEvents() {
+        this.searchResults.querySelectorAll('[data-id]').forEach(item => {
+            item.addEventListener('click', () => {
+                this.selectResult(item.dataset.id, item.dataset.name);
+            });
+        });
+    }
+    
+    selectResult(id, name) {
+        this.input.value = name;
+        this.input.dataset.selectedId = id;
+        
+        // Trigger change event
+        this.input.dispatchEvent(new Event('change'));
+        
+        this.hideResults();
+    }
+    
+    showResults() {
+        this.searchResults.classList.remove('hidden');
+    }
+    
+    hideResults() {
+        this.searchResults.classList.add('hidden');
+    }
+}
+
 // Autocomplete for specific entity selects
 class AutocompleteManager {
     constructor(inputElement, entityType) {
@@ -406,8 +533,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const entityType = input.dataset.autocomplete;
         new AutocompleteManager(input, entityType);
     });
+    
+    // Initialize filterable search inputs
+    document.querySelectorAll('[data-searchable]').forEach(input => {
+        const entityFilter = input.dataset.searchable;
+        new FilterableSearchManager(input, entityFilter);
+    });
 });
 
 // Export for global access
 window.SearchManager = SearchManager;
+window.FilterableSearchManager = FilterableSearchManager;
 window.AutocompleteManager = AutocompleteManager;
