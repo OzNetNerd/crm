@@ -23,9 +23,9 @@ class Opportunity(db.Model):
             'groupable': True,
             'sortable': True,
             'priority_ranges': [
-                (50000, 'high', 'High Value ($50K+)', 'priority-high'),
-                (10000, 'medium', 'Medium Value ($10K-$50K)', 'priority-medium'),
-                (0, 'low', 'Low Value (<$10K)', 'priority-low')
+                (50000, 'high', 'High Value ($50K+)'),
+                (10000, 'medium', 'Medium Value ($10K-$50K)'),
+                (0, 'low', 'Low Value (<$10K)')
             ]
         }
     )  # Store monetary value in whole dollars
@@ -48,11 +48,11 @@ class Opportunity(db.Model):
             'groupable': True,
             'sortable': True,
             'date_groupings': {
-                'overdue': {'label': 'Overdue', 'css_class': 'date-overdue'},
-                'this_week': {'label': 'This Week', 'css_class': 'date-soon'},
-                'this_month': {'label': 'This Month', 'css_class': 'date-current'},
-                'later': {'label': 'Later', 'css_class': 'date-future'},
-                'no_date': {'label': 'No Close Date', 'css_class': 'date-missing'}
+                'overdue': 'Overdue',
+                'this_week': 'This Week',
+                'this_month': 'This Month', 
+                'later': 'Later',
+                'no_date': 'No Close Date'
             }
         }
     )
@@ -64,57 +64,27 @@ class Opportunity(db.Model):
             'choices': {
                 'prospect': {
                     'label': 'Prospect',
-                    'css_class': 'status-prospect',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Initial contact made',
-                    'icon': 'user-plus',
-                    'order': 1
+                    'description': 'Initial contact made'
                 },
                 'qualified': {
                     'label': 'Qualified',
-                    'css_class': 'status-qualified',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Meets our criteria',
-                    'icon': 'check-circle',
-                    'order': 2
+                    'description': 'Meets our criteria'
                 },
                 'proposal': {
                     'label': 'Proposal',
-                    'css_class': 'status-proposal',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Formal proposal submitted',
-                    'icon': 'document-text',
-                    'order': 3
+                    'description': 'Formal proposal submitted'
                 },
                 'negotiation': {
                     'label': 'Negotiation',
-                    'css_class': 'status-negotiating',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Terms discussion in progress',
-                    'icon': 'handshake',
-                    'order': 4
+                    'description': 'Terms discussion in progress'
                 },
                 'closed-won': {
                     'label': 'Closed Won',
-                    'css_class': 'status-won',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Deal successful',
-                    'icon': 'trophy',
-                    'order': 5
+                    'description': 'Deal successful'
                 },
                 'closed-lost': {
                     'label': 'Closed Lost',
-                    'css_class': 'status-lost',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Deal unsuccessful',
-                    'icon': 'x-circle',
-                    'order': 6
+                    'description': 'Deal unsuccessful'
                 }
             }
         }
@@ -138,7 +108,7 @@ class Opportunity(db.Model):
         value_info = self.__class__.value.property.columns[0].info
         priority_ranges = value_info.get('priority_ranges', [])
         
-        for min_value, priority, label, css_class in priority_ranges:
+        for min_value, priority, label in priority_ranges:
             if self.value >= min_value:
                 return priority
                 

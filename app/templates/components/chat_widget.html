@@ -95,7 +95,7 @@ function toggleChat() {
 }
 
 function connectWebSocket() {
-    ws = new WebSocket(`${protocol}//localhost:8020/ws/chat`);
+    ws = new WebSocket(`${protocol}//localhost:8022/ws/chat`);
     
     updateConnectionStatus('connecting');
     

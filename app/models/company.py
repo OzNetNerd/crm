@@ -19,7 +19,6 @@ class Company(db.Model):
         nullable=False,
         info={
             'display_label': 'Company Name',
-            'sortable': True,
             'required': True
         }
     )
@@ -27,89 +26,42 @@ class Company(db.Model):
         db.String(100),
         info={
             'display_label': 'Industry',
-            'groupable': True,
-            'sortable': True,
             'choices': {
                 'technology': {
                     'label': 'Technology',
-                    'css_class': 'industry-technology',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Software and technology companies',
-                    'icon': 'computer-desktop',
-                    'order': 1
+                    'description': 'Software and technology companies'
                 },
                 'healthcare': {
                     'label': 'Healthcare',
-                    'css_class': 'industry-healthcare',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Medical and healthcare services',
-                    'icon': 'heart',
-                    'order': 2
+                    'description': 'Medical and healthcare services'
                 },
                 'finance': {
                     'label': 'Finance',
-                    'css_class': 'industry-finance',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Financial services and banking',
-                    'icon': 'currency-dollar',
-                    'order': 3
+                    'description': 'Financial services and banking'
                 },
                 'manufacturing': {
                     'label': 'Manufacturing',
-                    'css_class': 'industry-manufacturing',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Manufacturing and production',
-                    'icon': 'cog',
-                    'order': 4
+                    'description': 'Manufacturing and production'
                 },
                 'retail': {
                     'label': 'Retail',
-                    'css_class': 'industry-retail',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Retail and e-commerce',
-                    'icon': 'shopping-bag',
-                    'order': 5
+                    'description': 'Retail and e-commerce'
                 },
                 'education': {
                     'label': 'Education',
-                    'css_class': 'industry-education',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Educational institutions',
-                    'icon': 'academic-cap',
-                    'order': 6
+                    'description': 'Educational institutions'
                 },
                 'consulting': {
                     'label': 'Consulting',
-                    'css_class': 'industry-consulting',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Professional services and consulting',
-                    'icon': 'light-bulb',
-                    'order': 7
+                    'description': 'Professional services and consulting'
                 },
                 'energy': {
                     'label': 'Energy',
-                    'css_class': 'industry-energy',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Energy and utilities',
-                    'icon': 'bolt',
-                    'order': 8
+                    'description': 'Energy and utilities'
                 },
                 'other': {
                     'label': 'Other',
-                    'css_class': 'industry-other',
-                    'groupable': True,
-                    'sortable': True,
-                    'description': 'Other industries',
-                    'icon': 'ellipsis-horizontal',
-                    'order': 99
+                    'description': 'Other industries'
                 }
             }
         }
@@ -118,7 +70,6 @@ class Company(db.Model):
         db.String(255),
         info={
             'display_label': 'Website',
-            'sortable': True,
             'url_field': True
         }
     )
