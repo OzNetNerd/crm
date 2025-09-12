@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import List, Dict
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
+from config import ChatbotConfig
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -287,4 +288,5 @@ async def get_chat_widget():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8001, reload=True)
+    config = ChatbotConfig.get_server_config()
+    uvicorn.run("main:app", **config)

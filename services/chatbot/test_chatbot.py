@@ -19,7 +19,7 @@ def main():
     print("🧪 DB test: http://127.0.0.1:8001/api/chat/test-db")
 
     try:
-        uvicorn.run("main_simple:app", host="127.0.0.1", port=8001, reload=True)
+        uvicorn.run("main:app", host="127.0.0.1", port=8001, reload=True)
     except OSError as e:
         if "Address already in use" in str(e):
             print("\n❌ Error: Port 8001 is already in use!")

@@ -10,6 +10,7 @@ from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 import httpx
 from datetime import datetime
+from ..config import ChatbotConfig
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +41,8 @@ class ExtractionResult:
 class OllamaClient:
     """Client for interacting with Ollama API"""
 
-    def __init__(self, base_url: str = "http://localhost:11434"):
-        self.base_url = base_url
+    def __init__(self, base_url: str = None):
+        self.base_url = base_url or ChatbotConfig.OLLAMA_BASE_URL
         self.client = httpx.AsyncClient(timeout=60.0)
 
         # Model configurations
