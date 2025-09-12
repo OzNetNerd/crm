@@ -1,8 +1,30 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy import or_
 from app.models import Task, Company, Stakeholder, Opportunity, User
+from app.utils.core.model_introspection import get_model_by_name
 
 search_bp = Blueprint("search", __name__)
+
+# Get searchable entity types from model map  
+def get_searchable_entity_types():
+    """Get searchable entity types dynamically from model introspection"""
+    # These are the models we want to include in search
+    searchable_models = ['company', 'stakeholder', 'opportunity', 'task']
+    
+    entity_types = {}
+    for model_name in searchable_models:
+        model_class = get_model_by_name(model_name)
+        if model_class:
+            # Get friendly name and icon
+            friendly_names = {
+                'company': {'name': 'Companies', 'icon': '🏢'},
+                'stakeholder': {'name': 'Contacts', 'icon': '👤'}, 
+                'opportunity': {'name': 'Opportunities', 'icon': '💼'},
+                'task': {'name': 'Tasks', 'icon': '✅'}
+            }
+            entity_types[model_name] = friendly_names.get(model_name, {'name': model_name.title(), 'icon': '📄'})
+            
+    return entity_types
 
 
 @search_bp.route("/api/search")
@@ -11,9 +33,18 @@ def search():
     entity_type = request.args.get("type", "all")
     limit = min(int(request.args.get("limit", 20)), 50)
 
+    # Handle comma-separated entity types dynamically
+    searchable_types = get_searchable_entity_types()
+    if entity_type == "all":
+        entity_types = list(searchable_types.keys())
+    else:
+        entity_types = [t.strip() for t in entity_type.split(",") if t.strip() in searchable_types]
+        if not entity_types:
+            entity_types = list(searchable_types.keys())
+
     results = []
 
-    if entity_type in ["all", "companies"]:
+    if "company" in entity_types:
         if query:
             companies = (
                 Company.query.filter(
@@ -40,7 +71,7 @@ def search():
                 }
             )
 
-    if entity_type in ["all", "contacts"]:
+    if "stakeholder" in entity_types:
         if query:
             contacts = (
                 Stakeholder.query.join(Company)
@@ -73,7 +104,7 @@ def search():
                 }
             )
 
-    if entity_type in ["all", "opportunities"]:
+    if "opportunity" in entity_types:
         if query:
             opportunities = (
                 Opportunity.query.join(Company)
@@ -105,7 +136,7 @@ def search():
                 }
             )
 
-    if entity_type in ["all", "tasks"]:
+    if "task" in entity_types:
         if query:
             tasks = (
                 Task.query.filter(Task.description.ilike(f"%{query}%"))
@@ -140,6 +171,13 @@ def search():
         results.sort(key=lambda x: (type_order.get(x["type"], 4), x["title"].lower()))
 
     return jsonify(results[:limit])
+
+
+@search_bp.route("/api/search/entity-types")
+def get_entity_types():
+    """Get available entity types for search filters"""
+    entity_types = get_searchable_entity_types()
+    return jsonify(entity_types)
 
 
 @search_bp.route("/api/autocomplete")

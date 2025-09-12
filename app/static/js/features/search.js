@@ -6,6 +6,8 @@ class SearchManager {
         this.searchResults = null;
         this.currentQuery = '';
         this.debounceTimer = null;
+        this.selectedEntityTypes = ['all']; // Default to all entity types
+        this.entityTypes = {}; // Will be populated from backend
         
         if (this.searchInput) {
             this.init();
@@ -15,6 +17,8 @@ class SearchManager {
     init() {
         this.createResultsContainer();
         this.bindEvents();
+        this.bindAdvancedSearchEvents();
+        this.loadEntityTypes();
     }
     
     createResultsContainer() {
@@ -142,7 +146,9 @@ class SearchManager {
         this.currentQuery = query;
         
         try {
-            const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=10`);
+            // Build type parameter based on selected entity types
+            const typeParam = this.selectedEntityTypes.includes('all') ? 'all' : this.selectedEntityTypes.join(',');
+            const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&type=${typeParam}&limit=10`);
             if (!response.ok) throw new Error('Search failed');
             
             const results = await response.json();
@@ -152,6 +158,111 @@ class SearchManager {
             console.error('Search error:', error);
             this.displayError();
         }
+    }
+    
+    async loadEntityTypes() {
+        const response = await fetch('/api/search/entity-types');
+        if (!response.ok) {
+            throw new Error(`Failed to load entity types: ${response.status} ${response.statusText}`);
+        }
+        
+        this.entityTypes = await response.json();
+        this.populateEntityTypeFilters();
+    }
+    
+    populateEntityTypeFilters() {
+        const container = document.getElementById('entity-type-filters');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        Object.entries(this.entityTypes).forEach(([type, config]) => {
+            const label = document.createElement('label');
+            label.className = 'flex items-center';
+            label.innerHTML = `
+                <input type="checkbox" 
+                       id="search-${type}" 
+                       checked 
+                       class="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                <span class="text-sm text-gray-700">${config.icon} ${config.name}</span>
+            `;
+            container.appendChild(label);
+        });
+    }
+
+    bindAdvancedSearchEvents() {
+        // Advanced search button click
+        const advancedBtn = document.getElementById('advanced-search-btn');
+        if (advancedBtn) {
+            advancedBtn.addEventListener('click', () => this.openAdvancedSearch());
+        }
+        
+        // Advanced search modal events
+        const advancedSubmit = document.getElementById('advanced-search-submit');
+        if (advancedSubmit) {
+            advancedSubmit.addEventListener('click', () => this.performAdvancedSearch());
+        }
+        
+        // Sync query between regular and advanced search inputs
+        const advancedQuery = document.getElementById('advanced-search-query');
+        if (advancedQuery) {
+            // Copy current search to advanced modal when opened
+            document.addEventListener('click', (e) => {
+                if (e.target.id === 'advanced-search-btn') {
+                    advancedQuery.value = this.searchInput.value;
+                }
+            });
+        }
+    }
+    
+    openAdvancedSearch() {
+        // Use existing modal utilities
+        if (typeof openModalById === 'function') {
+            openModalById('advanced-search-modal');
+        }
+        
+        // Focus on the query input
+        setTimeout(() => {
+            const queryInput = document.getElementById('advanced-search-query');
+            if (queryInput) {
+                queryInput.focus();
+            }
+        }, 100);
+    }
+    
+    performAdvancedSearch() {
+        // Get selected entity types dynamically
+        this.selectedEntityTypes = [];
+        
+        Object.keys(this.entityTypes).forEach(type => {
+            const checkbox = document.getElementById(`search-${type}`);
+            if (checkbox && checkbox.checked) {
+                this.selectedEntityTypes.push(type);
+            }
+        });
+        
+        // If no types selected, default to all
+        if (this.selectedEntityTypes.length === 0) {
+            this.selectedEntityTypes = ['all'];
+        }
+        
+        // Get query from advanced search input
+        const advancedQuery = document.getElementById('advanced-search-query');
+        const query = advancedQuery ? advancedQuery.value.trim() : '';
+        
+        // Update main search input
+        this.searchInput.value = query;
+        
+        // Perform search with selected filters
+        this.performSearch(query);
+        
+        // Close modal
+        if (typeof closeModalById === 'function') {
+            closeModalById('advanced-search-modal');
+        }
+        
+        // Focus back on main search
+        this.searchInput.focus();
     }
     
     displayResults(results) {
