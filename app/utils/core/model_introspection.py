@@ -442,8 +442,8 @@ class ModelIntrospector:
                 if hasattr(attr, 'property') and hasattr(attr.property, 'mapper'):
                     # This is a relationship - add common sub-fields
                     relationship_fields.extend([
-                        {'field': f'{attr_name}.name', 'type': 'text'},
-                        {'field': f'{attr_name}.email', 'type': 'email'}
+                        {'name': f'{attr_name}.name', 'type': 'text'},
+                        {'name': f'{attr_name}.email', 'type': 'email'}
                     ])
                     break  # Limit to first relationship to avoid clutter
             except (AttributeError, TypeError):
@@ -457,7 +457,7 @@ class ModelIntrospector:
         for field_name in date_candidates:
             if hasattr(model_class, field_name):
                 date_fields.append({
-                    'field': field_name, 
+                    'name': field_name, 
                     'type': 'date', 
                     'format': '%m/%d/%y'
                 })

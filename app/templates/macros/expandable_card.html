@@ -225,12 +225,12 @@ details[open] .details-chevron {
     
     {% elif field_type == 'date' %}
         {% if field_value %}
-            {{ entity[field_config.field + '_formatted'] or '' }}
+            {{ entity[field_name + '_formatted'] or '' }}
         {% endif %}
     
     {% elif field_type == 'currency' %}
         {% if field_value is number %}
-            {{ entity[field_config.field + '_formatted'] or '$0' }}
+            {{ entity[field_name + '_formatted'] or '$0' }}
         {% else %}
             {{ field_value }}
         {% endif %}
