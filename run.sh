@@ -31,33 +31,33 @@ trap cleanup SIGINT SIGTERM
 
 # Get free ports
 CRM_PORT=$(find_free_port 5050)
-CHATBOT_PORT=$(find_free_port 8020 50)
+# CHATBOT_PORT=$(find_free_port 8020 50)
 
 echo "🚀 Starting CRM application on http://127.0.0.1:$CRM_PORT"
-echo "🤖 Starting chatbot service on port $CHATBOT_PORT"
+# echo "🤖 Starting chatbot service on port $CHATBOT_PORT"
 echo "📝 Claude Code: Use this URL to access the application"
 
 # Create static directory if it doesn't exist
-mkdir -p chatbot/static
+# mkdir -p chatbot/static
 
 # Start chatbot service in background
-echo "   Starting chatbot service..."
-python3 chatbot_main.py --port "$CHATBOT_PORT" > chatbot.log 2>&1 &
-CHATBOT_PID=$!
+# echo "   Starting chatbot service..."
+# python3 chatbot_main.py --port "$CHATBOT_PORT" > chatbot.log 2>&1 &
+# CHATBOT_PID=$!
 
 # Give chatbot a moment to start
-sleep 2
+# sleep 2
 
 # Check if chatbot started successfully
-if ! kill -0 $CHATBOT_PID 2>/dev/null; then
-    echo "❌ Failed to start chatbot service. Check chatbot.log for details."
-    exit 1
-fi
+# if ! kill -0 $CHATBOT_PID 2>/dev/null; then
+#     echo "❌ Failed to start chatbot service. Check chatbot.log for details."
+#     exit 1
+# fi
 
-echo "✅ Chatbot service started (PID: $CHATBOT_PID)"
+# echo "✅ Chatbot service started (PID: $CHATBOT_PID)"
 
 # Update chat widget to use the correct chatbot port
-sed -i "s/localhost:[0-9]\{4,5\}\/ws\/chat/localhost:$CHATBOT_PORT\/ws\/chat/g" app/templates/components/chat_widget.html
+# sed -i "s/localhost:[0-9]\{4,5\}\/ws\/chat/localhost:$CHATBOT_PORT\/ws\/chat/g" app/templates/components/chat_widget.html
 
 # Start the Flask application (this will block)
 python3 main.py --port "$CRM_PORT"
