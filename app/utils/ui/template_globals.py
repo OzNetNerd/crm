@@ -150,7 +150,20 @@ def get_model_config(model_class):
 #     return DETAIL_MODAL_CONFIGS
 
 
-def get_dashboard_buttons():
-    """Get centralized dashboard buttons for DRY system."""
-    from app.utils.entities.entity_icons import get_dashboard_buttons
-    return get_dashboard_buttons()
+def get_dashboard_entities():
+    """Auto-discover entities that want dashboard buttons from model metadata."""
+    from app.models import db
+    import inspect
+    
+    entities = []
+    
+    # Get all SQLAlchemy model classes
+    for name, obj in inspect.getmembers(db.Model.registry._class_registry.data):
+        if inspect.isclass(obj) and hasattr(obj, '__tablename__'):
+            entity_config = getattr(obj, '__entity_config__', {})
+            
+            # Only include if model wants dashboard button
+            if entity_config.get('show_dashboard_button', False):
+                entities.append(entity_config.get('endpoint_name', name.lower()))
+    
+    return entities

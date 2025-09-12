@@ -5,15 +5,7 @@ Centralized mapping system for all CRM entities, their icons, and button generat
 
 from typing import Dict, List, Any, Optional
 
-# Entity semantic categories - colors now defined in CSS custom properties
-ENTITY_SEMANTICS = {
-    'task': 'work',
-    'company': 'growth', 
-    'opportunity': 'revenue',
-    'stakeholder': 'people',
-    'teams': 'management',
-    'user': 'management'
-}
+# Entity semantic mapping removed - model metadata is now the single source of truth
 
 # Entity to icon name mapping - supports both string icon names and model entity configs  
 ENTITY_ICON_MAPPING = {
@@ -137,8 +129,7 @@ def generate_entity_buttons(entities_config, context='dashboard'):
                 'hx_get': f'/modals/{entity_name.title()}/create',
                 'hx_target': 'body', 
                 'hx_swap': 'beforeend',
-                'icon': get_entity_icon_html(entity_name),
-                'entity_type': entity_name.lower()
+                'entity': entity_name
             }
         else:
             # Full entity configuration dict
@@ -148,8 +139,7 @@ def generate_entity_buttons(entities_config, context='dashboard'):
                 'hx_get': f"{entity_config.get('modal_path', '/modals/Item')}/create",
                 'hx_target': 'body',
                 'hx_swap': 'beforeend',
-                'icon': get_entity_icon_html(icon_name),
-                'entity_type': entity_config.get('endpoint_name', 'item')
+                'entity': entity_config.get('endpoint_name', 'item')
             }
         
         buttons.append(button)
@@ -177,56 +167,31 @@ def get_entity_semantic(entity_identifier):
     return 'default'
 
 
-def get_dashboard_buttons():
+def get_dashboard_entities():
     """
-    Generate all dashboard buttons using model configurations with color system integration
+    Auto-discover dashboard buttons from all models with __entity_config__
     
     Returns:
-        list: Complete dashboard button configuration with enhanced styling
+        list: Dashboard button configs for models that want dashboard buttons
     """
-    # Import here to avoid circular imports
-    from app.models import Task, Company, Stakeholder, Opportunity, User
-    
-    # Get entity configs from models
-    entities = [
-        (Task, 'Task'),
-        (Company, 'Company'), 
-        (Stakeholder, 'Stakeholder'),
-        (Opportunity, 'Opportunity'),
-        (User, 'User')  # Team Member
-    ]
+    from app.models import db
+    import inspect
     
     buttons = []
-    for model_class, entity_class_name in entities:
-        entity_config = getattr(model_class, '__entity_config__', {})
-        
-        # Use entity config if available, otherwise fall back to class name
-        if entity_config:
-            icon_name = entity_config.get('icon', entity_class_name)
-            label = f"New {entity_config.get('display_name_singular', entity_class_name)}"
-            modal_path = entity_config.get('modal_path', f'/modals/{entity_class_name}')
-            endpoint_name = entity_config.get('endpoint_name', entity_class_name.lower())
-            entity_type = endpoint_name
-        else:
-            icon_name = entity_class_name
-            label = f"New {entity_class_name}"
-            modal_path = f'/modals/{entity_class_name}'
-            endpoint_name = entity_class_name.lower()
-            classes = f'btn-{ENTITY_SEMANTICS.get(endpoint_name, endpoint_name)}'
-        
-        # Get semantic category for this entity
-        semantic = get_entity_semantic(endpoint_name)
-        
-        button = {
-            'label': label,
-            'hx_get': f'{modal_path}/create',
-            'hx_target': 'body',
-            'hx_swap': 'beforeend',
-            'icon': get_entity_icon_html(icon_name),
-            'classes': classes,
-            'entity_type': endpoint_name,  # For debugging/identification
-            'semantic': semantic  # Semantic category instead of hex colors
-        }
-        buttons.append(button)
+    
+    # Get all SQLAlchemy model classes
+    for name, obj in inspect.getmembers(db.Model.registry._class_registry.data):
+        if inspect.isclass(obj) and hasattr(obj, '__tablename__'):
+            entity_config = getattr(obj, '__entity_config__', {})
+            
+            # Only create button if model explicitly wants it
+            if entity_config.get('show_dashboard_button', False):
+                endpoint_name = entity_config.get('endpoint_name', name.lower())
+                
+                button = {
+                    'label': f"New {entity_config.get('display_name_singular', name)}",
+                    'entity': endpoint_name,
+                }
+                buttons.append(button)
     
     return buttons

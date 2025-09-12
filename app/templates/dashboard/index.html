@@ -20,7 +20,7 @@
 
 {% block content %}
 {# Use centralized DRY button generation system #}
-{% set dashboard_buttons = get_dashboard_buttons() %}
+{% set dashboard_buttons = get_dashboard_entities() %}
 
 {{ simple_page_header("Dashboard", "Overview of your CRM performance and activity", buttons=dashboard_buttons) }}
 

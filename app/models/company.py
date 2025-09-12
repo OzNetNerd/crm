@@ -8,9 +8,9 @@ class Company(db.Model):
         'display_name': 'Companies',
         'display_name_singular': 'Company',  
         'description': 'Manage your company relationships',
-        'icon': 'building-office',
         'endpoint_name': 'companies',
-        'modal_path': '/modals/Company'
+        'modal_path': '/modals/Company',
+        'show_dashboard_button': True
     }
 
     id = db.Column(db.Integer, primary_key=True)

@@ -173,7 +173,7 @@
  * ======================================== */
 
 /* Base entity button class with common styling */
-[class*="btn-entity-"] {
+[class*="btn-"] {
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-sm);
@@ -193,108 +193,123 @@
     box-shadow: var(--shadow-sm);
 }
 
-[class*="btn-entity-"]:hover:not(:disabled) {
+[class*="btn-"]:hover:not(:disabled) {
     transform: scale(1.05);
 }
 
-[class*="btn-entity-"]:active:not(:disabled) {
+[class*="btn-"]:active:not(:disabled) {
     transform: scale(0.95);
 }
 
-[class*="btn-entity-"]:disabled {
+[class*="btn-"]:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none;
 }
 
-/* Entity-specific colors using CSS custom properties */
-.btn-entity-task {
+/* Entity-specific colors using semantic mapping */
+.btn-task {
     background-color: var(--color-task);
 }
 
-.btn-entity-task:hover:not(:disabled) {
+.btn-task:hover:not(:disabled) {
     background-color: var(--color-task-hover);
 }
 
-.btn-entity-task:focus {
+.btn-task:focus {
     outline: 2px solid transparent;
     outline-offset: 2px;
     box-shadow: 0 0 0 2px var(--color-task-ring), 
                 0 0 0 4px color-mix(in srgb, var(--color-task-ring) 25%, transparent);
 }
 
-.btn-entity-company {
+.btn-company {
     background-color: var(--color-company);
 }
 
-.btn-entity-company:hover:not(:disabled) {
+.btn-company:hover:not(:disabled) {
     background-color: var(--color-company-hover);
 }
 
-.btn-entity-company:focus {
+.btn-company:focus {
     outline: 2px solid transparent;
     outline-offset: 2px;
     box-shadow: 0 0 0 2px var(--color-company-ring), 
                 0 0 0 4px color-mix(in srgb, var(--color-company-ring) 25%, transparent);
 }
 
-.btn-entity-opportunity {
+.btn-opportunity {
     background-color: var(--color-opportunity);
 }
 
-.btn-entity-opportunity:hover:not(:disabled) {
+.btn-opportunity:hover:not(:disabled) {
     background-color: var(--color-opportunity-hover);
 }
 
-.btn-entity-opportunity:focus {
+.btn-opportunity:focus {
     outline: 2px solid transparent;
     outline-offset: 2px;
     box-shadow: 0 0 0 2px var(--color-opportunity-ring), 
                 0 0 0 4px color-mix(in srgb, var(--color-opportunity-ring) 25%, transparent);
 }
 
-.btn-entity-stakeholder {
+.btn-stakeholder {
     background-color: var(--color-stakeholder);
 }
 
-.btn-entity-stakeholder:hover:not(:disabled) {
+.btn-stakeholder:hover:not(:disabled) {
     background-color: var(--color-stakeholder-hover);
 }
 
-.btn-entity-stakeholder:focus {
+.btn-stakeholder:focus {
     outline: 2px solid transparent;
     outline-offset: 2px;
     box-shadow: 0 0 0 2px var(--color-stakeholder-ring), 
                 0 0 0 4px color-mix(in srgb, var(--color-stakeholder-ring) 25%, transparent);
 }
 
-.btn-entity-user, .btn-entity-team {
+.btn-user, .btn-team {
     background-color: var(--color-user);
 }
 
-.btn-entity-user:hover:not(:disabled), .btn-entity-team:hover:not(:disabled) {
+.btn-user:hover:not(:disabled), .btn-team:hover:not(:disabled) {
     background-color: var(--color-user-hover);
 }
 
-.btn-entity-user:focus, .btn-entity-team:focus {
+.btn-user:focus, .btn-team:focus {
     outline: 2px solid transparent;
     outline-offset: 2px;
     box-shadow: 0 0 0 2px var(--color-user-ring), 
                 0 0 0 4px color-mix(in srgb, var(--color-user-ring) 25%, transparent);
 }
 
-/* Alias for contact (same as stakeholder) */
-.btn-entity-contact {
-    background-color: var(--color-stakeholder);
+/* Default fallback */
+.btn-default {
+    background-color: var(--color-gray-500);
 }
 
-.btn-entity-contact:hover:not(:disabled) {
-    background-color: var(--color-stakeholder-hover);
+.btn-default:hover:not(:disabled) {
+    background-color: var(--color-gray-600);
 }
 
-.btn-entity-contact:focus {
+.btn-default:focus {
     outline: 2px solid transparent;
     outline-offset: 2px;
-    box-shadow: 0 0 0 2px var(--color-stakeholder-ring), 
-                0 0 0 4px color-mix(in srgb, var(--color-stakeholder-ring) 25%, transparent);
+    box-shadow: 0 0 0 2px var(--color-gray-500), 
+                0 0 0 4px color-mix(in srgb, var(--color-gray-500) 25%, transparent);
 }
+
+/* Icon styles within buttons */
+[class*="icon-"] {
+    width: 1rem;
+    height: 1rem;
+    display: inline-block;
+}
+
+.icon-task::before { content: "✓"; }
+.icon-company::before { content: "🏢"; }
+.icon-opportunity::before { content: "💎"; }
+.icon-stakeholder::before { content: "👤"; }
+.icon-user::before { content: "👤"; }
+.icon-team::before { content: "👥"; }
+.icon-default::before { content: "+"; }

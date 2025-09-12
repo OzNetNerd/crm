@@ -47,9 +47,9 @@ class Stakeholder(db.Model):
         'display_name': 'Stakeholders',
         'display_name_singular': 'Stakeholder',
         'description': 'Manage your stakeholder relationships', 
-        'icon': 'user',
         'endpoint_name': 'stakeholders',
-        'modal_path': '/modals/Stakeholder'
+        'modal_path': '/modals/Stakeholder',
+        'show_dashboard_button': True
     }
 
     id = db.Column(db.Integer, primary_key=True)

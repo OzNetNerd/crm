@@ -26,9 +26,7 @@
 {% endmacro %}
 
 {% macro default_dashboard_actions() %}
-{# Use centralized DRY button generation system #}
-{% set entity_buttons = get_dashboard_buttons() %}
-{{ quick_actions_buttons(entity_buttons) }}
+{{ entity_buttons(get_dashboard_entities()) }}
 {% endmacro %}
 
 {# 

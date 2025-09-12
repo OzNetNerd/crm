@@ -11,9 +11,9 @@ class User(db.Model):
         'display_name': 'Teams',
         'display_name_singular': 'Team Member',
         'description': 'Manage your team members',
-        'icon': 'users',
         'endpoint_name': 'teams',
-        'modal_path': '/modals/User'
+        'modal_path': '/modals/User',
+        'show_dashboard_button': True
     }
 
     id = db.Column(db.Integer, primary_key=True)

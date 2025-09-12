@@ -32,9 +32,9 @@ class Task(db.Model):
         'display_name': 'Tasks',
         'display_name_singular': 'Task',
         'description': 'Manage your tasks and projects',
-        'icon': 'clipboard-list',
         'endpoint_name': 'tasks',
-        'modal_path': '/modals/Task'
+        'modal_path': '/modals/Task',
+        'show_dashboard_button': True
     }
 
     id = db.Column(db.Integer, primary_key=True)
