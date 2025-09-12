@@ -32,6 +32,16 @@ def edit_modal(model_name, entity_id):
     return ModalService.render_edit_modal(model_name, entity_id)
 
 
+@modals_bp.route('/<model_name>/<int:entity_id>/view')
+def view_modal(model_name, entity_id):
+    """
+    Render read-only view modal for any model and entity.
+    
+    GET /modals/{model_name}/{entity_id}/view
+    """
+    return ModalService.render_view_modal(model_name, entity_id)
+
+
 @modals_bp.route('/<model_name>/create', methods=['POST'])
 def create_entity(model_name):
     """
