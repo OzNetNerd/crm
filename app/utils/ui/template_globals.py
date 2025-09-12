@@ -2,7 +2,8 @@
 
 from app.models import db
 from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
-from app.utils.ui.modal_configs import get_modal_config, get_detail_modal_config, MODAL_CONFIGS, DETAIL_MODAL_CONFIGS
+# Modal configs removed - using WTForms modal system now (keeping main branch approach)
+# from app.utils.ui.modal_configs import get_modal_config, get_detail_modal_config, MODAL_CONFIGS, DETAIL_MODAL_CONFIGS
 from sqlalchemy import distinct
 
 
@@ -129,24 +130,24 @@ def get_model_config(model_class):
     return ModelIntrospector.get_model_config(model_class)
 
 
-def get_create_modal_config(entity_type):
-    """Get create modal configuration for a specific entity type."""
-    return get_modal_config(entity_type)
+# Modal config functions removed - using WTForms modal system now
+# def get_create_modal_config(entity_type):
+#     """Get create modal configuration for a specific entity type."""
+#     return get_modal_config(entity_type)
+
+# def get_detail_modal_config(entity_type):
+#     """Get detail modal configuration for a specific entity type."""  
+#     return get_detail_modal_config(entity_type)
 
 
-def get_detail_modal_config(entity_type):
-    """Get detail modal configuration for a specific entity type."""  
-    return get_detail_modal_config(entity_type)
+# Modal config functions removed - using WTForms modal system now
+# def get_all_modal_configs():
+#     """Get all modal configurations for bulk operations."""
+#     return MODAL_CONFIGS
 
-
-def get_all_modal_configs():
-    """Get all modal configurations for bulk operations."""
-    return MODAL_CONFIGS
-
-
-def get_all_detail_modal_configs():
-    """Get all detail modal configurations for bulk operations."""
-    return DETAIL_MODAL_CONFIGS
+# def get_all_detail_modal_configs():
+#     """Get all detail modal configurations for bulk operations.""" 
+#     return DETAIL_MODAL_CONFIGS
 
 
 def get_dashboard_buttons():

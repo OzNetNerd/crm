@@ -56,8 +56,7 @@
 {# Confirmation modals #}
 {% from "macros/modals/confirmation.html" import confirmation_modal %}
 
-{# Generic create modal #}
-{% from "macros/modals/base/generic_create.html" import generic_create_modal, auto_create_modal %}
+{# WTForms modal system - no static imports needed #}
 
 {# Modal configurations now handled by Python configs via context processor #}
 
@@ -69,11 +68,9 @@
 
 {# Common modals include macro - for modal blocks #}
 {% macro include_common_modals() %}
-{# Auto-configured create modals using Python configs #}
-{{ auto_create_modal('task') }}
-{{ auto_create_modal('stakeholder') }}
-{{ auto_create_modal('company') }}
-{{ auto_create_modal('opportunity') }}
-
-{# Detail modals can be called directly using generic_detail_modal when needed #}
+{# WTForms modal system: Modals are loaded dynamically via HTMX endpoints #}
+{# /modals/{model_name}/create for create modals #}
+{# /modals/{model_name}/{id}/edit for edit modals #}
+{# No static modal HTML needed - all handled by ModalService #}
+<div id="modal-container" hx-target="this" hx-swap="innerHTML"></div>
 {% endmacro %}

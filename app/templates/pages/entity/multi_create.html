@@ -1,5 +1,7 @@
 {% extends "base/layout.html" %}
 {% from "macros/base/layout.html" import page_layout %}
+{% from "macros/base/forms.html" import child_task_form %}
+{% from "macros/base/buttons.html" import enhanced_button %}
 
 {% block title %}New Multi Task - CRM{% endblock %}
 
@@ -8,62 +10,82 @@
 
 <div class="max-w-4xl mx-auto">
     <form id="multiTaskForm" class="space-y-8" method="post">
-        {{ form.hidden_tag() if form }}
+        {{ form.hidden_tag() }}
         <!-- Parent Task Section -->
         <div class="card-padded">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Parent Task Details</h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
-                    <label for="description" class="block text-sm font-medium text-gray-700">Parent Task Description</label>
-                    <textarea id="description" name="description" rows="3" required
-                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                              placeholder="What is the overall goal?"></textarea>
+                    {{ form.description.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ form.description(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500", rows="3") }}
+                    {% if form.description.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.description.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
                 
                 <div>
-                    <label for="due_date" class="block text-sm font-medium text-gray-700">Overall Due Date</label>
-                    <input type="date" id="due_date" name="due_date"
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    {{ form.due_date.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ form.due_date(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500") }}
+                    {% if form.due_date.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.due_date.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
                 
                 <div>
-                    <label for="priority" class="block text-sm font-medium text-gray-700">Priority</label>
-                    <select id="priority" name="priority" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                        <option value="low">Low</option>
-                    </select>
+                    {{ form.priority.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ form.priority(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500") }}
+                    {% if form.priority.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.priority.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
                 
                 <div>
-                    <label for="entity_type" class="block text-sm font-medium text-gray-700">Related To</label>
-                    <select id="entity_type" name="entity_type"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            onchange="updateEntityDropdown()">
-                        <option value="">None</option>
-                        <option value="company">Company</option>
-                        <option value="stakeholder">Stakeholder</option>
-                        <option value="opportunity">Opportunity</option>
-                    </select>
+                    {{ form.entity_type.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ form.entity_type(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500", onchange="updateEntityDropdown()") }}
+                    {% if form.entity_type.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.entity_type.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
                 
                 <div id="entity_select_container" style="display: none;">
-                    <label for="entity_id" class="block text-sm font-medium text-gray-700">Select Entity</label>
-                    <select id="entity_id" name="entity_id"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">Select...</option>
-                    </select>
+                    {{ form.entity_id.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ form.entity_id(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500") }}
+                    {% if form.entity_id.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.entity_id.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
                 
                 <div>
-                    <label for="dependency_type" class="block text-sm font-medium text-gray-700">Child Task Dependencies</label>
-                    <select id="dependency_type" name="dependency_type" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="parallel">Parallel (can run simultaneously)</option>
-                        <option value="sequential">Sequential (must complete in order)</option>
-                    </select>
+                    {{ form.dependency_type.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ form.dependency_type(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500") }}
+                    {% if form.dependency_type.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.dependency_type.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -72,221 +94,30 @@
         <div class="card-padded">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-gray-900">Child Tasks</h3>
-                <button type="button" onclick="showNextChildTask()" 
-                        class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    Add Child Task
-                </button>
+                {{ enhanced_button('Add Child Task', onclick='showNextChildTask()', style='primary', size='sm') }}
             </div>
             
             <div id="childTasksContainer" class="space-y-4">
-                <!-- Child Task 1 - Always visible -->
-                <div class="child-task border border-gray-200 rounded-lg p-4 bg-gray-50">
-                    <div class="flex justify-between items-start mb-3">
-                        <h4 class="text-md font-medium text-gray-900">Child Task 1</h4>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea name="child_tasks[0][description]" rows="2" required
-                                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                      placeholder="Child task description..."></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Priority</label>
-                            <select name="child_tasks[0][priority]" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                                <option value="low">Low</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Due Date</label>
-                            <input type="date" name="child_tasks[0][due_date]"
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Next Step Type</label>
-                            <select name="child_tasks[0][next_step_type]"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">None</option>
-                                <option value="call">Call</option>
-                                <option value="email">Email</option>
-                                <option value="meeting">Meeting</option>
-                                <option value="demo">Demo</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Child Task 2 - Always visible -->
-                <div class="child-task border border-gray-200 rounded-lg p-4 bg-gray-50">
-                    <div class="flex justify-between items-start mb-3">
-                        <h4 class="text-md font-medium text-gray-900">Child Task 2</h4>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea name="child_tasks[1][description]" rows="2" required
-                                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                      placeholder="Child task description..."></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Priority</label>
-                            <select name="child_tasks[1][priority]" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                                <option value="low">Low</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Due Date</label>
-                            <input type="date" name="child_tasks[1][due_date]"
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Next Step Type</label>
-                            <select name="child_tasks[1][next_step_type]"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">None</option>
-                                <option value="call">Call</option>
-                                <option value="email">Email</option>
-                                <option value="meeting">Meeting</option>
-                                <option value="demo">Demo</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Child Task 3 - Hidden by default -->
-                <div class="child-task hidden border border-gray-200 rounded-lg p-4 bg-gray-50">
-                    <div class="flex justify-between items-start mb-3">
-                        <h4 class="text-md font-medium text-gray-900">Child Task 3</h4>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea name="child_tasks[2][description]" rows="2"
-                                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                      placeholder="Child task description..."></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Priority</label>
-                            <select name="child_tasks[2][priority]"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                                <option value="low">Low</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Due Date</label>
-                            <input type="date" name="child_tasks[2][due_date]"
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Next Step Type</label>
-                            <select name="child_tasks[2][next_step_type]"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">None</option>
-                                <option value="call">Call</option>
-                                <option value="email">Email</option>
-                                <option value="meeting">Meeting</option>
-                                <option value="demo">Demo</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Child Task 4 - Hidden by default -->
-                <div class="child-task hidden border border-gray-200 rounded-lg p-4 bg-gray-50">
-                    <div class="flex justify-between items-start mb-3">
-                        <h4 class="text-md font-medium text-gray-900">Child Task 4</h4>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea name="child_tasks[3][description]" rows="2"
-                                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                      placeholder="Child task description..."></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Priority</label>
-                            <select name="child_tasks[3][priority]"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                                <option value="low">Low</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Due Date</label>
-                            <input type="date" name="child_tasks[3][due_date]"
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Next Step Type</label>
-                            <select name="child_tasks[3][next_step_type]"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">None</option>
-                                <option value="call">Call</option>
-                                <option value="email">Email</option>
-                                <option value="meeting">Meeting</option>
-                                <option value="demo">Demo</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Child Task 5 - Hidden by default -->
-                <div class="child-task hidden border border-gray-200 rounded-lg p-4 bg-gray-50">
-                    <div class="flex justify-between items-start mb-3">
-                        <h4 class="text-md font-medium text-gray-900">Child Task 5</h4>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea name="child_tasks[4][description]" rows="2"
-                                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                      placeholder="Child task description..."></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Priority</label>
-                            <select name="child_tasks[4][priority]"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                                <option value="low">Low</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Due Date</label>
-                            <input type="date" name="child_tasks[4][due_date]"
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Next Step Type</label>
-                            <select name="child_tasks[4][next_step_type]"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">None</option>
-                                <option value="call">Call</option>
-                                <option value="email">Email</option>
-                                <option value="meeting">Meeting</option>
-                                <option value="demo">Demo</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+                <!-- Child Tasks - WTForms with configuration-driven visibility -->
+                {%- set child_visibility_config = [
+                    {'visible': true},
+                    {'visible': true}, 
+                    {'visible': false},
+                    {'visible': false},
+                    {'visible': false}
+                ] -%}
+                
+                {% for config in child_visibility_config %}
+                    {% if loop.index0 < form.child_tasks|length %}
+                        {{ child_task_form(form.child_tasks[loop.index0], loop.index, 'hidden' if not config.visible) }}
+                    {% endif %}
+                {% endfor %}
             </div>
         </div>
 
         <!-- Submit Section -->
         <div class="flex justify-end space-x-4">
-            <a href="{{ url_for('tasks.index') }}" 
-               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                Cancel
-            </a>
+            {{ enhanced_button('Cancel', url=url_for('tasks.index'), style='secondary') }}
             <button type="submit"
                     class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 Create Multi Task
