@@ -18,35 +18,31 @@ from .base_forms import BaseForm, FieldFactory, FormConstants
 # Lazy form creation with caching
 _form_cache = {}
 
-def get_company_form():
-    """Get dynamically generated CompanyForm (lazy with caching)"""
-    if 'CompanyForm' not in _form_cache:
-        from app.models.company import Company
-        _form_cache['CompanyForm'] = DynamicFormBuilder.build_dynamic_form(Company, BaseForm)
-    return _form_cache['CompanyForm']
+# Dynamic form configuration - maps form names to model imports
+_DYNAMIC_FORMS = {
+    'CompanyForm': 'app.models.company.Company',
+    'StakeholderForm': 'app.models.stakeholder.Stakeholder', 
+    'OpportunityForm': 'app.models.opportunity.Opportunity',
+}
 
-def get_stakeholder_form():
-    """Get dynamically generated StakeholderForm (lazy with caching)"""
-    if 'StakeholderForm' not in _form_cache:
-        from app.models.stakeholder import Stakeholder
-        _form_cache['StakeholderForm'] = DynamicFormBuilder.build_dynamic_form(Stakeholder, BaseForm)
-    return _form_cache['StakeholderForm']
+def _get_dynamic_form(form_name):
+    """Generic lazy form creation with caching"""
+    if form_name not in _form_cache:
+        if form_name not in _DYNAMIC_FORMS:
+            raise ValueError(f"Unknown dynamic form: {form_name}")
+        
+        # Dynamic import of model class
+        module_path, class_name = _DYNAMIC_FORMS[form_name].rsplit('.', 1)
+        module = __import__(module_path, fromlist=[class_name])
+        model_class = getattr(module, class_name)
+        
+        _form_cache[form_name] = DynamicFormBuilder.build_dynamic_form(model_class, BaseForm)
+    return _form_cache[form_name]
 
-def get_opportunity_form():
-    """Get dynamically generated OpportunityForm (lazy with caching)"""
-    if 'OpportunityForm' not in _form_cache:
-        from app.models.opportunity import Opportunity
-        _form_cache['OpportunityForm'] = DynamicFormBuilder.build_dynamic_form(Opportunity, BaseForm)
-    return _form_cache['OpportunityForm']
-
-# Backward compatibility - these will be created lazily when accessed
 def __getattr__(name):
-    if name == 'CompanyForm':
-        return get_company_form()
-    elif name == 'StakeholderForm':
-        return get_stakeholder_form()
-    elif name == 'OpportunityForm':
-        return get_opportunity_form()
+    """Lazy form creation for backward compatibility"""
+    if name in _DYNAMIC_FORMS:
+        return _get_dynamic_form(name)
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
