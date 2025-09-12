@@ -378,14 +378,12 @@
                         {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
                         {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
                         {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
-                        onclick="document.getElementById('{{ dropdown_id }}').checked = false"
-                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option_value == current_value %}bg-blue-50 text-blue-700{% endif %}">
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option_value == current_value %}bg-blue-50 text-blue-700{% endif %}">
                     {{ option_label }}
                 </button>
             {% else %}
                 <a href="#" 
-                   onclick="document.getElementById('{{ dropdown_id }}').checked = false"
-                   class="block px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option_value == current_value %}bg-blue-50 text-blue-700{% endif %}">
+                                      class="block px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none {% if option_value == current_value %}bg-blue-50 text-blue-700{% endif %}">
                     {{ option_label }}
                 </a>
             {% endif %}
