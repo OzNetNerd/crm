@@ -91,6 +91,17 @@
 }
 
 /* ========================================
+ * SECTION TITLES
+ * Headings for sections and content blocks
+ * ======================================== */
+
+.text-section-title {
+    font-size: var(--text-xl); /* 1.25rem - prominent section heading */
+    font-weight: var(--font-semibold); /* 600 - strong but not too bold */
+    color: #111827; /* text-gray-900 - dark for contrast */
+}
+
+/* ========================================
  * METADATA TEXT
  * Small secondary text for additional information
  * ======================================== */
