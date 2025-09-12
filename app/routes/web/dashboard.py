@@ -91,6 +91,11 @@ def index():
     )
     closing_soon = [opp.to_display_dict() for opp in closing_soon_raw]
 
+    # Get entity types dynamically from model registry
+    from app.utils.core.model_introspection import get_all_model_configs
+    model_configs = get_all_model_configs()
+    entity_types = [name.lower() for name in model_configs.keys()]
+
     return render_template(
         "dashboard/index.html",
         task_stats=task_stats,
@@ -102,6 +107,7 @@ def index():
         overdue_tasks=overdue_tasks,
         closing_soon=closing_soon,
         today=today,
+        entity_types=entity_types,
     )
 
 
