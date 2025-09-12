@@ -100,14 +100,50 @@ class UniversalIndexHelper:
             }]
         }
         
+        # Add relationship labels for dynamic pluralization
+        relationship_labels = cls._build_relationship_labels()
+        
         # Combine all context
         context = {
             **entity_config,
             'dropdown_configs': dropdown_configs,
-            'request_params': params
+            'request_params': params,
+            'relationship_labels': relationship_labels
         }
         
         return context
+    
+    @classmethod
+    def _build_relationship_labels(cls):
+        """
+        Build relationship labels dynamically from all model configs
+        
+        Returns:
+            Dict mapping relationship names to singular/plural labels
+        """
+        # Import models to get their configs
+        from app.models import Company, Stakeholder, Task, Opportunity, User
+        
+        # Model mapping - the only place we define relationships
+        model_relationships = {
+            'companies': Company,
+            'contacts': Stakeholder,  # Alias for stakeholders in relationships
+            'stakeholders': Stakeholder, 
+            'opportunities': Opportunity,
+            'tasks': Task,
+            'team_members': User
+        }
+        
+        # Build labels dynamically from each model's config
+        labels = {}
+        for relationship_name, model_class in model_relationships.items():
+            config = model_class.__entity_config__
+            labels[relationship_name] = {
+                'singular': config['display_name_singular'],
+                'plural': config['display_name']
+            }
+        
+        return labels
     
     @classmethod
     def get_standardized_index_context(cls, entity_name, default_group_by=None, default_sort_by=None, additional_context=None):

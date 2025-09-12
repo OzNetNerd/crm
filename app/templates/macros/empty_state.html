@@ -41,8 +41,7 @@
   {{ group_empty_state('task', 'High Priority') }}
 #}
 {% macro group_empty_state(entity_type, group_name=None) %}
-  {% set labels = get_entity_labels(entity_type) %}
-  {% set message = 'No ' + labels.plural %}
+  {% set message = 'No ' + entity_name %}
   {% if group_name %}
     {% set message = message + ' in ' + group_name %}
   {% endif %}

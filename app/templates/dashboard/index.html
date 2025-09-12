@@ -12,7 +12,7 @@
 {% block title %}Dashboard - CRM{% endblock %}
 
 {% block content %}
-{{ page_layout('Dashboard', 'Overview of your CRM performance and activity', header_only=true) }}
+{{ page_layout('Dashboard', 'Overview of your CRM performance and activity', buttons=default_dashboard_actions(), header_only=true) }}
 
 <!-- Key Metrics -->
 {% call metric_grid(4, 6, 'mb-8') %}

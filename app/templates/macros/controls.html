@@ -11,15 +11,17 @@
   - short (optional): Use abbreviated form (e.g., 'opp' instead of 'opportunity')
   - show_zero (optional): Show count even when zero (default: true)
   
-  Usage:
-  {{ pluralized_count(contact.opportunities|length, 'opportunity', short=true) }}
-  {{ pluralized_count(company.contacts|length, 'contact') }}
-  {{ pluralized_count(items|length, 'item', 'items') }}
+  Usage (dynamic - uses context data):
+  {% set count = contact.opportunities|length %}
+  {{ count }} {{ entity_name_singular if count == 1 else entity_name }}
+  
+  For relationships, use relationship_labels from context:
+  {% set count = company.contacts|length %}
+  {{ count }} {{ relationship_labels.contacts.singular if count == 1 else relationship_labels.contacts.plural }}
 #}
 {# 
-  Pluralized Count - Use centralized Python utility
-  This macro is now just a wrapper around the Python PluralUtils.pluralized_count function
-  The global pluralized_count function is registered in main.py
+  Pluralized Count functionality removed - use dynamic template logic instead
+  Example: {{ count }} {{ entity_name_singular if count == 1 else entity_name }}
 #}
 
 {#
