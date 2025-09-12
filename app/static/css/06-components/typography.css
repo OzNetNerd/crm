@@ -79,6 +79,18 @@
 }
 
 /* ========================================
+ * METRIC VALUES
+ * Large prominent numbers for metrics and statistics
+ * ======================================== */
+
+.text-metric-value {
+    font-size: 2rem; /* text-3xl */
+    font-weight: 700; /* font-bold */
+    color: #111827; /* text-gray-900 */
+    line-height: 1.2;
+}
+
+/* ========================================
  * METADATA TEXT
  * Small secondary text for additional information
  * ======================================== */
