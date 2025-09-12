@@ -15,37 +15,35 @@ from app.utils.core.model_introspection import ModelIntrospector
 from .base_forms import BaseForm, FieldFactory, FormConstants
 
 
-# Dynamic form generation from model metadata
-def _get_company_form():
-    """Get dynamically generated CompanyForm"""
-    from app.models.company import Company
-    return DynamicFormBuilder.build_dynamic_form(Company, BaseForm)
+# Lazy form creation with caching
+_form_cache = {}
 
-def _get_company_form_instance():
-    """Get instance of dynamically generated CompanyForm"""
-    CompanyForm = _get_company_form()
-    return CompanyForm()
+# Dynamic form configuration - maps form names to model imports
+_DYNAMIC_FORMS = {
+    'CompanyForm': 'app.models.company.Company',
+    'StakeholderForm': 'app.models.stakeholder.Stakeholder', 
+    'OpportunityForm': 'app.models.opportunity.Opportunity',
+}
 
-# Export the form class dynamically
-CompanyForm = _get_company_form()
+def _get_dynamic_form(form_name):
+    """Generic lazy form creation with caching"""
+    if form_name not in _form_cache:
+        if form_name not in _DYNAMIC_FORMS:
+            raise ValueError(f"Unknown dynamic form: {form_name}")
+        
+        # Dynamic import of model class
+        module_path, class_name = _DYNAMIC_FORMS[form_name].rsplit('.', 1)
+        module = __import__(module_path, fromlist=[class_name])
+        model_class = getattr(module, class_name)
+        
+        _form_cache[form_name] = DynamicFormBuilder.build_dynamic_form(model_class, BaseForm)
+    return _form_cache[form_name]
 
-
-# Dynamic StakeholderForm generation
-def _get_stakeholder_form():
-    """Get dynamically generated StakeholderForm"""
-    from app.models.stakeholder import Stakeholder
-    return DynamicFormBuilder.build_dynamic_form(Stakeholder, BaseForm)
-
-StakeholderForm = _get_stakeholder_form()
-
-
-# Dynamic OpportunityForm generation
-def _get_opportunity_form():
-    """Get dynamically generated OpportunityForm"""
-    from app.models.opportunity import Opportunity
-    return DynamicFormBuilder.build_dynamic_form(Opportunity, BaseForm)
-
-OpportunityForm = _get_opportunity_form()
+def __getattr__(name):
+    """Lazy form creation for backward compatibility"""
+    if name in _DYNAMIC_FORMS:
+        return _get_dynamic_form(name)
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 # NoteForm with custom logic preserved
