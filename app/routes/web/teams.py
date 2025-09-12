@@ -171,18 +171,15 @@ def index():
             },
             {
                 'value': sum(len(member.get_company_assignments()) + len(member.get_opportunity_assignments()) for member in team_members),
-                'label': 'Active Assignments',
-                'color_class': 'text-green-600'
+                'label': 'Active Assignments'
             },
             {
                 'value': len(companies_objects),
-                'label': 'Companies Covered',
-                'color_class': 'text-purple-600'
+                'label': 'Companies Covered'
             },
             {
                 'value': len(opportunities_objects),
-                'label': 'Opportunities Managed',
-                'color_class': 'text-yellow-600'
+                'label': 'Opportunities Managed'
             }
         ]
     }

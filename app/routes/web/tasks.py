@@ -234,23 +234,19 @@ def index():
         'stats': [
             {
                 'value': len([t for t in all_tasks if t.status == 'todo']),
-                'label': 'To Do',
-                'color_class': 'text-blue-600'
+                'label': 'To Do'
             },
             {
                 'value': len([t for t in all_tasks if t.status == 'in-progress']),
-                'label': 'In Progress',
-                'color_class': 'text-yellow-600'
+                'label': 'In Progress'
             },
             {
                 'value': len([t for t in all_tasks if t.status == 'complete']),
-                'label': 'Complete',
-                'color_class': 'text-green-600'
+                'label': 'Complete'
             },
             {
                 'value': len([t for t in all_tasks if hasattr(t, 'is_overdue') and t.is_overdue]),
-                'label': 'Overdue',
-                'color_class': 'text-red-600'
+                'label': 'Overdue'
             }
         ]
     }

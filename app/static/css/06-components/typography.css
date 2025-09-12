@@ -58,7 +58,15 @@
     color: var(--color-task);
 }
 
+.text-color-tasks {
+    color: var(--color-task);
+}
+
 .text-color-company {
+    color: var(--color-company);
+}
+
+.text-color-companies {
     color: var(--color-company);
 }
 
@@ -66,7 +74,15 @@
     color: var(--color-stakeholder);
 }
 
+.text-color-stakeholders {
+    color: var(--color-stakeholder);
+}
+
 .text-color-opportunity {
+    color: var(--color-opportunity);
+}
+
+.text-color-opportunities {
     color: var(--color-opportunity);
 }
 
