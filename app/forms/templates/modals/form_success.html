@@ -1,0 +1,28 @@
+{% from 'macros/base/icons.html' import icon %}
+{#
+  HTMX Form Success Response
+  
+  Shows success message and closes modal after a brief delay.
+  Optionally triggers page refresh or content updates.
+#}
+<div class="modal-success-message p-4 bg-green-50 border border-green-200 rounded-md">
+    <div class="flex items-center">
+        {{ icon('check-circle-solid', 'md', 'text-green-500 mr-2') }}
+        <span class="text-green-800 font-medium">{{ message }}</span>
+    </div>
+</div>
+
+<script>
+// Close modal after showing success message
+setTimeout(() => {
+    document.querySelector('.modal-overlay')?.remove();
+    
+    // Trigger page refresh or content update
+    if (window.htmxModalSuccess) {
+        window.htmxModalSuccess({{ entity.id if entity else 'null' }});
+    } else {
+        // Default: reload the page to show updated content
+        window.location.reload();
+    }
+}, 1500);
+</script>

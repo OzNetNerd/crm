@@ -9,8 +9,8 @@ from typing import Dict, Any, Optional
 from flask import render_template, jsonify, request
 from app.models import db
 from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
-from app.utils.forms.form_builder import DynamicFormBuilder
-from app.forms.base_forms import BaseForm
+from app.forms.base.builders import DynamicFormBuilder
+from app.forms.base.base_forms import BaseForm
 # No icon functions needed - templates handle CSS class generation
 
 

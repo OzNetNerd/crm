@@ -6,7 +6,10 @@ across all entity index functions by providing a single, consistent interface.
 """
 
 from flask import request
-from app.utils.forms.form_builder import DropdownConfigGenerator
+# Lazy import to avoid circular dependency
+def _get_dropdown_generator():
+    from app.forms.base.builders import DropdownConfigGenerator
+    return DropdownConfigGenerator
 
 
 class UniversalIndexHelper:
@@ -69,7 +72,7 @@ class UniversalIndexHelper:
             params['sort_by'] = default_sort_by
             
         # Generate dropdown configurations
-        dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs(
+        dropdown_configs = _get_dropdown_generator().generate_entity_dropdown_configs(
             entity_name=entity_name,
             group_by=params['group_by'],
             sort_by=params['sort_by'],
@@ -78,7 +81,7 @@ class UniversalIndexHelper:
         )
         
         # Generate entity configuration directly from model
-        model_class = DropdownConfigGenerator.get_model_by_entity_name(entity_name)
+        model_class = _get_dropdown_generator().get_model_by_entity_name(entity_name)
         if not model_class:
             raise ValueError(f"Unknown entity: {entity_name}")
         
