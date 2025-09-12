@@ -73,6 +73,51 @@ class Company(db.Model):
             'url_field': True
         }
     )
+    
+    size = db.Column(
+        db.String(50),
+        info={
+            'display_label': 'Company Size',
+            'choices': {
+                'startup': {
+                    'label': 'Startup (1-10)',
+                    'description': 'Small startup company'
+                },
+                'small': {
+                    'label': 'Small (11-50)',
+                    'description': 'Small business'
+                },
+                'medium': {
+                    'label': 'Medium (51-200)',
+                    'description': 'Medium-sized company'
+                },
+                'large': {
+                    'label': 'Large (201-1000)',
+                    'description': 'Large corporation'
+                },
+                'enterprise': {
+                    'label': 'Enterprise (1000+)',
+                    'description': 'Enterprise-level organization'
+                }
+            }
+        }
+    )
+    
+    phone = db.Column(
+        db.String(50),
+        info={
+            'display_label': 'Phone',
+            'contact_field': True
+        }
+    )
+    
+    address = db.Column(
+        db.Text,
+        info={
+            'display_label': 'Address',
+            'rows': 2
+        }
+    )
 
     # Relationships
     stakeholders = db.relationship("Stakeholder", back_populates="company", lazy=True)

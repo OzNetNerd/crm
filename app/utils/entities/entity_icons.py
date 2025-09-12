@@ -51,3 +51,24 @@ def get_dashboard_buttons():
 # Keep get_dashboard_entities as alias for backwards compatibility
 def get_dashboard_entities():
     return get_dashboard_buttons()
+
+# Stub functions for missing imports
+def get_entity_icon_name(entity_type):
+    """Get icon name for entity type"""
+    return f"{entity_type}-icon"
+
+def get_icon_function_name(entity_type):
+    """Get icon function name for entity type"""  
+    return f"get_{entity_type}_icon"
+
+def get_entity_icon_html(entity_type):
+    """Get HTML for entity icon"""
+    return f'<i class="fas fa-{entity_type}"></i>'
+
+def get_entity_semantic(entity_type):
+    """Get semantic info for entity type"""
+    return {"type": entity_type}
+
+def generate_entity_buttons():
+    """Generate entity buttons"""
+    return get_dashboard_buttons()

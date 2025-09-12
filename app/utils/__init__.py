@@ -73,7 +73,7 @@ from .ui import (
 )
 
 # Auto serialize utility from model_helpers
-from .model_helpers import auto_serialize
+from .old_legacy.model_helpers import auto_serialize
 
 # Make commonly used functions available at package level
 __all__ = [
