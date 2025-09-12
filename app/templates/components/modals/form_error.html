@@ -1,26 +1,8 @@
-{% from 'macros/base/icons.html' import icon %}
+{% from 'macros/modals/base.html' import htmx_form_error_message %}
 {#
-  HTMX Form Error Response
+  HTMX Form Error Response - CONSOLIDATED
   
-  Shows error message(s) in the modal without closing it.
-  Allows user to correct errors and resubmit.
+  Now uses the consolidated htmx_form_error_message macro from base.html
+  Maintains backward compatibility while reducing duplication.
 #}
-<div class="modal-error-message p-4 bg-red-50 border border-red-200 rounded-md mb-4">
-    <div class="flex items-start">
-        {{ icon('x-mark', 'md', 'text-red-500 mr-2 mt-0.5') }}
-        <div class="text-red-800">
-            {% if error %}
-                <p class="font-medium">{{ error }}</p>
-            {% elif errors %}
-                <p class="font-medium">Please fix the following errors:</p>
-                <ul class="mt-2 list-disc list-inside">
-                    {% for error in errors %}
-                    <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="font-medium">An error occurred. Please try again.</p>
-            {% endif %}
-        </div>
-    </div>
-</div>
+{{ htmx_form_error_message(error=error, errors=errors) }}

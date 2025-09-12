@@ -1,14 +1,8 @@
+{% from 'macros/modals/base.html' import htmx_modal_close %}
 {#
-  HTMX Modal Close Response
+  HTMX Modal Close Response - CONSOLIDATED
   
-  This template sends JavaScript to close the modal and remove it from DOM.
-  Used as response to successful form submissions or cancel actions.
+  Now uses the consolidated htmx_modal_close macro from base.html
+  Maintains backward compatibility while reducing duplication.
 #}
-<script>
-// Close modal and remove from DOM
-document.querySelector('.modal-overlay')?.remove();
-// Trigger refresh of the page content if needed
-if (window.htmxModalClosed) {
-    window.htmxModalClosed();
-}
-</script>
+{{ htmx_modal_close() }}
