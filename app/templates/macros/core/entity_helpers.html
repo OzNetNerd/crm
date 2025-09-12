@@ -1,0 +1,111 @@
+{# 
+  Entity Helper Macros - Clean template access to Python entity configuration
+  
+  These macros provide simple template access to the centralized Python entity configuration.
+  Configuration logic is in app/config/entity_config.py for maintainability.
+  
+  Replaces the previous entity_config.html with proper separation of concerns.
+#}
+
+{#
+  Entity Icon Macro - Get icon with consistent styling
+  
+  Parameters:
+  - entity_type (required): Entity type string
+  - size (optional): Icon size class (default: 'md')
+  - additional_classes (optional): Extra CSS classes
+  
+  Usage:
+  {{ entity_icon('task') }}
+  {{ entity_icon('company', 'lg', 'text-blue-500') }}
+#}
+{% from 'macros/base/icons.html' import icon %}
+{% macro entity_icon(entity_type, size='md', additional_classes='') %}
+{{ icon(get_entity_icon(entity_type), size, additional_classes) }}
+{% endmacro %}
+
+{#
+  Entity Label - Get singular or plural label
+  
+  Parameters:
+  - entity_type (required): Entity type string
+  - plural (optional): Use plural form (default: false)
+  - capitalize (optional): Capitalize first letter (default: false)
+  
+  Usage:
+  {{ entity_label('task') }}              → "task"
+  {{ entity_label('task', plural=true) }} → "tasks" 
+  {{ entity_label('task', capitalize=true) }} → "Task"
+#}
+{% macro entity_label(entity_type, plural=false, capitalize=false) %}
+  {%- set labels = get_entity_labels(entity_type) -%}
+  {%- set label = labels.plural if plural else labels.singular -%}
+  {{- label.title() if capitalize else label -}}
+{% endmacro %}
+
+{#
+  Entity Display Name - Get properly formatted display name
+  
+  Parameters:
+  - entity_type (required): Entity type string
+  - plural (optional): Use plural form (default: false)
+  
+  Usage:
+  {{ entity_display_name('task') }}              → "Task"
+  {{ entity_display_name('task', plural=true) }} → "Tasks"
+#}
+{% macro entity_display_name(entity_type, plural=false) %}
+  {%- set labels = get_entity_labels(entity_type) -%}
+  {{- labels.plural.title() if plural else labels.display_name -}}
+{% endmacro %}
+
+{#
+  Entity Empty State Text - Get empty state configuration
+  
+  Parameters:
+  - entity_type (required): Entity type string
+  - part (optional): 'title' or 'subtitle' (default: returns both)
+  
+  Usage:
+  {{ entity_empty_state('task', 'title') }}    → "No tasks found"
+  {{ entity_empty_state('task', 'subtitle') }} → "Try adjusting..."
+  
+  For full empty state component, use empty_state.html macro instead.
+#}
+{% macro entity_empty_state(entity_type, part=none) %}
+  {%- set config = get_empty_state_config(entity_type) -%}
+  {%- if part == 'title' -%}
+    {{- config.title -}}
+  {%- elif part == 'subtitle' -%}
+    {{- config.subtitle -}}
+  {%- else -%}
+    {{ config }}
+  {%- endif -%}
+{% endmacro %}
+
+{#
+  Quick Entity Info - Get common entity info in one macro
+  
+  Parameters:
+  - entity_type (required): Entity type string
+  
+  Returns object with: icon, singular, plural, display_name, empty_state
+  
+  Usage:
+  {% set info = entity_info('task') %}
+  <h1>{{ info.display_name }}</h1>
+  {{ icon(info.icon) }}
+#}
+{% macro entity_info(entity_type) %}
+  {%- set config = get_entity_config(entity_type) -%}
+  {{- {
+    'icon': config.icon,
+    'singular': config.singular, 
+    'plural': config.plural,
+    'display_name': config.display_name or config.singular.title(),
+    'empty_state': {
+      'title': config.empty_state.title,
+      'subtitle': config.empty_state.subtitle
+    }
+  } -}}
+{% endmacro %}

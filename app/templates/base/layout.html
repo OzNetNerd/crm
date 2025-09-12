@@ -7,6 +7,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Alpine.js components - load before Alpine.js core -->
+    <script src="{{ url_for('static', filename='js/alpine/cardState.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/alpine/chatWidget.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/alpine/entityLinker.js') }}"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-50">
@@ -46,7 +50,7 @@
     {% block modals %}{% endblock %}
     
     <!-- Chat Widget -->
-    {% include 'macros/widgets/chat.html' %}
+    {% include 'components/chat_widget.html' %}
     
     <!-- Data container for clean server-to-client data passing -->
     <div id="app-data" style="display: none;"

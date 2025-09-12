@@ -1,191 +1,142 @@
-<!-- Chat Widget Component for CRM -->
-<div id="chat-widget" class="fixed bottom-4 right-4 z-50">
+{#
+  Chat Widget Component - Clean, accessible chat interface
+  
+  A proper component template separating HTML from JavaScript logic.
+  Uses Alpine.js for reactive state management with clean separation of concerns.
+  
+  Usage: {% include 'components/chat_widget.html' %}
+#}
+
+<!-- Chat Widget Container -->
+<div id="chat-widget" class="fixed bottom-4 right-4 z-50" x-data="chatWidget()">
     <!-- Chat Toggle Button -->
     <button 
-        onclick="toggleChat()" 
-        id="chat-toggle-btn"
-        class="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transition-all duration-200"
+        @click="toggleChat()" 
+        class="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300"
+        :class="{ 'scale-110': isOpen }"
+        aria-label="Open chat assistant"
     >
-        <span id="chat-icon" class="text-2xl">💬</span>
+        <span x-show="!isOpen" class="text-2xl" aria-hidden="true">💬</span>
+        <span x-show="isOpen" class="text-xl" aria-hidden="true">✕</span>
     </button>
     
     <!-- Chat Panel -->
     <div 
-        id="chat-panel"
-        class="absolute bottom-20 right-0 w-80 h-96 bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col hidden"
+        x-show="isOpen" 
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="transform translate-y-2 opacity-0 scale-95"
+        x-transition:enter-end="transform translate-y-0 opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="transform translate-y-0 opacity-100 scale-100"
+        x-transition:leave-end="transform translate-y-2 opacity-0 scale-95"
+        class="absolute bottom-20 right-0 w-80 h-96 bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col"
+        style="display: none;"
+        role="dialog"
+        aria-labelledby="chat-title"
+        aria-describedby="chat-description"
     >
         <!-- Chat Header -->
         <div class="bg-blue-500 text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
-            <h3 class="font-semibold">CRM Assistant</h3>
+            <h3 id="chat-title" class="font-semibold">CRM Assistant</h3>
             <div class="flex items-center space-x-2">
                 <span 
-                    id="connection-indicator"
-                    class="w-2 h-2 rounded-full bg-red-400"
+                    class="w-2 h-2 rounded-full"
+                    :class="{
+                        'bg-green-400': connectionStatus === 'connected',
+                        'bg-yellow-400': connectionStatus === 'connecting', 
+                        'bg-red-400': connectionStatus === 'disconnected'
+                    }"
+                    :aria-label="'Connection status: ' + connectionStatus"
                 ></span>
-                <span id="connection-status" class="text-xs">disconnected</span>
+                <span class="text-xs capitalize" x-text="connectionStatus"></span>
             </div>
         </div>
         
         <!-- Messages Area -->
-        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3">
+        <div 
+            class="flex-1 overflow-y-auto p-4 space-y-3"
+            x-ref="messagesContainer"
+            role="log"
+            aria-live="polite"
+            aria-label="Chat messages"
+        >
             <!-- Welcome Message -->
-            <div id="welcome-message" class="text-gray-500 text-sm text-center py-8">
-                <div class="text-2xl mb-2">🤖</div>
-                <p>Hello! I'm your CRM assistant.</p>
+            <div x-show="messages.length === 0" class="text-gray-500 text-sm text-center py-8">
+                <div class="text-2xl mb-2" role="img" aria-label="Robot">🤖</div>
+                <p id="chat-description">Hello! I'm your CRM assistant.</p>
                 <p class="mt-1">Ask me about your companies, contacts, tasks, or meetings!</p>
+            </div>
+            
+            <!-- Messages -->
+            <template x-for="message in messages" :key="message.id">
+                <div 
+                    class="flex" 
+                    :class="message.type === 'user' ? 'justify-end' : 'justify-start'"
+                    role="group"
+                    :aria-label="message.type + ' message'"
+                >
+                    <div 
+                        class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg text-sm"
+                        :class="{
+                            'bg-blue-500 text-white': message.type === 'user',
+                            'bg-gray-100 text-gray-800': message.type !== 'user'
+                        }"
+                    >
+                        <p x-text="message.content"></p>
+                        <div 
+                            class="text-xs mt-1 opacity-70" 
+                            x-text="formatTime(message.timestamp)"
+                            :aria-label="'Sent at ' + formatTime(message.timestamp)"
+                        ></div>
+                    </div>
+                </div>
+            </template>
+            
+            <!-- Typing Indicator -->
+            <div x-show="isTyping" class="flex justify-start" aria-label="Assistant is typing">
+                <div class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg text-sm">
+                    <div class="flex space-x-1" aria-hidden="true">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                </div>
             </div>
         </div>
         
         <!-- Input Area -->
         <div class="border-t border-gray-200 p-4">
-            <form onsubmit="sendMessage(event)" class="flex space-x-2">
+            <form @submit.prevent="sendMessage()" class="flex space-x-2">
                 <input 
                     type="text" 
-                    id="chat-input"
+                    x-model="currentMessage"
                     placeholder="Type your message..."
                     class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    disabled
+                    :disabled="connectionStatus !== 'connected'"
+                    aria-label="Chat message input"
                 >
                 <button 
                     type="submit"
-                    id="send-button"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 disabled:bg-gray-300"
-                    disabled
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    :disabled="!currentMessage.trim() || connectionStatus !== 'connected'"
+                    aria-label="Send message"
                 >
                     Send
                 </button>
             </form>
             
             <!-- Connection Status Message -->
-            <div id="connection-message" class="mt-2 text-xs text-center">
-                <span class="text-red-600">
+            <div x-show="connectionStatus !== 'connected'" class="mt-2 text-xs text-center">
+                <span x-show="connectionStatus === 'connecting'" class="text-yellow-600">
+                    Connecting to assistant...
+                </span>
+                <span x-show="connectionStatus === 'disconnected'" class="text-red-600">
                     Connection lost. 
-                    <button onclick="reconnect()" class="underline hover:no-underline">Reconnect</button>
+                    <button @click="reconnect()" class="underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-red-500 rounded">
+                        Reconnect
+                    </button>
                 </span>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-let ws = null;
-let chatOpen = false;
-let messages = [];
-
-function toggleChat() {
-    const panel = document.getElementById('chat-panel');
-    const icon = document.getElementById('chat-icon');
-    const btn = document.getElementById('chat-toggle-btn');
-    
-    chatOpen = !chatOpen;
-    
-    if (chatOpen) {
-        panel.classList.remove('hidden');
-        icon.textContent = '✕';
-        btn.classList.add('scale-110');
-        connectWebSocket();
-    } else {
-        panel.classList.add('hidden');
-        icon.textContent = '💬';
-        btn.classList.remove('scale-110');
-        if (ws) {
-            ws.close();
-        }
-    }
-}
-
-function connectWebSocket() {
-    ws = new WebSocket(`${protocol}//localhost:8026/ws/chat`);
-    
-    updateConnectionStatus('connecting');
-    
-    ws.onopen = function() {
-        updateConnectionStatus('connected');
-    };
-    
-    ws.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        addMessage('assistant', data.response);
-    };
-    
-    ws.onclose = function() {
-        updateConnectionStatus('disconnected');
-    };
-    
-    ws.onerror = function() {
-        updateConnectionStatus('disconnected');
-    };
-}
-
-function updateConnectionStatus(status) {
-    const indicator = document.getElementById('connection-indicator');
-    const statusText = document.getElementById('connection-status');
-    const input = document.getElementById('chat-input');
-    const sendBtn = document.getElementById('send-button');
-    const message = document.getElementById('connection-message');
-    
-    indicator.className = `w-2 h-2 rounded-full ${
-        status === 'connected' ? 'bg-green-400' : 
-        status === 'connecting' ? 'bg-yellow-400' : 'bg-red-400'
-    }`;
-    statusText.textContent = status;
-    
-    if (status === 'connected') {
-        input.disabled = false;
-        sendBtn.disabled = false;
-        message.style.display = 'none';
-    } else {
-        input.disabled = true;
-        sendBtn.disabled = true;
-        message.style.display = status === 'connecting' ? 'none' : 'block';
-    }
-}
-
-function sendMessage(event) {
-    event.preventDefault();
-    const input = document.getElementById('chat-input');
-    const message = input.value.trim();
-    
-    if (!message || !ws || ws.readyState !== WebSocket.OPEN) return;
-    
-    addMessage('user', message);
-    ws.send(JSON.stringify({ message: message }));
-    input.value = '';
-}
-
-function addMessage(type, content) {
-    const messagesContainer = document.getElementById('chat-messages');
-    const welcomeMessage = document.getElementById('welcome-message');
-    
-    if (messages.length === 0) {
-        welcomeMessage.style.display = 'none';
-    }
-    
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'}`;
-    
-    messageDiv.innerHTML = `
-        <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg text-sm ${
-            type === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'
-        }">
-            <p>${content}</p>
-            <div class="text-xs mt-1 opacity-70">${formatTime(new Date())}</div>
-        </div>
-    `;
-    
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
-    messages.push({ type, content, timestamp: new Date() });
-}
-
-function formatTime(date) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
-function reconnect() {
-    if (chatOpen) {
-        connectWebSocket();
-    }
-}
-</script>
