@@ -2,7 +2,7 @@
 {% from "macros/imports/universal.html" import include_common_modals %}
 {% from "macros/ui/summary_section.html" import metric_card, metric_grid, status_breakdown_grid %}
 {% from "macros/ui/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
-{% from "macros/base/layout.html" import simple_page_header %}
+{% from "macros/base/layout.html" import page_layout %}
 {% from "macros/ui/quick_actions.html" import default_dashboard_actions %}
 {% from "macros/ui/metadata_display.html" import task_metadata %}
 {% from "macros/base/icons.html" import building_office_icon, user_icon, currency_dollar_icon, clipboard_list_icon, exclamation_circle_icon_solid, calendar_days_icon %}
@@ -12,7 +12,7 @@
 {% block title %}Dashboard - CRM{% endblock %}
 
 {% block content %}
-{{ simple_page_header('Dashboard', 'Overview of your CRM performance and activity', ['companies', 'tasks', 'opportunities', 'stakeholders']) }}
+{{ page_layout('Dashboard', 'Overview of your CRM performance and activity', buttons=default_dashboard_actions(), header_only=true) }}
 
 <!-- Key Metrics -->
 {% call metric_grid(4, 6, 'mb-8') %}
