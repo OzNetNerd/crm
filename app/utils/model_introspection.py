@@ -132,18 +132,19 @@ class ModelIntrospector:
                     info = column.info
                     
                     # Check if field has groupable choices
-                    choices_config = info.get('choices', {})
-                    if isinstance(choices_config, dict):
-                        has_groupable = any(
-                            config.get('groupable', False) 
-                            for config in choices_config.values()
-                        )
-                        if has_groupable:
-                            label = info.get('display_label', attr_name.replace('_', ' ').title())
-                            groupable_fields.append((attr_name, label))
+                    if 'choices' in info:
+                        choices_config = info['choices']
+                        if isinstance(choices_config, dict) and choices_config:
+                            has_groupable = any(
+                                config.get('groupable', False) 
+                                for config in choices_config.values()
+                            )
+                            if has_groupable:
+                                label = info.get('display_label', attr_name.replace('_', ' ').title())
+                                groupable_fields.append((attr_name, label))
                     
                     # Check if field is explicitly marked as groupable
-                    elif info.get('groupable', False):
+                    if info.get('groupable', False):
                         label = info.get('display_label', attr_name.replace('_', ' ').title())
                         groupable_fields.append((attr_name, label))
             except (AttributeError, TypeError):
@@ -176,18 +177,19 @@ class ModelIntrospector:
                     info = column.info
                     
                     # Check if field has sortable choices
-                    choices_config = info.get('choices', {})
-                    if isinstance(choices_config, dict):
-                        has_sortable = any(
-                            config.get('sortable', True)  # Default to sortable
-                            for config in choices_config.values()
-                        )
-                        if has_sortable:
-                            label = info.get('display_label', attr_name.replace('_', ' ').title())
-                            sortable_fields.append((attr_name, label))
+                    if 'choices' in info:
+                        choices_config = info['choices']
+                        if isinstance(choices_config, dict) and choices_config:
+                            has_sortable = any(
+                                config.get('sortable', True)  # Default to sortable
+                                for config in choices_config.values()
+                            )
+                            if has_sortable:
+                                label = info.get('display_label', attr_name.replace('_', ' ').title())
+                                sortable_fields.append((attr_name, label))
                     
                     # Check if field is explicitly marked as sortable (default True)
-                    elif info.get('sortable', True):
+                    if info.get('sortable', True):
                         label = info.get('display_label', attr_name.replace('_', ' ').title())
                         sortable_fields.append((attr_name, label))
             except (AttributeError, TypeError):
