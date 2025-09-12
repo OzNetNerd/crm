@@ -4,56 +4,31 @@
 {% from "macros/ui/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
 {% from "macros/base/layout.html" import simple_page_header %}
 {% from "macros/ui/quick_actions.html" import default_dashboard_actions %}
-{% from "macros/ui/metadata_display.html" import standard_card_metadata %}
+{% from "macros/ui/metadata_display.html" import task_metadata %}
 {% from "macros/base/icons.html" import building_office_icon, user_icon, currency_dollar_icon, clipboard_list_icon, exclamation_circle_icon_solid, calendar_days_icon %}
 {% from "macros/formatting.html" import format_currency %}
 
-{# Use standard metadata macro for consistency #}
-{% macro task_metadata(task) %}
-    {{ standard_card_metadata(task, {
-        'include_date': true,
-        'today': task.due_date.today() if task.due_date else none,
-        'return_string': true
-    }) or 'No due date' }}
-{% endmacro %}
 
 {% block title %}Dashboard - CRM{% endblock %}
 
 {% block content %}
-{# Dashboard header with buttons #}
-{% from "macros/ui/quick_actions.html" import entity_buttons %}
-
-<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div>
-        <h1 class="text-page-title">Dashboard</h1>
-        <p class="text-secondary-dark">Overview of your CRM performance and activity</p>
-    </div>
-    <div class="flex-shrink-0">
-        {{ entity_buttons(['companies', 'tasks', 'opportunities', 'stakeholders']) }}
-    </div>
-</div>
+{{ simple_page_header('Dashboard', 'Overview of your CRM performance and activity', ['companies', 'tasks', 'opportunities', 'stakeholders']) }}
 
 <!-- Key Metrics -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+{% call metric_grid(4, 6, 'mb-8') %}
     {{ metric_card('Companies', metrics.total_companies, building_office_icon('c-icon c-icon--lg c-icon--company'), 'blue') }}
-
     {{ metric_card('Stakeholders', metrics.total_contacts, user_icon('c-icon c-icon--lg c-icon--stakeholder'), 'green') }}
-
     {{ metric_card('Opportunities', metrics.total_opportunities, currency_dollar_icon('c-icon c-icon--lg c-icon--opportunity'), 'yellow') }}
-
     {{ metric_card('Total Tasks', metrics.total_tasks, clipboard_list_icon('c-icon c-icon--lg c-icon--task'), 'purple') }}
-</div>
+{% endcall %}
 
 <!-- Task Quick Stats -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+{% call metric_grid(4, 6, 'mb-8') %}
     {{ metric_card('Overdue Tasks', task_stats.overdue, '', 'red') }}
-
     {{ metric_card('Due Today', task_stats.today, '', 'orange') }}
-
     {{ metric_card('This Week', task_stats.this_week, '', 'blue') }}
-
     {{ metric_card('Completed Today', task_stats.completed_today, '', 'green') }}
-</div>
+{% endcall %}
 
 <!-- Pipeline Overview -->
 {% set pipeline_stats_list = [
