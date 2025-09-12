@@ -42,5 +42,18 @@ class Note(db.Model):
 
         return entity.name if hasattr(entity, "name") else str(entity)
 
+    def to_display_dict(self):
+        """Convert note to dictionary with pre-formatted display fields"""
+        from app.utils.ui.formatters import create_display_dict
+        
+        # Create base display dictionary with all formatted fields
+        result = create_display_dict(self)
+        
+        # Add note-specific computed fields
+        result['entity_name'] = self.entity_name
+        result['content_preview'] = self.content[:100] + '...' if len(self.content) > 100 else self.content
+        
+        return result
+
     def __repr__(self):
         return f"<Note {self.content[:50]}>"

@@ -47,17 +47,22 @@ def index():
         "total_count": len(opportunities),
     }
 
-    # Recent activity (last 5 items)
-    recent_tasks = (
+    # Recent activity (last 5 items) - with formatting at source
+    recent_tasks_raw = (
         Task.query.filter(Task.status != "complete")
         .order_by(Task.created_at.desc())
         .limit(5)
         .all()
     )
-    recent_notes = Note.query.order_by(Note.created_at.desc()).limit(3).all()
-    recent_opportunities = (
+    recent_tasks = [task.to_display_dict() for task in recent_tasks_raw]
+    
+    recent_notes_raw = Note.query.order_by(Note.created_at.desc()).limit(3).all()
+    recent_notes = [note.to_display_dict() for note in recent_notes_raw]
+    
+    recent_opportunities_raw = (
         Opportunity.query.order_by(Opportunity.created_at.desc()).limit(3).all()
     )
+    recent_opportunities = [opp.to_display_dict() for opp in recent_opportunities_raw]
 
     # Key metrics
     metrics = {
@@ -67,13 +72,15 @@ def index():
         "total_tasks": Task.query.count(),
     }
 
-    # Critical alerts
-    overdue_tasks = (
+    # Critical alerts - with formatting at source
+    overdue_tasks_raw = (
         Task.query.filter(Task.due_date < today, Task.status != "complete")
         .limit(5)
         .all()
     )
-    closing_soon = (
+    overdue_tasks = [task.to_display_dict() for task in overdue_tasks_raw]
+    
+    closing_soon_raw = (
         Opportunity.query.filter(
             Opportunity.expected_close_date <= today + timedelta(days=7),
             Opportunity.expected_close_date >= today,
@@ -82,6 +89,7 @@ def index():
         .limit(5)
         .all()
     )
+    closing_soon = [opp.to_display_dict() for opp in closing_soon_raw]
 
     return render_template(
         "dashboard/index.html",

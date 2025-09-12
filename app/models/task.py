@@ -345,5 +345,23 @@ class Task(db.Model):
         
         return result
 
+    def to_display_dict(self):
+        """Convert task to dictionary with pre-formatted display fields"""
+        from app.utils.ui.formatters import create_display_dict
+        
+        # Get base dictionary
+        result = self.to_dict()
+        
+        # Add formatted display fields at source
+        display_fields = create_display_dict(self)
+        result.update(display_fields)
+        
+        # Add task-specific formatted fields
+        if self.opportunity_value:
+            from app.utils.ui.formatters import DisplayFormatter
+            result['opportunity_value_formatted'] = DisplayFormatter.format_currency(self.opportunity_value)
+        
+        return result
+
     def __repr__(self):
         return f"<Task {self.task_type}: {self.description[:50]}>"
