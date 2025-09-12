@@ -303,31 +303,31 @@ SUBTASK_TEMPLATES = {
 def get_opportunity_stages():
     """Get opportunity stages from model metadata"""
     from app.models import Opportunity
-    from app.utils.model_introspection import ModelIntrospector
+    from app.utils.core.model_introspection import ModelIntrospector
     return [choice[0] for choice in ModelIntrospector.get_field_choices(Opportunity, 'stage')]
 
 def get_task_priorities():
     """Get task priorities from model metadata"""
     from app.models import Task
-    from app.utils.model_introspection import ModelIntrospector
+    from app.utils.core.model_introspection import ModelIntrospector
     return [choice[0] for choice in ModelIntrospector.get_field_choices(Task, 'priority')]
 
 def get_task_statuses():
     """Get task statuses from model metadata"""
     from app.models import Task
-    from app.utils.model_introspection import ModelIntrospector
+    from app.utils.core.model_introspection import ModelIntrospector
     return [choice[0] for choice in ModelIntrospector.get_field_choices(Task, 'status')]
 
 def get_next_step_types():
     """Get next step types from model metadata"""
     from app.models import Task
-    from app.utils.model_introspection import ModelIntrospector
+    from app.utils.core.model_introspection import ModelIntrospector
     return [choice[0] for choice in ModelIntrospector.get_field_choices(Task, 'next_step_type')]
 
 def get_dependency_types():
     """Get dependency types from model metadata"""
     from app.models import Task
-    from app.utils.model_introspection import ModelIntrospector
+    from app.utils.core.model_introspection import ModelIntrospector
     return [choice[0] for choice in ModelIntrospector.get_field_choices(Task, 'dependency_type')]
 
 
@@ -367,8 +367,8 @@ def create_contacts(companies):
     used_names = set()
 
     for company in companies:
-        # Create 3-5 contacts per company for better testing
-        num_contacts = random.randint(3, 5)
+        # Create 1-2 contacts per company to avoid complex relationships
+        num_contacts = random.randint(1, 2)
 
         for i in range(num_contacts):
             # Ensure unique names
@@ -416,19 +416,28 @@ def create_opportunities(companies, contacts):
     opportunities = []
 
     for company in companies:
-        # Create 1-3 opportunities per company
-        num_opps = random.randint(1, 3)
+        # Create 1-2 opportunities per company to simplify relationships
+        num_opps = random.randint(1, 2)
 
         company_contacts = [c for c in contacts if c.company_id == company.id]
 
         for i in range(num_opps):
             # Generate deal value in the specified range
             deal_value = generate_deal_value()
+            
+            # Generate priority based on deal value
+            if deal_value >= 100000:
+                priority = 'high' 
+            elif deal_value >= 50000:
+                priority = 'medium'
+            else:
+                priority = 'low'
 
             opportunity = Opportunity(
                 name=f"{random.choice(OPPORTUNITY_TEMPLATES)} - {company.name}",
                 value=deal_value,
                 probability=random.randint(10, 95),
+                priority=priority,
                 expected_close_date=date.today()
                 + timedelta(days=random.randint(15, 365)),
                 stage=random.choice(get_opportunity_stages()),
@@ -436,11 +445,10 @@ def create_opportunities(companies, contacts):
                 created_at=datetime.now() - timedelta(days=random.randint(1, 120)),
             )
 
-            # Associate with 1-3 stakeholders from the company
+            # Associate with 1 stakeholder from the company  
             if company_contacts:
-                num_contacts = min(random.randint(1, 3), len(company_contacts))
-                selected_contacts = random.sample(company_contacts, num_contacts)
-                opportunity.stakeholders.extend(selected_contacts)
+                selected_contact = random.choice(company_contacts)
+                opportunity.stakeholders.append(selected_contact)
 
             opportunities.append(opportunity)
             db.session.add(opportunity)
@@ -502,8 +510,6 @@ def create_comprehensive_tasks(companies, contacts, opportunities):
             priority=random.choice(get_task_priorities()),
             status=status,
             next_step_type=random.choice(get_next_step_types()),
-            entity_type=entity_type,
-            entity_id=entity_id,
             task_type="single",
             created_at=datetime.now() - timedelta(days=random.randint(1, 90)),
         )
@@ -535,8 +541,6 @@ def create_comprehensive_tasks(companies, contacts, opportunities):
             priority=random.choice(get_task_priorities()),
             status=random.choice(get_task_statuses()),
             next_step_type=random.choice(get_next_step_types()),
-            entity_type=primary_entity_type,
-            entity_id=primary_entity_id,
             task_type="single",
             created_at=datetime.now() - timedelta(days=random.randint(1, 60)),
         )
@@ -585,8 +589,6 @@ def create_comprehensive_tasks(companies, contacts, opportunities):
             priority=random.choice(get_task_priorities()),
             status=parent_status,
             next_step_type=random.choice(get_next_step_types()),
-            entity_type=entity_type,
-            entity_id=entity_id,
             task_type="parent",
             dependency_type=dependency_type,
             created_at=datetime.now() - timedelta(days=random.randint(1, 45)),
@@ -639,8 +641,6 @@ def create_comprehensive_tasks(companies, contacts, opportunities):
                     priority=parent_task.priority,  # Inherit parent priority
                     status=child_status,
                     next_step_type=random.choice(get_next_step_types()),
-                    entity_type=entity_type,
-                    entity_id=entity_id,
                     task_type="child",
                     parent_task_id=parent_task.id,
                     sequence_order=j + 1,
@@ -753,13 +753,19 @@ def seed_database():
     # Clear existing data
     print("Clearing existing data...")
     Note.query.delete()
-    # Clear task entity relationships
-    db.session.execute(db.text("DELETE FROM task_entities"))
+    # Clear task entity relationships (table may not exist in fresh db)  
+    try:
+        db.session.execute(db.text("DELETE FROM task_entities"))
+    except Exception:
+        pass  # Table doesn't exist in fresh database
     Task.query.delete()
-    # Clear contact-opportunity relationships
-    db.session.execute(db.text("DELETE FROM contact_opportunities"))
+    # Clear contact-opportunity relationships (table may not exist in fresh db)
+    try:
+        db.session.execute(db.text("DELETE FROM contact_opportunities"))
+    except Exception:
+        pass  # Table doesn't exist in fresh database
     Opportunity.query.delete()
-    Contact.query.delete()
+    Stakeholder.query.delete()
     Company.query.delete()
     db.session.commit()
     print("Existing data cleared")
@@ -767,9 +773,17 @@ def seed_database():
 
     # Create comprehensive test data
     companies = create_companies()
+    db.session.flush()  # Ensure companies have IDs
+    
     contacts = create_contacts(companies)
+    db.session.flush()  # Ensure contacts have IDs
+    
     opportunities = create_opportunities(companies, contacts)
+    db.session.flush()  # Ensure opportunities have IDs
+    
     tasks = create_comprehensive_tasks(companies, contacts, opportunities)
+    db.session.flush()  # Ensure tasks have IDs
+    
     notes = create_notes(companies, contacts, opportunities, tasks)
 
     print()
