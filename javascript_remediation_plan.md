@@ -107,7 +107,6 @@ setTimeout(() => {
 ### 3.1 Modal Close Handlers ⚠️ HIGH PRIORITY
 **Files:**
 - `app/templates/components/modals/error_modal.html:14,35`
-- `app/templates/components/modals/generic_form_modal.html:18,27,121`
 - `app/templates/macros/modals/base/modal_base.html:11,43,51`
 - `app/templates/macros/modals/base/generic_create.html:12,18,48`
 - `app/templates/macros/modals/forms.html:30`
