@@ -242,5 +242,23 @@ class Opportunity(db.Model):
         
         return result
 
+    def to_display_dict(self):
+        """Convert opportunity to dictionary with pre-formatted display fields"""
+        from app.utils.ui.formatters import create_display_dict, DisplayFormatter
+        
+        # Get base dictionary
+        result = self.to_dict()
+        
+        # Add formatted display fields at source
+        display_fields = create_display_dict(self)
+        result.update(display_fields)
+        
+        # Add opportunity-specific formatted fields
+        result['value_formatted'] = DisplayFormatter.format_currency(self.value)
+        result['probability_formatted'] = DisplayFormatter.format_percentage(self.probability / 100.0 if self.probability else 0)
+        result['deal_age_formatted'] = f"{self.deal_age} days old"
+        
+        return result
+
     def __repr__(self):
         return f"<Opportunity {self.name}>"

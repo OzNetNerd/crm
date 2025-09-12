@@ -226,12 +226,12 @@ details[open] .details-chevron {
     
     {% elif field_type == 'date' %}
         {% if field_value %}
-            {{ field_value.strftime(field_config.get('format', '%m/%d/%y')) }}
+            {{ entity[field_config.field + '_formatted'] or '' }}
         {% endif %}
     
     {% elif field_type == 'currency' %}
         {% if field_value is number %}
-            {{ field_config.get('symbol', '$') }}{{ "{:,.0f}".format(field_value) }}
+            {{ entity[field_config.field + '_formatted'] or '$0' }}
         {% else %}
             {{ field_value }}
         {% endif %}
@@ -648,7 +648,7 @@ details[open] .details-chevron {
   {%- if not value_content -%}
     {%- set raw_value = entity.value|default(none) -%}
     {%- if raw_value is number -%}
-      {%- set value_content = '${:,.0f}'.format(raw_value) -%}
+      {%- set value_content = entity.value_formatted or '$0' -%}
     {%- elif raw_value -%}
       {%- set value_content = raw_value|string -%}
     {%- endif -%}
@@ -672,13 +672,13 @@ details[open] .details-chevron {
   {%- if not metadata_content -%}
     {%- set metadata_parts = [] -%}
     {%- if entity.created_at -%}
-      {%- set _ = metadata_parts.append(entity.created_at.strftime('%m/%d/%y')) -%}
+      {%- set _ = metadata_parts.append(entity.created_at_formatted) -%}
     {%- endif -%}
     {%- if entity.due_date -%}
-      {%- set _ = metadata_parts.append('Due: ' + entity.due_date.strftime('%m/%d/%y')) -%}
+      {%- set _ = metadata_parts.append('Due: ' + entity.due_date_formatted) -%}
     {%- endif -%}
     {%- if entity.expected_close_date -%}
-      {%- set _ = metadata_parts.append('Close: ' + entity.expected_close_date.strftime('%m/%d/%y')) -%}
+      {%- set _ = metadata_parts.append('Close: ' + entity.expected_close_date_formatted) -%}
     {%- endif -%}
     {%- if metadata_parts -%}
       {%- set metadata_content = metadata_parts | join(' • ') -%}
@@ -804,7 +804,7 @@ details[open] .details-chevron {
 {%- elif field_config.type == 'badge' -%}
     <span class="badge-standard badge-{{ field_config.style }}">{{ entity[field_config.field] }}</span>
 {%- elif field_config.type == 'date' -%}
-    {{ entity[field_config.field].strftime(field_config.get('format', '%m/%d/%y')) if entity[field_config.field] }}
+    {{ entity[field_config.field + '_formatted'] or '' }}
 {%- else -%}
     {{ entity[field_config.field] }}
 {%- endif -%}
@@ -953,7 +953,7 @@ details[open] .details-chevron {
     {{ task.next_step_type }}
     {% endif %}
     {% if task.due_date %}
-    • Due: <span>{{ task.due_date.strftime('%d/%m/%y') }}</span>
+    • Due: <span>{{ task.due_date_formatted }}</span>
     {% endif %}
     {% if task.is_overdue %}
     • <span class="text-badge-overdue">OVERDUE</span>
@@ -973,7 +973,7 @@ details[open] .details-chevron {
 {% macro opportunity_metadata_content(opportunity) %}
 <span class="text-gray-500">
     <span class="text-gray-500">
-        Close: {{ opportunity.close_date.strftime('%d/%m/%y') if opportunity.close_date else 'TBD' }}
+        Close: {{ opportunity.close_date_formatted or 'TBD' }}
         {% if opportunity.days_until_close %}
             • {{ opportunity.days_until_close }} days to go
         {% endif %}
@@ -986,7 +986,7 @@ details[open] .details-chevron {
     {% endif %}
     <span class="text-entity-base text-color-opportunity">{{ opportunity.name }}</span> • 
     {{ opportunity.stage }} • 
-    <span class="text-entity-base text-color-deal">${{ "{:,.0f}".format(opportunity.value) if opportunity.value else '0' }}</span> • 
+    <span class="text-entity-base text-color-deal">{{ opportunity.value_formatted or '$0' }}</span> • 
     {% if opportunity.contact %}
         <span class="text-entity-base text-color-stakeholder">{{ opportunity.contact.name }}</span> • 
     {% endif %}
@@ -1079,7 +1079,7 @@ details[open] .details-chevron {
     {% if company.opportunities %}  
         <span>{{ company.opportunities|length }} opportunit{{ 'ies' if company.opportunities|length != 1 else 'y' }}</span>
     {% endif %}
-    <span>{{ company.created_at.strftime('%m/%d/%y') if company.created_at else 'N/A' }}</span>
+    <span>{{ company.created_at_formatted or 'N/A' }}</span>
 </div>
 {% endmacro %}
 
@@ -1098,7 +1098,7 @@ details[open] .details-chevron {
     {% if member.company %}
         <span>{{ member.company.name }}</span>
     {% endif %}
-    <span>{{ member.created_at.strftime('%m/%d/%y') if member.created_at else 'N/A' }}</span>
+    <span>{{ member.created_at_formatted or 'N/A' }}</span>
 </div>
 {% endmacro %}
 

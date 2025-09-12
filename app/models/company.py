@@ -202,5 +202,18 @@ class Company(db.Model):
         
         return result
 
+    def to_display_dict(self):
+        """Convert company to dictionary with pre-formatted display fields"""
+        from app.utils.ui.formatters import create_display_dict
+        
+        # Get base dictionary
+        result = self.to_dict()
+        
+        # Add formatted display fields at source
+        display_fields = create_display_dict(self)
+        result.update(display_fields)
+        
+        return result
+
     def __repr__(self):
         return f"<Company {self.name}>"

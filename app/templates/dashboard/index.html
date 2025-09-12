@@ -83,7 +83,7 @@
             {% for opp in closing_soon %}
                 {{ alert_list_item(
                     title=opp.name,
-                    warning_text=format_currency(opp.value) + ' • ' + opp.expected_close_date.strftime('%d/%m/%y'),
+                    warning_text=opp.value_formatted + ' • ' + opp.expected_close_date_formatted,
                     warning_color='yellow',
                     action_href='/opportunities/'
                 ) }}
@@ -112,7 +112,7 @@
             {% for opp in recent_opportunities %}
                 {{ simple_list_item(
                     title='<span class="text-opportunity">' + opp.name + '</span>',
-                    subtitle='<span class="text-company">' + opp.company.name + '</span> • <span class="text-deal">' + format_currency(opp.value) + '</span>',
+                    subtitle='<span class="text-company">' + opp.company_name + '</span> • <span class="text-deal">' + opp.value_formatted + '</span>',
                     badge_text=opp.stage|title,
                     badge_color='badge-' + opp.stage
                 ) }}
@@ -124,7 +124,7 @@
             {% for note in recent_notes %}
                 {{ note_list_item(
                     content=note.content,
-                    metadata=note.created_at.strftime('%m/%d %H:%M') + ((' • ' + note.entity_name) if note.entity_name else ''),
+                    metadata=note.created_at_formatted + ((' • ' + note.entity_name) if note.entity_name else ''),
                     accent_color='blue'
                 ) }}
             {% endfor %}

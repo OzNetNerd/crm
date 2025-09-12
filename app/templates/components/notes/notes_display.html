@@ -6,7 +6,7 @@
             <div class="flex justify-between items-start">
                 <div class="flex-1">
                     <p class="text-sm text-gray-800">{{ note.content }}</p>
-                    <p class="text-xs text-gray-500 mt-1">{{ note.created_at.strftime('%m/%d/%y') if note.created_at else 'Today' }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ note.created_at_formatted or 'Today' }}</p>
                 </div>
                 {% if show_delete|default(true) %}
                 <div class="ml-2">
