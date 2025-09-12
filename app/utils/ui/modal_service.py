@@ -11,7 +11,7 @@ from app.models import db
 from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
 from app.utils.forms.form_builder import DynamicFormBuilder
 from app.forms.base_forms import BaseForm
-from app.utils.entities.entity_icons import get_entity_icon_html
+# No icon functions needed - templates handle CSS class generation
 
 
 class ModalService:
@@ -47,7 +47,6 @@ class ModalService:
             'action_url': f'/modals/{model_name}/create',
             'modal_title': f'Create {model_name}',
             'is_edit': False,
-            'get_entity_icon_html': get_entity_icon_html,
             **kwargs
         }
         
@@ -86,7 +85,6 @@ class ModalService:
             'action_url': f'/modals/{model_name}/{entity_id}/update',
             'modal_title': f'Edit {model_name}',
             'is_edit': True,
-            'get_entity_icon_html': get_entity_icon_html,
             **kwargs
         }
         
@@ -130,7 +128,6 @@ class ModalService:
             'entity': entity,
             'config': config,
             'modal_title': f'View {model_name}',
-            'get_entity_icon_html': get_entity_icon_html,
             **kwargs
         }
         
@@ -213,8 +210,7 @@ class ModalService:
                     'action_url': action_url,
                     'modal_title': modal_title,
                     'is_edit': bool(entity_id),
-                    'get_entity_icon_html': get_entity_icon_html,
-                }
+                        }
                 
                 if entity_id:
                     template_vars['entity'] = entity

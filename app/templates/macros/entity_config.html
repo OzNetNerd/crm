@@ -5,6 +5,16 @@
   and provide consistent metadata handling across templates.
 #}
 
+{# Entity Icon Mapping - Simple mapping for icon names #}
+{% set entity_icons = {
+  'company': 'building-office',
+  'stakeholder': 'user', 
+  'opportunity': 'currency-dollar',
+  'task': 'clipboard-list',
+  'user': 'user',
+  'teams': 'users'
+} %}
+
 {# Entity Configuration Registry #}
 {% set entity_config = {
   'task': {
