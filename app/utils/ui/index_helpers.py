@@ -7,7 +7,6 @@ across all entity index functions by providing a single, consistent interface.
 
 from flask import request
 from app.utils.forms.form_builder import DropdownConfigGenerator
-from app.utils.entities.entity_config import EntityConfigGenerator
 
 
 class UniversalIndexHelper:
@@ -78,9 +77,25 @@ class UniversalIndexHelper:
             primary_filter=params['primary_filter']
         )
         
-        # Generate entity configuration  
+        # Generate entity configuration directly from model
         model_class = DropdownConfigGenerator.get_model_by_entity_name(entity_name)
-        entity_config = EntityConfigGenerator.generate_entity_page_config(entity_name, model_class)
+        if not model_class:
+            raise ValueError(f"Unknown entity: {entity_name}")
+        
+        entity_config = {
+            'entity_name': model_class.__entity_config__.get('display_name', 'Items'),
+            'entity_name_singular': model_class.__entity_config__.get('display_name_singular', 'Item'),
+            'entity_description': model_class.__entity_config__.get('description', f'Manage your {entity_name}'),
+            'entity_type': entity_name.rstrip('s'),
+            'entity_endpoint': model_class.__entity_config__.get('endpoint_name', entity_name),
+            'entity_buttons': [{
+                'label': f'New {model_class.__entity_config__.get("display_name_singular", "Item")}',
+                'hx_get': f'{model_class.__entity_config__.get("modal_path", "/modals/Item")}/create',
+                'hx_target': 'body',
+                'hx_swap': 'beforeend',
+                'entity': entity_name
+            }]
+        }
         
         # Combine all context
         context = {

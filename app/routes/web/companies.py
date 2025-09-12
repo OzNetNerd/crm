@@ -129,9 +129,28 @@ def index():
         for company in companies
     ]
 
-    # Generate entity stats
-    from app.utils.entities.entity_config import EntityConfigGenerator
-    entity_stats = EntityConfigGenerator.generate_entity_stats('companies', companies, Company)
+    # Generate company stats directly
+    entity_stats = {
+        'title': 'Companies Overview',
+        'stats': [
+            {
+                'value': len(companies),
+                'label': 'Total Companies'
+            },
+            {
+                'value': len([c for c in companies if c.industry]),
+                'label': 'With Industry'
+            },
+            {
+                'value': sum(len(c.stakeholders or []) for c in companies),
+                'label': 'Total Stakeholders'
+            },
+            {
+                'value': sum(len(c.opportunities or []) for c in companies),
+                'label': 'Total Opportunities'
+            }
+        ]
+    }
     
     # Get standardized context using universal helper
     context = UniversalIndexHelper.get_standardized_index_context(

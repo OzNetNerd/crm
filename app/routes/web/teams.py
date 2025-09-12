@@ -125,12 +125,11 @@ def index():
 
     today = date.today()
     
-    # Ultra-DRY dropdown and entity configuration generation
+    # Generate dropdown configs and entity config directly
     from app.utils.forms.form_builder import DropdownConfigGenerator
-    from app.utils.entities.entity_config import EntityConfigGenerator
     dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('teams', group_by, sort_by, sort_direction, primary_filter)
     
-    # Get unique job titles for dynamic filter (since User model doesn't have predefined job title choices)
+    # Get unique job titles for dynamic filter
     job_title_options = []
     job_titles = User.query.with_entities(User.job_title).distinct().all()
     for job_title_tuple in job_titles:
@@ -146,18 +145,29 @@ def index():
         'name': 'primary_filter'
     }
 
-    # Generate entity configuration using DRY system
-    entity_config = EntityConfigGenerator.generate_entity_page_config('teams', User)
-    entity_stats = EntityConfigGenerator.generate_entity_stats('teams', team_members, User)
+    # Use model config directly
+    entity_config = {
+        'entity_name': User.__entity_config__.get('display_name', 'Team Members'),
+        'entity_name_singular': User.__entity_config__.get('display_name_singular', 'Team Member'),
+        'entity_description': User.__entity_config__.get('description', 'Manage your team'),
+        'entity_type': 'team_member',
+        'entity_endpoint': 'teams',
+        'entity_buttons': [{
+            'label': f'New {User.__entity_config__.get("display_name_singular", "Team Member")}',
+            'hx_get': f'{User.__entity_config__.get("modal_path", "/modals/User")}/create',
+            'hx_target': 'body',
+            'hx_swap': 'beforeend',
+            'entity': 'teams'
+        }]
+    }
     
-    # Override with team-specific stats
+    # Generate team stats directly
     entity_stats = {
         'title': 'Team Overview',
         'stats': [
             {
                 'value': len(team_members),
-                'label': 'Total Team Members',
-                'color_class': 'text-blue-600'
+                'label': 'Total Team Members'
             },
             {
                 'value': sum(len(member.get_company_assignments()) + len(member.get_opportunity_assignments()) for member in team_members),

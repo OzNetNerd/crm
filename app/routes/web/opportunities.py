@@ -111,14 +111,49 @@ def index():
     opportunities = Opportunity.query.join(Company).all()
     today = date.today()
 
-    # Ultra-DRY dropdown and entity configuration generation
+    # Generate dropdown configs and entity config directly
     from app.utils.forms.form_builder import DropdownConfigGenerator
-    from app.utils.entities.entity_config import EntityConfigGenerator
     dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('opportunities', group_by, sort_by, sort_direction, primary_filter)
     
-    # Generate entity configuration using DRY system
-    entity_config = EntityConfigGenerator.generate_entity_page_config('opportunities', Opportunity)
-    entity_stats = EntityConfigGenerator.generate_entity_stats('opportunities', opportunities, Opportunity)
+    # Use model config directly
+    entity_config = {
+        'entity_name': Opportunity.__entity_config__.get('display_name', 'Opportunities'),
+        'entity_name_singular': Opportunity.__entity_config__.get('display_name_singular', 'Opportunity'),
+        'entity_description': Opportunity.__entity_config__.get('description', 'Manage your opportunities'),
+        'entity_type': 'opportunity',
+        'entity_endpoint': 'opportunities',
+        'entity_buttons': [{
+            'label': f'New {Opportunity.__entity_config__.get("display_name_singular", "Opportunity")}',
+            'hx_get': f'{Opportunity.__entity_config__.get("modal_path", "/modals/Opportunity")}/create',
+            'hx_target': 'body',
+            'hx_swap': 'beforeend',
+            'entity': 'opportunities'
+        }]
+    }
+    
+    # Generate opportunity stats directly  
+    total_value = sum(getattr(e, 'value', 0) or 0 for e in opportunities)
+    entity_stats = {
+        'title': 'Opportunities Overview',
+        'stats': [
+            {
+                'value': len(opportunities),
+                'label': 'Total Opportunities'
+            },
+            {
+                'value': f"${total_value:,}",
+                'label': 'Total Pipeline Value'
+            },
+            {
+                'value': len([e for e in opportunities if getattr(e, 'stage', None) == 'closed-won']),
+                'label': 'Closed Won'
+            },
+            {
+                'value': len(set(getattr(e, 'company_id', None) for e in opportunities if getattr(e, 'company_id', None))),
+                'label': 'Companies in Pipeline'
+            }
+        ]
+    }
 
     return render_template(
         "base/entity_index.html",

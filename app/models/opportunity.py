@@ -192,7 +192,7 @@ class Opportunity(db.Model):
 
     def to_dict(self):
         """Convert opportunity to dictionary for JSON serialization"""
-        from app.utils.entities.entity_config import auto_serialize
+        from app.utils.model_helpers import auto_serialize
         
         # Define properties to include beyond database columns
         include_properties = ["calculated_priority", "deal_age"]

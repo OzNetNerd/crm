@@ -84,9 +84,28 @@ def index():
     # Get all stakeholders for stats
     stakeholders = Stakeholder.query.join(Company).all()
 
-    # Get standardized context using universal helper
-    from app.utils.entities.entity_config import EntityConfigGenerator
-    entity_stats = EntityConfigGenerator.generate_entity_stats('stakeholders', stakeholders, Stakeholder)
+    # Generate stakeholder stats directly
+    entity_stats = {
+        'title': 'Stakeholders Overview', 
+        'stats': [
+            {
+                'value': len(stakeholders),
+                'label': 'Total Stakeholders'
+            },
+            {
+                'value': len([s for s in stakeholders if s.phone]),
+                'label': 'With Phone'
+            },
+            {
+                'value': len([s for s in stakeholders if s.email]),
+                'label': 'With Email'
+            },
+            {
+                'value': len(set([s.company_id for s in stakeholders if s.company_id])),
+                'label': 'Companies Represented'
+            }
+        ]
+    }
     
     context = UniversalIndexHelper.get_standardized_index_context(
         entity_name='stakeholders',

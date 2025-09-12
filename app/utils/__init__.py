@@ -50,7 +50,6 @@ from .entities import (
     get_entity_semantic,
     get_dashboard_entities,
     generate_entity_buttons,
-    EntityConfigGenerator
 )
 
 # UI utilities
@@ -73,12 +72,8 @@ from .ui import (
     SIZE_OPTIONS
 )
 
-# Backwards compatibility - import from legacy if needed
-# These will eventually be removed
-try:
-    from .legacy.model_helpers import auto_serialize
-except ImportError:
-    from .entities.entity_config import auto_serialize
+# Auto serialize utility from model_helpers
+from .model_helpers import auto_serialize
 
 # Make commonly used functions available at package level
 __all__ = [
@@ -99,7 +94,6 @@ __all__ = [
     'EntityManager',
     'get_entities_for_forms',
     'get_dashboard_entities',
-    'EntityConfigGenerator',
     
     # UI
     # 'ModalService',  # Temporarily removed
