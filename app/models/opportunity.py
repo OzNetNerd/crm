@@ -1,8 +1,10 @@
 from datetime import datetime
 from . import db
+from .base import BaseModel
+from app.utils.core.model_helpers import auto_serialize
 
 
-class Opportunity(db.Model):
+class Opportunity(BaseModel):
     __tablename__ = "opportunities"
     
     __entity_config__ = {
@@ -214,7 +216,6 @@ class Opportunity(db.Model):
 
     def to_dict(self):
         """Convert opportunity to dictionary for JSON serialization"""
-        from app.utils.model_helpers import auto_serialize
         
         # Define properties to include beyond database columns
         include_properties = ["calculated_priority", "deal_age"]
@@ -239,6 +240,24 @@ class Opportunity(db.Model):
         # Add computed company name and CSS class
         result["company_name"] = self.company.name if self.company else None
         result["stage_css_class"] = self.get_stage_css_class(self.stage)
+        
+        return result
+
+    def to_display_dict(self):
+        """Convert opportunity to dictionary with pre-formatted display fields"""
+        from app.utils.ui.formatters import create_display_dict, DisplayFormatter
+        
+        # Get base dictionary
+        result = self.to_dict()
+        
+        # Add formatted display fields at source
+        display_fields = create_display_dict(self)
+        result.update(display_fields)
+        
+        # Add opportunity-specific formatted fields
+        result['value_formatted'] = DisplayFormatter.format_currency(self.value)
+        result['probability_formatted'] = DisplayFormatter.format_percentage(self.probability / 100.0 if self.probability else 0)
+        result['deal_age_formatted'] = f"{self.deal_age} days old"
         
         return result
 

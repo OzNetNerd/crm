@@ -1,8 +1,9 @@
 from datetime import datetime
 from . import db
+from .base import BaseModel
 
 
-class ChatHistory(db.Model):
+class ChatHistory(BaseModel):
     __tablename__ = "chat_history"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -27,8 +28,7 @@ class ChatHistory(db.Model):
 
     def to_dict(self):
         """Convert chat history to dictionary for JSON serialization"""
-        from app.utils.model_helpers import auto_serialize
-        return auto_serialize(self)
+        return super().to_dict()
 
     def __repr__(self):
         return f"<ChatHistory {self.session_id} - {self.user_message[:50]}...>"

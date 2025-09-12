@@ -1,8 +1,9 @@
 from datetime import datetime
 from . import db
+from .base import BaseModel
 
 
-class User(db.Model):
+class User(BaseModel):
     """User model for account team members - single source of truth for job titles"""
 
     __tablename__ = "users"
@@ -30,8 +31,7 @@ class User(db.Model):
 
     def to_dict(self):
         """Convert user to dictionary for JSON serialization"""
-        from app.utils.entities.entity_config import auto_serialize
-        return auto_serialize(self)
+        return super().to_dict()
 
     def get_company_assignments(self):
         """Get all companies this user is assigned to"""
@@ -70,7 +70,7 @@ class User(db.Model):
         return f"<User {self.name} - {self.job_title}>"
 
 
-class CompanyAccountTeam(db.Model):
+class CompanyAccountTeam(BaseModel):
     """Pure assignment table - job_title comes from User model via JOIN"""
 
     __tablename__ = "company_account_teams"
@@ -89,9 +89,8 @@ class CompanyAccountTeam(db.Model):
 
     def to_dict(self):
         """Convert to dictionary for JSON serialization"""
-        from app.utils.entities.entity_config import auto_serialize
         
-        result = auto_serialize(self)
+        result = super().to_dict()
         
         # Add computed relationship fields
         result["user_name"] = self.user.name if self.user else None
@@ -104,7 +103,7 @@ class CompanyAccountTeam(db.Model):
         return f"<CompanyAccountTeam {self.user.name if self.user else 'Unknown'} → {self.company.name if self.company else 'Unknown'}>"
 
 
-class OpportunityAccountTeam(db.Model):
+class OpportunityAccountTeam(BaseModel):
     """Pure assignment table - job_title comes from User model via JOIN"""
 
     __tablename__ = "opportunity_account_teams"
@@ -125,9 +124,8 @@ class OpportunityAccountTeam(db.Model):
 
     def to_dict(self):
         """Convert to dictionary for JSON serialization"""
-        from app.utils.entities.entity_config import auto_serialize
         
-        result = auto_serialize(self)
+        result = super().to_dict()
         
         # Add computed relationship fields
         result["user_name"] = self.user.name if self.user else None
