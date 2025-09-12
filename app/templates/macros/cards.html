@@ -1,0 +1,54 @@
+{#
+  Modern Card System - Clean, modular architecture
+  
+  Clean card system with proper separation of concerns:
+  - Container: Layout and structure
+  - Content: Entity-specific data rendering  
+  - Builders: Content configuration generation
+  
+  Usage:
+  {% from "macros/cards.html" import card %}
+  
+  {{ card('task', task) }}
+  {{ card('company', company, expansion_enabled=false) }}
+  {{ card('opportunity', opportunity, overrides={'actions': custom_actions}) }}
+#}
+
+{# Import core card system components #}
+{% from "macros/cards/container.html" import card_container, simple_card_container %}
+{% from "macros/cards/content_renderers.html" import render_content_section, render_action_section, render_field %}
+{% from "macros/cards/builders.html" import card as card_builder %}
+
+{#
+  Card - Main entry point for the card system
+  
+  Parameters:
+  - entity_type (required): Type of entity (task, company, stakeholder, etc.)
+  - entity (required): Entity data object
+  - expansion_enabled (optional): Allow expand/collapse (default: true)
+  - card_classes (optional): Additional CSS classes
+  - content (optional): Custom content configuration
+  - overrides (optional): Override specific content sections
+  
+  Examples:
+  {{ card('task', task) }}
+  {{ card('company', company, expansion_enabled=false) }}
+  {{ card('stakeholder', stakeholder, overrides={'actions': custom_actions}) }}
+#}
+{% macro card(entity_type, entity, expansion_enabled=true, card_classes='', content=none, overrides={}) %}
+{{ card_builder(entity_type, entity, expansion_enabled, card_classes, content, overrides) }}
+{% endmacro %}
+
+{#
+  Simple Card - Non-expandable card variant
+  
+  Parameters:
+  - entity_type (required): Type of entity
+  - entity (required): Entity data object
+  - card_classes (optional): Additional CSS classes
+  - content (optional): Custom content configuration
+  - overrides (optional): Override specific content sections
+#}
+{% macro simple_card(entity_type, entity, card_classes='', content=none, overrides={}) %}
+{{ card(entity_type, entity, expansion_enabled=false, card_classes=card_classes, content=content, overrides=overrides) }}
+{% endmacro %}

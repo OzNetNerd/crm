@@ -20,6 +20,10 @@ from app.utils.ui.template_globals import (
     # get_all_detail_modal_configs,  # Removed - using WTForms modal system now
     PRIORITY_OPTIONS,
     SIZE_OPTIONS,
+    get_entity_config,
+    get_entity_icon, 
+    get_entity_labels,
+    get_empty_state_config,
 )
 
 
@@ -90,6 +94,12 @@ def create_app():
     # Dashboard buttons now generated in templates using Jinja macros
     app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
     app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
+    
+    # Entity configuration functions - now in Python backend
+    app.jinja_env.globals["get_entity_config"] = get_entity_config
+    app.jinja_env.globals["get_entity_icon"] = get_entity_icon
+    app.jinja_env.globals["get_entity_labels"] = get_entity_labels
+    app.jinja_env.globals["get_empty_state_config"] = get_empty_state_config
     
     
     # Modal configs removed - using WTForms modal system now (keeping main branch approach)

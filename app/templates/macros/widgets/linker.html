@@ -1,84 +1,20 @@
+{#
+  Entity Linker Widget - Clean macro for entity search and selection
+  
+  Uses the entityLinker Alpine.js component for state management.
+  Provides a clean separation between template rendering and JavaScript logic.
+#}
+
 {% from 'macros/base/icons.html' import icon %}
+
 {% macro entity_linker(field_name, placeholder="Search companies, contacts, opportunities...", selected_entities=[], entity_types="company,contact,opportunity") %}
-<div x-data="{
-        search: '',
-        suggestions: [],
-        selectedEntities: {{ selected_entities | tojson }},
-        isSearching: false,
-        showDropdown: false,
-        
-        async searchEntities(force = false) {
-            // Always search if forced (on focus), otherwise need at least some text
-            if (!force && this.search.length < 1) {
-                this.suggestions = [];
-                this.showDropdown = false;
-                return;
-            }
-            
-            this.isSearching = true;
-            try {
-                const response = await fetch(`/api/search?q=${encodeURIComponent(this.search)}&limit=10`);
-                const results = await response.json();
-                
-                // Filter by allowed entity types
-                const allowedTypes = '{{ entity_types }}'.split(',');
-                this.suggestions = results.filter(item => allowedTypes.includes(item.type));
-                this.showDropdown = this.suggestions.length > 0;
-            } catch (error) {
-                console.error('Search error:', error);
-                this.suggestions = [];
-            } finally {
-                this.isSearching = false;
-            }
-        },
-        
-        selectEntity(entity) {
-            // Check if already selected
-            const exists = this.selectedEntities.some(e => e.type === entity.type && e.id === entity.id);
-            if (!exists) {
-                this.selectedEntities.push({
-                    type: entity.type,
-                    id: entity.id,
-                    name: entity.title
-                });
-            }
-            this.search = '';
-            this.suggestions = [];
-            this.showDropdown = false;
-            this.updateHiddenField();
-        },
-        
-        removeEntity(index) {
-            this.selectedEntities.splice(index, 1);
-            this.updateHiddenField();
-        },
-        
-        updateHiddenField() {
-            const hiddenField = document.querySelector(`input[name='{{ field_name }}']`);
-            if (hiddenField) {
-                hiddenField.value = JSON.stringify(this.selectedEntities);
-            }
-        },
-        
-        getEntityTypeIcon(type) {
-            switch(type) {
-                case 'company': return '🏢';
-                case 'contact': return '👤';
-                case 'opportunity': return '💼';
-                default: return '📄';
-            }
-        },
-        
-        getEntityTypeBadgeClass(type) {
-            switch(type) {
-                case 'company': return 'bg-blue-100 text-blue-800';
-                case 'contact': return 'bg-green-100 text-green-800';
-                case 'opportunity': return 'bg-purple-100 text-purple-800';
-                default: return 'bg-gray-100 text-gray-800';
-            }
-        }
-     }"
-     @click.away="showDropdown = false">
+<div x-data="entityLinker({
+       fieldName: '{{ field_name }}',
+       selectedEntities: {{ selected_entities | tojson }},
+       entityTypes: '{{ entity_types }}'
+     })"
+     @click.away="closeDropdown()"
+     @keydown="onKeydown($event)">
     
     <!-- Selected Entities (Badges) -->
     <div class="mb-2" x-show="selectedEntities.length > 0">

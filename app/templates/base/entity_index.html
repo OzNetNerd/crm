@@ -24,27 +24,18 @@
 {% block title %}{{ entity_name or "Entity" }} - CRM{% endblock %}
 
 {% block content %}
-{# Generate filter controls based on entity type #}
+{# Generate filter controls based on entity type using modern widget system #}
 {% set entity_filter_controls %}
 <form hx-get="{{ url_for(entity_endpoint + '.content') }}" 
       hx-target="#{{ entity_type }}-content"
       hx-trigger="change, submit">
-    {% from "macros/ui_elements.html" import htmx_enhanced_filter_controls %}
-    {{ htmx_enhanced_filter_controls(
+    {% from "macros/widgets/filters.html" import entity_filter_controls %}
+    {{ entity_filter_controls(
+        entity_type=entity_type,
         group_options=dropdown_configs.group_by.options if dropdown_configs.group_by else [],
         sort_options=dropdown_configs.sort_by.options if dropdown_configs.sort_by else [],
-        group_by=dropdown_configs.group_by.current_value if dropdown_configs.group_by else '',
-        sort_by=dropdown_configs.sort_by.current_value if dropdown_configs.sort_by else '',
-        sort_direction=dropdown_configs.sort_direction.current_value if dropdown_configs.sort_direction else 'asc',
-        primary_filter_options=dropdown_configs.primary_filter.options if dropdown_configs.primary_filter else [],
-        primary_filter_label=dropdown_configs.primary_filter.button_text if dropdown_configs.primary_filter else 'All Filters',
-        primary_filter_values=dropdown_configs.primary_filter.current_values if dropdown_configs.primary_filter else [],
-        group_by_target=dropdown_configs.group_by.hx_target if dropdown_configs.group_by else None,
-        group_by_url=dropdown_configs.group_by.hx_get if dropdown_configs.group_by else None,
-        sort_by_target=dropdown_configs.sort_by.hx_target if dropdown_configs.sort_by else None,
-        sort_by_url=dropdown_configs.sort_by.hx_get if dropdown_configs.sort_by else None,
-        sort_direction_target=dropdown_configs.sort_direction.hx_target if dropdown_configs.sort_direction else None,
-        sort_direction_url=dropdown_configs.sort_direction.hx_get if dropdown_configs.sort_direction else None
+        show_view_toggle=true,
+        expand_collapse_target=entity_type + 'Sections'
     ) }}
 </form>
 {% endset %}

@@ -1,4 +1,5 @@
-{% from 'macros/expandable_card.html' import action_buttons_row %}
+{# Use modern action buttons from base buttons macro #}
+{% from 'macros/base/buttons.html' import action_button %}
 {# Notes Display Component - Shows list of notes with standardized action buttons #}
 <div class="notes-list space-y-3" id="notes-{{ entity_id }}">
     {% for note in notes %}
