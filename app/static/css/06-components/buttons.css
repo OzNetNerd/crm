@@ -3,7 +3,7 @@
  * Modern button component system using BEM methodology
  * 
  * Uses CSS custom properties for consistent theming and entity-based coloring.
- * Replaces legacy btn-new-* classes with clean, semantic naming.
+ * Clean semantic naming with c-button base class and modifier pattern.
  */
 
 /* ========================================
