@@ -34,14 +34,14 @@
   Group Empty State - For empty groups within lists
   
   Parameters:
-  - entity_type (required): Entity type for messaging
+  - entity_plural (required): Plural form of entity name for messaging
   - group_name (optional): Name of the empty group
   
   Usage:
-  {{ group_empty_state('task', 'High Priority') }}
+  {{ group_empty_state('tasks', 'High Priority') }}
 #}
-{% macro group_empty_state(entity_type, group_name=None) %}
-  {% set message = 'No ' + entity_name %}
+{% macro group_empty_state(entity_plural, group_name=None) %}
+  {% set message = 'No ' + entity_plural %}
   {% if group_name %}
     {% set message = message + ' in ' + group_name %}
   {% endif %}
