@@ -1,0 +1,90 @@
+/**
+ * ITCSS Layer 6: Components - Typography
+ * Typography component classes for text styling
+ * 
+ * Contains only actively used typography classes extracted from legacy components.css
+ * Classes support semantic entity colors and consistent text hierarchies.
+ */
+
+/* ========================================
+ * BASE TEXT LABELS
+ * Standard label styling for forms and metadata
+ * ======================================== */
+
+.text-label { 
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 500; /* font-medium */
+    color: #6b7280; /* text-gray-500 */
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.text-label-dark { 
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 500; /* font-medium */
+    color: #374151; /* text-gray-700 */
+}
+
+.text-label-primary { 
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 500; /* font-medium */
+    color: #111827; /* text-gray-900 */
+}
+
+/* ========================================
+ * ENTITY TEXT STYLING
+ * Large, prominent text for entity names and titles
+ * ======================================== */
+
+.text-entity-base {
+    font-size: 1.125rem; /* text-lg - consistent large size */
+    font-weight: 600; /* font-semibold - prominent text */
+}
+
+/* ========================================
+ * SEMANTIC ENTITY COLORS
+ * Color-only modifier classes for different entity types
+ * ======================================== */
+
+.text-color-task {
+    color: var(--color-task);
+}
+
+.text-color-company {
+    color: var(--color-company);
+}
+
+.text-color-stakeholder {
+    color: var(--color-stakeholder);
+}
+
+.text-color-opportunity {
+    color: var(--color-opportunity);
+}
+
+.text-color-teams {
+    color: var(--color-teams);
+}
+
+.text-color-user {
+    color: var(--color-user);
+}
+
+.text-color-default {
+    color: var(--color-gray-900);
+}
+
+.text-color-deal {
+    color: var(--color-deal-amount);
+}
+
+/* ========================================
+ * METADATA TEXT
+ * Small secondary text for additional information
+ * ======================================== */
+
+.text-metadata { 
+    font-size: 0.75rem; /* text-xs */
+    color: #6b7280; /* text-gray-500 */
+    margin-top: 0.25rem; /* mt-1 */
+}

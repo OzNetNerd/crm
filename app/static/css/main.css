@@ -57,6 +57,7 @@
 
 @import url('06-components/badges.css');
 @import url('06-components/buttons.css');
+@import url('06-components/typography.css');
 @import url('06-components/icons.css');
 @import url('06-components/cards.css');
 @import url('modals.css'); /* Existing modal styles - to be refactored */
