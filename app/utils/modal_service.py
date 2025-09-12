@@ -11,6 +11,7 @@ from app.models import db
 from app.utils.model_introspection import ModelIntrospector, get_model_by_name
 from app.utils.dynamic_form_builder import DynamicFormBuilder
 from app.forms.base_forms import BaseForm
+from app.utils.entity_icons import get_entity_icon_html
 
 
 class ModalService:
@@ -46,10 +47,11 @@ class ModalService:
             'action_url': f'/modals/{model_name}/create',
             'modal_title': f'Create {model_name}',
             'is_edit': False,
+            'get_entity_icon_html': get_entity_icon_html,
             **kwargs
         }
         
-        return render_template('components/modals/generic_form_modal.html', **template_vars)
+        return render_template('components/modals/wtforms_modal.html', **template_vars)
     
     @staticmethod
     def render_edit_modal(model_name: str, entity_id: int, **kwargs) -> str:
@@ -84,10 +86,11 @@ class ModalService:
             'action_url': f'/modals/{model_name}/{entity_id}/update',
             'modal_title': f'Edit {model_name}',
             'is_edit': True,
+            'get_entity_icon_html': get_entity_icon_html,
             **kwargs
         }
         
-        return render_template('components/modals/generic_form_modal.html', **template_vars)
+        return render_template('components/modals/wtforms_modal.html', **template_vars)
     
     @staticmethod
     def process_form_submission(model_name: str, entity_id: Optional[int] = None) -> Dict[str, Any]:
@@ -158,7 +161,6 @@ class ModalService:
                 # Form validation failed - re-render form with errors
                 action_url = f'/modals/{model_name}/create' if not entity_id else f'/modals/{model_name}/{entity_id}/update'
                 modal_title = f'Create {model_name}' if not entity_id else f'Edit {model_name}'
-                template_name = 'components/modals/generic_create_modal.html' if not entity_id else 'components/modals/generic_edit_modal.html'
                 
                 template_vars = {
                     'model_name': model_name,
@@ -166,6 +168,8 @@ class ModalService:
                     'form': form,
                     'action_url': action_url,
                     'modal_title': modal_title,
+                    'is_edit': bool(entity_id),
+                    'get_entity_icon_html': get_entity_icon_html,
                 }
                 
                 if entity_id:
@@ -174,7 +178,7 @@ class ModalService:
                 return {
                     'success': False,
                     'errors': form.errors,
-                    'html': render_template(template_name, **template_vars)
+                    'html': render_template('components/modals/wtforms_modal.html', **template_vars)
                 }
             
         except Exception as e:
