@@ -18,6 +18,7 @@ from app.utils.ui.template_globals import (
     PRIORITY_OPTIONS,
     SIZE_OPTIONS,
 )
+from app.utils.text import PluralUtils
 
 
 def get_database_path():
@@ -88,6 +89,10 @@ def create_app():
     app.jinja_env.globals["get_dashboard_buttons"] = get_dashboard_buttons
     app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
     app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
+    
+    # Register pluralization utilities
+    app.jinja_env.globals["pluralized_count"] = PluralUtils.pluralized_count
+    app.jinja_env.globals["pluralize"] = PluralUtils.pluralize
     
     # Modal configs removed - using WTForms modal system now (keeping main branch approach)
     # from app.utils.ui.modal_configs import MODAL_CONFIGS
