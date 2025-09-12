@@ -1,4 +1,5 @@
 from datetime import datetime, date, timedelta
+import logging
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from app.models import db, Task, Company, Stakeholder, Opportunity
 from app.forms import MultiTaskForm
@@ -206,25 +207,22 @@ def index():
     context = get_all_tasks_context()
 
     # Convert tasks to dictionaries for JSON serialization (for Alpine.js compatibility)
-    print(f"DEBUG: Found {len(context['all_tasks'])} tasks from database")
     tasks = []
     for i, task in enumerate(context["all_tasks"]):
         try:
             task_dict = task.to_dict()
             tasks.append(task_dict)
         except Exception as e:
-            print(f"ERROR: Task {i} (ID: {task.id}) failed to serialize: {e}")
+            logging.error(f"Task {i} (ID: {task.id}) failed to serialize: {e}")
 
-    print(f"DEBUG: Successfully serialized {len(tasks)} tasks")
 
     # Test final JSON serialization
     try:
         import json
 
         json_str = json.dumps(tasks)
-        print(f"DEBUG: Final JSON length: {len(json_str)}")
     except Exception as e:
-        print(f"ERROR: Final JSON serialization failed: {e}")
+        logging.error(f"Final JSON serialization failed: {e}")
         tasks = []
 
     # Custom entity stats for tasks

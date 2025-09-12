@@ -54,7 +54,7 @@
                 
                 <div>
                     {{ form.entity_type.label(class="block text-sm font-medium text-gray-700") }}
-                    {{ form.entity_type(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500", onchange="updateEntityDropdown()") }}
+                    {{ form.entity_type(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500", **{"hx-post": "/modals/entity-dropdown", "hx-target": "#entity_select_container", "hx-trigger": "change"}) }}
                     {% if form.entity_type.errors %}
                         <div class="mt-1 text-sm text-red-600">
                             {% for error in form.entity_type.errors %}
@@ -64,7 +64,7 @@
                     {% endif %}
                 </div>
                 
-                <div id="entity_select_container" style="display: none;">
+                <div id="entity_select_container" class="hidden">
                     {{ form.entity_id.label(class="block text-sm font-medium text-gray-700") }}
                     {{ form.entity_id(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500") }}
                     {% if form.entity_id.errors %}
@@ -94,7 +94,7 @@
         <div class="card-padded">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-gray-900">Child Tasks</h3>
-                {{ enhanced_button('Add Child Task', onclick='showNextChildTask()', style='primary', size='sm') }}
+                <button type="button" class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700" onclick="showNextChildTask()">Add Child Task</button>
             </div>
             
             <div id="childTasksContainer" class="space-y-4">
@@ -132,41 +132,11 @@
 
 {% block scripts %}
 <script>
-// Simple multi-task functionality
+// Multi-task functionality
 function showNextChildTask() {
     const hiddenTask = document.querySelector('.child-task.hidden');
     if (hiddenTask) {
         hiddenTask.classList.remove('hidden');
-    }
-}
-
-// Entity dropdown update
-const entityData = {
-    company: {{ companies | tojson | safe }},
-    stakeholder: {{ contacts | tojson | safe }},
-    opportunity: {{ opportunities | tojson | safe }}
-};
-
-function updateEntityDropdown() {
-    const entityType = document.getElementById('entity_type').value;
-    const entitySelect = document.getElementById('entity_id');
-    const container = document.getElementById('entity_select_container');
-    
-    if (!entityType) {
-        container.style.display = 'none';
-        return;
-    }
-    
-    container.style.display = 'block';
-    entitySelect.innerHTML = '<option value="">Select...</option>';
-    
-    if (entityData[entityType]) {
-        entityData[entityType].forEach(entity => {
-            const option = document.createElement('option');
-            option.value = entity.id;
-            option.textContent = entity.name;
-            entitySelect.appendChild(option);
-        });
     }
 }
 </script>

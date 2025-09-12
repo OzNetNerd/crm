@@ -6,6 +6,7 @@ leveraging WTForms with DynamicFormBuilder for form generation and validation.
 """
 
 from typing import Dict, Any, Optional
+import logging
 from flask import render_template, jsonify, request
 from app.models import db
 from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
@@ -155,8 +156,6 @@ class ModalService:
             }
         
         try:
-            print(f"DEBUG: Processing form for model {model_name}, entity_id: {entity_id}")
-            print(f"DEBUG: Form data: {request.form}")
             
             # Get existing entity for updates
             if entity_id:
@@ -170,11 +169,6 @@ class ModalService:
             form_class = DynamicFormBuilder.build_dynamic_form(model_class, BaseForm)
             form = form_class(obj=entity)
             
-            print(f"DEBUG: Form class: {form_class}")
-            print(f"DEBUG: Form fields: {[field.name for field in form]}")
-            print(f"DEBUG: Form validation result: {form.validate_on_submit()}")
-            if form.errors:
-                print(f"DEBUG: Form errors: {form.errors}")
             
             # Validate form using WTForms
             if form.validate_on_submit():

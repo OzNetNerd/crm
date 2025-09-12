@@ -1,5 +1,7 @@
 import argparse
 import sys
+import os
+import logging
 from pathlib import Path
 from flask import Flask
 
@@ -38,23 +40,16 @@ def get_database_path():
                 gitdir_content = git_path.read_text().strip()
                 if gitdir_content.startswith("gitdir: "):
                     gitdir = gitdir_content[8:]  # Remove "gitdir: " prefix
-                    print(f"DEBUG: gitdir = {gitdir}")
                     # Get main repo root from worktree gitdir
                     # gitdir points to /path/to/repo/.git/worktrees/branch
                     # we need /path/to/repo
                     git_dir = Path(gitdir)  # /home/will/code/crm/.git/worktrees/text
-                    print(f"DEBUG: git_dir = {git_dir}")
                     main_repo_root = git_dir.parent.parent.parent  # /home/will/code/crm
-                    print(f"DEBUG: main_repo_root = {main_repo_root}")
                     db_path = f"sqlite:///{main_repo_root}/instance/crm.db"
-                    print(
-                        f"DEBUG: Worktree detected, using main repo database: {db_path}"
-                    )
                     return db_path
             else:
                 # Regular git repo
                 db_path = f"sqlite:///{current}/instance/crm.db"
-                print(f"DEBUG: Using database path: {db_path}")
                 return db_path
         current = current.parent
 
@@ -67,9 +62,14 @@ def get_database_path():
 
 def create_app():
     app = Flask(__name__, template_folder="../../app/templates", static_folder="../../app/static")
-    app.config["SECRET_KEY"] = "dev-secret-key"
+    app.config["SECRET_KEY"] = os.environ.get('SECRET_KEY', os.urandom(32).hex())
     app.config["SQLALCHEMY_DATABASE_URI"] = get_database_path()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    # Configure logging
+    if not app.debug:
+        logging.basicConfig(level=logging.INFO)
+        app.logger.info('CRM Application startup')
 
     db.init_app(app)
 

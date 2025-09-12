@@ -1,4 +1,5 @@
 from datetime import datetime, date, timedelta
+import logging
 from flask import Blueprint, render_template, request, jsonify
 from app.models import db, Task, Company, Stakeholder, Opportunity, Note
 
@@ -147,12 +148,6 @@ def reschedule_task(task_id):
         data = request.get_json()
         days = data.get("days", 1)
 
-        print("DEBUG: ===== RESCHEDULE REQUEST =====")
-        print(f"DEBUG: Task ID: {task_id}")
-        print(f"DEBUG: Request JSON: {data}")
-        print(f"DEBUG: Days parameter: {days}")
-        print(f"DEBUG: Current due_date: {task.due_date}")
-        print(f"DEBUG: Task description: {task.description}")
 
         old_due_date = task.due_date
 
@@ -161,9 +156,6 @@ def reschedule_task(task_id):
         else:
             task.due_date = date.today() + timedelta(days=days)
 
-        print(f"DEBUG: OLD due_date: {old_due_date}")
-        print(f"DEBUG: NEW due_date: {task.due_date}")
-        print("DEBUG: ===========================")
 
         db.session.commit()
 
@@ -177,5 +169,5 @@ def reschedule_task(task_id):
 
     except Exception as e:
         db.session.rollback()
-        print(f"DEBUG: ERROR in reschedule: {str(e)}")
+        logging.error(f"Error rescheduling task {task_id}: {str(e)}")
         return jsonify({"error": str(e)}), 500
