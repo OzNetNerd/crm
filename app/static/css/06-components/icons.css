@@ -1,0 +1,246 @@
+/**
+ * ITCSS Layer 6: Components
+ * Icon Components
+ * 
+ * Styling classes for SVG icons and icon containers.
+ * Icons themselves are defined in Jinja templates for maintainability.
+ * 
+ * Usage: {{ icon('plus', 'c-icon c-icon--md c-icon--primary') }}
+ */
+
+/* ========================================
+ * BASE ICON STYLING
+ * Foundation classes for all icons
+ * ======================================== */
+
+.c-icon {
+    display: inline-block;
+    flex-shrink: 0;
+    fill: currentColor;
+    stroke: currentColor;
+    vertical-align: middle;
+}
+
+/* ========================================
+ * ICON SIZE VARIANTS
+ * Consistent sizing system
+ * ======================================== */
+
+.c-icon--xs {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+.c-icon--sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+.c-icon--md {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.c-icon--lg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.c-icon--xl {
+    width: 2rem;
+    height: 2rem;
+}
+
+.c-icon--2xl {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+/* ========================================
+ * ICON COLOR VARIANTS
+ * Semantic color system for icons
+ * ======================================== */
+
+.c-icon--primary {
+    color: var(--color-primary);
+}
+
+.c-icon--secondary {
+    color: var(--color-secondary);
+}
+
+.c-icon--danger {
+    color: var(--color-danger);
+}
+
+.c-icon--warning {
+    color: var(--color-warning);
+}
+
+.c-icon--success {
+    color: var(--color-secondary);
+}
+
+.c-icon--muted {
+    color: var(--color-gray-500);
+}
+
+.c-icon--subtle {
+    color: var(--color-gray-400);
+}
+
+/* Entity-specific icon colors */
+.c-icon--task {
+    color: var(--color-task);
+}
+
+.c-icon--company {
+    color: var(--color-company);
+}
+
+.c-icon--opportunity {
+    color: var(--color-opportunity);
+}
+
+.c-icon--stakeholder {
+    color: var(--color-stakeholder);
+}
+
+.c-icon--teams {
+    color: var(--color-teams);
+}
+
+.c-icon--user {
+    color: var(--color-user);
+}
+
+/* ========================================
+ * ICON INTERACTION STATES
+ * Hover and active states for clickable icons
+ * ======================================== */
+
+.c-icon--interactive {
+    cursor: pointer;
+    transition: var(--transition-normal);
+}
+
+.c-icon--interactive:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+}
+
+.c-icon--interactive:active {
+    transform: scale(0.95);
+}
+
+/* ========================================
+ * ENTITY AVATAR ICONS
+ * Circular icon containers for entity representations
+ * ======================================== */
+
+.c-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    color: white;
+    font-weight: var(--font-medium);
+    flex-shrink: 0;
+}
+
+.c-avatar--sm {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: var(--text-xs);
+}
+
+.c-avatar--md {
+    width: 2rem;
+    height: 2rem;
+    font-size: var(--text-sm);
+}
+
+.c-avatar--lg {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: var(--text-base);
+}
+
+/* Avatar color variants */
+.c-avatar--company {
+    background-color: var(--color-company);
+}
+
+.c-avatar--contact-complete {
+    background-color: var(--color-primary);
+}
+
+.c-avatar--contact-email {
+    background-color: var(--color-secondary);
+}
+
+.c-avatar--contact-phone {
+    background-color: var(--color-warning);
+}
+
+.c-avatar--contact-missing {
+    background-color: var(--color-danger);
+}
+
+/* ========================================
+ * ICON BUTTON COMBINATIONS
+ * Icons used within buttons and interactive elements
+ * ======================================== */
+
+.c-button .c-icon {
+    margin-right: 0; /* Remove default margin, handled by button gap */
+}
+
+.c-action-button .c-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Legacy classes removed - use modern BEM naming:
+ * .entity-avatar → .c-avatar.c-avatar--lg  
+ * .entity-avatar-company → .c-avatar.c-avatar--company
+ * etc.
+ */
+
+/* ========================================
+ * CONTEXTUAL ICON STYLING
+ * Icons within specific UI contexts
+ * ======================================== */
+
+/* Icons in navigation */
+.nav-link .c-icon {
+    margin-right: var(--spacing-sm);
+}
+
+/* Icons in cards */
+.card-header .c-icon {
+    color: var(--color-gray-600);
+}
+
+/* Icons in forms */
+.form-label .c-icon {
+    margin-left: var(--spacing-xs);
+    color: var(--color-gray-500);
+}
+
+/* Status icons */
+.c-icon--status-success {
+    color: var(--color-secondary);
+}
+
+.c-icon--status-warning {
+    color: var(--color-warning);
+}
+
+.c-icon--status-error {
+    color: var(--color-danger);
+}
+
+.c-icon--status-info {
+    color: var(--color-primary);
+}

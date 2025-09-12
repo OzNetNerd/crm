@@ -13,7 +13,7 @@
 {% macro contact_info_badge(contact, additional_classes='') %}
 {% set info_type = get_contact_info_type(contact) %}
 {% set badge_configs = get_contact_badge_configs() %}
-<span class="badge-standard badge-{{ badge_configs[info_type].color }} {{ additional_classes }}">{{ badge_configs[info_type].label }}</span>
+<span class="c-badge c-badge--{{ badge_configs[info_type].color }} {{ additional_classes }}">{{ badge_configs[info_type].label }}</span>
 {% endmacro %}
 
 {% macro get_contact_info_type(contact) %}
@@ -50,7 +50,7 @@
 
 {%- set size_classes = {'sm': 'px-2 py-1 text-xs', 'md': 'px-2.5 py-0.5 text-sm', 'lg': 'px-3 py-1 text-base'} -%}
 
-<span class="inline-flex items-center {{ size_classes[size] or size_classes['md'] }} font-medium rounded-full badge-{{ color }}">
+<span class="c-badge c-badge--{{ color }}">
     {{ status|title }}
 </span>
 {% endmacro %}
@@ -105,7 +105,7 @@
 {%- else -%}
     {%- set count = 0 -%}
 {%- endif -%}
-<span class="ml-2 badge-standard badge-{{ color }}">{{ count }}</span>
+<span class="u-m-left-sm c-badge c-badge--{{ color }}">{{ count }}</span>
 {%- endmacro %}
 
 {#
@@ -126,7 +126,7 @@
         {{ badge_count_helper(filter_config.type, filter_config.value, badge_color) }}
     {%- endif -%}
 {%- else -%}
-    <span class="ml-2 badge-standard badge-{{ badge_color }}">0</span>
+    <span class="u-m-left-sm c-badge c-badge--{{ badge_color }}">0</span>
 {%- endif -%}
 {% endmacro %}
 

@@ -1,0 +1,107 @@
+/**
+ * Main CSS Import File
+ * ITCSS Architecture - Inverted Triangle CSS
+ * 
+ * Imports all CSS layers in specificity order from generic to specific.
+ * This file replaces the individual component imports in templates.
+ * 
+ * Layer Order (increasing specificity):
+ * 1. Settings    - Variables and design tokens
+ * 2. Tools       - Utility classes and mixins
+ * 3. Generic     - Resets and base styles
+ * 4. Elements    - Base HTML element styles
+ * 5. Objects     - Layout patterns and structures
+ * 6. Components  - UI components and widgets
+ * 7. Trumps      - Overrides and utilities
+ */
+
+/* ========================================
+ * LAYER 1: SETTINGS
+ * CSS Custom Properties and design tokens
+ * ======================================== */
+
+@import url('01-settings/variables.css');
+
+/* ========================================
+ * LAYER 2: TOOLS
+ * Utility classes and helper functions
+ * ======================================== */
+
+@import url('02-tools/utilities.css');
+
+/* ========================================
+ * LAYER 3: GENERIC
+ * Resets, normalize, and base styles
+ * ======================================== */
+
+/* Future: reset.css, normalize.css */
+
+/* ========================================
+ * LAYER 4: ELEMENTS
+ * Base HTML element styling
+ * ======================================== */
+
+/* Future: base typography, links, etc. */
+
+/* ========================================
+ * LAYER 5: OBJECTS
+ * Layout patterns and structural components
+ * ======================================== */
+
+/* Future: layout.css, containers.css */
+
+/* ========================================
+ * LAYER 6: COMPONENTS
+ * UI components and interactive elements
+ * ======================================== */
+
+@import url('06-components/badges.css');
+@import url('06-components/buttons.css');
+@import url('06-components/icons.css');
+@import url('06-components/cards.css');
+@import url('modals.css'); /* Existing modal styles - to be refactored */
+@import url('chatbot.css'); /* Chatbot-specific styles */
+
+/* ========================================
+ * LAYER 7: TRUMPS
+ * Overrides and high-specificity utilities
+ * ======================================== */
+
+/* Future: overrides.css, shame.css */
+
+/* ========================================
+ * ESSENTIAL UTILITIES
+ * Core functionality that must remain
+ * ======================================== */
+
+/* Hide all loading animations and indicators */
+.htmx-indicator,
+.modal-loading,
+.modal-spinner,
+[id*="loading-indicator"],
+[class*="loading"],
+[class*="spinner"],
+.loading-spinner,
+.animate-spin {
+    display: none !important;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+    display: none !important;
+}
+
+/* Alpine.js cloak utility */
+[x-cloak] { 
+    display: none !important;
+}
+
+/* Legacy text and layout classes removed - use modern alternatives:
+ * .text-label → .u-text-sm.u-font-medium.u-text-gray-500
+ * .text-entity-base → .u-text-lg.u-font-semibold  
+ * .text-color-task → .u-text-primary (or .c-icon--task for icons)
+ * .quick-actions-grid → .u-flex.u-gap-sm
+ * .action-btn-row → .u-flex.u-items-center.u-gap-xs
+ * .contact-methods → .u-flex.u-items-center.u-gap-sm
+ * etc.
+ */

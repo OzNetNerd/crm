@@ -1,0 +1,270 @@
+/**
+ * ITCSS Layer 6: Components
+ * Button Components
+ * 
+ * Comprehensive button system with consistent styling and behavior.
+ * Uses CSS custom properties for dynamic entity-based coloring.
+ * 
+ * Usage: <button class="c-button c-button--primary">Save</button>
+ */
+
+/* ========================================
+ * BASE BUTTON COMPONENT
+ * Foundation button styling
+ * ======================================== */
+
+.c-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    line-height: 1.25;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: var(--transition-normal);
+    transform: scale(1);
+    outline: none;
+    white-space: nowrap;
+}
+
+.c-button:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-primary), 
+                0 0 0 4px color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
+.c-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.c-button:hover:not(:disabled) {
+    transform: scale(1.05);
+}
+
+.c-button:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+/* ========================================
+ * BUTTON SIZE VARIANTS
+ * Different sizes for various contexts
+ * ======================================== */
+
+.c-button--sm {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--text-xs);
+    gap: 0.25rem;
+}
+
+.c-button--lg {
+    padding: var(--spacing-md) var(--spacing-xl);
+    font-size: var(--text-base);
+    gap: var(--spacing-md);
+}
+
+/* ========================================
+ * BUTTON STYLE VARIANTS
+ * Primary, secondary, and other visual styles
+ * ======================================== */
+
+.c-button--primary {
+    background-color: var(--color-primary);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.c-button--primary:hover:not(:disabled) {
+    background-color: var(--color-primary-hover);
+}
+
+.c-button--secondary {
+    background-color: white;
+    color: var(--color-gray-700);
+    border-color: var(--color-gray-300);
+    box-shadow: var(--shadow-sm);
+}
+
+.c-button--secondary:hover:not(:disabled) {
+    background-color: var(--color-gray-50);
+    border-color: var(--color-gray-400);
+}
+
+.c-button--danger {
+    background-color: var(--color-danger);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.c-button--danger:hover:not(:disabled) {
+    background-color: var(--color-danger-hover);
+}
+
+.c-button--danger:focus {
+    box-shadow: 0 0 0 2px var(--color-danger), 
+                0 0 0 4px color-mix(in srgb, var(--color-danger) 25%, transparent);
+}
+
+.c-button--success {
+    background-color: var(--color-secondary);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.c-button--success:hover:not(:disabled) {
+    background-color: var(--color-secondary-hover);
+}
+
+/* ========================================
+ * DYNAMIC ENTITY BUTTONS
+ * Buttons that use CSS custom properties for entity-specific colors
+ * ======================================== */
+
+.c-button--entity {
+    background-color: var(--btn-color, var(--color-gray-500));
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.c-button--entity:hover:not(:disabled) {
+    background-color: var(--btn-hover, var(--color-gray-600));
+}
+
+.c-button--entity:focus {
+    box-shadow: 0 0 0 2px var(--btn-ring, var(--color-gray-500)), 
+                0 0 0 4px color-mix(in srgb, var(--btn-ring, var(--color-gray-500)) 25%, transparent);
+}
+
+/* Entity-specific button variants */
+.c-button--task {
+    --btn-color: var(--color-task);
+    --btn-hover: var(--color-task-hover);
+    --btn-ring: var(--color-task-ring);
+}
+
+.c-button--company {
+    --btn-color: var(--color-company);
+    --btn-hover: var(--color-company-hover);
+    --btn-ring: var(--color-company-ring);
+}
+
+.c-button--opportunity {
+    --btn-color: var(--color-opportunity);
+    --btn-hover: var(--color-opportunity-hover);
+    --btn-ring: var(--color-opportunity-ring);
+}
+
+.c-button--stakeholder {
+    --btn-color: var(--color-stakeholder);
+    --btn-hover: var(--color-stakeholder-hover);
+    --btn-ring: var(--color-stakeholder-ring);
+}
+
+.c-button--teams {
+    --btn-color: var(--color-teams);
+    --btn-hover: var(--color-teams-hover);
+    --btn-ring: var(--color-teams-ring);
+}
+
+.c-button--user {
+    --btn-color: var(--color-user);
+    --btn-hover: var(--color-user-hover);
+    --btn-ring: var(--color-user-ring);
+}
+
+/* ========================================
+ * ACTION BUTTONS
+ * Small buttons for inline actions
+ * ======================================== */
+
+.c-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: var(--transition-normal);
+}
+
+.c-action-button--edit {
+    color: var(--color-primary);
+}
+
+.c-action-button--edit:hover {
+    color: var(--color-primary-hover);
+    background-color: var(--color-primary-lighter);
+}
+
+.c-action-button--delete {
+    color: var(--color-danger);
+}
+
+.c-action-button--delete:hover {
+    color: var(--color-danger-hover);
+    background-color: var(--color-danger-lighter);
+}
+
+.c-action-button--complete {
+    color: var(--color-secondary);
+}
+
+.c-action-button--complete:hover {
+    color: var(--color-secondary-hover);
+    background-color: var(--color-secondary-lighter);
+}
+
+/* ========================================
+ * QUICK ACTION BUTTONS
+ * Contextual buttons for entity cards
+ * ======================================== */
+
+.c-quick-action {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.c-quick-action--primary {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-hover);
+}
+
+.c-quick-action--primary:hover {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.c-quick-action--secondary {
+    background-color: var(--color-secondary-light);
+    color: var(--color-secondary-hover);
+}
+
+.c-quick-action--secondary:hover {
+    background-color: var(--color-secondary);
+    color: white;
+}
+
+/* Legacy classes removed - use modern BEM naming:
+ * .btn-primary → .c-button.c-button--primary  
+ * .btn-danger → .c-button.c-button--danger
+ * .btn-new-task → .c-button.c-button--entity.c-button--task
+ * etc.
+ */
