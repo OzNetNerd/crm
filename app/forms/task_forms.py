@@ -19,34 +19,18 @@ class TaskForm(BaseForm):
         placeholder="What needs to be done?"
     )
 
-    due_date = DateField("Due Date", validators=[Optional()])
+    due_date = FieldFactory.create_due_date_field()
 
-    priority = SelectField(
-        "Priority", 
-        choices=[("low", "Low"), ("medium", "Medium"), ("high", "High")], 
-        validators=[Optional()]
-    )
+    priority = FieldFactory.create_priority_field()
 
-    status = SelectField(
-        "Status",
-        choices=[("todo", "To Do"), ("in-progress", "In Progress"), ("complete", "Complete")],
-        validators=[Optional()]
-    )
+    status = FieldFactory.create_status_field()
 
-    next_step_type = SelectField(
-        "Next Step Type",
-        choices=[("call", "Call"), ("email", "Email"), ("meeting", "Meeting"), ("demo", "Demo")],
-        validators=[Optional()]
-    )
+    next_step_type = FieldFactory.create_next_step_type_field()
 
     # Multi-entity selection - JSON string of selected entities
     linked_entities = FieldFactory.create_linked_entities_field()
 
-    task_type = SelectField(
-        "Task Type",
-        choices=[("single", "Single Task"), ("parent", "Parent Task"), ("child", "Child Task")],
-        validators=[Optional()]
-    )
+    task_type = FieldFactory.create_task_type_field()
 
     parent_task_id = IntegerField(
         "Parent Task", validators=[Optional(), NumberRange(min=1)]
@@ -56,11 +40,7 @@ class TaskForm(BaseForm):
         "Sequence Order", validators=[Optional(), NumberRange(min=0)], default=0
     )
 
-    dependency_type = SelectField(
-        "Dependency Type",
-        choices=[("parallel", "Parallel"), ("sequential", "Sequential")],
-        validators=[Optional()]
-    )
+    dependency_type = FieldFactory.create_dependency_type_field()
 
     def validate(self, extra_validators=None):
         if not super().validate(extra_validators):
@@ -87,11 +67,7 @@ class QuickTaskForm(BaseForm):
         render_kw={"placeholder": "Add a quick task...", "class": "form-control"},
     )
 
-    priority = SelectField(
-        "Priority", 
-        choices=[("low", "Low"), ("medium", "Medium"), ("high", "High")], 
-        validators=[Optional()]
-    )
+    priority = FieldFactory.create_priority_field()
 
 
 class ChildTaskForm(BaseForm):
@@ -104,17 +80,9 @@ class ChildTaskForm(BaseForm):
 
     due_date = FieldFactory.create_due_date_field(label="Due Date")
 
-    priority = SelectField(
-        "Priority", 
-        choices=[("low", "Low"), ("medium", "Medium"), ("high", "High")], 
-        validators=[Optional()]
-    )
+    priority = FieldFactory.create_priority_field()
 
-    next_step_type = SelectField(
-        "Next Step Type",
-        choices=[("call", "Call"), ("email", "Email"), ("meeting", "Meeting"), ("demo", "Demo")],
-        validators=[Optional()]
-    )
+    next_step_type = FieldFactory.create_next_step_type_field()
 
 
 class MultiTaskForm(BaseForm):
@@ -127,21 +95,12 @@ class MultiTaskForm(BaseForm):
 
     due_date = FieldFactory.create_due_date_field(label="Overall Due Date")
 
-    priority = SelectField(
-        "Priority", 
-        choices=[("low", "Low"), ("medium", "Medium"), ("high", "High")], 
-        validators=[Optional()]
-    )
+    priority = FieldFactory.create_priority_field()
 
     # Simple entity selection for parent task
     entity_type = SelectField(
         "Related To",
-        choices=[
-            ("", "None"),
-            ("company", "Company"),
-            ("stakeholder", "Stakeholder"), 
-            ("opportunity", "Opportunity")
-        ],
+        choices=FormConstants.ENTITY_TYPE_CHOICES,
         validators=[Optional()]
     )
     
@@ -150,11 +109,7 @@ class MultiTaskForm(BaseForm):
         validators=[Optional()]
     )
 
-    dependency_type = SelectField(
-        "Dependency Type",
-        choices=[("parallel", "Parallel"), ("sequential", "Sequential")],
-        validators=[Optional()]
-    )
+    dependency_type = FieldFactory.create_dependency_type_field()
 
     child_tasks = FieldList(
         FormField(ChildTaskForm), label="Child Tasks", min_entries=2, max_entries=10
@@ -162,10 +117,6 @@ class MultiTaskForm(BaseForm):
 
     def validate(self, extra_validators=None):
         if not super().validate(extra_validators):
-            return False
-
-        # Validate linked_entities JSON if provided
-        if not self.validate_linked_entities_json(self.linked_entities):
             return False
 
         # Ensure at least 2 child tasks
