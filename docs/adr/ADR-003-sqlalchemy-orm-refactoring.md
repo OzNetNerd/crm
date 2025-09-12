@@ -120,3 +120,5 @@ The CRM application was using anti-pattern raw SQL queries mixed with SQLAlchemy
 |------|---------|------|--------|---------|-----------|
 | 10-09-25-20h-35m-28s | efb83bdc-1fe9-47c1-8640-2f8d9f7d37a5.jsonl | Compliance fixes | 61f8204: refactor: eliminate SQLAlchemy anti-patterns | Complete ORM refactoring | Remove anti-patterns, establish single source of truth |
 | 10-09-25-21h-15m-00s | 9c6d28aa-8bb6-4c88-847e-bd535f6d88c4.jsonl | Compliance remediation | ADR documentation | ADR-003 creation | Document architectural decision and rationale |
+| 13-09-25 | Recent commits | Technical debt remediation | b787079: fix: centralize model serialization | Model serialization consolidation | Complete single source of truth implementation |
+| 13-09-25 | Recent commits | Technical debt remediation | c75b678: refactor: consolidate model configuration access methods | Model config standardization | Unified model metadata access patterns |
