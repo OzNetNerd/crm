@@ -34,11 +34,6 @@ class EmbeddingService:
                 # self.model = SentenceTransformer(self.model_name)
                 logger.info(f"Loaded embedding model: {self.model_name}")
 
-                # For now, mock the model
-                logger.warning(
-                    "Using mock embedding model - install sentence-transformers for real functionality"
-                )
-                self.model = "mock"
 
             except ImportError:
                 logger.error("sentence-transformers not installed")
@@ -52,16 +47,9 @@ class EmbeddingService:
         self._load_model()
 
         if self.model == "mock":
-            # Generate a simple mock embedding (for testing)
-            # In production, this would be: return self.model.encode(text).tolist()
-            hash_val = hash(text) % 1000000
-            np.random.seed(hash_val)  # Deterministic "embedding"
-            mock_embedding = np.random.normal(0, 1, self.embedding_dimension).tolist()
-            return mock_embedding
+            raise NotImplementedError("Embedding model not available - install sentence-transformers")
         else:
-            # Real implementation would be:
-            # return self.model.encode(text).tolist()
-            pass
+            return self.model.encode(text).tolist()
 
     def batch_generate_embeddings(self, texts: List[str]) -> List[List[float]]:
         """Generate embeddings for multiple texts"""
