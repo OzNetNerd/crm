@@ -1,7 +1,9 @@
 from . import db
+from .base import BaseModel
+from app.utils.core.model_helpers import auto_serialize
 
 
-class Company(db.Model):
+class Company(BaseModel):
     __tablename__ = "companies"
     
     __entity_config__ = {
@@ -167,7 +169,6 @@ class Company(db.Model):
 
     def to_dict(self):
         """Convert company to dictionary for JSON serialization"""
-        from app.utils.model_helpers import auto_serialize
         
         # Define properties to include beyond database columns
         include_properties = ["size_category", "account_team"]

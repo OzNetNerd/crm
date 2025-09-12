@@ -1,8 +1,10 @@
 from datetime import datetime
 from . import db
+from .base import BaseModel
+from app.utils.core.model_helpers import auto_serialize
 
 
-class Opportunity(db.Model):
+class Opportunity(BaseModel):
     __tablename__ = "opportunities"
     
     __entity_config__ = {
@@ -214,7 +216,6 @@ class Opportunity(db.Model):
 
     def to_dict(self):
         """Convert opportunity to dictionary for JSON serialization"""
-        from app.utils.model_helpers import auto_serialize
         
         # Define properties to include beyond database columns
         include_properties = ["calculated_priority", "deal_age"]

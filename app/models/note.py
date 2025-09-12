@@ -1,8 +1,9 @@
 from datetime import datetime
 from . import db
+from .base import BaseModel
 
 
-class Note(db.Model):
+class Note(BaseModel):
     __tablename__ = "notes"
 
     id = db.Column(db.Integer, primary_key=True)

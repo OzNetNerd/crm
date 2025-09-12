@@ -1,5 +1,6 @@
 from datetime import datetime
 from . import db
+from .base import BaseModel
 
 
 # Many-to-many table for stakeholder MEDDPICC roles
@@ -38,7 +39,7 @@ stakeholder_opportunities = db.Table(
 )
 
 
-class Stakeholder(db.Model):
+class Stakeholder(BaseModel):
     """Stakeholder model (formerly Contact) - customer-side contacts with MEDDPICC roles"""
 
     __tablename__ = "stakeholders"
@@ -217,7 +218,6 @@ class Stakeholder(db.Model):
 
     def to_dict(self):
         """Convert stakeholder to dictionary for JSON serialization"""
-        from app.utils.entities.entity_config import auto_serialize
         
         # Define properties to include beyond database columns
         include_properties = [

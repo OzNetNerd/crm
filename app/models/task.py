@@ -1,5 +1,6 @@
 from datetime import datetime
 from . import db
+from .base import BaseModel
 from app.utils.core.model_helpers import (
     create_choice_field_info,
     create_date_field_info,
@@ -9,7 +10,8 @@ from app.utils.core.model_helpers import (
     NEXT_STEP_TYPE_CHOICES,
     TASK_TYPE_CHOICES,
     DEPENDENCY_TYPE_CHOICES,
-    DUE_DATE_GROUPINGS
+    DUE_DATE_GROUPINGS,
+    auto_serialize
 )
 
 
@@ -25,7 +27,7 @@ task_entities = db.Table(
 
 
 @create_model_choice_methods(['priority', 'status'])
-class Task(db.Model):
+class Task(BaseModel):
     __tablename__ = "tasks"
     
     __entity_config__ = {
@@ -317,8 +319,6 @@ class Task(db.Model):
 
     def to_dict(self):
         """Convert task to dictionary for JSON serialization"""
-        from app.utils.model_helpers import auto_serialize
-        
         # Define properties to include beyond database columns
         include_properties = [
             "is_overdue", "entity_name", "opportunity_value", "company_name", 

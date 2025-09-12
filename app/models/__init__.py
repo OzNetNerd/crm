@@ -2,6 +2,9 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+# Import base model first
+from .base import BaseModel  # noqa: E402
+
 # Import models after db initialization (required for SQLAlchemy)
 from .company import Company as Company  # noqa: E402
 from .stakeholder import Stakeholder  # noqa: E402
@@ -16,6 +19,7 @@ from .embedding import Embedding as Embedding  # noqa: E402
 
 __all__ = [
     "db",
+    "BaseModel",
     "Company",
     "Stakeholder",
     "Note",
