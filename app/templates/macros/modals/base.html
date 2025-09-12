@@ -1,6 +1,23 @@
 {% from 'macros/base/icons.html' import icon %}
 {# Modal Base Components - Core modal functionality and structure #}
 
+{# Modern HTMX-compatible modal overlay #}
+{% macro htmx_modal_overlay(backdrop_click_close=true, max_width="max-w-2xl") %}
+<div class="modal-overlay fixed inset-0 z-50 flex items-center justify-center" 
+     tabindex="-1" 
+     onkeydown="if(event.key === 'Escape') this.remove()">
+    <!-- Backdrop -->
+    <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50" 
+         {% if backdrop_click_close %}onclick="this.parentElement.remove()"{% endif %}></div>
+    
+    <!-- Modal Content -->
+    <div class="modal-content relative bg-white rounded-lg shadow-xl {{ max_width }} w-full mx-4 max-h-screen overflow-y-auto">
+        {{ caller() }}
+    </div>
+</div>
+{% endmacro %}
+
+{# Legacy modal for backward compatibility #}
 {% macro base_modal(modal_id, backdrop_click_close=true) %}
 <div id="{{ modal_id }}" 
      class="modal-overlay hidden"
@@ -21,6 +38,27 @@
 </div>
 {% endmacro %}
 
+{# Modern HTMX-compatible modal header with entity icon support #}
+{% macro htmx_modal_header(title, model_name=none) %}
+<div class="modal-header flex items-center justify-between p-6 border-b">
+    <div class="flex items-center gap-3">
+        {% if model_name %}
+        <div class="entity-icon">
+            <span class="icon-{{ model_name }} c-icon c-icon--md"></span>
+        </div>
+        {% endif %}
+        <h3 class="modal-title text-lg font-semibold text-gray-900">
+            {{ title }}
+        </h3>
+    </div>
+    <button onclick="this.closest('.modal-overlay').remove()" 
+            class="modal-close-button text-gray-400 hover:text-gray-600 transition-colors">
+        {{ icon('x-mark', 'lg') }}
+    </button>
+</div>
+{% endmacro %}
+
+{# Legacy modal header for backward compatibility #}
 {% macro modal_header(title, modal_id) %}
 <div class="modal-header">
     <h3 class="modal-title" id="modal-title">
@@ -32,6 +70,21 @@
 </div>
 {% endmacro %}
 
+{# Modern HTMX-compatible modal body #}
+{% macro htmx_modal_body(classes="p-6") %}
+<div class="modal-body {{ classes }}">
+    {{ caller() }}
+</div>
+{% endmacro %}
+
+{# Modern HTMX-compatible modal footer #}
+{% macro htmx_modal_footer(align="right", classes="flex items-center justify-end p-6 border-t space-x-3") %}
+<div class="modal-footer {{ classes if 'justify-' in classes else 'flex items-center p-6 border-t space-x-3 ' + ('justify-center' if align == 'center' else 'justify-start' if align == 'left' else 'justify-end') }}">
+    {{ caller() }}
+</div>
+{% endmacro %}
+
+{# Legacy modal components for backward compatibility #}
 {% macro modal_body(classes="") %}
 <div class="modal-body {{ classes }}">
     {{ caller() }}
