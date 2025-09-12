@@ -8,8 +8,6 @@ from app.utils.ui.template_filters import register_template_filters
 from app.models import Company, Stakeholder, Task, Opportunity, User
 from app.utils.ui.template_globals import (
     get_field_options,
-    get_sortable_fields,
-    get_groupable_fields,
     get_model_form_fields,
     get_model_config,
     # get_create_modal_config,  # Removed - using WTForms modal system now
@@ -81,8 +79,6 @@ def create_app():
 
     # Register clean template functions - no more string hacks!
     app.jinja_env.globals["get_field_options"] = get_field_options
-    app.jinja_env.globals["get_sortable_fields"] = get_sortable_fields
-    app.jinja_env.globals["get_groupable_fields"] = get_groupable_fields
     app.jinja_env.globals["get_model_form_fields"] = get_model_form_fields
     app.jinja_env.globals["get_model_config"] = get_model_config
     # app.jinja_env.globals["get_create_modal_config"] = get_create_modal_config  # Removed
