@@ -1,8 +1,9 @@
 from datetime import datetime
 from . import db
+from .base import BaseModel
 
 
-class Embedding(db.Model):
+class Embedding(BaseModel):
     __tablename__ = "embeddings"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -30,8 +31,7 @@ class Embedding(db.Model):
 
     def to_dict(self):
         """Convert embedding to dictionary for JSON serialization"""
-        from app.utils.model_helpers import auto_serialize
-        return auto_serialize(self)
+        return super().to_dict()
 
     def __repr__(self):
         return f"<Embedding {self.content_type}:{self.content_id}>"

@@ -253,7 +253,7 @@ class NotesAPIHandler:
     def get_notes(self, entity_id):
         """Get all notes for a specific entity"""
         from app.models import Note
-        from app.utils.model_helpers import auto_serialize
+        from app.utils.core.model_helpers import auto_serialize
 
         try:
             # Verify entity exists
@@ -276,7 +276,7 @@ class NotesAPIHandler:
     def create_note(self, entity_id):
         """Create a new note for a specific entity"""
         from app.models import Note
-        from app.utils.model_helpers import auto_serialize
+        from app.utils.core.model_helpers import auto_serialize
 
         try:
             # Verify entity exists
