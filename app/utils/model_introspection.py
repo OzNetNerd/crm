@@ -119,6 +119,7 @@ class ModelIntrospector:
             List of (field_name, display_label) tuples
         """
         groupable_fields = []
+        seen_fields = set()  # Track fields to avoid duplicates
         
         for attr_name in dir(model_class):
             # Skip private/system attributes
@@ -131,6 +132,8 @@ class ModelIntrospector:
                     column = attr.property.columns[0]
                     info = column.info
                     
+                    is_groupable = False
+                    
                     # Check if field has groupable choices
                     if 'choices' in info:
                         choices_config = info['choices']
@@ -140,13 +143,17 @@ class ModelIntrospector:
                                 for config in choices_config.values()
                             )
                             if has_groupable:
-                                label = info.get('display_label', attr_name.replace('_', ' ').title())
-                                groupable_fields.append((attr_name, label))
+                                is_groupable = True
                     
                     # Check if field is explicitly marked as groupable
                     if info.get('groupable', False):
+                        is_groupable = True
+                    
+                    # Add field only once if it's groupable and not already added
+                    if is_groupable and attr_name not in seen_fields:
                         label = info.get('display_label', attr_name.replace('_', ' ').title())
                         groupable_fields.append((attr_name, label))
+                        seen_fields.add(attr_name)
             except (AttributeError, TypeError):
                 continue
         
@@ -164,6 +171,7 @@ class ModelIntrospector:
             List of (field_name, display_label) tuples
         """
         sortable_fields = []
+        seen_fields = set()  # Track fields to avoid duplicates
         
         for attr_name in dir(model_class):
             # Skip private/system attributes
@@ -176,6 +184,8 @@ class ModelIntrospector:
                     column = attr.property.columns[0]
                     info = column.info
                     
+                    is_sortable = False
+                    
                     # Check if field has sortable choices
                     if 'choices' in info:
                         choices_config = info['choices']
@@ -185,13 +195,17 @@ class ModelIntrospector:
                                 for config in choices_config.values()
                             )
                             if has_sortable:
-                                label = info.get('display_label', attr_name.replace('_', ' ').title())
-                                sortable_fields.append((attr_name, label))
+                                is_sortable = True
                     
                     # Check if field is explicitly marked as sortable (default True)
                     if info.get('sortable', True):
+                        is_sortable = True
+                    
+                    # Add field only once if it's sortable and not already added
+                    if is_sortable and attr_name not in seen_fields:
                         label = info.get('display_label', attr_name.replace('_', ' ').title())
                         sortable_fields.append((attr_name, label))
+                        seen_fields.add(attr_name)
             except (AttributeError, TypeError):
                 continue
         
