@@ -248,7 +248,7 @@
 {% endmacro %}
 
 {#
-  Child Task Form - Reusable WTForms-based component for multi-task creation
+  Child Task Form - Truly DRY WTForms-based component using render_wtforms_field
   
   Parameters:
   - child_form (required): WTForms ChildTaskForm instance
@@ -266,48 +266,16 @@
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="md:col-span-2">
-            {{ child_form.description.label(class="block text-sm font-medium text-gray-700") }}
-            {{ child_form.description(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500", rows="2") }}
-            {% if child_form.description.errors %}
-                <div class="mt-1 text-sm text-red-600">
-                    {% for error in child_form.description.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
+            {{ render_wtforms_field(child_form.description) }}
         </div>
         <div>
-            {{ child_form.priority.label(class="block text-sm font-medium text-gray-700") }}
-            {{ child_form.priority(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500") }}
-            {% if child_form.priority.errors %}
-                <div class="mt-1 text-sm text-red-600">
-                    {% for error in child_form.priority.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
+            {{ render_wtforms_field(child_form.priority) }}
         </div>
         <div>
-            {{ child_form.due_date.label(class="block text-sm font-medium text-gray-700") }}
-            {{ child_form.due_date(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500") }}
-            {% if child_form.due_date.errors %}
-                <div class="mt-1 text-sm text-red-600">
-                    {% for error in child_form.due_date.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
+            {{ render_wtforms_field(child_form.due_date) }}
         </div>
         <div>
-            {{ child_form.next_step_type.label(class="block text-sm font-medium text-gray-700") }}
-            {{ child_form.next_step_type(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500") }}
-            {% if child_form.next_step_type.errors %}
-                <div class="mt-1 text-sm text-red-600">
-                    {% for error in child_form.next_step_type.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
+            {{ render_wtforms_field(child_form.next_step_type) }}
         </div>
     </div>
 </div>
