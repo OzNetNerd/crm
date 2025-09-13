@@ -29,7 +29,7 @@
   {% set container_attrs = 'href="' + href + '"' if href else '' %}
   {% set hover_classes = 'hover:underline transition-all duration-200' if href else '' %}
   
-  <div class="card-padded-lg mb-8 {{ additional_classes }}">
+  <div class="card p-6 mb-8 {{ additional_classes }}">
     <{{ container_tag }} {{ container_attrs|safe }} class="text-lg font-semibold {{ title_class }} mb-4 {{ hover_classes }} {{ 'flex items-center gap-2' if icon_macro else 'block' }}">
       {% if icon_macro %}{{ icon_macro }}{% endif %}{{ title }}
     </{{ container_tag }}>

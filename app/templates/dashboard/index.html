@@ -1,12 +1,8 @@
 {% extends "base/layout.html" %}
 {% from "macros/imports/universal.html" import modal_container %}
-{% from "macros/ui/summary_section.html" import metric_card, metric_grid, status_breakdown_grid %}
-{% from "macros/ui/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
+{% from "macros/dashboard/pipeline_section.html" import dashboard_pipeline_section %}
+{% from "macros/dashboard/activity_section.html" import dashboard_overdue_section, dashboard_notes_section, dashboard_tasks_section, dashboard_opportunities_section %}
 {% from "macros/base/layout.html" import page_layout %}
-{% from "macros/ui/quick_actions.html" import default_dashboard_actions %}
-{% from "macros/ui/metadata_display.html" import task_metadata %}
-{% from "macros/base/icons.html" import icon %}
-{% from "macros/formatting.html" import format_currency %}
 
 
 {% block title %}Dashboard - CRM{% endblock %}
@@ -14,121 +10,30 @@
 {% block content %}
 {{ page_layout('Dashboard', 'Overview of your CRM performance and activity', buttons=entity_types, header_only=true) }}
 
-<!-- Key Metrics -->
-{% call metric_grid(4, 6, 'mb-8') %}
-    {{ metric_card('Companies', metrics.total_companies, icon('building-office', 'lg', 'c-icon--company'), 'blue') }}
-    {{ metric_card('Stakeholders', metrics.total_contacts, icon('user', 'lg', 'c-icon--stakeholder'), 'green') }}
-    {{ metric_card('Opportunities', metrics.total_opportunities, icon('currency-dollar', 'lg', 'c-icon--opportunity'), 'yellow') }}
-    {{ metric_card('Total Tasks', metrics.total_tasks, icon('clipboard-list', 'lg', 'c-icon--task'), 'purple') }}
-{% endcall %}
-
-<!-- Task Quick Stats -->
-{% call metric_grid(4, 6, 'mb-8') %}
-    {{ metric_card('Overdue Tasks', task_stats.overdue, '', 'red') }}
-    {{ metric_card('Due Today', task_stats.today, '', 'orange') }}
-    {{ metric_card('This Week', task_stats.this_week, '', 'blue') }}
-    {{ metric_card('Completed Today', task_stats.completed_today, '', 'green') }}
-{% endcall %}
-
-<!-- Pipeline Overview -->
-{% set pipeline_stats_list = [
-  {
-    'value': format_currency(pipeline_stats.prospect), 
-    'value_color': 'green', 
-    'label': 'Prospect'
-  },
-  {
-    'value': format_currency(pipeline_stats.qualified), 
-    'value_color': 'blue', 
-    'label': 'Qualified'
-  },
-  {
-    'value': format_currency(pipeline_stats.proposal), 
-    'value_color': 'yellow', 
-    'label': 'Proposal'
-  },
-  {
-    'value': format_currency(pipeline_stats.negotiation), 
-    'value_color': 'orange', 
-    'label': 'Negotiation'
-  }
-] %}
-
-<div class="mb-6">
-  <h2 class="text-section-title mb-2">Sales Pipeline</h2>
-  <p class="text-secondary-dark mb-4">Total: {{ format_currency(pipeline_stats.total_value) }} ({{ pipeline_stats.total_count }} opportunities)</p>
-  {{ status_breakdown_grid('', pipeline_stats_list) }}
-</div>
+{# Dashboard-specific content only - entity metrics belong in entity index pages #}
+{{ dashboard_pipeline_section(pipeline_stats) }}
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <!-- Critical Alerts -->
+    <!-- Top Row -->
     <div class="space-y-6">
-        <!-- Overdue Tasks Alert -->
-        {% if overdue_tasks %}
-        {% call list_section('Overdue Tasks', href='/tasks/', theme_color='red', icon_macro=icon('exclamation-circle-solid', 'md', 'c-icon--danger')) %}
-            {% for task in overdue_tasks %}
-                {{ alert_list_item(
-                    title=task.description,
-                    warning_text=task_metadata(task),
-                    warning_color='red',
-                    action_href='/tasks/'
-                ) }}
-            {% endfor %}
-        {% endcall %}
-        {% endif %}
-
-        <!-- Closing Soon Opportunities -->
-        {% if closing_soon %}
-        {% call list_section('Closing Soon', href='/opportunities/', theme_color='yellow', icon_macro=icon('calendar-days', 'md', 'c-icon--warning')) %}
-            {% for opp in closing_soon %}
-                {{ alert_list_item(
-                    title=opp.name,
-                    warning_text=opp.value_formatted + ' • ' + opp.expected_close_date_formatted,
-                    warning_color='yellow',
-                    action_href='/opportunities/'
-                ) }}
-            {% endfor %}
-        {% endcall %}
-        {% endif %}
-
+        <!-- Top-left: Overdue Tasks -->
+        {{ dashboard_overdue_section(overdue_tasks) }}
     </div>
 
-    <!-- Recent Activity -->
     <div class="space-y-6">
-        <!-- Recent Tasks -->
-        {% call list_section('Recent Tasks', href='/tasks/') %}
-            {% for task in recent_tasks %}
-                {{ simple_list_item(
-                    title=task.description,
-                    subtitle=task_metadata(task),
-                    badge_text=task.priority|title,
-                    badge_color='badge-' + task.priority
-                ) }}
-            {% endfor %}
-        {% endcall %}
+        <!-- Top-right: Recent Notes -->
+        {{ dashboard_notes_section(recent_notes) }}
+    </div>
 
-        <!-- Recent Opportunities -->
-        {% call list_section('Recent Opportunities', href='/opportunities/') %}
-            {% for opp in recent_opportunities %}
-                {{ simple_list_item(
-                    title='<span class="text-opportunity">' + opp.name + '</span>',
-                    subtitle='<span class="text-company">' + opp.company_name + '</span> • <span class="text-deal">' + opp.value_formatted + '</span>',
-                    badge_text=opp.stage|title,
-                    badge_color='badge-' + opp.stage
-                ) }}
-            {% endfor %}
-        {% endcall %}
+    <!-- Bottom Row -->
+    <div class="space-y-6">
+        <!-- Bottom-left: Recent Tasks -->
+        {{ dashboard_tasks_section(recent_tasks) }}
+    </div>
 
-        <!-- Recent Notes -->
-        {% call list_section('Recent Notes') %}
-            {% for note in recent_notes %}
-                {{ note_list_item(
-                    content=note.content,
-                    metadata=note.created_at_formatted + ((' • ' + note.entity_name) if note.entity_name else ''),
-                    accent_color='blue'
-                ) }}
-            {% endfor %}
-        {% endcall %}
+    <div class="space-y-6">
+        <!-- Bottom-right: Recent Opportunities -->
+        {{ dashboard_opportunities_section(recent_opportunities) }}
     </div>
 </div>
 {% endblock %}

@@ -1,0 +1,60 @@
+{% from "macros/ui/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
+{% from "macros/ui/metadata_display.html" import task_metadata %}
+{% from "macros/base/icons.html" import icon %}
+
+{% macro dashboard_overdue_section(overdue_tasks) %}
+{# Dashboard top-left: Overdue Tasks only #}
+{% if overdue_tasks %}
+{% call list_section('Overdue Tasks', href='/tasks/', theme_color='red', icon_macro=icon('exclamation-circle-solid', 'md', 'c-icon--danger')) %}
+    {% for task in overdue_tasks %}
+        {{ alert_list_item(
+            title=task.description,
+            warning_text=task_metadata(task),
+            warning_color='red',
+            action_href='/tasks/'
+        ) }}
+    {% endfor %}
+{% endcall %}
+{% endif %}
+{% endmacro %}
+
+{% macro dashboard_notes_section(recent_notes) %}
+{# Dashboard top-right: Recent Notes only #}
+{% call list_section('Recent Notes') %}
+    {% for note in recent_notes %}
+        {{ note_list_item(
+            content=note.content,
+            metadata=note.created_at_formatted + ((' • ' + note.entity_name) if note.entity_name else ''),
+            accent_color='blue'
+        ) }}
+    {% endfor %}
+{% endcall %}
+{% endmacro %}
+
+{% macro dashboard_tasks_section(recent_tasks) %}
+{# Dashboard bottom-left: Recent Tasks only #}
+{% call list_section('Recent Tasks', href='/tasks/') %}
+    {% for task in recent_tasks %}
+        {{ simple_list_item(
+            title=task.description,
+            subtitle=task_metadata(task),
+            badge_text=task.priority|title,
+            badge_color='badge-' + task.priority
+        ) }}
+    {% endfor %}
+{% endcall %}
+{% endmacro %}
+
+{% macro dashboard_opportunities_section(recent_opportunities) %}
+{# Dashboard bottom-right: Recent Opportunities only #}
+{% call list_section('Recent Opportunities', href='/opportunities/') %}
+    {% for opp in recent_opportunities %}
+        {{ simple_list_item(
+            title='<span class="text-opportunity">' + opp.name + '</span>',
+            subtitle='<span class="text-company">' + opp.company_name + '</span> • <span class="text-deal">' + opp.value_formatted + '</span>',
+            badge_text=opp.stage|title,
+            badge_color='badge-' + opp.stage
+        ) }}
+    {% endfor %}
+{% endcall %}
+{% endmacro %}
