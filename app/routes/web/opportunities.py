@@ -111,27 +111,7 @@ def index():
     opportunities = Opportunity.query.join(Company).all()
     today = date.today()
 
-    # Generate dropdown configs and entity config directly
-    from app.forms.base.builders import DropdownConfigGenerator
-    dropdown_configs = DropdownConfigGenerator.generate_entity_dropdown_configs('opportunities', group_by, sort_by, sort_direction, primary_filter)
-    
-    # Use model config directly
-    entity_config = {
-        'entity_name': Opportunity.__entity_config__.get('display_name', 'Opportunities'),
-        'entity_name_singular': Opportunity.__entity_config__.get('display_name_singular', 'Opportunity'),
-        'entity_description': Opportunity.__entity_config__.get('description', 'Manage your opportunities'),
-        'entity_type': 'opportunity',
-        'entity_endpoint': 'opportunities',
-        'entity_buttons': [{
-            'label': f'New {Opportunity.__entity_config__.get("display_name_singular", "Opportunity")}',
-            'hx_get': f'{Opportunity.__entity_config__.get("modal_path", "/modals/Opportunity")}/create',
-            'hx_target': 'body',
-            'hx_swap': 'beforeend',
-            'entity': 'opportunities'
-        }]
-    }
-    
-    # Generate opportunity stats directly  
+    # Generate opportunity stats
     total_value = sum(getattr(e, 'value', 0) or 0 for e in opportunities)
     entity_stats = {
         'title': 'Opportunities Overview',
@@ -155,13 +135,19 @@ def index():
         ]
     }
 
-    return render_template(
-        "base/entity_index.html",
-        **entity_config,
-        entity_stats=entity_stats,
-        dropdown_configs=dropdown_configs,
-        opportunities=opportunities,
+    # Get standardized context using universal helper
+    from app.utils.ui.index_helpers import UniversalIndexHelper
+    context = UniversalIndexHelper.get_standardized_index_context(
+        entity_name='opportunities',
+        default_group_by='stage',
+        default_sort_by='name',
+        additional_context={
+            'entity_stats': entity_stats,
+            'opportunities': opportunities,
+        }
     )
+
+    return render_template("base/entity_index.html", **context)
 
 
 
