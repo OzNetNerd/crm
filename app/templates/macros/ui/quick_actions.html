@@ -1,17 +1,35 @@
 {% from "macros/core/entity_helpers.html" import entity_icon, entity_display_name %}
+{% from "macros/base/icons.html" import icon %}
 
 
 {% macro entity_buttons(entity_names) %}
 <div class="button-container">
     {% for entity in entity_names %}
-    {% set singular = entity.rstrip('s') %}
+    {# Proper pluralization mapping #}
+    {% set singular_map = {
+        'companies': 'company',
+        'tasks': 'task',
+        'opportunities': 'opportunity',
+        'stakeholders': 'stakeholder',
+        'teams': 'team'
+    } %}
+    {# Direct icon mapping #}
+    {% set icon_map = {
+        'company': 'building-office-alt',
+        'task': 'clipboard-list',
+        'opportunity': 'currency-dollar-circle',
+        'stakeholder': 'user',
+        'team': 'users'
+    } %}
+    {% set singular = singular_map.get(entity, entity.rstrip('s')) %}
     {% set singular_title = singular.title() %}
+    {% set icon_name = icon_map.get(singular, 'document') %}
     <button hx-get="/modals/{{ singular_title }}/create"
             hx-target="body"
             hx-swap="beforeend"
-            class="flex items-center gap-2 btn-{{ entity }}">
-        {{ entity_icon(singular, 'sm') }}
-        New {{ entity_display_name(singular) }}
+            class="flex items-center gap-2 btn-{{ singular }}">
+        {{ icon(icon_name, 'sm') }}
+        New {{ singular.title() }}
     </button>
     {% endfor %}
 </div>

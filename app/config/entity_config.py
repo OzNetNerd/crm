@@ -70,10 +70,10 @@ class EntityConfigRegistry:
             'icon': 'currency-dollar-circle'
         },
         'user': {
-            'icon': 'user-circle'
+            'icon': 'user'
         },
         'note': {
-            'icon': 'document-text'
+            'icon': 'document'
         }
     }
     

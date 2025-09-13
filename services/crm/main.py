@@ -120,6 +120,12 @@ def create_app():
     app.jinja_env.globals["get_entity_config"] = get_entity_config
     app.jinja_env.globals["get_entity_labels"] = get_entity_labels
     app.jinja_env.globals["get_empty_state_config"] = get_empty_state_config
+
+    # Dashboard button function
+    def get_dashboard_action_buttons():
+        return ['companies', 'tasks', 'opportunities', 'stakeholders']
+
+    app.jinja_env.globals["get_dashboard_action_buttons"] = get_dashboard_action_buttons
     
     # Dynamic card system
     app.jinja_env.globals["build_dynamic_card_config"] = CardConfigBuilder.build_card_config
