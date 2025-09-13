@@ -7,6 +7,7 @@
 
 {% from 'macros/base/icons.html' import icon %}
 {% from "macros/ui/progress.html" import progress_bar %}
+{% from "macros/ui/date_formatting.html" import enhanced_date_with_status, smart_date_display %}
 
 {#
   Content Section Renderer - Renders different types of content sections
@@ -104,8 +105,9 @@
         {% endif %}
     {% elif field_type == 'date' %}
         {% if field_value %}
-        <time class="field-value text-gray-900" datetime="{{ field_value.isoformat() if field_value.isoformat else field_value }}">
-            {{ field_value.strftime('%d/%m/%y') if hasattr(field_value, 'strftime') else field_value }}
+        {%- set date_context = "due" if field_name in ["due_date", "expected_close_date", "close_date"] else "created" if field_name == "created_at" else "updated" if field_name == "updated_at" else "neutral" -%}
+        <time class="field-value" datetime="{{ field_value.isoformat() if field_value.isoformat else field_value }}">
+            {{ smart_date_display(field_value, context=date_context) }}
         </time>
         {% else %}
         <span class="field-value text-gray-500">-</span>

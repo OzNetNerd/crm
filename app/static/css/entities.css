@@ -1048,7 +1048,28 @@
     -webkit-line-clamp: 3;
 }
 
-/* Overdue text color */
+/* Date state colors - semantic classes for different date contexts */
+.date-overdue {
+    color: #dc2626; /* red-600 - danger, urgent */
+    font-weight: 500;
+}
+
+.date-increment {
+    color: #6b7280; /* gray-500 - subtle, informational for "X time ago" */
+    font-weight: 400;
+}
+
+.date-decrement {
+    color: #059669; /* emerald-600 - positive, time remaining */
+    font-weight: 500;
+}
+
+.date-neutral {
+    color: #9ca3af; /* gray-400 - neutral, no urgency */
+    font-weight: 400;
+}
+
+/* Legacy overdue text color (for backward compatibility) */
 .text-overdue {
     color: #dc2626; /* red-600 */
 }

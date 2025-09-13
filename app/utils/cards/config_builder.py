@@ -55,13 +55,15 @@ class CardConfigBuilder:
         """Build header section with primary display fields."""
         header_fields = []
         
-        # Always include name/title field first
+        # Always include name/title field first with entity-specific styling
         name_field = cls._get_name_field(model_class)
         if name_field:
+            entity_name = model_class.__name__.lower()
+            name_class = f'text-{entity_name}-name' if entity_name in ['company', 'stakeholder', 'team'] else 'font-medium text-gray-900'
             header_fields.append({
                 'name': name_field,
                 'type': 'text',
-                'classes': 'font-medium text-gray-900'
+                'classes': name_class
             })
         
         # Add important status/category fields
