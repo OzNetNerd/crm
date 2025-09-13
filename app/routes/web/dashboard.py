@@ -92,10 +92,9 @@ def index():
     )
     closing_soon = [opp.to_display_dict() for opp in closing_soon_raw]
 
-    # Get entity types dynamically from model registry
-    from app.utils.core.model_introspection import get_all_model_configs
-    model_configs = get_all_model_configs()
-    entity_types = [name.lower() for name in model_configs.keys()]
+    # Get dashboard buttons using unified button generator
+    from app.utils.ui.button_generator import get_dashboard_action_buttons
+    dashboard_buttons = get_dashboard_action_buttons()
 
     return render_template(
         "dashboard/index.html",
@@ -108,7 +107,7 @@ def index():
         overdue_tasks=overdue_tasks,
         closing_soon=closing_soon,
         today=today,
-        entity_types=entity_types,
+        entity_types=dashboard_buttons,  # Now passes button configs instead of strings
     )
 
 
