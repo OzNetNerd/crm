@@ -1,0 +1,34 @@
+{% from "macros/ui/summary_section.html" import status_breakdown_grid %}
+{% from "macros/formatting.html" import format_currency %}
+
+{% macro dashboard_pipeline_section(pipeline_stats) %}
+{# Dashboard-specific pipeline section - only for dashboard use #}
+{% set pipeline_stats_list = [
+  {
+    'value': format_currency(pipeline_stats.prospect), 
+    'value_color': 'green', 
+    'label': 'Prospect'
+  },
+  {
+    'value': format_currency(pipeline_stats.qualified), 
+    'value_color': 'blue', 
+    'label': 'Qualified'
+  },
+  {
+    'value': format_currency(pipeline_stats.proposal), 
+    'value_color': 'yellow', 
+    'label': 'Proposal'
+  },
+  {
+    'value': format_currency(pipeline_stats.negotiation), 
+    'value_color': 'orange', 
+    'label': 'Negotiation'
+  }
+] %}
+
+<div class="mb-6">
+  <h2 class="text-section-title mb-2">Sales Pipeline</h2>
+  <p class="text-secondary-dark mb-4">Total: {{ format_currency(pipeline_stats.total_value) }} ({{ pipeline_stats.total_count }} opportunities)</p>
+  {{ status_breakdown_grid('', pipeline_stats_list) }}
+</div>
+{% endmacro %}

@@ -237,3 +237,53 @@ def get_entity_labels(entity_type: str) -> Dict[str, str]:
 def get_empty_state_config(entity_type: str) -> Dict[str, str]:
     """Get empty state config for entity"""
     return EntityConfigRegistry.get_empty_state(entity_type)
+
+
+@dataclass
+class DashboardConfig:
+    """Configuration for dashboard-specific content to prevent pollution"""
+    show_entity_metrics: bool = False  # Only for entity index pages
+    show_pipeline: bool = True
+    show_recent_activity: bool = True
+    show_alerts: bool = True
+    show_task_quick_stats: bool = False  # Only for task-specific pages
+
+
+class DashboardConfigRegistry:
+    """Registry for dashboard content configuration"""
+    
+    @classmethod
+    def get_dashboard_config(cls) -> DashboardConfig:
+        """Get standard dashboard configuration"""
+        return DashboardConfig()
+    
+    @classmethod
+    def should_show_entity_metrics(cls) -> bool:
+        """Check if entity metrics should be displayed (False for dashboard)"""
+        return cls.get_dashboard_config().show_entity_metrics
+    
+    @classmethod
+    def should_show_pipeline(cls) -> bool:
+        """Check if pipeline should be displayed"""
+        return cls.get_dashboard_config().show_pipeline
+    
+    @classmethod
+    def should_show_recent_activity(cls) -> bool:
+        """Check if recent activity should be displayed"""
+        return cls.get_dashboard_config().show_recent_activity
+    
+    @classmethod
+    def should_show_alerts(cls) -> bool:
+        """Check if alerts should be displayed"""
+        return cls.get_dashboard_config().show_alerts
+
+
+# Convenience functions for dashboard configuration
+def get_dashboard_config() -> DashboardConfig:
+    """Get dashboard configuration"""
+    return DashboardConfigRegistry.get_dashboard_config()
+
+
+def should_show_entity_metrics_on_dashboard() -> bool:
+    """Check if entity metrics should be shown on dashboard (always False)"""
+    return DashboardConfigRegistry.should_show_entity_metrics()

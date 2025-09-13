@@ -2,6 +2,7 @@ from datetime import datetime, date, timedelta
 import logging
 from flask import Blueprint, render_template, request, jsonify
 from app.models import db, Task, Company, Stakeholder, Opportunity, Note
+from app.config.entity_config import should_show_entity_metrics_on_dashboard
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -10,24 +11,8 @@ dashboard_bp = Blueprint("dashboard", __name__)
 def index():
     today = date.today()
 
-    # Quick stats for overview
-    task_stats = {
-        "overdue": Task.query.filter(
-            Task.due_date < today, Task.status != "complete"
-        ).count(),
-        "today": Task.query.filter(
-            Task.due_date == today, Task.status != "complete"
-        ).count(),
-        "this_week": Task.query.filter(
-            Task.due_date > today,
-            Task.due_date <= today + timedelta(days=7),
-            Task.status != "complete",
-        ).count(),
-        "completed_today": Task.query.filter(
-            Task.status == "complete",
-            Task.completed_at >= datetime.combine(today, datetime.min.time()),
-        ).count(),
-    }
+    # Dashboard configuration - prevents entity metric pollution
+    # Entity metrics (Company count, Stakeholder count, etc.) belong in entity index pages only
 
     # Pipeline overview
     opportunities = Opportunity.query.all()
@@ -65,14 +50,6 @@ def index():
     )
     recent_opportunities = [opp.to_display_dict() for opp in recent_opportunities_raw]
 
-    # Key metrics
-    metrics = {
-        "total_companies": Company.query.count(),
-        "total_contacts": Stakeholder.query.count(),
-        "total_opportunities": Opportunity.query.count(),
-        "total_tasks": Task.query.count(),
-    }
-
     # Critical alerts - with formatting at source
     overdue_tasks_raw = (
         Task.query.filter(Task.due_date < today, Task.status != "complete")
@@ -98,12 +75,10 @@ def index():
 
     return render_template(
         "dashboard/index.html",
-        task_stats=task_stats,
         pipeline_stats=pipeline_stats,
         recent_tasks=recent_tasks,
         recent_notes=recent_notes,
         recent_opportunities=recent_opportunities,
-        metrics=metrics,
         overdue_tasks=overdue_tasks,
         closing_soon=closing_soon,
         today=today,
