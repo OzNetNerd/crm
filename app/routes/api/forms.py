@@ -310,49 +310,6 @@ def _populate_field_options(field):
             field['options'] = [{'value': '', 'label': 'Select company'}]
 
 
-@forms_api.route('/<model_name>/validate', methods=['POST'])
-def validate_form(model_name):
-    """
-    Validate form data server-side.
-
-    Optional endpoint for additional server-side validation
-    beyond what Alpine.js provides client-side.
-    """
-    from flask import request
-
-    data = request.get_json()
-    errors = {}
-
-    # Basic validation - can be extended
-    config = FORM_CONFIGS.get(model_name.lower())
-    if config:
-        for field in config['fields']:
-            if field.get('type') == 'grid':
-                for sub_field in field.get('fields', []):
-                    _validate_field(sub_field, data, errors)
-            else:
-                _validate_field(field, data, errors)
-
-    return jsonify({
-        'valid': len(errors) == 0,
-        'errors': errors
-    })
-
-
-def _validate_field(field, data, errors):
-    """Validate a single field."""
-    field_name = field.get('name')
-    if not field_name:
-        return
-
-    value = data.get(field_name)
-
-    # Required validation
-    if field.get('required') and not value:
-        errors[field_name] = f"{field.get('label', field_name)} is required"
-
-    # Email validation
-    if field.get('type') == 'email' and value:
-        import re
-        if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', value):
-            errors[field_name] = "Please enter a valid email address"
+# Note: Form validation is handled by WTForms in the respective form classes
+# Client-side validation uses HTML5 validation attributes
+# No need for duplicate validation logic here

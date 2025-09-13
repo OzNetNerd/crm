@@ -8,6 +8,7 @@
     <title>{% block title %}CRM{% endblock %}</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <!-- Alpine.js components - load before Alpine.js core -->
     <script src="{{ url_for('static', filename='js/alpine/cardState.js') }}"></script>
