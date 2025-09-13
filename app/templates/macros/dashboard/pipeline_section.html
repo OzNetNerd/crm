@@ -26,9 +26,17 @@
   }
 ] %}
 
-<div class="card p-6 mb-6">
-  <h2 class="text-section-title mb-2">Sales Pipeline</h2>
-  <p class="text-secondary-dark mb-4">Total: {{ format_currency(pipeline_stats.total_value) }} ({{ pipeline_stats.total_count }} opportunities)</p>
-  {{ status_breakdown_grid('', pipeline_stats_list) }}
+<div class="p-6 mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+  <h2 class="section-title">Sales Pipeline</h2>
+  <p class="section-subtitle">Total: {{ format_currency(pipeline_stats.total_value) }} ({{ pipeline_stats.total_count }} opportunities)</p>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    {% for stat in pipeline_stats_list %}
+    <div class="text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+      <div class="text-xl font-bold text-{{ stat.value_color }}-600 mb-1">{{ stat.value }}</div>
+      <div class="text-sm text-gray-600">{{ stat.label }}</div>
+    </div>
+    {% endfor %}
+  </div>
 </div>
 {% endmacro %}

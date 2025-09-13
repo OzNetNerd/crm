@@ -27,18 +27,24 @@
   Header only: {{ page_layout("Title", "Subtitle", buttons=buttons, header_only=true) }}
 #}
 {% macro page_layout(title, subtitle, buttons=None, summary_data=None, additional_header_content=None, filter_content=None, entity_name=None, bulk_actions=None, header_only=false) %}
-<!-- Standardized Page Header -->
-<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4{% if bulk_actions %} mb-4{% endif %}">
-    <div>
-        <h1 class="text-page-title">{{ title }}</h1>
-        <p class="text-secondary-dark">{{ subtitle }}</p>
-        {% if additional_header_content %}{{ additional_header_content }}{% endif %}
+<!-- Professional Page Header -->
+<div class="mb-8 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="flex-1">
+            <h1 class="page-title">{{ title }}</h1>
+            <p class="page-subtitle">{{ subtitle }}</p>
+            {% if additional_header_content %}
+            <div class="mt-4">{{ additional_header_content }}</div>
+            {% endif %}
+        </div>
+        {% if buttons %}
+        <div class="flex-shrink-0">
+            <div class="flex flex-wrap gap-3">
+                {{ entity_buttons(buttons) }}
+            </div>
+        </div>
+        {% endif %}
     </div>
-    {% if buttons %}
-    <div class="flex-shrink-0">
-        {{ entity_buttons(buttons) }}
-    </div>
-    {% endif %}
 </div>
 
 <!-- Bulk Actions Bar - Disabled (Alpine.js removed) -->
@@ -47,26 +53,26 @@
 {% endif %}
 
 {% if not header_only %}
-<!-- Optional Summary Section -->
+<!-- Professional Summary Section -->
 {% if summary_data %}
-<div class="mb-8 card-padded-lg">
-    <h2 class="text-section-title mb-4">{{ summary_data.title }}</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-center min-h-[80px]">
+<div class="mb-8 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+    <h2 class="section-title">{{ summary_data.title }}</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         {% for stat in summary_data.stats %}
-        <div class="text-center flex flex-col justify-center">
-            <div class="text-2xl font-bold {{ ('text-color-' + entity_name) if entity_name else 'text-gray-900' }}">
+        <div class="text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <div class="text-2xl font-bold {{ ('text-' + entity_name + '-600') if entity_name else 'text-gray-900' }} mb-1">
                 {{ stat.value }}
             </div>
-            <div class="text-secondary">{{ stat.label }}</div>
+            <div class="text-sm text-gray-600">{{ stat.label }}</div>
         </div>
         {% endfor %}
     </div>
 </div>
 {% endif %}
 
-<!-- Optional Filter Section -->
+<!-- Professional Filter Section -->
 {% if filter_content %}
-<div class="mb-6">
+<div class="mb-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
     {{ filter_content|safe }}
 </div>
 {% endif %}
