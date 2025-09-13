@@ -283,20 +283,25 @@ class DynamicFormBuilder:
         form_name = f"Dynamic{model_class.__name__}Form"
         form_attrs = {}
         
-        # Process each column in the model
-        for attr_name in dir(model_class):
-            attr = getattr(model_class, attr_name)
-            if hasattr(attr, 'property') and hasattr(attr.property, 'columns'):
-                column = attr.property.columns[0]
-                info = column.info
+        # Process each column in the model in definition order
+        # Use table.columns to maintain definition order instead of dir() which is alphabetical
+        for column in model_class.__table__.columns:
+            attr_name = column.name
 
-                # Skip system fields
-                if attr_name in ['id', 'created_at', 'updated_at']:
-                    continue
+            # Skip system fields
+            if attr_name in ['id', 'created_at', 'updated_at']:
+                continue
 
-                # Check if field should be included in form
-                if not cls._should_include_field_in_form(model_class, attr_name, info):
-                    continue
+            # Get the model attribute for this column
+            attr = getattr(model_class, attr_name, None)
+            if not attr or not hasattr(attr, 'property') or not hasattr(attr.property, 'columns'):
+                continue
+
+            info = column.info
+
+            # Check if field should be included in form
+            if not cls._should_include_field_in_form(model_class, attr_name, info):
+                continue
                 
                 # Determine field type and create appropriate field
                 if info.get('choices'):

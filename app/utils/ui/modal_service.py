@@ -10,16 +10,33 @@ import logging
 from flask import render_template, jsonify, request
 from app.models import db
 from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
-from app.forms.base.builders import DynamicFormBuilder
-from app.forms.base.base_forms import BaseForm
+from app.forms.modals.company import CompanyModalForm
+from app.forms.modals.task import TaskModalForm
 # No icon functions needed - templates handle CSS class generation
 
 
 class ModalService:
     """
-    Service for handling modal forms using HTMX and the existing model system.
+    Service for handling modal forms using HTMX and explicit form classes.
     """
-    
+
+    @staticmethod
+    def _get_form_class(model_name: str):
+        """
+        Get the appropriate form class for a model.
+
+        Args:
+            model_name: Name of the model (e.g., 'Company', 'Task')
+
+        Returns:
+            Form class or None if not supported
+        """
+        form_classes = {
+            'Company': CompanyModalForm,
+            'Task': TaskModalForm,
+        }
+        return form_classes.get(model_name)
+
     @staticmethod
     def render_create_modal(model_name: str, **kwargs) -> str:
         """
@@ -34,11 +51,15 @@ class ModalService:
         """
         model_class = get_model_by_name(model_name)
         if not model_class:
-            return render_template('components/modals/error_modal.html', 
+            return render_template('components/modals/error_modal.html',
                                  error=f"Unknown model: {model_name}")
-        
-        # Generate dynamic WTForms form class
-        form_class = DynamicFormBuilder.build_dynamic_form(model_class, BaseForm)
+
+        # Get explicit form class
+        form_class = ModalService._get_form_class(model_name)
+        if not form_class:
+            return render_template('components/modals/error_modal.html',
+                                 error=f"No modal form available for {model_name}")
+
         form = form_class()
         
         template_vars = {
@@ -68,14 +89,18 @@ class ModalService:
         """
         model_class = get_model_by_name(model_name)
         if not model_class:
-            return render_template('components/modals/error_modal.html', 
+            return render_template('components/modals/error_modal.html',
                                  error=f"Unknown model: {model_name}")
-        
+
         # Get the entity
         entity = model_class.query.get_or_404(entity_id)
-        
-        # Generate dynamic WTForms form class and populate with entity data
-        form_class = DynamicFormBuilder.build_dynamic_form(model_class, BaseForm)
+
+        # Get explicit form class and populate with entity data
+        form_class = ModalService._get_form_class(model_name)
+        if not form_class:
+            return render_template('components/modals/error_modal.html',
+                                 error=f"No modal form available for {model_name}")
+
         form = form_class(obj=entity)
         
         template_vars = {
@@ -165,8 +190,16 @@ class ModalService:
                 entity = None
                 operation = 'created'
             
-            # Generate dynamic WTForms form class and populate with request data
-            form_class = DynamicFormBuilder.build_dynamic_form(model_class, BaseForm)
+            # Get explicit form class and populate with request data
+            form_class = ModalService._get_form_class(model_name)
+            if not form_class:
+                return {
+                    'success': False,
+                    'error': f"No modal form available for {model_name}",
+                    'html': render_template('components/modals/form_error.html',
+                                          error=f"No modal form available for {model_name}")
+                }
+
             form = form_class(obj=entity)
             
             
