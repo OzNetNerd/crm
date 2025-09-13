@@ -27,20 +27,12 @@
   Header only: {{ page_layout("Title", "Subtitle", buttons=buttons, header_only=true) }}
 #}
 {% macro page_layout(title, subtitle, buttons=None, summary_data=None, additional_header_content=None, filter_content=None, entity_name=None, bulk_actions=None, header_only=false) %}
-<!-- Modern Page Header with Gradient Background -->
-<div class="relative mb-8 p-8 rounded-2xl bg-gradient-to-br from-white via-gray-50 to-blue-50 border border-white/50 backdrop-blur-xl shadow-xl overflow-hidden">
-    <!-- Subtle background pattern -->
-    <div class="absolute inset-0 opacity-20">
-        <div class="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
-        <div class="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-green-500/20 to-blue-500/20 rounded-full blur-xl"></div>
-    </div>
-
-    <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+<!-- Professional Page Header -->
+<div class="mb-8 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div class="flex-1">
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-gray-900 bg-clip-text text-transparent mb-3">
-                {{ title }}
-            </h1>
-            <p class="text-lg text-gray-600 font-medium">{{ subtitle }}</p>
+            <h1 class="page-title">{{ title }}</h1>
+            <p class="page-subtitle">{{ subtitle }}</p>
             {% if additional_header_content %}
             <div class="mt-4">{{ additional_header_content }}</div>
             {% endif %}
@@ -61,32 +53,32 @@
 {% endif %}
 
 {% if not header_only %}
-<!-- Modern Summary Section -->
+<!-- Professional Summary Section -->
 {% if summary_data %}
-<div class="mb-8 p-6 bg-gradient-to-r from-white via-blue-50 to-white rounded-2xl border border-white/50 backdrop-blur-xl shadow-lg">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">{{ summary_data.title }}</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+<div class="mb-8 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+    <h2 class="section-title">{{ summary_data.title }}</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         {% for stat in summary_data.stats %}
-        <div class="text-center p-4 bg-white/70 backdrop-blur-sm rounded-xl border border-white/30 hover:bg-white/90 transition-all duration-300 hover:scale-105">
-            <div class="text-3xl font-bold {{ ('text-' + entity_name + '-600') if entity_name else 'text-blue-600' }} mb-2">
+        <div class="text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <div class="text-2xl font-bold {{ ('text-' + entity_name + '-600') if entity_name else 'text-gray-900' }} mb-1">
                 {{ stat.value }}
             </div>
-            <div class="text-sm font-semibold text-gray-600 uppercase tracking-wider">{{ stat.label }}</div>
+            <div class="text-sm text-gray-600">{{ stat.label }}</div>
         </div>
         {% endfor %}
     </div>
 </div>
 {% endif %}
 
-<!-- Modern Filter Section -->
+<!-- Professional Filter Section -->
 {% if filter_content %}
-<div class="mb-8 p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-md">
+<div class="mb-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
     {{ filter_content|safe }}
 </div>
 {% endif %}
 
-<!-- Main Content Area with Modern Styling -->
-<div class="space-y-8">
+<!-- Main Content Area -->
+<div class="space-y-6">
     {{ caller() }}
 </div>
 {% endif %}
