@@ -110,7 +110,6 @@ def create_app():
     # Register clean template functions - no more string hacks!
     app.jinja_env.globals["get_field_options"] = get_field_options
     app.jinja_env.globals["get_model_form_fields"] = get_model_form_fields
-    app.jinja_env.globals["get_model_config"] = get_model_config
     # app.jinja_env.globals["get_create_modal_config"] = get_create_modal_config  # Removed
     # app.jinja_env.globals["get_detail_modal_config"] = get_detail_modal_config  # Removed
     # app.jinja_env.globals["get_all_modal_configs"] = get_all_modal_configs  # Removed
@@ -129,6 +128,7 @@ def create_app():
     
     # Dynamic card system
     app.jinja_env.globals["build_dynamic_card_config"] = CardConfigBuilder.build_card_config
+    app.jinja_env.globals["get_model_metadata"] = ModelRegistry.get_model_metadata
     app.jinja_env.globals["getattr"] = getattr
     app.jinja_env.globals["hasattr"] = hasattr
     
