@@ -21,7 +21,7 @@
   {% set config = get_empty_state_config(entity_type) %}
   {% set display_title = title or config.title %}
   {% set display_subtitle = subtitle or config.subtitle %}
-  {% set display_icon = icon_name or get_entity_icon(entity_type) %}
+  {% set display_icon = icon_name or entity_type %}
   
   <div class="empty-state-container {{ additional_classes }}">
     {{ icon(display_icon, 'xl', 'empty-state-icon') }}

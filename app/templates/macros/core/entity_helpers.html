@@ -21,7 +21,7 @@
 #}
 {% from 'macros/base/icons.html' import icon %}
 {% macro entity_icon(entity_type, size='md', additional_classes='') %}
-{{ icon(get_entity_icon(entity_type), size, additional_classes) }}
+{{ icon(entity_type, size, additional_classes) }}
 {% endmacro %}
 
 {#

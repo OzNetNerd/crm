@@ -17,12 +17,12 @@ def get_searchable_entity_types():
         if model_class:
             # Get friendly name and icon
             friendly_names = {
-                'company': {'name': 'Companies', 'icon': '🏢'},
-                'stakeholder': {'name': 'Contacts', 'icon': '👤'}, 
-                'opportunity': {'name': 'Opportunities', 'icon': '💼'},
-                'task': {'name': 'Tasks', 'icon': '✅'}
+                'company': {'name': 'Companies', 'icon': 'company'},
+                'stakeholder': {'name': 'Contacts', 'icon': 'stakeholder'},
+                'opportunity': {'name': 'Opportunities', 'icon': 'opportunity'},
+                'task': {'name': 'Tasks', 'icon': 'task'}
             }
-            entity_types[model_name] = friendly_names.get(model_name, {'name': model_name.title(), 'icon': '📄'})
+            entity_types[model_name] = friendly_names.get(model_name, {'name': model_name.title(), 'icon': model_name})
             
     return entity_types
 

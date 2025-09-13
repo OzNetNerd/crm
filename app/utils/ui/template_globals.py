@@ -3,9 +3,8 @@
 from app.models import db
 from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
 from app.config.entity_config import (
-    get_entity_config, 
-    get_entity_icon, 
-    get_entity_labels, 
+    get_entity_config,
+    get_entity_labels,
     get_empty_state_config
 )
 # Modal configs removed - using WTForms modal system now (keeping main branch approach)
