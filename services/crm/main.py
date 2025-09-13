@@ -67,9 +67,10 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = get_database_path()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # ADR-012: Configure structured logging
-    setup_structured_logging(app, "crm-service")
-    app.logger.info('CRM Application startup with structured logging')
+    # ADR-012: Configure structured logging (only in reloader process, not initial)
+    if os.environ.get('WERKZEUG_RUN_MAIN'):
+        setup_structured_logging(app, "crm-service")
+        app.logger.info('CRM Application startup with structured logging')
         
     # Enable Jinja2 do extension for template logic
     app.jinja_env.add_extension('jinja2.ext.do')
