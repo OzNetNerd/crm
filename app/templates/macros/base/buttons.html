@@ -143,13 +143,60 @@
 {% endmacro %}
 
 {#
+  Universal Entity Link - DRY solution for all entity linking across the app
+
+  Supports both navigation and modal modes. Follows ADR-014 DRY patterns.
+  Eliminates duplication between search results, tables, cards, etc.
+
+  Parameters:
+  - entity_type (required): Type of entity ('company', 'contact', 'opportunity', 'task')
+  - entity_id (required): ID of the entity
+  - text (required): Link text to display
+  - mode (optional): 'navigate' for standard links, 'modal' for modal opening (default: 'navigate')
+  - subtitle (optional): Additional text to display below main text
+  - classes (optional): Additional CSS classes
+
+  Usage:
+  {{ entity_link('company', 123, 'Acme Corp', mode='modal') }}
+  {{ entity_link('task', 456, 'Review proposal', mode='navigate') }}
+  {{ entity_link('contact', 789, 'John Doe', subtitle='CEO at Acme Corp', mode='modal') }}
+#}
+{% macro entity_link(entity_type, entity_id, text, mode='navigate', subtitle='', classes='') %}
+{% if mode == 'modal' %}
+<a href="#"
+   onclick="window.dispatchEvent(new CustomEvent('open-detail-{{ entity_type }}-modal', { detail: { id: {{ entity_id }}, readOnly: true } })); return false;"
+   class="group block hover:bg-blue-50 transition-colors duration-150 {{ classes }}"
+   data-entity-type="{{ entity_type }}"
+   data-entity-id="{{ entity_id }}">
+    <div class="text-sm font-semibold text-gray-900 truncate group-hover:text-blue-700 transition-colors">
+        {{ text }}
+    </div>
+    {% if subtitle %}
+    <div class="text-xs text-gray-500 truncate mt-1">
+        {{ subtitle }}
+    </div>
+    {% endif %}
+</a>
+{% else %}
+<a href="/{{ entity_type }}s/{{ entity_id }}" class="{{ classes }}">
+    {{ text }}
+    {% if subtitle %}
+    <div class="text-xs text-gray-500 truncate mt-1">
+        {{ subtitle }}
+    </div>
+    {% endif %}
+</a>
+{% endif %}
+{% endmacro %}
+
+{#
   Entity Link Button - Standardized link button for entity details
-  
+
   Parameters:
   - url (required): URL to link to
   - text (optional): Button text (default: 'View Details')
   - classes (optional): Additional CSS classes
-  
+
   Usage:
   {{ entity_link_button(url_for('companies.detail', id=company.id)) }}
   {{ entity_link_button('/stakeholders/123', 'View Stakeholder') }}
