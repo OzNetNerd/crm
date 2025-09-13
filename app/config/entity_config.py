@@ -182,10 +182,6 @@ class EntityConfigRegistry:
         """Get configuration for an entity type - built dynamically from models"""
         return cls._build_config(entity_type)
     
-    @classmethod
-    def get_icon(cls, entity_type: str) -> str:
-        """Get icon name for entity type"""
-        return cls.get_config(entity_type).icon
     
     @classmethod
     def get_labels(cls, entity_type: str) -> Dict[str, str]:
@@ -224,11 +220,6 @@ class EntityConfigRegistry:
 def get_entity_config(entity_type: str) -> EntityConfig:
     """Get complete entity configuration"""
     return EntityConfigRegistry.get_config(entity_type)
-
-
-def get_entity_icon(entity_type: str) -> str:
-    """Get icon name for entity"""
-    return EntityConfigRegistry.get_icon(entity_type)
 
 
 def get_entity_labels(entity_type: str) -> Dict[str, str]:

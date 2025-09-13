@@ -41,7 +41,6 @@ from app.utils.ui.template_globals import (
     PRIORITY_OPTIONS,
     SIZE_OPTIONS,
     get_entity_config,
-    get_entity_icon, 
     get_entity_labels,
     get_empty_state_config,
     get_dashboard_action_buttons,
@@ -123,7 +122,6 @@ def create_app():
     
     # Entity configuration functions - now in Python backend
     app.jinja_env.globals["get_entity_config"] = get_entity_config
-    app.jinja_env.globals["get_entity_icon"] = get_entity_icon
     app.jinja_env.globals["get_entity_labels"] = get_entity_labels
     app.jinja_env.globals["get_empty_state_config"] = get_empty_state_config
     
