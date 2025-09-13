@@ -16,19 +16,15 @@
     --color-primary-hover: #1d4ed8;
     --color-primary-light: #dbeafe;
     --color-primary-lighter: #eff6ff;
-    --color-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
 
     --color-secondary: #10b981; /* Vibrant green */
     --color-secondary-hover: #047857;
     --color-secondary-light: #d1fae5;
     --color-secondary-lighter: #ecfdf5;
-    --color-secondary-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
-
     --color-accent: #8b5cf6; /* Rich purple */
     --color-accent-hover: #7c3aed;
     --color-accent-light: #ede9fe;
     --color-accent-lighter: #f5f3ff;
-    --color-accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
     
     /* ========================================
      * SEMANTIC COLORS
@@ -79,7 +75,6 @@
     --company-ring-color: #3b82f6;
     --company-light-color: #eff6ff;
     --company-accent: #1e40af;
-    --company-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     --company-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 
     /* Task Colors - Professional Orange */
@@ -89,7 +84,6 @@
     --task-ring-color: #f97316;
     --task-light-color: #fff7ed;
     --task-accent: #9a3412;
-    --task-gradient: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
     --task-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 
     /* Opportunity Colors - Professional Green */
@@ -99,7 +93,6 @@
     --opportunity-ring-color: #10b981;
     --opportunity-light-color: #ecfdf5;
     --opportunity-accent: #065f46;
-    --opportunity-gradient: linear-gradient(135deg, #059669 0%, #047857 100%);
     --opportunity-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 
     /* Stakeholder Colors - Professional Purple */
@@ -109,7 +102,6 @@
     --stakeholder-ring-color: #8b5cf6;
     --stakeholder-light-color: #f5f3ff;
     --stakeholder-accent: #5b21b6;
-    --stakeholder-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
     --stakeholder-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 
     /* Team Colors - Professional Gray-Blue */
@@ -119,17 +111,15 @@
     --teams-ring-color: #64748b;
     --teams-light-color: #f8fafc;
     --teams-accent: #1e293b;
-    --teams-gradient: linear-gradient(135deg, #475569 0%, #334155 100%);
     --teams-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 
     /* User Colors - Sophisticated Slate */
-    --user-bg-color: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    --user-bg-color: #f8fafc;
     --user-primary-color: #475569;
     --user-hover-color: #334155;
     --user-ring-color: #64748b;
     --user-light-color: #f1f5f9;
     --user-accent: #1e293b;
-    --user-gradient: linear-gradient(135deg, #475569 0%, #334155 100%);
     --user-shadow: 0 4px 14px 0 rgba(71, 85, 105, 0.15);
     
     /* ========================================

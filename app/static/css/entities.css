@@ -53,110 +53,124 @@
 
 /* ========================================
  * MODERN BUTTON SYSTEM
- * Beautiful gradient buttons with entity theming
+ * Clean, professional buttons with entity theming
  * Usage: <button class="btn-{{entity_name}}">
  * ======================================== */
 
-/* Base button pattern - Modern foundation */
-[class^="btn-"] {
-    position: relative;
+/* Entity-specific buttons - Clean and professional */
+.btn-company {
+    background-color: var(--company-primary-color);
     color: white;
-    padding: 0.625rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
     font-size: 0.875rem;
-    transition: var(--transition-normal);
+    transition: all 0.2s ease;
     border: none;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 0.5rem;
     text-decoration: none;
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-}
-
-/* Subtle shine effect */
-[class^="btn-"]:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
-}
-
-[class^="btn-"]:hover:before {
-    left: 100%;
-}
-
-/* Modern entity-specific buttons with gradients */
-.btn-company {
-    background: var(--company-gradient);
-    box-shadow: var(--company-shadow);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .btn-company:hover {
-    transform: var(--translate-hover);
-    box-shadow: 0 8px 25px -5px rgba(59, 130, 246, 0.4);
+    background-color: var(--company-hover-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .btn-task {
-    background: var(--task-gradient);
-    box-shadow: var(--task-shadow);
+    background-color: var(--task-primary-color);
+    color: white;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .btn-task:hover {
-    transform: var(--translate-hover);
-    box-shadow: 0 8px 25px -5px rgba(249, 115, 22, 0.4);
+    background-color: var(--task-hover-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .btn-opportunity {
-    background: var(--opportunity-gradient);
-    box-shadow: var(--opportunity-shadow);
+    background-color: var(--opportunity-primary-color);
+    color: white;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .btn-opportunity:hover {
-    transform: var(--translate-hover);
-    box-shadow: 0 8px 25px -5px rgba(16, 185, 129, 0.4);
+    background-color: var(--opportunity-hover-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .btn-stakeholder {
-    background: var(--stakeholder-gradient);
-    box-shadow: var(--stakeholder-shadow);
+    background-color: var(--stakeholder-primary-color);
+    color: white;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .btn-stakeholder:hover {
-    transform: var(--translate-hover);
-    box-shadow: 0 8px 25px -5px rgba(139, 92, 246, 0.4);
+    background-color: var(--stakeholder-hover-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .btn-team {
-    background: var(--teams-gradient);
-    box-shadow: var(--teams-shadow);
+    background-color: var(--teams-primary-color);
+    color: white;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .btn-team:hover {
-    transform: var(--translate-hover);
-    box-shadow: 0 8px 25px -5px rgba(236, 72, 153, 0.4);
-}
-
-/* Small button variant */
-.btn-sm {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.75rem;
-}
-
-/* Button size variants for entity buttons */
-.btn-company.btn-sm,
-.btn-task.btn-sm,
-.btn-opportunity.btn-sm,
-.btn-stakeholder.btn-sm,
-.btn-team.btn-sm {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.75rem;
+    background-color: var(--teams-hover-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 /* ========================================
