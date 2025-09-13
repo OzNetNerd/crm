@@ -9,7 +9,7 @@
 {# Essential components used across all templates #}
 {% from "macros/base/icons.html" import icon %}
 {% from "macros/base/forms.html" import bulk_selection_checkbox, search_input, select_all_checkbox, render_wtforms_field %}
-{% from "macros/base/buttons.html" import action_button, enhanced_button %}
+{% from "macros/base/buttons.html" import button, action_button_set %}
 {% from "macros/base/layout.html" import page_layout, nav_link %}
 
 {# === ENTITY SYSTEM === #}
@@ -64,8 +64,8 @@
         </div>
         {% if buttons %}
         <div class="flex space-x-2">
-            {% for button in buttons %}
-                {{ enhanced_button(button.text, button.url, button.style, button.icon) }}
+            {% for btn in buttons %}
+                {{ button(btn.text, url=btn.url, style=btn.style, icon=btn.icon) }}
             {% endfor %}
         </div>
         {% endif %}

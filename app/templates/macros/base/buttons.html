@@ -2,10 +2,11 @@
 {% from "macros/base/icons.html" import icon %}
 
 {#
-  Unified Button - Single button macro supporting all use cases
-  
-  Replaces action_button and enhanced_button with one DRY solution
-  
+  Unified Button - Semantic CSS button system using entity theming
+
+  Clean button macro using semantic CSS classes instead of verbose Tailwind.
+  Supports entity theming and proper semantic class structure.
+
   Parameters:
   - text (optional): Button text content (omit for icon-only buttons)
   - onclick (optional): JavaScript function call to execute on click
@@ -16,7 +17,7 @@
   - disabled (optional): Whether button is disabled - default: false
   - id (optional): HTML id attribute
   - classes (optional): Additional CSS classes for custom styling
-  - entity (optional): Entity type ('company', 'task', 'opportunity', etc.) - uses entity-specific colors when style='primary'
+  - entity (optional): Entity type ('company', 'task', 'opportunity', etc.) - uses entity-specific colors
 
   Usage:
   {{ button('New Task', url='/modals/Task/create', icon=icon('plus', 'sm')) }}
@@ -25,53 +26,45 @@
   {{ button('Edit', style='secondary', size='sm') }}
 #}
 {% macro button(text='', onclick=None, url=None, icon='', style='primary', size='md', disabled=false, id=None, classes='', entity='') %}
-{%- set base_classes = 'inline-flex items-center justify-center font-medium border rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2' -%}
 
-{%- set size_classes = {
-  'sm': 'px-3 py-1.5 text-xs',
-  'md': 'px-4 py-2 text-sm',
-  'lg': 'px-6 py-3 text-base'
-} -%}
+{# Build semantic CSS classes #}
+{%- set button_classes = ['btn-base'] -%}
 
-{%- set style_classes = {
-  'primary': 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700 focus:ring-blue-500',
-  'secondary': 'bg-green-600 text-white border-green-600 hover:bg-green-700 focus:ring-green-500',
-  'accent': 'bg-purple-600 text-white border-purple-600 hover:bg-purple-700 focus:ring-purple-500',
-  'danger': 'bg-red-600 text-white border-red-600 hover:bg-red-700 focus:ring-red-500',
-  'gray': 'bg-gray-500 text-white border-gray-500 hover:bg-gray-600 focus:ring-gray-500',
-  'outline': 'bg-transparent text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white focus:ring-blue-500',
-  'action': 'p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded'
-} -%}
+{# Add style class #}
+{% if entity and style == 'primary' %}
+  {# Use entity-specific button class for primary buttons #}
+  {% do button_classes.append('btn-' + entity) %}
+{% else %}
+  {# Use semantic style class #}
+  {% do button_classes.append('btn-' + style) %}
+{% endif %}
 
-{%- set button_classes = (
-  base_classes + ' ' +
-  (size_classes[size] or size_classes['md']) + ' ' +
-  (style_classes[style] or style_classes['primary']) + ' ' +
-  (classes or '') +
-  (' opacity-50 cursor-not-allowed' if disabled else '')
-).strip() -%}
+{# Add size class #}
+{% do button_classes.append('btn-' + size) %}
 
-{# Override with entity-specific classes if entity is provided #}
-{%- if entity and style == 'primary' -%}
-  {%- set button_classes = (
-    base_classes + ' ' +
-    (size_classes[size] or size_classes['md']) + ' ' +
-    'btn-' + entity + '-primary ' +
-    (classes or '') +
-    (' opacity-50 cursor-not-allowed' if disabled else '')
-  ).strip() -%}
-{%- endif -%}
+{# Add disabled class if needed #}
+{% if disabled %}
+  {% do button_classes.append('disabled') %}
+{% endif %}
+
+{# Add any additional classes #}
+{% if classes %}
+  {% do button_classes.append(classes) %}
+{% endif %}
+
+{# Join all classes #}
+{%- set final_classes = button_classes | join(' ') -%}
 
 {% if url %}
 <a href="{{ url }}"
-   class="{{ button_classes }}"
+   class="{{ final_classes }}"
    {% if id %}id="{{ id }}"{% endif %}
    {% if disabled %}aria-disabled="true"{% endif %}>
     {{ icon|safe }}{% if text and icon %} {% endif %}{{ text }}
 </a>
 {% else %}
 <button {% if onclick %}onclick="{{ onclick }}"{% endif %}
-        class="{{ button_classes }}"
+        class="{{ final_classes }}"
         {% if id %}id="{{ id }}"{% endif %}
         {% if disabled %}disabled{% endif %}>
     {{ icon|safe }}{% if text and icon %} {% endif %}{{ text }}
