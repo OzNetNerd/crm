@@ -12,6 +12,14 @@ from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
 from app.utils.ui.template_filters import register_template_filters
 from app.models import Company, Stakeholder, Task, Opportunity, User
+from app.utils.model_registry import ModelRegistry
+
+# Ensure models are registered in the Flask app process
+for model_class in [Company, Stakeholder, Task, Opportunity, User]:
+    if hasattr(model_class, '__entity_config__'):
+        config = model_class.__entity_config__
+        endpoint_name = config['endpoint_name']
+        ModelRegistry.register_model(model_class, endpoint_name)
 from app.utils.ui.template_globals import (
     get_field_options,
     get_model_form_fields,

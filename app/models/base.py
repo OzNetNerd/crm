@@ -107,21 +107,10 @@ class EntityModel(BaseModel):
             from app.utils.model_registry import ModelRegistry
 
             config = cls.__entity_config__
-            endpoint_name = config.get('endpoint_name', cls.__name__.lower())
+            endpoint_name = config['endpoint_name']  # Use exact endpoint name from config
 
-            # Register with both endpoint name and class name
+            # Register with the exact endpoint name from entity config
             ModelRegistry.register_model(cls, endpoint_name)
-            ModelRegistry.register_model(cls, cls.__name__.lower())
-
-            # Also register plural forms for common patterns
-            if endpoint_name.endswith('s'):
-                singular_name = endpoint_name.rstrip('s')
-                if singular_name not in ModelRegistry._models:
-                    ModelRegistry._models[singular_name] = cls
-            else:
-                plural_name = endpoint_name + 's'
-                if plural_name not in ModelRegistry._models:
-                    ModelRegistry._models[plural_name] = cls
 
     @classmethod
     def get_entity_config(cls) -> Dict[str, Any]:
