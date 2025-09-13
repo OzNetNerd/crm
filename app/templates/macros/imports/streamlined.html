@@ -65,7 +65,13 @@
         {% if buttons %}
         <div class="flex space-x-2">
             {% for btn in buttons %}
-                {{ button(btn.text, url=btn.url, style=btn.style, icon=btn.icon) }}
+                {{ button(
+                    text=btn.title or btn.text or '',
+                    url=btn.url or '',
+                    style='primary',
+                    entity=btn.entity or '',
+                    onclick=btn.hx_get and "htmx.ajax('GET', '" + btn.hx_get + "', {target:'" + (btn.hx_target or 'body') + "', swap:'" + (btn.hx_swap or 'beforeend') + "'})" or None
+                ) }}
             {% endfor %}
         </div>
         {% endif %}
