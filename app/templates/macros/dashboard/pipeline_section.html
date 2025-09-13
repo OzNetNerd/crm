@@ -5,23 +5,23 @@
 {# Dashboard-specific pipeline section - only for dashboard use #}
 {% set pipeline_stats_list = [
   {
-    'value': format_currency(pipeline_stats.prospect), 
-    'value_color': 'green', 
+    'value': format_currency(pipeline_stats.prospect),
+    'status': 'prospect',
     'label': 'Prospect'
   },
   {
-    'value': format_currency(pipeline_stats.qualified), 
-    'value_color': 'blue', 
+    'value': format_currency(pipeline_stats.qualified),
+    'status': 'qualified',
     'label': 'Qualified'
   },
   {
-    'value': format_currency(pipeline_stats.proposal), 
-    'value_color': 'yellow', 
+    'value': format_currency(pipeline_stats.proposal),
+    'status': 'proposal',
     'label': 'Proposal'
   },
   {
-    'value': format_currency(pipeline_stats.negotiation), 
-    'value_color': 'orange', 
+    'value': format_currency(pipeline_stats.negotiation),
+    'status': 'negotiation',
     'label': 'Negotiation'
   }
 ] %}
@@ -33,7 +33,7 @@
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
     {% for stat in pipeline_stats_list %}
     <div class="text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-      <div class="text-xl font-bold text-{{ stat.value_color }}-600 mb-1">{{ stat.value }}</div>
+      <div class="text-xl font-bold text-status-{{ stat.status }} mb-1">{{ stat.value }}</div>
       <div class="text-sm text-gray-600">{{ stat.label }}</div>
     </div>
     {% endfor %}

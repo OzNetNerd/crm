@@ -1005,3 +1005,64 @@
     border-left-color: var(--danger-color) !important;
     background-color: var(--color-danger-lighter);
 }
+
+/* ========================================
+ * PIPELINE STATUS CLASSES
+ * Status-specific styling for sales pipeline stages
+ * Usage: class="status-prospect", class="text-status-qualified"
+ * ======================================== */
+
+.status-prospect {
+    border-left-color: var(--color-secondary) !important;
+    background-color: var(--color-secondary-lighter);
+}
+
+.status-qualified {
+    border-left-color: var(--color-primary) !important;
+    background-color: var(--color-primary-lighter);
+}
+
+.status-proposal {
+    border-left-color: var(--warning-color) !important;
+    background-color: var(--color-warning-lighter);
+}
+
+.status-negotiation {
+    border-left-color: var(--color-accent) !important;
+    background-color: var(--color-accent-lighter);
+}
+
+.status-closed-won {
+    border-left-color: var(--color-secondary) !important;
+    background-color: var(--color-secondary-lighter);
+}
+
+.status-closed-lost {
+    border-left-color: var(--danger-color) !important;
+    background-color: var(--color-danger-lighter);
+}
+
+/* Text color variants for pipeline statuses */
+.text-status-prospect {
+    color: var(--color-secondary);
+}
+
+.text-status-qualified {
+    color: var(--color-primary);
+}
+
+.text-status-proposal {
+    color: var(--warning-color);
+}
+
+.text-status-negotiation {
+    color: var(--color-accent);
+}
+
+.text-status-closed-won {
+    color: var(--color-secondary);
+}
+
+.text-status-closed-lost {
+    color: var(--danger-color);
+}
