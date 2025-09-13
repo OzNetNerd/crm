@@ -603,16 +603,18 @@ class DropdownConfigGenerator:
     
     @staticmethod
     def get_model_by_entity_name(entity_name: str):
-        """Get model class from entity name"""
-        from app.models import Company, Task, Opportunity, Stakeholder, User
+        """Get model class from entity name - dynamic mapping from model configs"""
+        from app.utils.core.model_introspection import get_all_entity_models
         
-        model_map = {
-            'companies': Company,
-            'tasks': Task, 
-            'opportunities': Opportunity,
-            'stakeholders': Stakeholder,
-            'teams': User  # Teams manage User entities
-        }
+        # Build mapping dynamically from model configurations
+        all_models = get_all_entity_models()
+        model_map = {}
+        
+        for model_class in all_models:
+            config = model_class.__entity_config__
+            endpoint_name = config.get('endpoint_name', model_class.__tablename__)
+            model_map[endpoint_name] = model_class
+        
         return model_map.get(entity_name.lower())
     
     @staticmethod
@@ -655,15 +657,13 @@ class DropdownConfigGenerator:
                 plural_label = model_class.__entity_config__.get('display_name', 'Items')
                 filter_name = f'All {plural_label}'
         
-        # HTMX targets using proper singular mapping
-        singular_map = {
-            'companies': 'company',
-            'tasks': 'task',
-            'opportunities': 'opportunity', 
-            'stakeholders': 'stakeholder',
-            'teams': 'team'
-        }
-        singular = singular_map.get(entity_name, entity_name)
+        # HTMX targets using model configuration
+        singular = entity_name.rstrip('s')  # Simple fallback
+        if model_class:
+            config = model_class.__entity_config__
+            # Use display name singular for more accurate mapping
+            singular = config.get('display_name_singular', singular).lower().replace(' ', '-')
+        
         hx_target = f'#{singular}-content'
         hx_get = f'/{entity_name}/content'
         
@@ -722,16 +722,4 @@ class DropdownConfigGenerator:
         }
 
 
-# Convenience function for backward compatibility
-def create_form_for_model(model_class, base_form_class: Type[FlaskForm] = None) -> Type[FlaskForm]:
-    """
-    Create a dynamic form class for a model.
-    
-    Args:
-        model_class: SQLAlchemy model class
-        base_form_class: Base form class to inherit from
-        
-    Returns:
-        Dynamically created form class
-    """
-    return DynamicFormBuilder.build_dynamic_form(model_class, base_form_class)
+# All form creation now uses DynamicFormBuilder.build_dynamic_form() directly

@@ -85,19 +85,16 @@ class UniversalIndexHelper:
         if not model_class:
             raise ValueError(f"Unknown entity: {entity_name}")
         
+        # Use unified button generator for consistency
+        from app.utils.ui.button_generator import EntityButtonGenerator
+        
         entity_config = {
             'entity_name': model_class.__entity_config__.get('display_name', 'Items'),
             'entity_name_singular': model_class.__entity_config__.get('display_name_singular', 'Item'),
             'entity_description': model_class.__entity_config__.get('description', f'Manage your {entity_name}'),
             'entity_type': entity_name.rstrip('s'),
             'entity_endpoint': model_class.__entity_config__.get('endpoint_name', entity_name),
-            'entity_buttons': [{
-                'label': f'New {model_class.__entity_config__.get("display_name_singular", "Item")}',
-                'hx_get': f'{model_class.__entity_config__.get("modal_path", "/modals/Item")}/create',
-                'hx_target': 'body',
-                'hx_swap': 'beforeend',
-                'entity': entity_name
-            }]
+            'entity_buttons': [EntityButtonGenerator.generate_single_button(entity_name)]
         }
         
         # Add relationship labels for dynamic pluralization
@@ -121,27 +118,34 @@ class UniversalIndexHelper:
         Returns:
             Dict mapping relationship names to singular/plural labels
         """
-        # Import models to get their configs
-        from app.models import Company, Stakeholder, Task, Opportunity, User
+        from app.utils.core.model_introspection import get_all_entity_models
         
-        # Model mapping - the only place we define relationships
-        model_relationships = {
-            'companies': Company,
-            'contacts': Stakeholder,  # Alias for stakeholders in relationships
-            'stakeholders': Stakeholder, 
-            'opportunities': Opportunity,
-            'tasks': Task,
-            'team_members': User
-        }
-        
-        # Build labels dynamically from each model's config
+        # Get all models with entity configs dynamically
+        all_models = get_all_entity_models()
         labels = {}
-        for relationship_name, model_class in model_relationships.items():
+        
+        for model_class in all_models:
             config = model_class.__entity_config__
-            labels[relationship_name] = {
+            endpoint_name = config.get('endpoint_name', model_class.__tablename__)
+            
+            # Add primary endpoint mapping
+            labels[endpoint_name] = {
                 'singular': config['display_name_singular'],
                 'plural': config['display_name']
             }
+            
+            # Add common aliases based on model type
+            if hasattr(model_class, '__name__'):
+                if model_class.__name__ == 'Stakeholder':
+                    labels['contacts'] = {
+                        'singular': config['display_name_singular'],
+                        'plural': config['display_name']
+                    }
+                elif model_class.__name__ == 'User':
+                    labels['team_members'] = {
+                        'singular': config['display_name_singular'],
+                        'plural': config['display_name']
+                    }
         
         return labels
     

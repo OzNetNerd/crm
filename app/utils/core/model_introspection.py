@@ -551,6 +551,27 @@ def get_model_by_name(model_name: str):
     return model_map.get(model_name.lower())
 
 
+def get_all_entity_models() -> List:
+    """
+    Get all models that have entity configurations.
+    
+    Returns:
+        List of model classes with __entity_config__
+    """
+    from app.models import Company, Stakeholder, Opportunity, Task, User
+    
+    # Get all potential model classes
+    potential_models = [Company, Stakeholder, Opportunity, Task, User]
+    
+    # Filter to only models with entity configs
+    entity_models = []
+    for model in potential_models:
+        if hasattr(model, '__entity_config__'):
+            entity_models.append(model)
+    
+    return entity_models
+
+
 def get_all_model_configs() -> Dict[str, Dict[str, Any]]:
     """
     Get configuration for all models.
@@ -558,9 +579,7 @@ def get_all_model_configs() -> Dict[str, Dict[str, Any]]:
     Returns:
         Dict mapping model names to their configurations
     """
-    from app.models import Company, Stakeholder, Opportunity, Task
-    
-    models = [Company, Stakeholder, Opportunity, Task]
+    models = get_all_entity_models()
     configs = {}
     
     for model in models:
