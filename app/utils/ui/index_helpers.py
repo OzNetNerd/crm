@@ -1,172 +1,133 @@
 """
-Universal Index Helper - DRY consolidation for all entity index routes
+Modernized Universal Index Helper - ADR-016/017 Compliant
 
-Eliminates duplicate parameter parsing, data fetching, and context building
-across all entity index functions by providing a single, consistent interface.
+Metadata-driven context builder using configuration objects and model registry.
+Eliminates legacy patterns in favor of universal DRY principles.
 """
 
-from flask import request
-# Lazy import to avoid circular dependency
-def _get_dropdown_generator():
-    from app.forms.base.builders import DropdownConfigGenerator
-    return DropdownConfigGenerator
+from typing import Dict, List, Any, Optional
+from ..context_builders import UniversalContextBuilder
+from ..frontend_contracts import FrontendContractValidator, ContextTransformer
 
 
 class UniversalIndexHelper:
     """
-    Universal helper for standardized entity index routes
+    Modernized universal helper for entity index routes - ADR-016/017 compliant
     
-    Provides consistent parameter parsing, dropdown generation, and context building
-    for all entity types, eliminating code duplication across routes.
+    Uses metadata-driven configuration objects and model registry instead of
+    legacy __entity_config__ patterns. Follows DRY principles from ADR-008.
     """
     
     @classmethod
-    def parse_request_parameters(cls):
+    def parse_request_parameters(cls) -> Dict[str, Any]:
         """
-        Extract and standardize filter parameters from request
+        DEPRECATED: Use UniversalContextBuilder._parse_request_params() instead
+        
+        This method maintained for backward compatibility during transition.
+        Will be removed in future version.
         
         Returns:
             dict: Standardized parameters for all entity types
         """
-        return {
-            'group_by': request.args.get("group_by", ""),
-            'sort_by': request.args.get("sort_by", ""),
-            'sort_direction': request.args.get("sort_direction", "asc"),
-            'show_completed': request.args.get("show_completed", "false").lower() == "true",
-            'primary_filter': (
-                request.args.get("primary_filter", "").split(",")
-                if request.args.get("primary_filter")
-                else []
-            ),
-            'secondary_filter': (
-                request.args.get("secondary_filter", "").split(",")
-                if request.args.get("secondary_filter")
-                else []
-            ),
-            'entity_filter': (
-                request.args.get("entity_filter", "").split(",")
-                if request.args.get("entity_filter")
-                else []
-            )
-        }
+        return UniversalContextBuilder._parse_request_params()
     
     @classmethod
-    def generate_entity_context(cls, entity_name, default_group_by=None, default_sort_by=None):
+    def generate_entity_context(cls, entity_name: str, 
+                              default_group_by: str = None, 
+                              default_sort_by: str = None) -> Dict[str, Any]:
         """
-        Generate complete context for entity index pages using DRY generators
+        DEPRECATED: Use UniversalContextBuilder.build_entity_index_context() instead
+        
+        This method maintained for backward compatibility during transition.
+        New implementation uses metadata-driven configuration objects.
         
         Args:
-            entity_name (str): Entity type (e.g., 'companies', 'tasks', 'opportunities')
-            default_group_by (str, optional): Default grouping field
-            default_sort_by (str, optional): Default sorting field
+            entity_name: Entity type (e.g., 'companies', 'tasks', 'opportunities')
+            default_group_by: Default grouping field
+            default_sort_by: Default sorting field
             
         Returns:
             dict: Complete context for entity index template
         """
-        params = cls.parse_request_parameters()
-        
-        # Apply defaults
-        if default_group_by and not params['group_by']:
-            params['group_by'] = default_group_by
-        if default_sort_by and not params['sort_by']:
-            params['sort_by'] = default_sort_by
-            
-        # Generate dropdown configurations
-        dropdown_configs = _get_dropdown_generator().generate_entity_dropdown_configs(
+        return UniversalContextBuilder.build_entity_index_context(
             entity_name=entity_name,
-            group_by=params['group_by'],
-            sort_by=params['sort_by'],
-            sort_direction=params['sort_direction'],
-            primary_filter=params['primary_filter']
+            default_group_by=default_group_by,
+            default_sort_by=default_sort_by
         )
-        
-        # Generate entity configuration directly from model
-        model_class = _get_dropdown_generator().get_model_by_entity_name(entity_name)
-        if not model_class:
-            raise ValueError(f"Unknown entity: {entity_name}")
-        
-        # Use unified button generator for consistency
-        from app.utils.ui.button_generator import EntityButtonGenerator
-        
-        entity_config = {
-            'entity_name': model_class.__entity_config__.get('display_name', 'Items'),
-            'entity_name_singular': model_class.__entity_config__.get('display_name_singular', 'Item'),
-            'entity_description': model_class.__entity_config__.get('description', f'Manage your {entity_name}'),
-            'entity_type': entity_name.rstrip('s'),
-            'entity_endpoint': model_class.__entity_config__.get('endpoint_name', entity_name),
-            'entity_buttons': [EntityButtonGenerator.generate_single_button(entity_name)]
-        }
-        
-        # Add relationship labels for dynamic pluralization
-        relationship_labels = cls._build_relationship_labels()
-        
-        # Combine all context
-        context = {
-            **entity_config,
-            'dropdown_configs': dropdown_configs,
-            'request_params': params,
-            'relationship_labels': relationship_labels
-        }
-        
-        return context
     
     @classmethod
-    def _build_relationship_labels(cls):
+    def get_standardized_index_context(cls, entity_name: str, 
+                                     entities_data: List[Dict] = None,
+                                     default_group_by: str = None, 
+                                     default_sort_by: str = None, 
+                                     additional_context: Dict = None) -> Dict[str, Any]:
         """
-        Build relationship labels dynamically from all model configs
+        Get complete standardized context for entity index routes - ADR-017 compliant
         
-        Returns:
-            Dict mapping relationship names to singular/plural labels
-        """
-        from app.utils.core.model_introspection import get_all_entity_models
-        
-        # Get all models with entity configs dynamically
-        all_models = get_all_entity_models()
-        labels = {}
-        
-        for model_class in all_models:
-            config = model_class.__entity_config__
-            endpoint_name = config.get('endpoint_name', model_class.__tablename__)
-            
-            # Add primary endpoint mapping
-            labels[endpoint_name] = {
-                'singular': config['display_name_singular'],
-                'plural': config['display_name']
-            }
-            
-            # Add common aliases based on model type
-            if hasattr(model_class, '__name__'):
-                if model_class.__name__ == 'Stakeholder':
-                    labels['contacts'] = {
-                        'singular': config['display_name_singular'],
-                        'plural': config['display_name']
-                    }
-                elif model_class.__name__ == 'User':
-                    labels['team_members'] = {
-                        'singular': config['display_name_singular'],
-                        'plural': config['display_name']
-                    }
-        
-        return labels
-    
-    @classmethod
-    def get_standardized_index_context(cls, entity_name, default_group_by=None, default_sort_by=None, additional_context=None):
-        """
-        Get complete standardized context for entity index routes
+        Uses new UniversalContextBuilder with configuration objects and validation.
         
         Args:
-            entity_name (str): Entity type
-            default_group_by (str, optional): Default grouping
-            default_sort_by (str, optional): Default sorting  
-            additional_context (dict, optional): Extra context specific to entity
+            entity_name: Entity type
+            entities_data: List of entity data
+            default_group_by: Default grouping
+            default_sort_by: Default sorting  
+            additional_context: Extra context specific to entity
             
         Returns:
             dict: Complete context ready for entity_index.html template
         """
-        context = cls.generate_entity_context(entity_name, default_group_by, default_sort_by)
+        # Use new modernized context builder
+        context = UniversalContextBuilder.get_standardized_index_context(
+            entity_name=entity_name,
+            entities_data=entities_data,
+            default_group_by=default_group_by,
+            default_sort_by=default_sort_by,
+            additional_context=additional_context
+        )
         
-        # Merge any additional context
-        if additional_context:
-            context.update(additional_context)
-            
+        # Validate context against frontend contracts
+        is_valid = FrontendContractValidator.validate_and_report(
+            context, f"{entity_name}_index_context"
+        )
+        
+        if not is_valid:
+            # Log validation errors but don't break functionality
+            import logging
+            logging.warning(f"Context validation failed for {entity_name} index")
+        
         return context
+    
+    @classmethod
+    def get_javascript_config(cls, context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Get JavaScript-friendly configuration from context - ADR-017
+        
+        Args:
+            context: Server-side context dictionary
+            
+        Returns:
+            dict: JavaScript-ready configuration object
+        """
+        js_config = ContextTransformer.to_javascript_config(context)
+        return js_config.to_json_safe()
+    
+    # Backward compatibility methods (deprecated)
+    @classmethod
+    def _build_relationship_labels(cls) -> Dict[str, Dict[str, str]]:
+        """
+        DEPRECATED: Use UniversalContextBuilder._build_relationship_labels() instead
+        
+        Maintained for backward compatibility during transition.
+        """
+        return UniversalContextBuilder._build_relationship_labels()
+
+
+# Backward compatibility alias
+class ModernizedIndexHelper(UniversalIndexHelper):
+    """
+    Modernized index helper - preferred class name for new implementations
+    
+    This class provides the same functionality as UniversalIndexHelper but
+    with a name that clearly indicates it follows the new ADR standards.
+    """
+    pass
