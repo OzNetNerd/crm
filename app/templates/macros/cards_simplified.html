@@ -1,0 +1,195 @@
+{#
+  Simplified Card System - Flattened from 3-file chain
+
+  Combines functionality from:
+  - macros/cards.html
+  - macros/cards/container.html
+  - macros/cards/content_renderers.html
+
+  Eliminates complex abstraction layers for simpler, more maintainable code.
+#}
+
+{% from 'macros/base/icons.html' import icon %}
+{% from "macros/base/forms.html" import bulk_selection_checkbox %}
+
+{#
+  Entity Card - Simplified card for entity display
+
+  Parameters:
+  - entity (required): Entity data object
+  - show_checkbox (optional): Show bulk selection checkbox (default: true)
+  - expandable (optional): Allow expand/collapse (default: true)
+  - extra_classes (optional): Additional CSS classes
+  - actions (optional): Action buttons array
+
+  Usage:
+  {{ entity_card(task) }}
+  {{ entity_card(company, expandable=false, actions=company_actions) }}
+#}
+{% macro entity_card(entity, show_checkbox=true, expandable=true, extra_classes='', actions=None) %}
+{# Get entity type from metadata #}
+{% set metadata = get_model_metadata(entity.__class__.__name__.lower()) %}
+{% set entity_type = metadata.display_name.lower() %}
+{% set card_class = 'card-' + entity_type %}
+
+{% if expandable %}
+<details class="{{ card_class }} {{ extra_classes }} relative mb-3"
+         data-{{ entity_type }}-id="{{ entity.id }}">
+    <summary class="cursor-pointer list-none">
+        <div class="flex-between">
+            <div class="flex items-center space-x-3">
+                {% if show_checkbox %}
+                {{ bulk_selection_checkbox(entity.id) }}
+                {% endif %}
+
+                <div class="flex items-center space-x-2">
+                    {{ icon(entity_type, 'md', 'text-' + entity_type + '-600') }}
+                    <div>
+                        <h3 class="font-semibold text-gray-900">
+                            {{ entity.name or entity.title or entity.subject or entity.id }}
+                        </h3>
+                        {% if entity.description or entity.company_name or entity.status %}
+                        <p class="text-sm text-gray-600">
+                            {{ entity.description or entity.company_name or entity.status }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                {% if actions %}
+                {% for action in actions %}
+                    <a href="{{ action.url }}" class="btn-{{ entity_type }} btn-sm">
+                        {{ action.text }}
+                    </a>
+                {% endfor %}
+                {% endif %}
+
+                <div class="transition-transform duration-200 details-chevron">
+                    {{ icon('chevron-down', 'md', 'text-gray-400') }}
+                </div>
+            </div>
+        </div>
+    </summary>
+
+    <!-- Expanded content -->
+    <div class="mt-4 pt-4 border-t border-gray-200">
+        {{ caller() if caller else render_entity_details(entity) }}
+    </div>
+</details>
+{% else %}
+<!-- Non-expandable card -->
+<div class="{{ card_class }} {{ extra_classes }} relative mb-3"
+     data-{{ entity_type }}-id="{{ entity.id }}">
+    <div class="flex-between">
+        <div class="flex items-center space-x-3">
+            {% if show_checkbox %}
+            {{ bulk_selection_checkbox(entity.id) }}
+            {% endif %}
+
+            <div class="flex items-center space-x-2">
+                {{ icon(entity_type, 'md', 'text-' + entity_type + '-600') }}
+                <div>
+                    <h3 class="font-semibold text-gray-900">
+                        {{ entity.name or entity.title or entity.subject or entity.id }}
+                    </h3>
+                    {% if entity.description or entity.company_name or entity.status %}
+                    <p class="text-sm text-gray-600">
+                        {{ entity.description or entity.company_name or entity.status }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if actions %}
+        <div class="flex items-center space-x-2">
+            {% for action in actions %}
+                <a href="{{ action.url }}" class="btn-{{ entity_type }} btn-sm">
+                    {{ action.text }}
+                </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{#
+  Simple Card - Non-expandable entity card
+
+  Convenience macro for non-expandable cards.
+#}
+{% macro simple_card(entity, show_checkbox=false, extra_classes='', actions=None) %}
+{{ entity_card(entity, show_checkbox=show_checkbox, expandable=false, extra_classes=extra_classes, actions=actions) }}
+{% endmacro %}
+
+{#
+  Render Entity Details - Auto-render entity details based on common fields
+
+  Provides sensible defaults for common entity fields.
+  Can be overridden by providing caller() content to entity_card.
+#}
+{% macro render_entity_details(entity) %}
+<div class="space-y-3">
+    {% if entity.description and entity.description != entity.name %}
+    <div>
+        <label class="text-form-label">Description</label>
+        <div class="field-readonly">{{ entity.description }}</div>
+    </div>
+    {% endif %}
+
+    {% if entity.status %}
+    <div>
+        <label class="text-form-label">Status</label>
+        <div class="field-readonly">
+            <span class="badge-{{ entity.__class__.__name__.lower() }}">{{ entity.status }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if entity.created_at %}
+    <div>
+        <label class="text-form-label">Created</label>
+        <div class="field-readonly">{{ entity.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+    </div>
+    {% endif %}
+
+    {% if entity.updated_at and entity.updated_at != entity.created_at %}
+    <div>
+        <label class="text-form-label">Last Updated</label>
+        <div class="field-readonly">{{ entity.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{#
+  Card List - Render a list of entities as cards
+
+  Parameters:
+  - entities (required): List of entity objects
+  - show_checkboxes (optional): Show bulk selection checkboxes (default: true)
+  - expandable (optional): Make cards expandable (default: true)
+  - actions (optional): Action buttons for each card
+  - empty_message (optional): Message when no entities
+
+  Usage:
+  {{ card_list(tasks, actions=task_actions) }}
+  {{ card_list(companies, expandable=false, empty_message="No companies found") }}
+#}
+{% macro card_list(entities, show_checkboxes=true, expandable=true, actions=None, empty_message="No items found") %}
+{% if entities %}
+    <div class="space-y-3">
+        {% for entity in entities %}
+            {{ entity_card(entity, show_checkbox=show_checkboxes, expandable=expandable, actions=actions) }}
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-8">
+        <p class="text-gray-500">{{ empty_message }}</p>
+    </div>
+{% endif %}
+{% endmacro %}

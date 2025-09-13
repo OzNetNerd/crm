@@ -112,6 +112,22 @@
     background-color: var(--teams-hover-color);
 }
 
+/* Small button variant */
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+/* Button size variants for entity buttons */
+.btn-company.btn-sm,
+.btn-task.btn-sm,
+.btn-opportunity.btn-sm,
+.btn-stakeholder.btn-sm,
+.btn-team.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
 /* ========================================
  * DRY BADGE PATTERN
  * Usage: <span class="badge-{{entity_name}}-{{status}}">
@@ -250,6 +266,397 @@
 .form-team select:focus {
     border-color: var(--teams-primary-color);
     box-shadow: 0 0 0 3px var(--teams-light-color);
+}
+
+/* ========================================
+ * DROPDOWN COMPONENTS
+ * Usage: class="dropdown-option", class="dropdown-menu"
+ * ======================================== */
+
+.dropdown-option {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    color: var(--color-gray-700);
+    text-decoration: none;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dropdown-option:hover {
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-900);
+}
+
+.dropdown-option:focus {
+    outline: none;
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.dropdown-button {
+    background-color: white;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    min-width: 12rem;
+    width: 100%;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.dropdown-button:hover {
+    background-color: var(--color-gray-50);
+}
+
+.dropdown-button:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.dropdown-chevron {
+    width: 1rem;
+    height: 1rem;
+    margin-left: 0.5rem;
+    transition: transform 0.2s;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.25rem;
+    min-width: 12rem;
+    background-color: white;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0.375rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 20;
+}
+
+.dropdown-option-checkbox {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+}
+
+.dropdown-checkbox {
+    margin-right: 0.75rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--color-gray-300);
+    color: var(--color-primary);
+}
+
+.dropdown-checkbox:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ========================================
+ * FORM COMPONENTS
+ * Usage: class="text-form-label", class="field-readonly"
+ * ======================================== */
+
+.text-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    font-size: 0.875rem;
+}
+
+.field-readonly {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-gray-200);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: var(--color-gray-50);
+    color: var(--color-gray-700);
+}
+
+.field-editable {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field-editable:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Entity-specific field focus states */
+.field-company:focus {
+    border-color: var(--company-primary-color);
+    box-shadow: 0 0 0 3px var(--company-light-color);
+}
+
+.field-task:focus {
+    border-color: var(--task-primary-color);
+    box-shadow: 0 0 0 3px var(--task-light-color);
+}
+
+.field-opportunity:focus {
+    border-color: var(--opportunity-primary-color);
+    box-shadow: 0 0 0 3px var(--opportunity-light-color);
+}
+
+.field-stakeholder:focus {
+    border-color: var(--stakeholder-primary-color);
+    box-shadow: 0 0 0 3px var(--stakeholder-light-color);
+}
+
+/* ========================================
+ * COMMON COMPONENT UTILITIES
+ * Semantic classes to replace verbose Tailwind chains
+ * ======================================== */
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.space-y-4 > * + * {
+    margin-top: 1rem;
+}
+
+.space-x-4 > * + * {
+    margin-left: 1rem;
+}
+
+/* ========================================
+ * MODAL & CONTAINER COMPONENTS
+ * Semantic classes for modal and container patterns
+ * ======================================== */
+
+.modal-field {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-gray-200);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: var(--color-gray-50);
+    color: var(--color-gray-700);
+}
+
+.modal-field-group {
+    margin-bottom: 1rem;
+}
+
+.modal-field-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.modal-field-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.modal-buttons {
+    padding: 1rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    border-top: 1px solid var(--color-gray-200);
+}
+
+.btn-secondary {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    background-color: white;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-gray-50);
+    border-color: var(--color-gray-400);
+}
+
+/* ========================================
+ * NAVIGATION & HEADER COMPONENTS
+ * Common navigation and header patterns
+ * ======================================== */
+
+.nav-container {
+    background-color: var(--color-gray-50);
+}
+
+.nav-inner {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+    background-color: white;
+}
+
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 4rem;
+}
+
+.nav-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.nav-brand:hover {
+    color: var(--color-primary-hover);
+}
+
+.nav-links {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.nav-link {
+    padding: 0.5rem 1rem;
+    color: var(--color-gray-700);
+    text-decoration: none;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-link:hover {
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-900);
+}
+
+.nav-link.active {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+/* ========================================
+ * SEARCH COMPONENTS
+ * Search input and results styling
+ * ======================================== */
+
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    padding: 0.5rem 0.75rem;
+    padding-right: 2.5rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    width: 16rem;
+}
+
+.search-button {
+    position: absolute;
+    right: 0.5rem;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s;
+}
+
+.search-button:hover {
+    background-color: var(--color-gray-100);
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: white;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0 0 0.375rem 0.375rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+    max-height: 24rem;
+    overflow-y: auto;
+}
+
+/* ========================================
+ * LAYOUT UTILITIES
+ * Common layout patterns used throughout templates
+ * ======================================== */
+
+.main-container {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    background-color: white;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.content-section {
+    margin-bottom: 2rem;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+}
+
+.grid-responsive {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+    .lg\\:grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+    }
 }
 
 /* ========================================
