@@ -431,6 +431,27 @@ class EntityGrouper:
     def __init__(self, model_class, entity_name):
         self.model_class = model_class
         self.entity_name = entity_name
+    
+    def _get_relationship_info(self, field_name):
+        """Check if field is a relationship field and return its metadata"""
+        # Look through all columns to find foreign key with relationship metadata
+        for attr_name in dir(self.model_class):
+            try:
+                attr = getattr(self.model_class, attr_name)
+                if hasattr(attr, 'property') and hasattr(attr.property, 'columns') and len(attr.property.columns) > 0:
+                    column = attr.property.columns[0]
+                    info = column.info
+                    
+                    # Check if this field has relationship metadata pointing to our field
+                    if (info.get('relationship_field') == field_name and 
+                        info.get('groupable', False)):
+                        return {
+                            'display_field': info.get('relationship_display_field', 'name'),
+                            'foreign_key_field': attr_name
+                        }
+            except (AttributeError, TypeError):
+                continue
+        return None
         
     
     def group_by_field(self, entities, group_by, custom_grouper=None):
@@ -445,8 +466,22 @@ class EntityGrouper:
         # Default grouping logic
         grouped = defaultdict(list)
         
-        # Generic field-based grouping
-        if hasattr(self.model_class, group_by):
+        # Check if this is a relationship field by examining model metadata
+        relationship_info = self._get_relationship_info(group_by)
+        
+        if relationship_info:
+            # Handle relationship-based grouping
+            for entity in entities:
+                related_obj = getattr(entity, group_by, None)
+                if related_obj:
+                    # Get the display field value from the related object
+                    display_field = relationship_info.get('display_field', 'name')
+                    key = getattr(related_obj, display_field, str(related_obj))
+                else:
+                    key = f"No {group_by.replace('_', ' ').title()}"
+                grouped[str(key)].append(entity)
+        elif hasattr(self.model_class, group_by):
+            # Generic field-based grouping  
             for entity in entities:
                 field_value = getattr(entity, group_by, None)
                 key = str(field_value) if field_value is not None else "Other"

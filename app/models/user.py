@@ -42,6 +42,40 @@ class User(BaseModel):
         'display_label': 'Job Title',
         'groupable': True
     })  # Single source of truth for role
+    department = db.Column(db.String(100), info={
+        'display_label': 'Department',
+        'groupable': True,
+        'choices': {
+            'sales': {
+                'label': 'Sales',
+                'description': 'Sales and business development'
+            },
+            'engineering': {
+                'label': 'Engineering',
+                'description': 'Software development and engineering'
+            },
+            'marketing': {
+                'label': 'Marketing',
+                'description': 'Marketing and communications'
+            },
+            'support': {
+                'label': 'Support',
+                'description': 'Customer support and success'
+            },
+            'operations': {
+                'label': 'Operations',
+                'description': 'Business operations and administration'
+            },
+            'finance': {
+                'label': 'Finance',
+                'description': 'Finance and accounting'
+            },
+            'hr': {
+                'label': 'Human Resources',
+                'description': 'Human resources and people operations'
+            }
+        }
+    })
     created_at = db.Column(db.DateTime, default=datetime.utcnow, info={'display_label': 'Created At'})
 
     def to_dict(self):

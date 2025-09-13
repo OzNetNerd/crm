@@ -151,20 +151,61 @@ CONTACT_NAMES = [
 
 JOB_TITLES = [
     "CEO",
-    "CTO",
+    "CTO", 
     "VP of Sales",
     "Marketing Director",
     "Operations Manager",
-    "Project Manager",
+    "Project Manager", 
     "Business Development",
     "Product Manager",
     "IT Director",
     "CFO",
     "Sales Manager",
-    "Technical Lead",
     "Account Manager",
-    "Senior Developer",
-    "HR Director",
+    "Solutions Engineer",
+    "Customer Success Manager",
+    "Technical Lead",
+    "Software Engineer",
+    "Marketing Manager",
+    "HR Manager",
+    "Finance Manager"
+]
+
+DEPARTMENTS = [
+    "sales",
+    "engineering", 
+    "marketing",
+    "support",
+    "operations",
+    "finance",
+    "hr"
+]
+
+# Enhanced job titles for stakeholders and team members
+STAKEHOLDER_JOB_TITLES = [
+    "CEO",
+    "CTO",
+    "VP of Sales",
+    "Marketing Director", 
+    "Operations Manager",
+    "IT Director",
+    "CFO",
+    "VP Engineering",
+    "Head of Product",
+    "Chief Revenue Officer"
+]
+
+TEAM_JOB_TITLES = [
+    "Sales Manager",
+    "Account Manager", 
+    "Solutions Engineer",
+    "Customer Success Manager",
+    "Technical Lead",
+    "Software Engineer",
+    "Marketing Manager",
+    "HR Manager",
+    "Finance Manager",
+    "Business Development Manager"
 ]
 
 # Team member names for seeding User model
@@ -415,7 +456,7 @@ def create_contacts(companies):
 
             contact = Stakeholder(
                 name=name,
-                job_title=random.choice(JOB_TITLES),
+                job_title=random.choice(STAKEHOLDER_JOB_TITLES),
                 email=email if has_email else None,
                 phone=(
                     f"+1-{random.randint(100,999)}-{random.randint(100,999)}-{random.randint(1000,9999)}"
@@ -444,7 +485,8 @@ def create_team_members():
         team_member = User(
             name=name,
             email=email,
-            job_title=random.choice(JOB_TITLES)
+            job_title=random.choice(TEAM_JOB_TITLES),
+            department=random.choice(DEPARTMENTS)
         )
         team_members.append(team_member)
         db.session.add(team_member)
