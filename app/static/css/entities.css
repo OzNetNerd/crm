@@ -1164,7 +1164,8 @@
 
 .badge-status-proposal,
 .badge-status-pending,
-.badge-status-in-progress {
+.badge-status-in-progress,
+.badge-status-todo {
     background-color: #fef3c7; /* yellow-100 */
     color: #92400e; /* yellow-800 */
 }
