@@ -8,6 +8,7 @@
   - results: List of search result objects with id, type, title, subtitle, url
   - query: The search query string
 #}
+{% from 'macros/base/buttons.html' import entity_link %}
 
 {% if results %}
 <div class="py-1">
@@ -18,10 +19,8 @@
     {% endif %}
 
     {% for result in results %}
-    <a href="{{ result.url }}"
-       class="group block px-4 py-3 hover:bg-blue-50 border-b border-gray-100 last:border-b-0 transition-colors duration-150"
-       data-search-result="{{ result.type }}">
-        <div class="flex items-center space-x-3">
+    <div class="border-b border-gray-100 last:border-b-0" data-search-result="{{ result.type }}">
+        <div class="flex items-center space-x-3 px-4 py-3">
             <!-- Type icon -->
             <div class="flex-shrink-0">
                 <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm
@@ -30,24 +29,13 @@
                     {% elif result.type == 'opportunity' %}bg-purple-100 text-purple-600
                     {% elif result.type == 'task' %}bg-orange-100 text-orange-600
                     {% else %}bg-gray-100 text-gray-600{% endif %}">
-                    {% if result.type == 'company' %}🏢
-                    {% elif result.type == 'contact' %}👤
-                    {% elif result.type == 'opportunity' %}💼
-                    {% elif result.type == 'task' %}✅
-                    {% else %}📄{% endif %}
+{{ result.icon if result.icon else '📄' }}
                 </span>
             </div>
 
-            <!-- Content -->
+            <!-- Content using universal entity_link macro -->
             <div class="min-w-0 flex-1">
-                <div class="text-sm font-semibold text-gray-900 truncate group-hover:text-blue-700 transition-colors">
-                    {{ result.title }}
-                </div>
-                {% if result.subtitle %}
-                <div class="text-xs text-gray-500 truncate mt-1">
-                    {{ result.subtitle }}
-                </div>
-                {% endif %}
+                {{ entity_link(result.model_type, result.id, result.title, mode='modal', subtitle=result.subtitle) }}
             </div>
 
             <!-- Type label -->
@@ -62,7 +50,7 @@
                 </span>
             </div>
         </div>
-    </a>
+    </div>
     {% endfor %}
 </div>
 {% else %}

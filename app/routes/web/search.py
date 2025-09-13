@@ -5,7 +5,117 @@ from app.utils.core.model_introspection import get_model_by_name
 
 search_bp = Blueprint("search", __name__)
 
-# Get searchable entity types from model map  
+# DRY entity configuration for dynamic search results
+ENTITY_CONFIGS = {
+    'company': {
+        'model': Company,
+        'type_label': 'company',
+        'search_fields': ['name', 'industry'],
+        'title_field': 'name',
+        'subtitle_fields': ['industry'],
+        'icon': '🏢'
+    },
+    'stakeholder': {
+        'model': Stakeholder,
+        'type_label': 'contact',
+        'search_fields': ['name', 'email', 'job_title'],
+        'title_field': 'name',
+        'subtitle_fields': ['job_title', 'company.name'],
+        'icon': '👤',
+        'joins': [Company]
+    },
+    'opportunity': {
+        'model': Opportunity,
+        'type_label': 'opportunity',
+        'search_fields': ['name', 'company.name'],
+        'title_field': 'name',
+        'subtitle_fields': ['company.name', 'value'],
+        'icon': '💼',
+        'joins': [Company]
+    },
+    'task': {
+        'model': Task,
+        'type_label': 'task',
+        'search_fields': ['description'],
+        'title_field': 'description',
+        'subtitle_fields': ['due_date', 'priority'],
+        'icon': '✅'
+    }
+}
+
+def generate_entity_result(entity, entity_type, config):
+    """Generate a standardized search result for any entity type"""
+    title = getattr(entity, config['title_field'])
+
+    # Build subtitle dynamically from configured fields
+    subtitle_parts = []
+    for field in config.get('subtitle_fields', []):
+        if '.' in field:
+            # Handle nested fields like 'company.name'
+            obj = entity
+            for part in field.split('.'):
+                obj = getattr(obj, part, None)
+                if obj is None:
+                    break
+            if obj:
+                subtitle_parts.append(str(obj))
+        else:
+            value = getattr(entity, field, None)
+            if value:
+                # Special formatting for different field types
+                if field == 'value' and hasattr(entity, 'value'):
+                    subtitle_parts.append(f"${value:,.0f}")
+                elif field == 'due_date' and hasattr(entity, 'due_date'):
+                    subtitle_parts.append(f'Due: {value.strftime("%m/%d/%y")}')
+                else:
+                    subtitle_parts.append(str(value))
+
+    return {
+        "id": entity.id,
+        "type": config['type_label'],
+        "model_type": entity_type,  # Add model type for modal system
+        "title": title,
+        "subtitle": " • ".join(subtitle_parts) if subtitle_parts else "",
+        "url": f"/modals/{entity_type}/{entity.id}/view",
+        "icon": config.get('icon', '📄')
+    }
+
+def search_entities(entity_type, query, limit, config):
+    """DRY search function for any entity type"""
+    model = config['model']
+
+    # Build base query
+    base_query = model.query
+
+    # Add joins if specified
+    if 'joins' in config:
+        for join_model in config['joins']:
+            base_query = base_query.join(join_model)
+
+    if query:
+        # Build search conditions dynamically
+        search_conditions = []
+        for field in config['search_fields']:
+            if '.' in field:
+                # Handle nested fields like 'company.name'
+                obj = model
+                for part in field.split('.')[:-1]:
+                    # Get the relationship
+                    obj = getattr(obj, part).property.mapper.class_
+                field_name = field.split('.')[-1]
+                search_attr = getattr(obj, field_name)
+            else:
+                search_attr = getattr(model, field)
+
+            search_conditions.append(search_attr.ilike(f"%{query}%"))
+
+        entities = base_query.filter(or_(*search_conditions)).limit(limit).all()
+    else:
+        entities = base_query.limit(limit).all()
+
+    return [generate_entity_result(entity, entity_type, config) for entity in entities]
+
+# Get searchable entity types from model map
 def get_searchable_entity_types():
     """Get searchable entity types dynamically from model introspection"""
     # These are the models we want to include in search
@@ -33,143 +143,7 @@ def search():
     entity_type = request.args.get("type", "all")
     limit = min(int(request.args.get("limit", 20)), 50)
 
-    # Handle comma-separated entity types dynamically
-    searchable_types = get_searchable_entity_types()
-    if entity_type == "all":
-        entity_types = list(searchable_types.keys())
-    else:
-        entity_types = [t.strip() for t in entity_type.split(",") if t.strip() in searchable_types]
-        if not entity_types:
-            entity_types = list(searchable_types.keys())
-
-    results = []
-
-    if "company" in entity_types:
-        if query:
-            companies = (
-                Company.query.filter(
-                    or_(
-                        Company.name.ilike(f"%{query}%"),
-                        Company.industry.ilike(f"%{query}%"),
-                    )
-                )
-                .limit(limit)
-                .all()
-            )
-        else:
-            # Return all companies when no query
-            companies = Company.query.limit(limit).all()
-
-        for company in companies:
-            results.append(
-                {
-                    "id": company.id,
-                    "type": "company",
-                    "title": company.name,
-                    "subtitle": company.industry,
-                    "url": f"/companies/{company.id}",
-                }
-            )
-
-    if "stakeholder" in entity_types:
-        if query:
-            contacts = (
-                Stakeholder.query.join(Company)
-                .filter(
-                    or_(
-                        Stakeholder.name.ilike(f"%{query}%"),
-                        Stakeholder.email.ilike(f"%{query}%"),
-                        Stakeholder.job_title.ilike(f"%{query}%"),
-                    )
-                )
-                .limit(limit)
-                .all()
-            )
-        else:
-            # Return all contacts when no query
-            contacts = Stakeholder.query.join(Company).limit(limit).all()
-
-        for contact in contacts:
-            results.append(
-                {
-                    "id": contact.id,
-                    "type": "contact",
-                    "title": contact.name,
-                    "subtitle": (
-                        f"{contact.job_title} at {contact.company.name}"
-                        if contact.job_title
-                        else contact.company.name
-                    ),
-                    "url": f"/contacts/{contact.id}",
-                }
-            )
-
-    if "opportunity" in entity_types:
-        if query:
-            opportunities = (
-                Opportunity.query.join(Company)
-                .filter(
-                    or_(
-                        Opportunity.name.ilike(f"%{query}%"),
-                        Company.name.ilike(f"%{query}%"),
-                    )
-                )
-                .limit(limit)
-                .all()
-            )
-        else:
-            # Return all opportunities when no query
-            opportunities = Opportunity.query.join(Company).limit(limit).all()
-
-        for opportunity in opportunities:
-            results.append(
-                {
-                    "id": opportunity.id,
-                    "type": "opportunity",
-                    "title": opportunity.name,
-                    "subtitle": (
-                        f"{opportunity.company.name} • ${opportunity.value:,.0f}"
-                        if opportunity.value
-                        else opportunity.company.name
-                    ),
-                    "url": f"/opportunities/{opportunity.id}",
-                }
-            )
-
-    if "task" in entity_types:
-        if query:
-            tasks = (
-                Task.query.filter(Task.description.ilike(f"%{query}%"))
-                .limit(limit)
-                .all()
-            )
-        else:
-            # Return all tasks when no query
-            tasks = Task.query.limit(limit).all()
-
-        for task in tasks:
-            results.append(
-                {
-                    "id": task.id,
-                    "type": "task",
-                    "title": task.description,
-                    "subtitle": (
-                        f'Due: {task.due_date.strftime("%m/%d/%y")}'
-                        if task.due_date
-                        else "No due date"
-                    ),
-                    "url": f"/tasks/{task.id}",
-                }
-            )
-
-    # Sort by relevance if there's a query, otherwise by type and title
-    if query:
-        results.sort(key=lambda x: query.lower() in x["title"].lower(), reverse=True)
-    else:
-        # Sort by type first, then by title
-        type_order = {"company": 0, "contact": 1, "opportunity": 2, "task": 3}
-        results.sort(key=lambda x: (type_order.get(x["type"], 4), x["title"].lower()))
-
+    results = _perform_search(query, entity_type, limit)
     return jsonify(results[:limit])
 
 
@@ -287,103 +261,12 @@ def _perform_search(query, entity_type, limit):
 
     results = []
 
-    if "company" in entity_types:
-        if query:
-            companies = (
-                Company.query.filter(
-                    or_(
-                        Company.name.ilike(f"%{query}%"),
-                        Company.industry.ilike(f"%{query}%"),
-                    )
-                )
-                .limit(limit)
-                .all()
-            )
-        else:
-            companies = Company.query.limit(limit).all()
-
-        for company in companies:
-            results.append({
-                "id": company.id,
-                "type": "company",
-                "title": company.name,
-                "subtitle": f"{company.industry} • {company.address}" if company.industry and company.address else (company.industry or company.address or ""),
-                "url": f"/companies/{company.id}",
-            })
-
-    if "stakeholder" in entity_types:
-        if query:
-            contacts = (
-                Stakeholder.query.join(Company)
-                .filter(
-                    or_(
-                        Stakeholder.name.ilike(f"%{query}%"),
-                        Stakeholder.email.ilike(f"%{query}%"),
-                        Company.name.ilike(f"%{query}%"),
-                    )
-                )
-                .limit(limit)
-                .all()
-            )
-        else:
-            contacts = Stakeholder.query.join(Company).limit(limit).all()
-
-        for contact in contacts:
-            results.append({
-                "id": contact.id,
-                "type": "contact",
-                "title": contact.name,
-                "subtitle": (
-                    f"{contact.job_title} at {contact.company.name}"
-                    if contact.job_title
-                    else contact.company.name
-                ),
-                "url": f"/contacts/{contact.id}",
-            })
-
-    if "opportunity" in entity_types:
-        if query:
-            opportunities = (
-                Opportunity.query.join(Company)
-                .filter(
-                    or_(
-                        Opportunity.name.ilike(f"%{query}%"),
-                        Company.name.ilike(f"%{query}%"),
-                    )
-                )
-                .limit(limit)
-                .all()
-            )
-        else:
-            opportunities = Opportunity.query.join(Company).limit(limit).all()
-
-        for opportunity in opportunities:
-            results.append({
-                "id": opportunity.id,
-                "type": "opportunity",
-                "title": opportunity.name,
-                "subtitle": f"{opportunity.company.name} • ${opportunity.value:,.0f}" if opportunity.value else opportunity.company.name,
-                "url": f"/opportunities/{opportunity.id}",
-            })
-
-    if "task" in entity_types:
-        if query:
-            tasks = (
-                Task.query.filter(Task.description.ilike(f"%{query}%"))
-                .limit(limit)
-                .all()
-            )
-        else:
-            tasks = Task.query.limit(limit).all()
-
-        for task in tasks:
-            results.append({
-                "id": task.id,
-                "type": "task",
-                "title": task.description,
-                "subtitle": f"{task.priority} priority" if task.priority else "No priority set",
-                "url": f"/tasks/{task.id}",
-            })
+    # Use DRY search for all configured entity types
+    for entity_type in entity_types:
+        if entity_type in ENTITY_CONFIGS:
+            config = ENTITY_CONFIGS[entity_type]
+            entity_results = search_entities(entity_type, query, limit, config)
+            results.extend(entity_results)
 
     # Sort results by type and title
     if results:
