@@ -1,19 +1,18 @@
 {% extends "base/layout.html" %}
-{% from "macros/imports/universal.html" import modal_container %}
+{% from "macros/imports/streamlined.html" import modal_container, simple_page_header %}
 {% from "macros/dashboard/pipeline_section.html" import dashboard_pipeline_section %}
 {% from "macros/dashboard/activity_section.html" import dashboard_overdue_section, dashboard_notes_section, dashboard_tasks_section, dashboard_opportunities_section %}
-{% from "macros/base/layout.html" import page_layout %}
 
 
 {% block title %}Dashboard - CRM{% endblock %}
 
 {% block content %}
-{{ page_layout('Dashboard', 'Overview of your CRM performance and activity', buttons=entity_types, header_only=true) }}
+{{ simple_page_header('Dashboard', 'Overview of your CRM performance and activity', buttons=entity_types) }}
 
 {# Dashboard-specific content only - entity metrics belong in entity index pages #}
 {{ dashboard_pipeline_section(pipeline_stats) }}
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<div class="grid-2">
     <!-- Top Row -->
     <div class="space-y-6">
         <!-- Top-left: Overdue Tasks -->

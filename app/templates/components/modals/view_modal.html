@@ -22,21 +22,21 @@
                     {% if field.type == 'text' %}
                         <div>
                             <label class="text-form-label">{{ field.label }}</label>
-                            <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                            <div class="modal-field">
                                 {{ entity[field.name] or '' }}
                             </div>
                         </div>
                     {% elif field.type == 'textarea' %}
                         <div>
                             <label class="text-form-label">{{ field.label }}</label>
-                            <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50 min-h-[{{ (field.rows | default(3)) * 1.5 }}rem]">
+                            <div class="modal-field" style="min-height: {{ (field.rows | default(3)) * 1.5 }}rem;">
                                 {{ entity[field.name] or '' }}
                             </div>
                         </div>
                     {% elif field.type == 'select' %}
                         <div>
                             <label class="text-form-label">{{ field.label }}</label>
-                            <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                            <div class="modal-field">
                                 {% set current_value = entity[field.name] %}
                                 {% for option in field.options %}
                                     {% if option.value == current_value %}
@@ -51,24 +51,24 @@
                     {% elif field.type == 'date' %}
                         <div>
                             <label class="text-form-label">{{ field.label }}</label>
-                            <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                            <div class="modal-field">
                                 {{ entity[field.name] or '' }}
                             </div>
                         </div>
                     {% elif field.type == 'grid' %}
-                        <div class="grid grid-cols-{{ field.columns | default(2) }} gap-4">
+                        <div class="modal-field-grid" style="grid-template-columns: repeat({{ field.columns | default(2) }}, 1fr);">
                             {% for subfield in field.fields %}
                                 {% if subfield.type == 'text' %}
                                     <div>
                                         <label class="text-form-label">{{ subfield.label }}</label>
-                                        <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                                        <div class="modal-field">
                                             {{ entity[subfield.name] or '' }}
                                         </div>
                                     </div>
                                 {% elif subfield.type == 'select' %}
                                     <div>
                                         <label class="text-form-label">{{ subfield.label }}</label>
-                                        <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                                        <div class="modal-field">
                                             {% set current_value = entity[subfield.name] %}
                                             {% for option in subfield.options %}
                                                 {% if option.value == current_value %}
@@ -83,14 +83,14 @@
                                 {% elif subfield.type == 'date' %}
                                     <div>
                                         <label class="text-form-label">{{ subfield.label }}</label>
-                                        <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                                        <div class="modal-field">
                                             {{ entity[subfield.name] or '' }}
                                         </div>
                                     </div>
                                 {% elif subfield.type == 'number' %}
                                     <div>
                                         <label class="text-form-label">{{ subfield.label }}</label>
-                                        <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                                        <div class="modal-field">
                                             {{ entity[subfield.name] or '' }}
                                         </div>
                                     </div>
@@ -100,7 +100,7 @@
                     {% elif field.type == 'number' %}
                         <div>
                             <label class="text-form-label">{{ field.label }}</label>
-                            <div class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50">
+                            <div class="modal-field">
                                 {{ entity[field.name] or '' }}
                             </div>
                         </div>
@@ -111,7 +111,7 @@
     
     {% call htmx_modal_footer(classes="flex justify-end p-6 border-t bg-gray-50") %}
         <button data-action="close-modal"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                class="btn-secondary">
             Close
         </button>
     {% endcall %}

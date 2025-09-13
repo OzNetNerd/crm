@@ -16,12 +16,12 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-50">
-    <nav class="bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-white">
-            <div class="flex justify-between items-center h-16">
+    <nav class="nav-container">
+        <div class="nav-inner">
+            <div class="nav-content">
                 <div class="flex items-center space-x-8">
-                    <a href="{{ url_for('dashboard.index') }}" class="text-xl font-bold text-blue-600 hover:text-blue-800 transition-colors">CRM</a>
-                    <div class="flex space-x-2">
+                    <a href="{{ url_for('dashboard.index') }}" class="nav-brand">CRM</a>
+                    <div class="nav-links">
                         {{ nav_link('companies.index', 'Companies') }}
                         {{ nav_link('stakeholders.index', 'Stakeholders') }}
                         {{ nav_link('opportunities.index', 'Opportunities') }}
@@ -30,13 +30,13 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="relative flex items-center">
+                    <div class="search-container">
                         <div class="relative">
                             <input type="text"
                                    id="global-search"
                                    name="q"
                                    placeholder="Search companies, contacts, opportunities..."
-                                   class="px-3 py-2 pr-10 border border-gray-300 rounded-md text-sm w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   class="search-input"
                                    autocomplete="off"
                                    autocorrect="off"
                                    autocapitalize="off"
@@ -46,7 +46,7 @@
                                    hx-target="#search-results"
                                    hx-indicator="#search-spinner">
                             <button id="advanced-search-btn"
-                                    class="absolute right-2 p-1 hover:bg-gray-100 rounded"
+                                    class="search-button"
                                     title="Advanced Search">
                                 {{ icon('funnel', 'sm', 'text-gray-400 hover:text-gray-600') }}
                             </button>
@@ -57,8 +57,7 @@
                         </div>
 
                         <!-- Search results dropdown -->
-                        <div id="search-results"
-                             class="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-b-md shadow-lg z-50 max-h-96 overflow-y-auto hidden">
+                        <div id="search-results" class="search-results hidden">
                         </div>
                     </div>
                 </div>
@@ -66,7 +65,7 @@
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white">
+    <main class="main-container">
         {% block content %}{% endblock %}
     </main>
 
