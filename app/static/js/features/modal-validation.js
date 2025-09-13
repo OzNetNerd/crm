@@ -4,6 +4,20 @@
  */
 
 /**
+ * Simple debounce function to limit validation frequency
+ * @param {Function} func - Function to debounce
+ * @param {number} delay - Delay in milliseconds
+ * @returns {Function} Debounced function
+ */
+function debounce(func, delay) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+/**
  * Initialize modal validation for a given modal element
  * @param {HTMLElement} modal - The modal element to initialize
  */
@@ -34,11 +48,14 @@ function initializeModalValidation(modal) {
     // Initial check
     checkRequiredFields();
 
+    // Create debounced validation function
+    const debouncedCheck = debounce(checkRequiredFields, 150);
+
     // Add event listeners to all form inputs
     const allInputs = form.querySelectorAll('input, select, textarea');
     allInputs.forEach(input => {
-        input.addEventListener('input', checkRequiredFields);
-        input.addEventListener('change', checkRequiredFields);
+        input.addEventListener('input', debouncedCheck);
+        input.addEventListener('change', checkRequiredFields); // Immediate for change events
     });
 }
 
