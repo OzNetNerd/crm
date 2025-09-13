@@ -233,6 +233,38 @@ class DynamicFormBuilder:
         return DateField(**kwargs)
     
     @classmethod
+    def _should_include_field_in_form(cls, model_class, attr_name: str, info: dict) -> bool:
+        """
+        Determine if a field should be included in the form.
+
+        Uses form_include whitelist approach when available, falls back to form_exclude blacklist.
+
+        Args:
+            model_class: SQLAlchemy model class
+            attr_name: Name of the field attribute
+            info: Field info dictionary
+
+        Returns:
+            True if field should be included in form, False otherwise
+        """
+        # Check if model uses form_include whitelist approach
+        has_form_include_fields = any(
+            hasattr(getattr(model_class, name, None), 'property') and
+            hasattr(getattr(model_class, name).property, 'columns') and
+            getattr(model_class, name).property.columns[0].info and
+            getattr(model_class, name).property.columns[0].info.get('form_include')
+            for name in dir(model_class)
+            if hasattr(getattr(model_class, name, None), 'property')
+        )
+
+        if has_form_include_fields:
+            # Whitelist mode: only include fields explicitly marked with form_include=True
+            return info and info.get('form_include', False)
+        else:
+            # Blacklist mode: include all fields except those marked with form_exclude=True
+            return not (info and info.get('form_exclude', False))
+
+    @classmethod
     def build_dynamic_form(cls, model_class, base_form_class: Type[FlaskForm] = None) -> Type[FlaskForm]:
         """
         Build a complete dynamic form class from model metadata.
@@ -257,13 +289,13 @@ class DynamicFormBuilder:
             if hasattr(attr, 'property') and hasattr(attr.property, 'columns'):
                 column = attr.property.columns[0]
                 info = column.info
-                
-                # Skip fields that are marked as non-form fields
-                if info and info.get('form_exclude', False):
-                    continue
-                
+
                 # Skip system fields
                 if attr_name in ['id', 'created_at', 'updated_at']:
+                    continue
+
+                # Check if field should be included in form
+                if not cls._should_include_field_in_form(model_class, attr_name, info):
                     continue
                 
                 # Determine field type and create appropriate field

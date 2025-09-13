@@ -38,13 +38,23 @@ class Opportunity(EntityModel):
     }
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
+    name = db.Column(
+        db.String(255),
+        nullable=False,
+        info={
+            'display_label': 'Opportunity Name',
+            'required': True,
+            'form_include': True
+        }
+    )
     value = db.Column(
         db.Integer,
         info={
             'display_label': 'Deal Value',
             'groupable': True,
             'sortable': True,
+            'form_include': True,
+            'required': True,
             'priority_ranges': [
                 (50000, 'high', 'High Value ($50K+)'),
                 (10000, 'medium', 'Medium Value ($10K-$50K)'),
@@ -102,10 +112,11 @@ class Opportunity(EntityModel):
         }
     )
     stage = db.Column(
-        db.String(50), 
+        db.String(50),
         default="prospect",
         info={
             'display_label': 'Pipeline Stage',
+            'form_include': True,
             'choices': {
                 'prospect': {
                     'label': 'Prospect',
@@ -137,7 +148,27 @@ class Opportunity(EntityModel):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Foreign keys
-    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"), nullable=False)
+    company_id = db.Column(
+        db.Integer,
+        db.ForeignKey("companies.id"),
+        nullable=False,
+        info={
+            'display_label': 'Company',
+            'form_include': True,
+            'required': True,
+            'relationship_field': 'company',
+            'relationship_display_field': 'name'
+        }
+    )
+
+    comments = db.Column(
+        db.Text,
+        info={
+            'display_label': 'Comments',
+            'form_include': True,
+            'rows': 3
+        }
+    )
 
     @property
     def deal_age(self) -> int:

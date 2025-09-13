@@ -72,11 +72,12 @@ class Stakeholder(EntityModel):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(
-        db.String(255), 
+        db.String(255),
         nullable=False,
         info={
             'display_label': 'Full Name',
-            'required': True
+            'required': True,
+            'form_include': True
         }
     )
     job_title = db.Column(
@@ -148,7 +149,9 @@ class Stakeholder(EntityModel):
         db.String(255),
         info={
             'display_label': 'Email Address',
-            'contact_field': True
+            'contact_field': True,
+            'form_include': True,
+            'required': True
         }
     )
     phone = db.Column(
@@ -165,8 +168,19 @@ class Stakeholder(EntityModel):
         'display_label': 'Company',
         'groupable': True,
         'relationship_field': 'company',
-        'relationship_display_field': 'name'
+        'relationship_display_field': 'name',
+        'form_include': True,
+        'required': True
     })
+
+    comments = db.Column(
+        db.Text,
+        info={
+            'display_label': 'Comments',
+            'form_include': True,
+            'rows': 3
+        }
+    )
 
     # Relationships (use back_populates to avoid conflicts)
     company = db.relationship("Company", back_populates="stakeholders")
