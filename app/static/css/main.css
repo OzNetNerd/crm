@@ -157,21 +157,28 @@ body.modal-open {
     scroll-behavior: smooth;
 }
 
-/* Hide all loading animations and indicators */
-.htmx-indicator,
+/* Hide loading animations but allow modal spinners */
+.htmx-indicator:not(#save-spinner):not(#search-spinner),
 .modal-loading,
-.modal-spinner,
-[id*="loading-indicator"],
-[class*="loading"],
-[class*="spinner"],
-.loading-spinner,
-.animate-spin {
+.modal-spinner {
     display: none !important;
 }
 
+/* Show HTMX indicators during requests */
 .htmx-request .htmx-indicator,
 .htmx-request.htmx-indicator {
-    display: none !important;
+    display: flex !important;
+}
+
+/* Always allow modal save spinner and search spinner */
+#save-spinner,
+#search-spinner {
+    display: none;
+}
+
+.htmx-request #save-spinner,
+.htmx-request #search-spinner {
+    display: flex !important;
 }
 
 /* Alpine.js cloak utility */

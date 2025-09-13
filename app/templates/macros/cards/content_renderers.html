@@ -94,9 +94,10 @@
     {% if field_type == 'text' %}
         <span class="field-value">{{ field_value or '-' }}</span>
     {% elif field_type == 'badge' %}
-        {% set badge_color = field_config.get('color', 'blue') %}
         {% if field_value %}
-        <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-{{ badge_color }}-100 text-{{ badge_color }}-800">
+        {%- set normalized_value = field_value|lower|replace(' ', '-') -%}
+        {%- set badge_type = field_config.get('badge_type', 'status') -%}
+        <span class="badge badge-{{ badge_type }}-{{ normalized_value }}">
             {{ field_value }}
         </span>
         {% endif %}

@@ -46,10 +46,9 @@
   {{ status_badge(company.status, {'active': 'green', 'inactive': 'red'}) }}
 #}
 {% macro status_badge(status, color_map=None, size='md', entity_type=None) %}
-{%- set size_classes = {'sm': 'px-2 py-1 text-xs', 'md': 'px-2.5 py-0.5 text-sm', 'lg': 'px-3 py-1 text-base'} -%}
-
-<span class="inline-flex items-center {{ size_classes[size] or size_classes['md'] }} font-medium rounded-full badge-status-{{ status }}{% if entity_type %} badge-entity-{{ entity_type }}{% endif %}">
-    {{ status|title }}
+{%- set normalized_status = status|lower|replace(' ', '-') if status else 'unknown' -%}
+<span class="badge badge-status-{{ normalized_status }}{% if entity_type %} badge-entity-{{ entity_type|lower }}{% endif %}">
+    {{ status|title if status else 'Unknown' }}
 </span>
 {% endmacro %}
 

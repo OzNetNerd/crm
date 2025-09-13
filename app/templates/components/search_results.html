@@ -51,12 +51,7 @@
 
             <!-- Type label -->
             <div class="flex-shrink-0">
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize
-                    {% if result.type == 'company' %}bg-blue-100 text-blue-800
-                    {% elif result.type == 'contact' %}bg-green-100 text-green-800
-                    {% elif result.type == 'opportunity' %}bg-purple-100 text-purple-800
-                    {% elif result.type == 'task' %}bg-orange-100 text-orange-800
-                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                <span class="badge badge-entity-{{ result.type }} capitalize">
                     {{ result.type }}
                 </span>
             </div>

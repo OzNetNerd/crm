@@ -41,7 +41,7 @@
                                    autocorrect="off"
                                    autocapitalize="off"
                                    spellcheck="false"
-                                   hx-get="/htmx/search"
+                                   hx-get="{{ url_for('search.htmx_search') }}"
                                    hx-trigger="input changed delay:300ms, focus"
                                    hx-target="#search-results"
                                    hx-indicator="#search-spinner">
