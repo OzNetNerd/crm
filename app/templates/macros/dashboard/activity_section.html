@@ -1,5 +1,5 @@
 {% from "macros/ui/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
-{% from "macros/ui/card_items.html" import card_item, task_card_item, note_card_item, opportunity_card_item %}
+{% from "macros/ui/card_items.html" import card_item, task_card_item, note_card_item, entity_card_item %}
 {% from "macros/base/icons.html" import icon %}
 
 {% macro dashboard_overdue_section(overdue_tasks) %}
@@ -77,7 +77,7 @@
 
     <div class="space-y-3">
         {% for opp in recent_opportunities %}
-        {{ opportunity_card_item(opp) }}
+        {{ entity_card_item(opp, 'opportunity') }}
         {% endfor %}
     </div>
 </div>
