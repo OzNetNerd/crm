@@ -1026,11 +1026,6 @@
     line-height: 1.4;
 }
 
-/* Overdue text color */
-.text-overdue {
-    color: #dc2626; /* red-600 */
-}
-
 /* Line clamping utilities */
 .line-clamp-1 {
     overflow: hidden;
@@ -1053,6 +1048,11 @@
     -webkit-line-clamp: 3;
 }
 
+/* Overdue text color */
+.text-overdue {
+    color: #dc2626; /* red-600 */
+}
+
 /* Semantic text classes for entity data */
 .text-company-name {
     font-weight: 500; /* medium */
@@ -1073,7 +1073,6 @@
     font-weight: 500; /* medium */
     color: #ea580c; /* orange-600 */
 }
-
 .metadata-text {
     font-size: 0.75rem; /* 12px */
     color: #9ca3af;
