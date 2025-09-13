@@ -235,3 +235,62 @@ def create_task():
         return jsonify({"error": str(e)}), 400
 
 
+# Validation endpoint for inline duplicate checking
+@api_entities_bp.route("/validate/<entity_type>/<field_name>", methods=["POST"])
+def validate_field(entity_type, field_name):
+    """
+    Validate a single field for duplicate values without creating the entity.
+    Used for inline validation in forms.
+    """
+    try:
+        data = request.get_json()
+        field_value = data.get('value', '').strip()
+
+        # Skip validation for empty values
+        if not field_value:
+            return '', 200
+
+        # Map entity types to model classes
+        entity_map = {
+            'company': Company,
+            'stakeholder': Stakeholder,
+            'opportunity': Opportunity
+        }
+
+        model_class = entity_map.get(entity_type.lower())
+        if not model_class:
+            return '', 200  # Unknown entity, allow
+
+        # Check for duplicates based on field
+        unique_fields = {
+            'Company': {'name': 'name'},
+            'Stakeholder': {'email': 'email'},
+            'Opportunity': {}  # No unique fields for opportunities
+        }
+
+        model_name = model_class.__name__
+        allowed_fields = unique_fields.get(model_name, {})
+
+        # Only validate if this field should be unique
+        if field_name not in allowed_fields:
+            return '', 200
+
+        # Check if value already exists (case-insensitive)
+        existing = model_class.query.filter(
+            getattr(model_class, field_name).ilike(field_value)
+        ).first()
+
+        if existing:
+            field_label = field_name.replace('_', ' ').title()
+            # Return HTML for the validation message
+            error_html = f'<p class="mt-1 text-sm text-red-600">A {entity_type} with this {field_label.lower()} already exists.</p>'
+            return error_html, 200
+
+        # Return empty string for valid input
+        return '', 200
+
+    except Exception as e:
+        # On error, don't block the user
+        return '', 200
+
+
