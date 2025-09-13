@@ -37,12 +37,13 @@ class Company(EntityModel):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(
-        db.String(255), 
+        db.String(255),
         nullable=False,
         info={
             'display_label': 'Company Name',
             'required': True,
-            'groupable': True
+            'groupable': True,
+            'form_include': True
         }
     )
     industry = db.Column(
@@ -50,6 +51,7 @@ class Company(EntityModel):
         info={
             'display_label': 'Industry',
             'groupable': True,
+            'form_include': True,
             'choices': {
                 'technology': {
                     'label': 'Technology',
@@ -141,6 +143,15 @@ class Company(EntityModel):
         info={
             'display_label': 'Address',
             'rows': 2
+        }
+    )
+
+    comments = db.Column(
+        db.Text,
+        info={
+            'display_label': 'Comments',
+            'form_include': True,
+            'rows': 3
         }
     )
 

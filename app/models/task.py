@@ -64,15 +64,23 @@ class Task(EntityModel):
     }
 
     id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.Text, nullable=False)
+    description = db.Column(
+        db.Text,
+        nullable=False,
+        info={
+            'display_label': 'Description',
+            'required': True,
+            'form_include': True
+        }
+    )
     due_date = db.Column(
         db.Date,
-        info=create_date_field_info('Due Date', date_groupings=DUE_DATE_GROUPINGS)
+        info=create_date_field_info('Due Date', date_groupings=DUE_DATE_GROUPINGS, form_include=True)
     )
     priority = db.Column(
-        db.String(10), 
+        db.String(10),
         default="medium",
-        info=create_choice_field_info('Priority', PRIORITY_CHOICES)
+        info=create_choice_field_info('Priority', PRIORITY_CHOICES, form_include=True)
     )  # high/medium/low
     status = db.Column(
         db.String(20), 
@@ -96,10 +104,19 @@ class Task(EntityModel):
     parent_task_id = db.Column(db.Integer, db.ForeignKey("tasks.id"))
     sequence_order = db.Column(db.Integer, default=0)  # For ordering child tasks
     dependency_type = db.Column(
-        db.String(20), 
+        db.String(20),
         default="parallel",
         info=create_choice_field_info('Dependency Type', DEPENDENCY_TYPE_CHOICES)
     )  # 'sequential', 'parallel'
+
+    comments = db.Column(
+        db.Text,
+        info={
+            'display_label': 'Comments',
+            'form_include': True,
+            'rows': 3
+        }
+    )
 
     @property
     def is_overdue(self) -> bool:
