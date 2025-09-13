@@ -8,8 +8,8 @@ class DisplayFormatter:
     """Centralized formatter for consistent data display across the application."""
     
     # Default format strings
-    DATE_FORMAT = '%m/%d/%y'
-    DATETIME_FORMAT = '%m/%d %H:%M'
+    DATE_FORMAT = '%d/%m/%y'
+    DATETIME_FORMAT = '%d/%m/%y %H:%M'
     DATETIME_LONG_FORMAT = '%B %d, %Y'
     CURRENCY_SYMBOL = '$'
     

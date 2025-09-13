@@ -1,0 +1,87 @@
+{# Simple card item macro for dashboard cards - DRY approach #}
+
+{% macro card_item(color='gray') %}
+<div class="p-3 bg-{{ color }}-50 rounded-lg hover:bg-{{ color }}-100 transition-colors
+            {%- if color == 'red' %} border border-red-200{% endif %}">
+    {{ caller() }}
+</div>
+{% endmacro %}
+
+{% macro task_card_item(task, color='gray', with_priority_badge=false) %}
+{% if with_priority_badge %}
+    {# Task card with priority badge on the right #}
+    {% call card_item(color) %}
+        <div class="flex items-start justify-between">
+            <div class="flex-1">
+                <div class="text-card-title">{{ task.description }}</div>
+                <div class="text-card-meta-bold {{ task.due_date_css_class }}">
+                    {{ task.due_date_display }}
+                </div>
+            </div>
+            {% from "macros/ui/badges.html" import priority_badge %}
+            <span class="ml-3">
+                {{ priority_badge(task.priority) }}
+            </span>
+        </div>
+    {% endcall %}
+{% else %}
+    {# Simple task card #}
+    {% call card_item(color) %}
+        <div class="text-card-title">{{ task.description }}</div>
+        <div class="text-card-meta-bold {{ task.due_date_css_class }}">
+            {{ task.due_date_display }}
+        </div>
+    {% endcall %}
+{% endif %}
+{% endmacro %}
+
+{% macro note_card_item(note) %}
+{% call card_item('gray') %}
+    <div class="text-card-title line-clamp-3">{{ note.content }}</div>
+    <div class="text-card-meta">
+        {{ note.created_at_display }}
+        {%- if note.entity_name %} • {{ note.entity_name }}{% endif %}
+    </div>
+{% endcall %}
+{% endmacro %}
+
+{% macro entity_card_with_badge(entity, subtitle_parts=[], badge_text=None, badge_color='green') %}
+{# Generic card with badge - can be used for opportunities, deals, or any entity with status #}
+{% call card_item('gray') %}
+    <div class="flex items-start justify-between">
+        <div class="flex-1">
+            <div class="text-card-title">{{ entity.name }}</div>
+            {% if subtitle_parts %}
+            <div class="text-card-meta">
+                {% for part in subtitle_parts %}
+                    {% if part.color %}
+                        <span class="{{ part.color }}">{{ part.text }}</span>
+                    {% else %}
+                        {{ part }}
+                    {% endif %}
+                    {%- if not loop.last %} • {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% if badge_text %}
+        <span class="ml-3 inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-{{ badge_color }}-100 text-{{ badge_color }}-700">
+            {{ badge_text }}
+        </span>
+        {% endif %}
+    </div>
+{% endcall %}
+{% endmacro %}
+
+{% macro opportunity_card_item(opp) %}
+{# Convenience wrapper for opportunities using the generic macro #}
+{{ entity_card_with_badge(
+    opp,
+    subtitle_parts=[
+        {'text': opp.company_name, 'color': 'text-company-name'},
+        {'text': opp.value_formatted, 'color': 'text-opportunity-value'}
+    ],
+    badge_text=opp.stage|title,
+    badge_color='green'
+) }}
+{% endmacro %}
