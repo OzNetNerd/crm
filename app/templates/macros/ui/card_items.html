@@ -1,4 +1,5 @@
 {# Simple card item macro for dashboard cards - DRY approach #}
+{% from 'macros/ui/date_formatting.html' import smart_date_display %}
 
 {% macro card_item(color='gray') %}
 <div class="p-3 bg-{{ color }}-50 rounded-lg hover:bg-{{ color }}-100 transition-colors
@@ -14,8 +15,8 @@
         <div class="flex items-start justify-between">
             <div class="flex-1">
                 <div class="text-card-title">{{ task.description }}</div>
-                <div class="text-card-meta-bold {{ task.due_date_css_class }}">
-                    {{ task.due_date_display }}
+                <div class="text-card-meta-bold">
+                    {{ smart_date_display(task.due_date, context="due") }}
                 </div>
             </div>
             {% from "macros/ui/badges.html" import priority_badge %}
@@ -28,8 +29,8 @@
     {# Simple task card #}
     {% call card_item(color) %}
         <div class="text-card-title">{{ task.description }}</div>
-        <div class="text-card-meta-bold {{ task.due_date_css_class }}">
-            {{ task.due_date_display }}
+        <div class="text-card-meta-bold">
+            {{ smart_date_display(task.due_date, context="due") }}
         </div>
     {% endcall %}
 {% endif %}
@@ -39,7 +40,7 @@
 {% call card_item('gray') %}
     <div class="text-card-title line-clamp-3">{{ note.content }}</div>
     <div class="text-card-meta">
-        {{ note.created_at_display }}
+        {{ smart_date_display(note.created_at, context="created") }}
         {%- if note.entity_name %} • {{ note.entity_name }}{% endif %}
     </div>
 {% endcall %}
