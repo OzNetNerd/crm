@@ -34,6 +34,27 @@ class Note(BaseModel):
     entity_id = db.Column(db.Integer)
 
     @property
+    def company_name(self) -> Optional[str]:
+        """Get company name from the entity this note is attached to."""
+        if not self.entity_type or not self.entity_id:
+            return None
+
+        if self.entity_type == "company":
+            from .company import Company
+            entity = Company.query.get(self.entity_id)
+            return entity.name if entity else None
+        elif self.entity_type == "stakeholder":
+            from .stakeholder import Stakeholder
+            entity = Stakeholder.query.get(self.entity_id)
+            return entity.company.name if entity and entity.company else None
+        elif self.entity_type == "opportunity":
+            from .opportunity import Opportunity
+            entity = Opportunity.query.get(self.entity_id)
+            return entity.company.name if entity and entity.company else None
+
+        return None
+
+    @property
     def entity_name(self) -> Optional[str]:
         """
         Get the name of the entity this note is attached to.
@@ -118,6 +139,7 @@ class Note(BaseModel):
         
         # Add note-specific computed fields
         result['entity_name'] = self.entity_name
+        result['company_name'] = self.company_name
         result['content_preview'] = self.content[:100] + '...' if len(self.content) > 100 else self.content
         result['created_at_display'] = self.created_at_display
 

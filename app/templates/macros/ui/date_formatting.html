@@ -26,10 +26,10 @@
         {% set display_label = label or ("Due" if context == "due" else "Created" if context == "created" else "Updated" if context == "updated" else "") %}
 
         {# Determine CSS class based on context and date relationship #}
-        {% if is_overdue %}
-            {% set date_class = "date-overdue" %}
-        {% elif context in ["created", "updated"] %}
+        {% if context in ["created", "updated"] %}
             {% set date_class = "date-increment" %}
+        {% elif is_overdue %}
+            {% set date_class = "date-overdue" %}
         {% elif is_future %}
             {% set date_class = "date-decrement" %}
         {% else %}
