@@ -39,7 +39,8 @@ class User(BaseModel):
         'display_label': 'Email'
     })
     job_title = db.Column(db.String(100), info={
-        'display_label': 'Job Title'
+        'display_label': 'Job Title',
+        'groupable': True
     })  # Single source of truth for role
     created_at = db.Column(db.DateTime, default=datetime.utcnow, info={'display_label': 'Created At'})
 

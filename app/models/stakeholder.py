@@ -83,6 +83,7 @@ class Stakeholder(BaseModel):
         db.String(100),
         info={
             'display_label': 'Job Title',
+            'groupable': True,
             'common_roles': {
                 'ceo': {
                     'label': 'CEO',
