@@ -35,7 +35,7 @@
   {{ expand_collapse_controls(['tasks', 'opportunities']) }}
 #}
 {% macro expand_collapse_controls(target_sections, additional_classes='') %}
-<div class="flex space-x-2 {{ additional_classes }}">
+<div class="button-container {{ additional_classes }}">
     <button data-action="expand-all"
             class="text-sm text-blue-600 hover:text-blue-800">
         Expand All

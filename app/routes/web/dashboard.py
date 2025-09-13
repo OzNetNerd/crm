@@ -93,10 +93,6 @@ def index():
         ]
     }
 
-    # Get dashboard buttons using unified button generator
-    from app.utils.ui.button_generator import get_dashboard_action_buttons
-    dashboard_buttons = get_dashboard_action_buttons()
-
     return render_template(
         "dashboard/index.html",
         dashboard_stats=dashboard_stats,
@@ -107,7 +103,7 @@ def index():
         overdue_tasks=overdue_tasks,
         closing_soon=closing_soon,
         today=today,
-        entity_types=dashboard_buttons,  # Now passes button configs instead of strings
+        entity_types=['companies', 'tasks', 'opportunities', 'stakeholders'],
     )
 
 

@@ -1,22 +1,17 @@
-{% from "macros/base/icons.html" import icon %}
+{% from "macros/core/entity_helpers.html" import entity_icon, entity_display_name %}
 
 
-{% macro entity_buttons(button_configs) %}
-<div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-    {% for button in button_configs %}
-    <button hx-get="{{ button.hx_get }}"
-            hx-target="{{ button.hx_target }}"
-            hx-swap="{{ button.hx_swap }}"
-            class="flex items-center gap-2 btn-{{ button.entity|lower }}">
-        {% set entity_icons = {
-            'companies': 'building-office',
-            'tasks': 'clipboard-list', 
-            'opportunities': 'currency-dollar',
-            'stakeholders': 'user',
-            'teams': 'users'
-        } %}
-        {{ icon(entity_icons.get(button.entity|lower, 'plus'), 'sm') }}
-        {{ button.label }}
+{% macro entity_buttons(entity_names) %}
+<div class="button-container">
+    {% for entity in entity_names %}
+    {% set singular = entity.rstrip('s') %}
+    {% set singular_title = singular.title() %}
+    <button hx-get="/modals/{{ singular_title }}/create"
+            hx-target="body"
+            hx-swap="beforeend"
+            class="flex items-center gap-2 btn-{{ entity }}">
+        {{ entity_icon(singular, 'sm') }}
+        New {{ entity_display_name(singular) }}
     </button>
     {% endfor %}
 </div>

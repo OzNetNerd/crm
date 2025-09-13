@@ -201,9 +201,8 @@ class UniversalContextBuilder:
         # Use registry instead of direct model access
         metadata = ModelRegistry.get_model_metadata(entity_name)
         
-        # Generate entity buttons using existing button generator
-        from app.utils.ui.button_generator import EntityButtonGenerator
-        entity_buttons = [EntityButtonGenerator.generate_single_button(entity_name)]
+        # Simple entity button - no complex generator needed
+        entity_buttons = [entity_name]  # Template will derive button properties
         
         return EntityConfig(
             entity_name=metadata.display_name_plural,

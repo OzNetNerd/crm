@@ -9,7 +9,7 @@ from app.config.entity_config import (
 )
 # Modal configs removed - using WTForms modal system now (keeping main branch approach)
 # from app.utils.ui.modal_configs import get_modal_config, get_detail_modal_config, MODAL_CONFIGS, DETAIL_MODAL_CONFIGS
-from app.utils.ui.button_generator import get_dashboard_action_buttons, generate_entity_buttons
+# Button generator removed - dashboard buttons now use simple entity names
 from sqlalchemy import distinct
 
 
