@@ -133,42 +133,6 @@ class ModelRegistry:
             'plural': metadata.display_name_plural
         }
     
-    @classmethod
-    def auto_register_from_entity_config(cls):
-        """
-        Auto-register models that have __entity_config__ (transitional method)
-        
-        This method provides backward compatibility during migration from
-        legacy __entity_config__ patterns to the new registry system.
-        """
-        # Import here to avoid circular dependencies
-        try:
-            from app.utils.core.model_introspection import get_all_entity_models
-            
-            all_models = get_all_entity_models()
-            for model_class in all_models:
-                if hasattr(model_class, '__entity_config__'):
-                    # Use endpoint_name from entity config as registry key
-                    config = model_class.__entity_config__
-                    endpoint_name = config.get('endpoint_name', model_class.__name__.lower())
-                    
-                    # Register with both endpoint name and class name
-                    cls.register_model(model_class, endpoint_name)
-                    cls.register_model(model_class, model_class.__name__.lower())
-                    
-                    # Also register plural forms for common patterns
-                    if endpoint_name.endswith('s'):
-                        singular_name = endpoint_name.rstrip('s')
-                        if singular_name not in cls._models:
-                            cls._models[singular_name] = model_class
-                    else:
-                        plural_name = endpoint_name + 's'
-                        if plural_name not in cls._models:
-                            cls._models[plural_name] = model_class
-                            
-        except ImportError:
-            # Graceful fallback if model_introspection not available
-            pass
     
     @classmethod
     def clear_cache(cls):
@@ -187,5 +151,4 @@ class ModelRegistry:
             cls._metadata_cache[model_name] = ModelMetadata(cls._models[model_name])
 
 
-# Initialize registry with existing models (original working approach)
-ModelRegistry.auto_register_from_entity_config()
+# Model registration happens via EntityModel.__init_subclass__ when models are imported
