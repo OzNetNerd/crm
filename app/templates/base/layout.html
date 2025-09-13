@@ -36,9 +36,9 @@
                                    id="global-search"
                                    name="q"
                                    placeholder="Search companies, contacts, opportunities..."
-                                   class="px-3 py-2 pr-10 border border-gray-300 rounded-md text-sm w-64"
+                                   class="px-3 py-2 pr-10 border border-gray-300 rounded-md text-sm w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                    hx-get="/htmx/search"
-                                   hx-trigger="input changed delay:300ms"
+                                   hx-trigger="input changed delay:300ms, focus"
                                    hx-target="#search-results"
                                    hx-indicator="#search-spinner">
                             <button id="advanced-search-btn"
@@ -81,9 +81,9 @@
 
     <!-- Core JavaScript - Reduced to essential functionality only -->
     <script src="{{ url_for('static', filename='js/core/modal-utils.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/features/search-htmx.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/features/modal_handlers.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/features/controls.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/features/search-htmx.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/features/modal_handlers.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/features/controls.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

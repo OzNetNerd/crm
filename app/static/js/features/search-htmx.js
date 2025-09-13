@@ -12,8 +12,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Show results when HTMX content loads
     document.addEventListener('htmx:afterSwap', function(event) {
-        if (event.target === searchResults && searchInput.value.trim()) {
-            searchResults.classList.remove('hidden');
+        if (event.target === searchResults) {
+            // Always show results after swap if there's content
+            if (searchResults.children.length > 0) {
+                searchResults.classList.remove('hidden');
+            }
         }
     });
 
@@ -32,9 +35,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Show results when focusing input (if there's content)
+    // Show results when focusing input (always show, even if empty)
     searchInput.addEventListener('focus', function() {
-        if (searchResults.children.length > 0 && this.value.trim()) {
+        if (searchResults.children.length > 0) {
             searchResults.classList.remove('hidden');
         }
     });
