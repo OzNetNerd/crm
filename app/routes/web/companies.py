@@ -207,6 +207,7 @@ def index():
         ]
     }
     
+
     # Get standardized context using universal helper
     context = UniversalIndexHelper.get_standardized_index_context(
         entity_name='companies',
