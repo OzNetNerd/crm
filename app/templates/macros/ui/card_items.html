@@ -45,7 +45,7 @@
 {% endcall %}
 {% endmacro %}
 
-{% macro entity_card_with_badge(entity, subtitle_parts=[], badge_text=None, badge_color='green') %}
+{% macro entity_card_with_badge(entity, subtitle_parts=[], badge_text=None, badge_type='status') %}
 {# Generic card with badge - can be used for opportunities, deals, or any entity with status #}
 {% call card_item('gray') %}
     <div class="flex items-start justify-between">
@@ -65,23 +65,59 @@
             {% endif %}
         </div>
         {% if badge_text %}
-        <span class="ml-3 inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-{{ badge_color }}-100 text-{{ badge_color }}-700">
-            {{ badge_text }}
+        {%- set normalized_badge = badge_text|string|lower|replace(' ', '-')|replace('_', '-') -%}
+        <span class="ml-3 badge badge-{{ badge_type }}-{{ normalized_badge }}">
+            {{ badge_text|title }}
         </span>
         {% endif %}
     </div>
 {% endcall %}
 {% endmacro %}
 
+{% macro entity_card_item(entity, entity_type='opportunity') %}
+{# Generic wrapper for any entity with status badge - DRY and reusable #}
+{% if entity_type == 'opportunity' %}
+    {{ entity_card_with_badge(
+        entity,
+        subtitle_parts=[
+            {'text': entity.company_name, 'color': 'text-company-name'},
+            {'text': entity.value_formatted, 'color': 'text-opportunity-value'}
+        ],
+        badge_text=entity.stage,
+        badge_type='status'
+    ) }}
+{% elif entity_type == 'company' %}
+    {{ entity_card_with_badge(
+        entity,
+        subtitle_parts=[
+            {'text': entity.industry, 'color': 'text-gray-600'} if entity.industry else {},
+            {'text': entity.company_size, 'color': 'text-gray-600'} if entity.company_size else {}
+        ],
+        badge_text=entity.status if entity.status else None,
+        badge_type='status'
+    ) }}
+{% elif entity_type == 'stakeholder' %}
+    {{ entity_card_with_badge(
+        entity,
+        subtitle_parts=[
+            {'text': entity.company_name, 'color': 'text-company-name'} if entity.company_name else {},
+            {'text': entity.role, 'color': 'text-gray-600'} if entity.role else {}
+        ],
+        badge_text=entity.status if entity.status else None,
+        badge_type='status'
+    ) }}
+{% else %}
+    {# Fallback for other entity types #}
+    {{ entity_card_with_badge(
+        entity,
+        subtitle_parts=[],
+        badge_text=entity.status if entity.status else None,
+        badge_type='status'
+    ) }}
+{% endif %}
+{% endmacro %}
+
 {% macro opportunity_card_item(opp) %}
-{# Convenience wrapper for opportunities using the generic macro #}
-{{ entity_card_with_badge(
-    opp,
-    subtitle_parts=[
-        {'text': opp.company_name, 'color': 'text-company-name'},
-        {'text': opp.value_formatted, 'color': 'text-opportunity-value'}
-    ],
-    badge_text=opp.stage|title,
-    badge_color='green'
-) }}
+{# Legacy wrapper for backward compatibility - use entity_card_item instead #}
+{{ entity_card_item(opp, 'opportunity') }}
 {% endmacro %}
