@@ -254,7 +254,19 @@ class ModelMetadata:
         if self.display_name is None:
             self.display_name = self.model_class.__name__
         if self.display_name_plural is None:
-            self.display_name_plural = f"{self.display_name}s"
+            # Use proper pluralization instead of string manipulation
+            try:
+                from inflect import engine
+                p = engine()
+                self.display_name_plural = p.plural(self.display_name)
+            except ImportError:
+                # Fallback to simple pluralization if inflect not available
+                if self.display_name.endswith('y'):
+                    self.display_name_plural = self.display_name[:-1] + 'ies'
+                elif self.display_name.endswith(('s', 'sh', 'ch', 'x', 'z')):
+                    self.display_name_plural = self.display_name + 'es'
+                else:
+                    self.display_name_plural = self.display_name + 's'
         if self.api_endpoint is None:
             self.api_endpoint = self.display_name.lower() + 's'
             

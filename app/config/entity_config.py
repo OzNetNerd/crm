@@ -151,12 +151,12 @@ class EntityConfigRegistry:
         if model_class and hasattr(model_class, '__entity_config__'):
             entity_config = model_class.__entity_config__
             singular = entity_config.get('display_name_singular', entity_type)
-            plural = entity_config.get('display_name', f"{entity_type}s")
+            plural = entity_config.get('display_name', entity_type + 's')
             display_name = entity_config.get('display_name', singular.title())
         else:
             # Fallback to extracted data
             singular = model_data.get('singular', entity_type)
-            plural = model_data.get('plural', f"{entity_type}s")
+            plural = model_data.get('plural', entity_type + 's')
             display_name = model_data.get('display_name', singular.title())
         
         icon = overrides.get('icon', 'document')
