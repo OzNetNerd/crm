@@ -29,7 +29,7 @@
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:gap-6">
         <!-- Left Side Controls -->
         <div class="flex flex-wrap items-center gap-6">
-            <label class="text-label-dark">Group by:</label>
+            <label class="text-label-dark-bold">Group by:</label>
             
             <!-- Group By Dropdown -->
             {# Map singular entity types to plural routes #}
@@ -76,7 +76,7 @@
             </div>
             {% endif %}
             
-            <label class="text-label-dark">Sort by:</label>
+            <label class="text-label-dark-bold">Sort by:</label>
             
             <!-- Sort By Dropdown -->
             {{ css_dropdown('Sort by', sort_options, name='sort_by', current_value=current_sort_by, hx_target='#' + entity_type + '-content', hx_get='/' + route_entity_type + '/content') }}
