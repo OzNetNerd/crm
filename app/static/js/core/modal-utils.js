@@ -58,4 +58,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    
+    // Global escape key handling for all modals
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            // Find the currently visible modal
+            const visibleModal = document.querySelector('.modal-overlay:not(.hidden)');
+            if (visibleModal) {
+                visibleModal.classList.add('hidden');
+            }
+        }
+    });
 });
