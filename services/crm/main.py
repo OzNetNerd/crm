@@ -104,17 +104,10 @@ def create_app():
     # Register clean template functions - no more string hacks!
     app.jinja_env.globals["get_field_options"] = get_field_options
     app.jinja_env.globals["get_model_form_fields"] = get_model_form_fields
-    # app.jinja_env.globals["get_create_modal_config"] = get_create_modal_config  # Removed
-    # app.jinja_env.globals["get_detail_modal_config"] = get_detail_modal_config  # Removed
-    # app.jinja_env.globals["get_all_modal_configs"] = get_all_modal_configs  # Removed
-    # app.jinja_env.globals["get_all_detail_modal_configs"] = get_all_detail_modal_configs  # Removed
-    # Button generation functions - DRY approach
-    # Button generator functions removed - using simple entity names in templates
+    # Register global template functions
     app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
     app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
     
-    # Entity configuration functions removed - using ModelRegistry and context_builders instead
-
     # Dashboard button function
     def get_dashboard_action_buttons():
         return ['companies', 'tasks', 'opportunities', 'stakeholders']
@@ -128,14 +121,6 @@ def create_app():
     app.jinja_env.globals["hasattr"] = hasattr
     
     
-    # Modal configs removed - using WTForms modal system now (keeping main branch approach)
-    # from app.utils.ui.modal_configs import MODAL_CONFIGS
-    # from app.utils.ui.modal_configs import DETAIL_MODAL_CONFIGS
-    # app.jinja_env.globals["modal_configs"] = MODAL_CONFIGS
-    # app.jinja_env.globals["detail_modal_configs"] = DETAIL_MODAL_CONFIGS
-
-    # Model class globals removed - use get_all_model_configs() for model metadata
-
     with app.app_context():
         db.create_all()
 
