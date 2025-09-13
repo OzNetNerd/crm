@@ -9,27 +9,26 @@
   to make it reusable and maintainable.
   
   Parameters:
-  - entity_type (required): Should be 'task'
   - entity (required): Task entity object
   - render_children (optional): Whether to render child tasks (default: true)
   - child_container_classes (optional): CSS classes for child container
   
   Usage:
-  {{ render_task_entity('task', task) }}
-  {{ render_task_entity('task', task, render_children=false) }}
+  {{ render_task_entity(task) }}
+  {{ render_task_entity(task, render_children=false) }}
 #}
-{% macro render_task_entity(entity_type, entity, render_children=true, child_container_classes='ml-8 mt-4 space-y-2 border-l-2 border-gray-200 pl-4') %}
+{% macro render_task_entity(entity, render_children=true, child_container_classes='ml-8 mt-4 space-y-2 border-l-2 border-gray-200 pl-4') %}
   {# Only render if this is not a child task (children are rendered by their parents) #}
   {% if entity.task_type != 'child' %}
     <div class="p-4">
-      {{ card(entity_type, entity) }}
+      {{ card(entity) }}
       
       {# Render child tasks if this is a parent and children should be rendered #}
       {% if render_children and entity.task_type == 'parent' and entity.child_tasks %}
         <div class="child-task-container">
           {% for child_task in entity.child_tasks %}
             <div class="child-task-item">
-              {{ card(entity_type, child_task) }}
+              {{ card(child_task) }}
             </div>
           {% endfor %}
         </div>
@@ -42,16 +41,15 @@
   Simple Task Renderer - For when parent/child logic is not needed
   
   Parameters:
-  - entity_type (required): Should be 'task' 
   - entity (required): Task entity object
   - container_classes (optional): CSS classes for container
   
   Usage:
-  {{ render_simple_task('task', task) }}
+  {{ render_simple_task(task) }}
 #}
-{% macro render_simple_task(entity_type, entity, container_classes='p-4') %}
+{% macro render_simple_task(entity, container_classes='p-4') %}
   <div class="{{ container_classes }}">
-    {{ card(entity_type, entity) }}
+    {{ card(entity) }}
   </div>
 {% endmacro %}
 
@@ -60,19 +58,18 @@
   
   Parameters:
   - child_tasks (required): List of child task objects
-  - entity_type (optional): Entity type (default: 'task')
   - container_classes (optional): CSS classes for container
   - item_classes (optional): CSS classes for each child item
   
   Usage:
   {{ render_child_task_list(parent_task.child_tasks) }}
 #}
-{% macro render_child_task_list(child_tasks, entity_type='task', container_classes='child-task-container', item_classes='child-task-item') %}
+{% macro render_child_task_list(child_tasks, container_classes='child-task-container', item_classes='child-task-item') %}
   {% if child_tasks %}
     <div class="{{ container_classes }}">
       {% for child_task in child_tasks %}
         <div class="{{ item_classes }}">
-          {{ card(entity_type, child_task) }}
+          {{ card(child_task) }}
         </div>
       {% endfor %}
     </div>

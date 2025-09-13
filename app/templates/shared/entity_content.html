@@ -37,10 +37,10 @@
                 {% for entity in group.entities %}
                     {# Use specialized task renderer for tasks, simple rendering for others #}
                     {% if entity_type == 'task' %}
-                        {{ render_task_entity(entity_type, entity) }}
+                        {{ render_task_entity(entity) }}
                     {% elif entity.task_type is not defined or entity.task_type != 'child' %}
                         <div class="p-4">
-                            {{ card(entity_type, entity) }}
+                            {{ card(entity) }}
                         </div>
                     {% endif %}
                 {% endfor %}
