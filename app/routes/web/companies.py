@@ -12,78 +12,26 @@ from flask import Blueprint, render_template, request
 from app.models import Company, Stakeholder, Opportunity, db
 from app.utils.core.base_handlers import BaseRouteHandler, EntityFilterManager, EntityGrouper
 from app.utils.core.model_introspection import ModelIntrospector
+from app.utils.core.entity_handlers import CompanyHandler, UniversalEntityManager
 from collections import defaultdict
 
 companies_bp = Blueprint("companies", __name__)
 company_handler = BaseRouteHandler(Company, "companies")
+
+# Create metadata-driven universal entity manager
+company_entity_manager = UniversalEntityManager(Company, CompanyHandler())
 company_filter_manager = EntityFilterManager(Company, "company")
 
 
+# Use universal entity manager methods instead of duplicated functions
 def company_custom_filters(query, filters: Dict[str, Any]):
-    """
-    Apply company-specific filtering logic to database query.
-    
-    Args:
-        query: SQLAlchemy query object to filter.
-        filters: Dictionary containing filter criteria.
-    
-    Returns:
-        Modified query object with applied filters.
-    """
-    if filters['primary_filter']:
-        query = query.filter(Company.industry.in_(filters['primary_filter']))
-    return query
+    """Company-specific filtering using universal manager"""
+    return company_entity_manager.apply_custom_filters(query, filters)
 
 
 def company_custom_groupers(entities: List[Company], group_by: str) -> List[Dict[str, Any]]:
-    """
-    Apply company-specific grouping logic to entity list.
-    
-    Groups companies by industry or size category for organized display.
-    
-    Args:
-        entities: List of Company objects to group.
-        group_by: Grouping criteria ('industry' or 'size').
-    
-    Returns:
-        List of dictionaries containing grouped entities with metadata.
-    """
-    grouped = defaultdict(list)
-    
-    if group_by == "industry":
-        for company in entities:
-            industry = company.industry or "Other"
-            grouped[industry].append(company)
-        
-        result = []
-        for industry in sorted(grouped.keys()):
-            if grouped[industry]:
-                result.append({
-                    "key": industry,
-                    "label": industry,
-                    "entities": grouped[industry],
-                    "count": len(grouped[industry])
-                })
-        return result
-        
-    elif group_by == "size":
-        for company in entities:
-            size = company.size_category or "Unknown"
-            grouped[size].append(company)
-        
-        size_order = ["unknown", "small", "medium", "large", "Unknown"]
-        result = []
-        for size in size_order:
-            if grouped[size]:
-                result.append({
-                    "key": size,
-                    "label": size.title(),
-                    "entities": grouped[size],
-                    "count": len(grouped[size])
-                })
-        return result
-    
-    return None  # Use default grouping
+    """Company-specific grouping using universal manager"""
+    return company_entity_manager.apply_custom_grouping(entities, group_by)
 
 
 def get_filtered_companies_context() -> Dict[str, Any]:

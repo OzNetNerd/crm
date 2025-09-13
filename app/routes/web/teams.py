@@ -3,58 +3,26 @@ from flask import Blueprint, render_template, request
 from app.models import User, Company, Opportunity
 from app.utils.core.base_handlers import BaseRouteHandler, EntityFilterManager, EntityGrouper
 from app.utils.core.model_introspection import ModelIntrospector
+from app.utils.core.entity_handlers import TeamHandler, UniversalEntityManager
 from collections import defaultdict
 
 teams_bp = Blueprint("teams", __name__)
 team_handler = BaseRouteHandler(User, "teams")
+
+# Create metadata-driven universal entity manager
+team_entity_manager = UniversalEntityManager(User, TeamHandler())
 team_filter_manager = EntityFilterManager(User, "team_member")
 
 
+# Use universal entity manager methods instead of duplicated functions
 def team_custom_filters(query, filters):
-    """Team-specific filtering logic"""
-    if filters['primary_filter']:
-        query = query.filter(User.job_title.in_(filters['primary_filter']))
-    
-    return query
+    """Team-specific filtering using universal manager"""
+    return team_entity_manager.apply_custom_filters(query, filters)
 
 
 def team_custom_groupers(entities, group_by):
-    """Team-specific grouping logic"""
-    grouped = defaultdict(list)
-    
-    if group_by == "job_title":
-        for member in entities:
-            job_title = member.job_title or "No Job Title"
-            grouped[job_title].append(member)
-        
-        result = []
-        for job_title in sorted(grouped.keys()):
-            if grouped[job_title]:
-                result.append({
-                    "key": job_title,
-                    "label": job_title,
-                    "entities": grouped[job_title],
-                    "count": len(grouped[job_title])
-                })
-        return result
-        
-    elif group_by == "name":
-        for member in entities:
-            first_letter = member.name[0].upper() if member.name else "Other"
-            grouped[first_letter].append(member)
-        
-        result = []
-        for letter in sorted(grouped.keys()):
-            if grouped[letter]:
-                result.append({
-                    "key": letter,
-                    "label": f"Names starting with {letter}",
-                    "entities": grouped[letter],
-                    "count": len(grouped[letter])
-                })
-        return result
-    
-    return None  # Use default grouping
+    """Team-specific grouping using universal manager"""
+    return team_entity_manager.apply_custom_grouping(entities, group_by)
 
 
 @teams_bp.route("/")
