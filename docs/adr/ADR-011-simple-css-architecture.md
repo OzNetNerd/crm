@@ -32,9 +32,9 @@ The current system prioritizes theoretical CSS architecture over practical devel
 
 **Architecture Pattern:**
 ```
-Python Context → Jinja Templates → Dynamic CSS Classes
-entities=['companies'] → '{{entity}}-card' → 'companies-card'
-status='active' → '{{entity}}-{{status}}' → 'companies-active'
+Entity Object → Jinja Templates → Dynamic CSS Classes
+company_entity → '{{entity.singular}}-card' → 'company-card'
+task_entity → '{{entity.singular}}-{{status}}' → 'task-completed'
 ```
 
 ### Rationale
@@ -102,41 +102,46 @@ app/static/css/
 
 **Dynamic Class Generation Pattern:**
 ```python
-# Python template context
-@app.context_processor
-def inject_css_context():
+# Entity configuration system provides naming
+# via get_entity_labels() helper function
+def get_entity_labels(entity_type: str) -> Dict[str, str]:
     return {
-        'entity_name': 'companies',  # Current entity type
-        'entity_status': 'active',   # Current entity state
-        'page_context': 'index'      # Current page context
+        'singular': 'Company',
+        'plural': 'Companies'
     }
 ```
 
 ```jinja2
-<!-- Jinja template usage -->
-<div class="{{entity_name}}-card {{entity_name}}-{{entity_status}}">
-    <!-- Renders as: companies-card companies-active -->
+<!-- Simplified template usage -->
+{% macro card(entity) %}
+{% set entity_type_plural = entity.__tablename__.rstrip('s') %}
+{% set labels = get_entity_labels(entity_type_plural) %}
+{% set entity_type = labels.singular.lower() %}
+<div class="{{entity_type}}-card">
+    <!-- Renders as: company-card, task-card, etc. -->
 </div>
+{% endmacro %}
 
-<button class="btn-{{entity_name}}-primary">
-    <!-- Renders as: btn-companies-primary -->
-</button>
+<!-- Usage -->
+{{ card(company) }}  <!-- No redundant parameters -->
+{{ card(task) }}
+{{ card(opportunity) }}
 ```
 
 **Entity-Specific CSS Classes:**
 ```css
-/* entities.css */
-.companies-card { background: var(--company-bg-color); }
-.companies-active { border-left: 4px solid var(--success-color); }
-.companies-inactive { opacity: 0.6; }
+/* entities.css - Singular naming convention */
+.company-card { background: var(--company-bg-color); }
+.company-active { border-left: 4px solid var(--success-color); }
+.company-inactive { opacity: 0.6; }
 
-.tasks-card { background: var(--task-bg-color); }
-.tasks-completed { text-decoration: line-through; }
-.tasks-overdue { border-left: 4px solid var(--danger-color); }
+.task-card { background: var(--task-bg-color); }
+.task-completed { text-decoration: line-through; }
+.task-overdue { border-left: 4px solid var(--danger-color); }
 
-.opportunities-card { background: var(--opportunity-bg-color); }
-.opportunities-won { border-left: 4px solid var(--success-color); }
-.opportunities-lost { opacity: 0.5; }
+.opportunity-card { background: var(--opportunity-bg-color); }
+.opportunity-won { border-left: 4px solid var(--success-color); }
+.opportunity-lost { opacity: 0.5; }
 ```
 
 **CSS Variable Strategy:**
@@ -160,12 +165,13 @@ def inject_css_context():
 ```
 
 **Implementation Strategy:**
-1. Create new flat CSS file structure for all projects
-2. Extract domain-specific styles from existing architectural files
-3. Implement dynamic class generation in backend template systems
-4. Update template engines to use consistent class naming patterns
-5. Remove complex architectural layer files and imports
-6. Test visual consistency across all application pages
+1. ✅ Create new flat CSS file structure for all projects
+2. ✅ Extract domain-specific styles from existing architectural files
+3. ✅ Implement simplified entity-based class generation using existing helpers
+4. ✅ Update templates to use single-parameter card macros with automatic type extraction
+5. ✅ Standardize on singular entity naming convention (company-card vs companies-card)
+6. ✅ Remove complex Python CSS generation infrastructure
+7. Test visual consistency across all application pages
 
 ### Version History
 

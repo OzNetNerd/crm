@@ -9,222 +9,222 @@
 
 /* ========================================
  * COMPANY STYLES
- * Dynamic classes: companies-card, companies-active, etc.
+ * Dynamic classes: company-card, company-active, etc.
  * ======================================== */
 
-.companies-card {
+.company-card {
     background-color: var(--company-bg-color);
     border-left: 4px solid var(--company-primary-color);
 }
 
-.companies-active {
+.company-active {
     border-left: 4px solid var(--success-color);
 }
 
-.companies-inactive {
+.company-inactive {
     opacity: 0.6;
     filter: grayscale(0.3);
 }
 
-.btn-companies-primary {
+.btn-company-primary {
     background-color: var(--company-primary-color);
     color: white;
     border-color: var(--company-primary-color);
 }
 
-.btn-companies-primary:hover {
+.btn-company-primary:hover {
     background-color: var(--company-hover-color);
     border-color: var(--company-hover-color);
 }
 
-.companies-badge {
+.company-badge {
     background-color: var(--company-light-color);
     color: var(--company-primary-color);
 }
 
 /* ========================================
  * TASK STYLES  
- * Dynamic classes: tasks-card, tasks-completed, etc.
+ * Dynamic classes: task-card, task-completed, etc.
  * ======================================== */
 
-.tasks-card {
+.task-card {
     background-color: var(--task-bg-color);
     border-left: 4px solid var(--task-primary-color);
 }
 
-.tasks-completed {
+.task-completed {
     text-decoration: line-through;
     opacity: 0.7;
 }
 
-.tasks-overdue {
+.task-overdue {
     border-left: 4px solid var(--danger-color);
     background-color: var(--color-danger-lighter);
 }
 
-.tasks-high-priority {
+.task-high-priority {
     background-color: var(--color-priority-high);
     border-left-color: var(--danger-color);
 }
 
-.tasks-medium-priority {
+.task-medium-priority {
     background-color: var(--color-priority-medium);
     border-left-color: var(--warning-color);
 }
 
-.tasks-low-priority {
+.task-low-priority {
     background-color: var(--color-priority-low);
     border-left-color: var(--success-color);
 }
 
-.btn-tasks-primary {
+.btn-task-primary {
     background-color: var(--task-primary-color);
     color: white;
     border-color: var(--task-primary-color);
 }
 
-.btn-tasks-primary:hover {
+.btn-task-primary:hover {
     background-color: var(--task-hover-color);
     border-color: var(--task-hover-color);
 }
 
-.tasks-badge {
+.task-badge {
     background-color: var(--task-light-color);
     color: var(--task-primary-color);
 }
 
 /* ========================================
  * OPPORTUNITY STYLES
- * Dynamic classes: opportunities-card, opportunities-won, etc.
+ * Dynamic classes: opportunity-card, opportunity-won, etc.
  * ======================================== */
 
-.opportunities-card {
+.opportunity-card {
     background-color: var(--opportunity-bg-color);
     border-left: 4px solid var(--opportunity-primary-color);
 }
 
-.opportunities-won {
+.opportunity-won {
     border-left: 4px solid var(--success-color);
     background-color: var(--color-secondary-lighter);
 }
 
-.opportunities-lost {
+.opportunity-lost {
     opacity: 0.5;
     text-decoration: line-through;
     filter: grayscale(0.5);
 }
 
-.opportunities-active {
+.opportunity-active {
     border-left: 4px solid var(--opportunity-primary-color);
 }
 
-.btn-opportunities-primary {
+.btn-opportunity-primary {
     background-color: var(--opportunity-primary-color);
     color: white;
     border-color: var(--opportunity-primary-color);
 }
 
-.btn-opportunities-primary:hover {
+.btn-opportunity-primary:hover {
     background-color: var(--opportunity-hover-color);
     border-color: var(--opportunity-hover-color);
 }
 
-.opportunities-badge {
+.opportunity-badge {
     background-color: var(--opportunity-light-color);
     color: var(--opportunity-primary-color);
 }
 
 /* ========================================
  * STAKEHOLDER STYLES
- * Dynamic classes: stakeholders-card, stakeholders-active, etc.
+ * Dynamic classes: stakeholder-card, stakeholder-active, etc.
  * ======================================== */
 
-.stakeholders-card {
+.stakeholder-card {
     background-color: var(--stakeholder-bg-color);
     border-left: 4px solid var(--stakeholder-primary-color);
 }
 
-.stakeholders-active {
+.stakeholder-active {
     border-left: 4px solid var(--stakeholder-primary-color);
 }
 
-.stakeholders-inactive {
+.stakeholder-inactive {
     opacity: 0.6;
     filter: grayscale(0.3);
 }
 
-.btn-stakeholders-primary {
+.btn-stakeholder-primary {
     background-color: var(--stakeholder-primary-color);
     color: white;
     border-color: var(--stakeholder-primary-color);
 }
 
-.btn-stakeholders-primary:hover {
+.btn-stakeholder-primary:hover {
     background-color: var(--stakeholder-hover-color);
     border-color: var(--stakeholder-hover-color);
 }
 
-.stakeholders-badge {
+.stakeholder-badge {
     background-color: var(--stakeholder-light-color);
     color: var(--stakeholder-primary-color);
 }
 
 /* ========================================
  * TEAM STYLES
- * Dynamic classes: teams-card, teams-active, etc.
+ * Dynamic classes: team-card, team-active, etc.
  * ======================================== */
 
-.teams-card {
+.team-card {
     background-color: var(--teams-bg-color);
     border-left: 4px solid var(--teams-primary-color);
 }
 
-.teams-active {
+.team-active {
     border-left: 4px solid var(--teams-primary-color);
 }
 
-.btn-teams-primary {
+.btn-team-primary {
     background-color: var(--teams-primary-color);
     color: white;
     border-color: var(--teams-primary-color);
 }
 
-.btn-teams-primary:hover {
+.btn-team-primary:hover {
     background-color: var(--teams-hover-color);
     border-color: var(--teams-hover-color);
 }
 
-.teams-badge {
+.team-badge {
     background-color: var(--teams-light-color);
     color: var(--teams-primary-color);
 }
 
 /* ========================================
  * USER STYLES
- * Dynamic classes: users-card, users-active, etc.
+ * Dynamic classes: user-card, user-active, etc.
  * ======================================== */
 
-.users-card {
+.user-card {
     background-color: var(--user-bg-color);
     border-left: 4px solid var(--user-primary-color);
 }
 
-.users-active {
+.user-active {
     border-left: 4px solid var(--user-primary-color);
 }
 
-.btn-users-primary {
+.btn-user-primary {
     background-color: var(--user-primary-color);
     color: white;
     border-color: var(--user-primary-color);
 }
 
-.btn-users-primary:hover {
+.btn-user-primary:hover {
     background-color: var(--user-hover-color);
     border-color: var(--user-hover-color);
 }
 
-.users-badge {
+.user-badge {
     background-color: var(--user-light-color);
     color: var(--user-primary-color);
 }

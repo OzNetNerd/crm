@@ -9,9 +9,9 @@
   Usage:
   {% from "macros/cards.html" import card %}
   
-  {{ card('task', task) }}
-  {{ card('company', company, expansion_enabled=false) }}
-  {{ card('opportunity', opportunity, overrides={'actions': custom_actions}) }}
+  {{ card(task) }}
+  {{ card(company, expansion_enabled=false) }}
+  {{ card(opportunity, overrides={'actions': custom_actions}) }}
 #}
 
 {# Import core card system components #}
@@ -22,21 +22,25 @@
   Card - Main entry point for the card system
   
   Parameters:
-  - entity_type (required): Type of entity (task, company, stakeholder, etc.)
-  - entity (required): Entity data object
+  - entity (required): Entity data object (automatically extracts type)
   - expansion_enabled (optional): Allow expand/collapse (default: true)
   - card_classes (optional): Additional CSS classes
   - content (optional): Custom content configuration
   - overrides (optional): Override specific content sections
   
   Examples:
-  {{ card('task', task) }}
-  {{ card('company', company, expansion_enabled=false) }}
-  {{ card('stakeholder', stakeholder, overrides={'actions': custom_actions}) }}
+  {{ card(task) }}
+  {{ card(company, expansion_enabled=false) }}
+  {{ card(stakeholder, overrides={'actions': custom_actions}) }}
 #}
-{% macro card(entity_type, entity, expansion_enabled=true, card_classes='', content=none, overrides={}) %}
+{% macro card(entity, expansion_enabled=true, card_classes='', content=none, overrides={}) %}
+{# Extract entity type from table name and get singular form #}
+{% set entity_type_plural = entity.__tablename__.rstrip('s') %}
+{% set labels = get_entity_labels(entity_type_plural) %}
+{% set entity_type = labels.singular.lower() %}
+
 {% if content is none %}
-    {% set content = build_dynamic_card_config(entity_type, entity) %}
+    {% set content = build_dynamic_card_config(entity_type_plural, entity) %}
     
     {# Apply overrides #}
     {% for section, override_config in overrides.items() %}
@@ -51,12 +55,11 @@
   Simple Card - Non-expandable card variant
   
   Parameters:
-  - entity_type (required): Type of entity
   - entity (required): Entity data object
   - card_classes (optional): Additional CSS classes
   - content (optional): Custom content configuration
   - overrides (optional): Override specific content sections
 #}
-{% macro simple_card(entity_type, entity, card_classes='', content=none, overrides={}) %}
-{{ card(entity_type, entity, expansion_enabled=false, card_classes=card_classes, content=content, overrides=overrides) }}
+{% macro simple_card(entity, card_classes='', content=none, overrides={}) %}
+{{ card(entity, expansion_enabled=false, card_classes=card_classes, content=content, overrides=overrides) }}
 {% endmacro %}

@@ -14,9 +14,9 @@
  * 6. Utilities - Helper classes and overrides
  * 
  * Dynamic Class Pattern Support:
- * - {{entity_name}}-card → companies-card, tasks-card, etc.
- * - {{entity_name}}-{{status}} → companies-active, tasks-completed, etc.
- * - btn-{{entity_name}}-primary → btn-companies-primary, etc.
+ * - {{entity_name}}-card → company-card, task-card, etc.
+ * - {{entity_name}}-{{status}} → company-active, task-completed, etc.
+ * - btn-{{entity_name}}-primary → btn-company-primary, etc.
  */
 
 /* ========================================
