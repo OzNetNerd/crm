@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from . import db
-from .base import BaseModel
+from .base import EntityModel
 from app.utils.core.model_helpers import (
     create_choice_field_info,
     create_date_field_info,
@@ -28,7 +28,7 @@ task_entities = db.Table(
 
 
 @create_model_choice_methods(['priority', 'status'])
-class Task(BaseModel):
+class Task(EntityModel):
     """
     Task model representing work items and activities in the CRM system.
     

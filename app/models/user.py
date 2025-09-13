@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import Dict, Any
 from . import db
-from .base import BaseModel
+from .base import BaseModel, EntityModel
 
 
-class User(BaseModel):
+class User(EntityModel):
     """
     User model representing team members in the CRM system.
     

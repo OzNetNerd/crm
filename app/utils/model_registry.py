@@ -187,5 +187,5 @@ class ModelRegistry:
             cls._metadata_cache[model_name] = ModelMetadata(cls._models[model_name])
 
 
-# Initialize registry with existing models
+# Initialize registry with existing models (original working approach)
 ModelRegistry.auto_register_from_entity_config()

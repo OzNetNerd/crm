@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from . import db
-from .base import BaseModel
+from .base import EntityModel
 
 
 # Many-to-many table for stakeholder MEDDPICC roles
@@ -40,7 +40,7 @@ stakeholder_opportunities = db.Table(
 )
 
 
-class Stakeholder(BaseModel):
+class Stakeholder(EntityModel):
     """
     Stakeholder model representing customer-side contacts in the CRM system.
     
