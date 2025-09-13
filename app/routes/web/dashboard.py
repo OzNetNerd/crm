@@ -76,19 +76,23 @@ def index():
         'stats': [
             {
                 'value': DisplayFormatter.format_currency(pipeline_stats['prospect']),
-                'label': 'Prospect'
+                'label': 'Prospect',
+                'status': 'prospect'
             },
             {
                 'value': DisplayFormatter.format_currency(pipeline_stats['qualified']),
-                'label': 'Qualified'
+                'label': 'Qualified',
+                'status': 'qualified'
             },
             {
                 'value': DisplayFormatter.format_currency(pipeline_stats['proposal']),
-                'label': 'Proposal'
+                'label': 'Proposal',
+                'status': 'proposal'
             },
             {
                 'value': DisplayFormatter.format_currency(pipeline_stats['negotiation']),
-                'label': 'Negotiation'
+                'label': 'Negotiation',
+                'status': 'negotiation'
             }
         ]
     }

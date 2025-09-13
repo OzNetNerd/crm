@@ -60,7 +60,7 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         {% for stat in summary_data.stats %}
         <div class="text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-            <div class="text-2xl font-bold {{ ('text-' + entity_name + '-600') if entity_name else 'text-gray-900' }} mb-1">
+            <div class="text-2xl font-bold {{ ('text-status-' + stat.status) if stat.status else (('text-' + entity_name + '-600') if entity_name else 'text-gray-900') }} mb-1">
                 {{ stat.value }}
             </div>
             <div class="text-sm text-gray-600">{{ stat.label }}</div>
