@@ -112,23 +112,23 @@ class ModalService:
         # Get the entity
         entity = model_class.query.get_or_404(entity_id)
         
-        # Use existing modal configuration system
-        from app.utils.ui.modal_configs import get_detail_modal_config
-        
-        # Get configuration for this entity type
+        # Use model metadata for configuration
+        from app.utils.model_registry import ModelRegistry
+
+        # Get metadata for this entity type
         entity_type = model_name.lower()
-        config = get_detail_modal_config(entity_type)
-        
-        if not config:
-            return render_template('components/modals/error_modal.html', 
-                                 error=f"No view configuration found for {model_name}")
-        
+        try:
+            metadata = ModelRegistry.get_model_metadata(entity_type)
+        except ValueError:
+            return render_template('components/modals/error_modal.html',
+                                 error=f"No metadata found for {model_name}")
+
         # Render the view modal template
         template_vars = {
             'model_name': entity_type,
             'entity': entity,
-            'config': config,
-            'modal_title': f'View {model_name}',
+            'metadata': metadata,
+            'modal_title': f'View {metadata.display_name}',
             **kwargs
         }
         

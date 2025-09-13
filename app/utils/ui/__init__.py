@@ -4,12 +4,7 @@ UI-specific utilities for modals, templates, and user interface components.
 
 # from .modal_service import ModalService  # Temporarily commented to avoid circular import
 
-from .modal_configs import (
-    get_modal_config,
-    get_detail_modal_config,
-    MODAL_CONFIGS,
-    DETAIL_MODAL_CONFIGS
-)
+# Modal configs removed - replaced by forms.py and ModelRegistry
 
 from .template_filters import (
     style_task_description,
@@ -33,10 +28,6 @@ from .index_helpers import (
 
 __all__ = [
     # 'ModalService',  # Temporarily removed
-    'get_modal_config',
-    'get_detail_modal_config',
-    'MODAL_CONFIGS',
-    'DETAIL_MODAL_CONFIGS',
     'style_task_description',
     'safe_tojson',
     'register_template_filters',
