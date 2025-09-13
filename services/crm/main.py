@@ -19,7 +19,21 @@ for model_class in [Company, Stakeholder, Task, Opportunity, User]:
     if hasattr(model_class, '__entity_config__'):
         config = model_class.__entity_config__
         endpoint_name = config['endpoint_name']
+
+        # Register with endpoint name from config
         ModelRegistry.register_model(model_class, endpoint_name)
+        # Register with lowercase class name
+        ModelRegistry.register_model(model_class, model_class.__name__.lower())
+
+        # Register both singular and plural forms using metadata
+        metadata = ModelRegistry.get_model_metadata(model_class.__name__.lower())
+        singular_name = metadata.display_name.lower()
+        plural_name = metadata.display_name_plural.lower()
+
+        if singular_name not in ModelRegistry._models:
+            ModelRegistry._models[singular_name] = model_class
+        if plural_name not in ModelRegistry._models:
+            ModelRegistry._models[plural_name] = model_class
 from app.utils.ui.template_globals import (
     get_field_options,
     get_model_form_fields,

@@ -49,7 +49,8 @@ class EntityButtonGenerator:
         if not model_class:
             # Fallback for unknown entities
             return {
-                'label': f'New {entity_name.title().rstrip("s")}',
+                'title': f'New {entity_name.title().rstrip("s")}',
+                'url': f'/modals/{entity_name.title().rstrip("s")}/create',
                 'hx_get': f'/modals/{entity_name.title().rstrip("s")}/create',
                 'hx_target': 'body',
                 'hx_swap': 'beforeend',
@@ -60,7 +61,8 @@ class EntityButtonGenerator:
         entity_config = model_class.__entity_config__
         
         return {
-            'label': f'New {entity_config.get("display_name_singular", "Item")}',
+            'title': f'New {entity_config.get("display_name_singular", "Item")}',
+            'url': f'{entity_config.get("modal_path", "/modals/Item")}/create',
             'hx_get': f'{entity_config.get("modal_path", "/modals/Item")}/create',
             'hx_target': 'body',
             'hx_swap': 'beforeend',
@@ -152,7 +154,7 @@ class LegacyButtonConverter:
         Returns:
             True if config follows DRY patterns, False if hardcoded
         """
-        required_keys = ['label', 'hx_get', 'hx_target', 'hx_swap', 'entity']
+        required_keys = ['title', 'url', 'hx_get', 'hx_target', 'hx_swap', 'entity']
         
         # Check for required keys
         if not all(key in button_config for key in required_keys):
