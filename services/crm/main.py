@@ -26,6 +26,7 @@ from app.utils.ui.template_globals import (
     generate_entity_buttons,
 )
 from app.utils.cards.config_builder import CardConfigBuilder
+from app.utils.css.dynamic_classes import inject_css_context
 
 
 def get_database_path():
@@ -83,7 +84,8 @@ def create_app():
     register_template_filters(app)
     
     # Register context processors for global template data
-    # Context processor removed - model configs accessed directly via get_all_model_configs() where needed
+    # ADR-011: Dynamic CSS class generation context processor
+    app.context_processor(inject_css_context)
 
     # Register clean template functions - no more string hacks!
     app.jinja_env.globals["get_field_options"] = get_field_options

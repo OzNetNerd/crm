@@ -1,105 +1,83 @@
 /**
- * Main CSS Import File
- * ITCSS Architecture - Inverted Triangle CSS
+ * Main CSS Import File - ADR-011 Compliant
+ * Simple CSS Architecture with Flat Organization
  * 
- * Imports all CSS layers in specificity order from generic to specific.
- * This file replaces the individual component imports in templates.
+ * Replaces ITCSS architecture with simple, maintainable structure.
+ * Supports dynamic CSS class generation for entity-specific styling.
  * 
- * Layer Order (increasing specificity):
- * 1. Settings    - Variables and design tokens
- * 2. Tools       - Utility classes and mixins
- * 3. Generic     - Resets and base styles
- * 4. Elements    - Base HTML element styles
- * 5. Objects     - Layout patterns and structures
- * 6. Components  - UI components and widgets
- * 7. Trumps      - Overrides and utilities
+ * Import order follows logical dependency structure:
+ * 1. Variables - Design system foundation
+ * 2. Base - Reset and base HTML elements
+ * 3. Layout - Grid, flexbox, positioning utilities
+ * 4. Components - Reusable UI components  
+ * 5. Entities - Entity-specific styling with dynamic classes
+ * 6. Utilities - Helper classes and overrides
+ * 
+ * Dynamic Class Pattern Support:
+ * - {{entity_name}}-card → companies-card, tasks-card, etc.
+ * - {{entity_name}}-{{status}} → companies-active, tasks-completed, etc.
+ * - btn-{{entity_name}}-primary → btn-companies-primary, etc.
  */
 
 /* ========================================
- * LAYER 1: SETTINGS
- * CSS Custom Properties and design tokens
+ * FOUNDATION LAYER
+ * Variables and design system tokens
  * ======================================== */
 
-@import url('01-settings/variables.css');
+@import url('variables.css');
 
 /* ========================================
- * LAYER 2: TOOLS
- * Utility classes and helper functions
+ * BASE LAYER  
+ * Reset, normalize, and base HTML element styles
  * ======================================== */
 
-@import url('02-tools/utilities.css');
+@import url('base.css');
 
 /* ========================================
- * LAYER 3: GENERIC
- * Resets, normalize, and base styles
+ * LAYOUT LAYER
+ * Grid, flexbox, positioning, and spacing utilities
  * ======================================== */
 
-/* Future: reset.css, normalize.css */
+@import url('layout.css');
 
 /* ========================================
- * LAYER 4: ELEMENTS
- * Base HTML element styling
+ * COMPONENTS LAYER
+ * Reusable UI components and patterns
  * ======================================== */
 
-/* Future: base typography, links, etc. */
+@import url('components.css');
 
 /* ========================================
- * LAYER 5: OBJECTS
- * Layout patterns and structural components
+ * ENTITIES LAYER
+ * Entity-specific styling with dynamic class support
  * ======================================== */
 
-/* Future: layout.css, containers.css */
+@import url('entities.css');
 
 /* ========================================
- * LAYER 6: COMPONENTS
- * UI components and interactive elements
+ * UTILITIES LAYER
+ * Helper classes and final overrides
  * ======================================== */
 
-@import url('06-components/badges.css');
-@import url('06-components/buttons.css');
-@import url('06-components/typography.css');
-@import url('06-components/icons.css');
-@import url('06-components/cards.css');
-@import url('06-components/dropdowns.css');
-@import url('modals.css'); /* Existing modal styles - to be refactored */
-@import url('chatbot.css'); /* Chatbot-specific styles */
+@import url('utilities.css');
 
 /* ========================================
- * LAYER 7: TRUMPS
- * Overrides and high-specificity utilities
+ * LEGACY COMPATIBILITY
+ * Temporary imports during migration
  * ======================================== */
 
-/* Future: overrides.css, shame.css */
+/* Keep existing modal and chatbot styles during transition */
+@import url('modals.css');
+@import url('chatbot.css');
 
 /* ========================================
- * ESSENTIAL UTILITIES
- * Core functionality that must remain
+ * ADR-011 COMPLIANCE VERIFICATION
+ * This file structure implements:
+ * 
+ * ✅ Flat CSS organization (no numbered directories)
+ * ✅ Entity-driven CSS classes with dynamic generation support
+ * ✅ Minimal layer structure (6 logical layers)
+ * ✅ Readable class names matching business logic
+ * ✅ CSS variables for entity-specific theming
+ * ✅ Single import file for simplified asset management
  * ======================================== */
-
-/* Hide all loading animations and indicators */
-.htmx-indicator,
-.modal-loading,
-.modal-spinner,
-[id*="loading-indicator"],
-[class*="loading"],
-[class*="spinner"],
-.loading-spinner,
-.animate-spin {
-    display: none !important;
-}
-
-.htmx-request .htmx-indicator,
-.htmx-request.htmx-indicator {
-    display: none !important;
-}
-
-/* Alpine.js cloak utility */
-[x-cloak] { 
-    display: none !important;
-}
-
-/* Modern ITCSS architecture with semantic component classes:
- * Buttons: .c-button .c-button--primary, .c-button--entity .c-button--task
- * Typography: .text-label, .text-entity-base, .text-color-{entity}
- * Layout: Use utility classes or semantic component classes as needed
- */
