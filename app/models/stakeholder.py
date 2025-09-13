@@ -161,7 +161,12 @@ class Stakeholder(BaseModel):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Foreign key to company
-    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"), nullable=False)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"), nullable=False, info={
+        'display_label': 'Company',
+        'groupable': True,
+        'relationship_field': 'company',
+        'relationship_display_field': 'name'
+    })
 
     # Relationships (use back_populates to avoid conflicts)
     company = db.relationship("Company", back_populates="stakeholders")

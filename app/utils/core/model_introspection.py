@@ -151,9 +151,18 @@ class ModelIntrospector:
                     
                     # Add field only once if it's groupable and not already added
                     if is_groupable and attr_name not in seen_fields:
-                        label = info.get('display_label', attr_name.replace('_', ' ').title())
-                        groupable_fields.append((attr_name, label))
-                        seen_fields.add(attr_name)
+                        # Handle relationship fields - use relationship name instead of foreign key name
+                        if info.get('relationship_field'):
+                            # Use relationship field name (e.g., 'company' instead of 'company_id')
+                            field_name = info['relationship_field']
+                            label = info.get('display_label', field_name.replace('_', ' ').title())
+                        else:
+                            # Regular field
+                            field_name = attr_name
+                            label = info.get('display_label', attr_name.replace('_', ' ').title())
+                        
+                        groupable_fields.append((field_name, label))
+                        seen_fields.add(field_name)
             except (AttributeError, TypeError):
                 continue
         
