@@ -3,6 +3,7 @@ import logging
 from flask import Blueprint, render_template, request, jsonify
 from app.models import db, Task, Company, Stakeholder, Opportunity, Note
 from app.config.entity_config import should_show_entity_metrics_on_dashboard
+from app.utils.ui.formatters import DisplayFormatter
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -69,12 +70,36 @@ def index():
     )
     closing_soon = [opp.to_display_dict() for opp in closing_soon_raw]
 
+    # Create dashboard stats with formatted values (consistent with other entity routes)
+    dashboard_stats = {
+        'title': 'Sales Pipeline',
+        'stats': [
+            {
+                'value': DisplayFormatter.format_currency(pipeline_stats['prospect']),
+                'label': 'Prospect'
+            },
+            {
+                'value': DisplayFormatter.format_currency(pipeline_stats['qualified']),
+                'label': 'Qualified'
+            },
+            {
+                'value': DisplayFormatter.format_currency(pipeline_stats['proposal']),
+                'label': 'Proposal'
+            },
+            {
+                'value': DisplayFormatter.format_currency(pipeline_stats['negotiation']),
+                'label': 'Negotiation'
+            }
+        ]
+    }
+
     # Get dashboard buttons using unified button generator
     from app.utils.ui.button_generator import get_dashboard_action_buttons
     dashboard_buttons = get_dashboard_action_buttons()
 
     return render_template(
         "dashboard/index.html",
+        dashboard_stats=dashboard_stats,
         pipeline_stats=pipeline_stats,
         recent_tasks=recent_tasks,
         recent_notes=recent_notes,
