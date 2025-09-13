@@ -1,11 +1,9 @@
 /**
- * ITCSS Layer 1: Settings
- * CSS Custom Properties (Variables)
+ * CSS Variables and Design Tokens
+ * ADR-011: Simple CSS Architecture - Variables Layer
  * 
- * Design system foundation with semantic naming and consistent values.
- * All colors, spacing, typography, and design tokens defined here.
- * 
- * Usage: var(--color-primary), var(--spacing-md), var(--text-lg)
+ * Contains all design system variables for consistent theming.
+ * Entity-specific colors enable dynamic class generation.
  */
 
 :root {
@@ -34,6 +32,11 @@
      * Warning, danger, and status colors
      * ======================================== */
     
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    
     --color-warning: #a16207; /* yellow-800 */
     --color-warning-hover: #92400e; /* yellow-800 */
     --color-warning-light: #fefce8; /* yellow-100 */
@@ -61,49 +64,51 @@
     --color-gray-900: #111827;
     
     /* ========================================
-     * ENTITY TYPE COLORS
-     * Semantic color system for different entity types
+     * ENTITY COLORS - ADR-011 REQUIREMENT
+     * Dynamic class generation colors per entity type
      * ======================================== */
     
-    --color-task: #2563eb; /* blue-600 - Action/productivity */
-    --color-task-hover: #1d4ed8; /* blue-700 */
-    --color-task-ring: #3b82f6; /* blue-500 */
-    --color-task-light: #dbeafe; /* blue-100 */
-    --color-task-lighter: #eff6ff; /* blue-50 */
+    /* Company Colors */
+    --company-bg-color: #f0fdf4;
+    --company-primary-color: #16a34a;
+    --company-hover-color: #15803d;
+    --company-ring-color: #22c55e;
+    --company-light-color: #dcfce7;
     
-    --color-company: #16a34a; /* green-600 - Business/growth */
-    --color-company-hover: #15803d; /* green-700 */
-    --color-company-ring: #22c55e; /* green-500 */
-    --color-company-light: #dcfce7; /* green-100 */
-    --color-company-lighter: #f0fdf4; /* green-50 */
+    /* Task Colors */
+    --task-bg-color: #eff6ff;
+    --task-primary-color: #2563eb;
+    --task-hover-color: #1d4ed8;
+    --task-ring-color: #3b82f6;
+    --task-light-color: #dbeafe;
     
-    --color-opportunity: #9333ea; /* purple-600 - Premium/revenue */
-    --color-opportunity-hover: #7c3aed; /* purple-700 */
-    --color-opportunity-ring: #a855f7; /* purple-500 */
-    --color-opportunity-light: #faf5ff; /* purple-100 */
-    --color-opportunity-lighter: #f3e8ff; /* purple-50 */
+    /* Opportunity Colors */  
+    --opportunity-bg-color: #faf5ff;
+    --opportunity-primary-color: #9333ea;
+    --opportunity-hover-color: #7c3aed;
+    --opportunity-ring-color: #a855f7;
+    --opportunity-light-color: #f3e8ff;
     
-    --color-stakeholder: #ca8a04; /* yellow-600 - Relationships/people */
-    --color-stakeholder-hover: #a16207; /* yellow-700 */
-    --color-stakeholder-ring: #eab308; /* yellow-500 */
-    --color-stakeholder-light: #fefce8; /* yellow-100 */
-    --color-stakeholder-lighter: #fef3c7; /* yellow-50 */
+    /* Stakeholder Colors */
+    --stakeholder-bg-color: #fefce8;
+    --stakeholder-primary-color: #ca8a04;
+    --stakeholder-hover-color: #a16207;
+    --stakeholder-ring-color: #eab308;
+    --stakeholder-light-color: #fef3c7;
     
-    --color-teams: #dc2626; /* red-600 - Leadership/authority */
-    --color-teams-hover: #b91c1c; /* red-700 */
-    --color-teams-ring: #ef4444; /* red-500 */
-    --color-teams-light: #fee2e2; /* red-100 */
-    --color-teams-lighter: #fef2f2; /* red-50 */
+    /* Team Colors */
+    --teams-bg-color: #fef2f2;
+    --teams-primary-color: #dc2626;
+    --teams-hover-color: #b91c1c;
+    --teams-ring-color: #ef4444;
+    --teams-light-color: #fee2e2;
     
-    --color-user: #dc2626; /* red-600 - Same as teams */
-    --color-user-hover: #b91c1c; /* red-700 */
-    --color-user-ring: #ef4444; /* red-500 */
-    --color-user-light: #fee2e2; /* red-100 */
-    --color-user-lighter: #fef2f2; /* red-50 */
-    
-    /* Legacy compatibility colors */
-    --color-deal-amount: #059669; /* green-600 */
-    --color-contact: #374151; /* gray-700 */
+    /* User Colors */
+    --user-bg-color: #fef2f2;
+    --user-primary-color: #dc2626;
+    --user-hover-color: #b91c1c;
+    --user-ring-color: #ef4444;
+    --user-light-color: #fee2e2;
     
     /* ========================================
      * SPACING SCALE
