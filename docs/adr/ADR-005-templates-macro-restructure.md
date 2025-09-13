@@ -1,6 +1,6 @@
 # Architecture Decision Record (ADR)
 
-## ADR-005: Restructure Templates/Components to Macros Directory System
+## ADR-005: Universal Template Macro Organization and Directory System
 
 **Status:** Implemented  
 **Date:** 11-09-25-09h-15m-30s  
@@ -10,33 +10,33 @@
 
 ### Context
 
-The CRM application's template system had grown organically with 160 Jinja2 macros scattered across a `templates/components/` directory. Key issues:
+Web applications using Jinja2 templating consistently face template organization challenges as macro libraries grow beyond initial prototypes. Common issues across all projects include:
 
-- **Misleading naming:** Directory called "components" but contained Jinja2 macros
-- **Poor organization:** 39 files with deep nesting (5 levels in modals/)
-- **Maintenance burden:** Large monolithic files (ui_elements.html at 1,133 lines)
+- **Misleading naming:** Directories called "components" but containing Jinja2 macros
+- **Poor organization:** Files with deep nesting creating navigation difficulties
+- **Maintenance burden:** Large monolithic template files hindering readability
 - **Discovery problems:** Related macros scattered across multiple subdirectories
-- **Import complexity:** 5 different import files with overlapping purposes
+- **Import complexity:** Multiple import files with overlapping purposes
 - **Performance impact:** Large files causing slower template compilation
 
-Analysis showed that while functionally working, the structure hindered developer productivity and future scalability.
+This pattern occurs across all web frameworks using Jinja2 templating and significantly impacts developer productivity and project scalability.
 
 ### Decision
 
-We will restructure the entire template macro system by:
+We will establish universal template macro organization standards that apply to all web projects using Jinja2:
 
-1. **Rename directory:** `templates/components/` → `templates/macros/`
+1. **Standardize directory naming:** `templates/components/` → `templates/macros/` for clarity
 2. **Implement logical grouping structure:**
    - `base/` - Core foundational macros (buttons, forms, icons, layout)
    - `ui/` - UI controls and interactions (progress, search, navigation)
-   - `entities/` - Entity-specific macros (company, opportunity, stakeholder, task, team)
+   - `entities/` - Domain-specific macros (adaptable per project domain)
    - `modals/` - Modal components (base functionality, forms, dialogs, configs)
-   - `widgets/` - Specialized widgets (chat, filters, metrics, linker)
+   - `widgets/` - Specialized widgets (filters, metrics, interactive components)
    - `imports/` - Import aggregators (common, entities, modals)
-3. **Split large files:** Break ui_elements.html into focused components
-4. **Flatten modal structure:** Reduce from 5 levels to 2 levels deep
-5. **Consolidate imports:** Reduce from 5 import files to 3 logical groupings
-6. **Update all references:** Maintain 100% backward compatibility
+3. **Split large files:** Break monolithic template files into focused components
+4. **Flatten nested structures:** Reduce deep nesting to maximum 2 levels
+5. **Consolidate imports:** Reduce multiple import files to logical groupings
+6. **Maintain compatibility:** Ensure smooth migration path for existing templates
 
 ### Rationale
 
@@ -117,11 +117,12 @@ We will restructure the entire template macro system by:
 
 ---
 
-**Impact Assessment:** High - This is a foundational change affecting the entire template architecture and developer workflow.
+**Impact Assessment:** High - This establishes universal template organization standards affecting all web application development.
 
-**Review Required:** Yes - Future template organization decisions should reference this ADR.
+**Review Required:** Mandatory - All projects using Jinja2 templating must follow this macro organization system.
 
 **Next Steps:**
-1. Monitor template performance metrics post-implementation
-2. Create developer documentation for new macro organization
-3. Establish guidelines for adding new macros to appropriate directories
+1. Apply this organization system to all new projects using Jinja2 templates
+2. Create universal developer documentation for macro organization patterns
+3. Establish guidelines for adding new macros across all project types
+4. Create project templates that implement this structure by default

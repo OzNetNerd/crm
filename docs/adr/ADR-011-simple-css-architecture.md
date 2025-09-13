@@ -159,13 +159,13 @@ def inject_css_context():
 }
 ```
 
-**Migration Strategy:**
-1. Create new flat CSS file structure
-2. Extract entity-specific styles from existing ITCSS files
-3. Implement dynamic class generation in Python templates
-4. Update all Jinja templates to use new class patterns
-5. Remove old ITCSS layer files and imports
-6. Test visual consistency across all pages
+**Implementation Strategy:**
+1. Create new flat CSS file structure for all projects
+2. Extract domain-specific styles from existing architectural files
+3. Implement dynamic class generation in backend template systems
+4. Update template engines to use consistent class naming patterns
+5. Remove complex architectural layer files and imports
+6. Test visual consistency across all application pages
 
 ### Version History
 
