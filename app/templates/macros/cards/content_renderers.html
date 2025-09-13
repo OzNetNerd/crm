@@ -97,8 +97,9 @@
         {% if field_value %}
         {%- set normalized_value = field_value|lower|replace(' ', '-') -%}
         {%- set badge_type = field_config.get('badge_type', 'status') -%}
+        {%- set display_text = field_value|replace('-', ' ')|replace('_', ' ')|title -%}
         <span class="badge badge-{{ badge_type }}-{{ normalized_value }}">
-            {{ field_value }}
+            {{ display_text }}
         </span>
         {% endif %}
     {% elif field_type == 'date' %}
