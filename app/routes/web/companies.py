@@ -1,4 +1,13 @@
+"""
+Company web routes for the CRM application.
+
+This module provides web endpoints for managing companies including
+listing, filtering, grouping, and CRUD operations. Companies represent
+business organizations that the CRM system manages relationships with.
+"""
+
 from datetime import date
+from typing import List, Dict, Any
 from flask import Blueprint, render_template, request
 from app.models import Company, Stakeholder, Opportunity, db
 from app.utils.core.base_handlers import BaseRouteHandler, EntityFilterManager, EntityGrouper
@@ -10,15 +19,35 @@ company_handler = BaseRouteHandler(Company, "companies")
 company_filter_manager = EntityFilterManager(Company, "company")
 
 
-def company_custom_filters(query, filters):
-    """Company-specific filtering logic"""
+def company_custom_filters(query, filters: Dict[str, Any]):
+    """
+    Apply company-specific filtering logic to database query.
+    
+    Args:
+        query: SQLAlchemy query object to filter.
+        filters: Dictionary containing filter criteria.
+    
+    Returns:
+        Modified query object with applied filters.
+    """
     if filters['primary_filter']:
         query = query.filter(Company.industry.in_(filters['primary_filter']))
     return query
 
 
-def company_custom_groupers(entities, group_by):
-    """Company-specific grouping logic"""
+def company_custom_groupers(entities: List[Company], group_by: str) -> List[Dict[str, Any]]:
+    """
+    Apply company-specific grouping logic to entity list.
+    
+    Groups companies by industry or size category for organized display.
+    
+    Args:
+        entities: List of Company objects to group.
+        group_by: Grouping criteria ('industry' or 'size').
+    
+    Returns:
+        List of dictionaries containing grouped entities with metadata.
+    """
     grouped = defaultdict(list)
     
     if group_by == "industry":
@@ -57,8 +86,16 @@ def company_custom_groupers(entities, group_by):
     return None  # Use default grouping
 
 
-def get_filtered_companies_context():
-    """Server-side filtering and sorting for companies HTMX endpoints - DRY version"""
+def get_filtered_companies_context() -> Dict[str, Any]:
+    """
+    Get filtered and sorted companies context for HTMX endpoints.
+    
+    Provides server-side filtering and sorting functionality for companies
+    with custom filtering and grouping logic applied.
+    
+    Returns:
+        Dictionary containing filtered companies and related context data.
+    """
     return company_filter_manager.get_filtered_context(
         custom_filters=company_custom_filters,
         custom_grouper=company_custom_groupers
@@ -67,7 +104,15 @@ def get_filtered_companies_context():
 
 @companies_bp.route("/content")
 def content():
-    """HTMX endpoint for filtered company content - DRY version"""
+    """
+    HTMX endpoint for dynamically filtered company content.
+    
+    Returns partial HTML content for companies list with applied filters,
+    sorting, and grouping. Used for dynamic updates without full page refresh.
+    
+    Returns:
+        Rendered HTML template with filtered company data.
+    """
     context = company_filter_manager.get_content_context(
         custom_filters=company_custom_filters,
         custom_grouper=company_custom_groupers
@@ -78,6 +123,16 @@ def content():
 
 @companies_bp.route("/")
 def index():
+    """
+    Main companies index page displaying all companies with statistics.
+    
+    Provides a comprehensive view of all companies in the system including
+    associated stakeholders and opportunities. Includes statistical overview
+    and supports filtering, sorting, and grouping operations.
+    
+    Returns:
+        Rendered HTML template with companies data, statistics, and UI controls.
+    """
     from app.utils.ui.index_helpers import UniversalIndexHelper
     
     # Get all companies with relationships
