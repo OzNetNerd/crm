@@ -73,6 +73,7 @@ def generate_entity_result(entity, entity_type, config):
     return {
         "id": entity.id,
         "type": config['type_label'],
+        "model_type": entity_type,  # Add model type for modal system
         "title": title,
         "subtitle": " • ".join(subtitle_parts) if subtitle_parts else "",
         "url": f"/modals/{entity_type}/{entity.id}/view",
