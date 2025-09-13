@@ -20,11 +20,11 @@ class EntityConfig:
     entity_type: str
     entity_endpoint: str
     entity_buttons: List[Dict[str, str]]
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for template usage"""
         return asdict(self)
-    
+
     def to_json_safe(self) -> Dict[str, Any]:
         """Convert to JSON-safe dictionary for JavaScript"""
         return self.to_dict()
@@ -200,10 +200,10 @@ class UniversalContextBuilder:
         """Build entity configuration from model metadata - ADR-016"""
         # Use registry instead of direct model access
         metadata = ModelRegistry.get_model_metadata(entity_name)
-        
+
         # Simple entity button - no complex generator needed
         entity_buttons = [entity_name]  # Template will derive button properties
-        
+
         return EntityConfig(
             entity_name=metadata.display_name_plural,
             entity_name_singular=metadata.display_name,

@@ -40,9 +40,6 @@ from app.utils.ui.template_globals import (
     get_model_config,
     PRIORITY_OPTIONS,
     SIZE_OPTIONS,
-    get_entity_config,
-    get_entity_labels,
-    get_empty_state_config,
 )
 from app.utils.cards.config_builder import CardConfigBuilder
 from app.utils.logging.config import setup_structured_logging
@@ -116,10 +113,7 @@ def create_app():
     app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
     app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
     
-    # Entity configuration functions - now in Python backend
-    app.jinja_env.globals["get_entity_config"] = get_entity_config
-    app.jinja_env.globals["get_entity_labels"] = get_entity_labels
-    app.jinja_env.globals["get_empty_state_config"] = get_empty_state_config
+    # Entity configuration functions removed - using ModelRegistry and context_builders instead
 
     # Dashboard button function
     def get_dashboard_action_buttons():

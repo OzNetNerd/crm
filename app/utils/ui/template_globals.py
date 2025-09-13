@@ -2,11 +2,7 @@
 
 from app.models import db
 from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
-from app.config.entity_config import (
-    get_entity_config,
-    get_entity_labels,
-    get_empty_state_config
-)
+# Entity config functions removed - now using ModelRegistry and context_builders
 # Modal configs removed - using WTForms modal system now (keeping main branch approach)
 # from app.utils.ui.modal_configs import get_modal_config, get_detail_modal_config, MODAL_CONFIGS, DETAIL_MODAL_CONFIGS
 # Button generator removed - dashboard buttons now use simple entity names
