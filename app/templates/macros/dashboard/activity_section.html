@@ -2,8 +2,8 @@
 {% from "macros/ui/metadata_display.html" import task_metadata %}
 {% from "macros/base/icons.html" import icon %}
 
-{% macro dashboard_left_column(overdue_tasks, recent_tasks) %}
-{# Dashboard left column: Overdue Tasks (top) + Recent Tasks (bottom) #}
+{% macro dashboard_left_column(overdue_tasks, closing_soon, recent_tasks) %}
+{# Dashboard left column: Overdue Tasks + Closing Soon (alerts) + Recent Tasks #}
 <div class="space-y-6">
     <!-- Overdue Tasks Alert -->
     {% if overdue_tasks %}
@@ -14,6 +14,20 @@
                 warning_text=task_metadata(task),
                 warning_color='red',
                 action_href='/tasks/'
+            ) }}
+        {% endfor %}
+    {% endcall %}
+    {% endif %}
+
+    <!-- Closing Soon Opportunities -->
+    {% if closing_soon %}
+    {% call list_section('Closing Soon', href='/opportunities/', theme_color='yellow', icon_macro=icon('calendar-days', 'md', 'c-icon--warning')) %}
+        {% for opp in closing_soon %}
+            {{ alert_list_item(
+                title=opp.name,
+                warning_text=opp.value_formatted + ' • ' + opp.expected_close_date_formatted,
+                warning_color='yellow',
+                action_href='/opportunities/'
             ) }}
         {% endfor %}
     {% endcall %}
@@ -33,23 +47,9 @@
 </div>
 {% endmacro %}
 
-{% macro dashboard_right_column(closing_soon, recent_notes, recent_opportunities) %}
-{# Dashboard right column: Closing Soon + Recent Notes (top) + Recent Opportunities (bottom) #}
+{% macro dashboard_right_column(recent_notes, recent_opportunities) %}
+{# Dashboard right column: Recent Notes (top) + Recent Opportunities (bottom) #}
 <div class="space-y-6">
-    <!-- Closing Soon Opportunities -->
-    {% if closing_soon %}
-    {% call list_section('Closing Soon', href='/opportunities/', theme_color='yellow', icon_macro=icon('calendar-days', 'md', 'c-icon--warning')) %}
-        {% for opp in closing_soon %}
-            {{ alert_list_item(
-                title=opp.name,
-                warning_text=opp.value_formatted + ' • ' + opp.expected_close_date_formatted,
-                warning_color='yellow',
-                action_href='/opportunities/'
-            ) }}
-        {% endfor %}
-    {% endcall %}
-    {% endif %}
-
     <!-- Recent Notes -->
     {% call list_section('Recent Notes') %}
         {% for note in recent_notes %}

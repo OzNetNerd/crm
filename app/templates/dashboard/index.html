@@ -14,11 +14,11 @@
 {{ dashboard_pipeline_section(pipeline_stats) }}
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <!-- Left Column: Overdue Tasks (top) + Recent Tasks (bottom) -->
-    {{ dashboard_left_column(overdue_tasks, recent_tasks) }}
+    <!-- Left Column: Overdue Tasks + Closing Soon (alerts) + Recent Tasks -->
+    {{ dashboard_left_column(overdue_tasks, closing_soon, recent_tasks) }}
 
-    <!-- Right Column: Closing Soon + Recent Notes (top) + Recent Opportunities (bottom) -->
-    {{ dashboard_right_column(closing_soon, recent_notes, recent_opportunities) }}
+    <!-- Right Column: Recent Notes (top) + Recent Opportunities (bottom) -->
+    {{ dashboard_right_column(recent_notes, recent_opportunities) }}
 </div>
 {% endblock %}
 
