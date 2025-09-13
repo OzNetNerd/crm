@@ -105,17 +105,59 @@
                                    x-text="field.label"
                                    :class="{'form-label-required': field.required}"
                                    class="form-label"></label>
-                            <select :id="field.name"
-                                    :name="field.name"
-                                    :required="field.required"
-                                    x-model="formData[field.name]"
-                                    @change="validateField(field.name)"
-                                    :class="{'error': errors[field.name]}"
-                                    class="form-select">
-                                <template x-for="option in field.options" :key="option.value">
-                                    <option :value="option.value" x-text="option.label"></option>
-                                </template>
-                            </select>
+                            <!-- Styled Alpine.js Dropdown -->
+                            <div class="relative"
+                                 :class="{'error': errors[field.name]}"
+                                 x-data="{
+                                     open: false,
+                                     close() { this.open = false; },
+                                     toggle() { this.open = !this.open; },
+                                     selectOption(value) {
+                                         formData[field.name] = value;
+                                         this.close();
+                                         validateField(field.name);
+                                     },
+                                     getDisplayText() {
+                                         const selected = field.options.find(opt => opt.value === formData[field.name]);
+                                         return selected ? selected.label : 'Select option';
+                                     }
+                                 }"
+                                 @click.away="close()"
+                                 @keydown.escape="close()">
+
+                                <button type="button" @click="toggle()"
+                                        class="dropdown-button">
+                                    <span class="truncate dropdown-button-text" x-text="getDisplayText()"></span>
+                                    <svg class="dropdown-chevron" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+
+                                <div x-show="open"
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-150"
+                                     x-transition:leave-start="opacity-100 scale-100"
+                                     x-transition:leave-end="opacity-0 scale-95"
+                                     class="dropdown-menu"
+                                     x-cloak>
+
+                                    <template x-for="option in field.options" :key="option.value">
+                                        <button type="button" @click="selectOption(option.value)"
+                                                class="dropdown-option"
+                                                :class="formData[field.name] === option.value ? 'bg-blue-50 text-blue-700' : ''"
+                                                x-text="option.label">
+                                        </button>
+                                    </template>
+                                </div>
+
+                                <!-- Hidden input for form submission -->
+                                <input type="hidden"
+                                       :name="field.name"
+                                       :value="formData[field.name]"
+                                       :required="field.required">
+                            </div>
                             <p x-show="errors[field.name]"
                                x-text="errors[field.name]"
                                class="form-error"></p>

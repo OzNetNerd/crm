@@ -21,22 +21,27 @@
 {% endmacro %}
 
 {% macro select_input(name, label, model_var, options, required=false, empty_option="", class="") %}
+{% from 'macros/dropdowns.html' import form_select_dropdown %}
 <div class="form-field {% if class %}{{ class }}{% endif %}">
     <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
-    <select x-model="{{ model_var }}" 
-            class="form-select"
-            {% if required %}required{% endif %}>
-        {% if empty_option %}
-        <option value="">{{ empty_option }}</option>
+
+    {# Convert options to include empty option if provided #}
+    {% set all_options = [] %}
+    {% if empty_option %}
+        {% set _ = all_options.append({'value': '', 'label': empty_option}) %}
+    {% endif %}
+    {% for option in options %}
+        {% if option is mapping %}
+            {% set _ = all_options.append({'value': option.value, 'label': option.label}) %}
+        {% else %}
+            {% set _ = all_options.append({'value': option, 'label': option|title}) %}
         {% endif %}
-        {% for option in options %}
-            {% if option is mapping %}
-                <option value="{{ option.value }}">{{ option.label }}</option>
-            {% else %}
-                <option value="{{ option }}">{{ option|title }}</option>
-            {% endif %}
-        {% endfor %}
-    </select>
+    {% endfor %}
+
+    <div x-data="{ value: {{ model_var }} }"
+         x-init="$watch('value', val => {{ model_var }} = val)">
+        {{ form_select_dropdown(name, all_options, current_value='', placeholder=empty_option or 'Select option', required=required) }}
+    </div>
 </div>
 {% endmacro %}
 
@@ -188,7 +193,23 @@
         {% set base_class = "form-field-base" %}
         
         {% if field.widget.__class__.__name__ == 'Select' %}
-            {{ field(class="form-select" + error_class) }}
+            {% from 'macros/dropdowns.html' import form_select_dropdown %}
+
+            {# Convert WTForms field choices to dropdown options #}
+            {% set dropdown_options = [] %}
+            {% for value, label in field.choices %}
+                {% set _ = dropdown_options.append({'value': value, 'label': label}) %}
+            {% endfor %}
+
+            <div class="{% if field.errors %}error{% endif %}">
+                {{ form_select_dropdown(
+                    field.name,
+                    dropdown_options,
+                    current_value=field.data or '',
+                    placeholder='Select option',
+                    required=field.flags.required
+                ) }}
+            </div>
             
         {% elif field.widget.__class__.__name__ == 'TextArea' %}
             {{ field(class="form-textarea" + error_class, rows=field.render_kw.get('rows', 3) if field.render_kw else 3) }}
