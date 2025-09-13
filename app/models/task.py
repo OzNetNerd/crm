@@ -105,14 +105,14 @@ class Task(EntityModel):
     def is_overdue(self) -> bool:
         """
         Check if the task is overdue.
-        
+
         A task is considered overdue if it has a due date that has passed
         and the task is not yet complete.
-        
+
         Returns:
             True if task is overdue, False otherwise.
             Returns False if no due date is set or task is complete.
-            
+
         Example:
             >>> task = Task(due_date=date(2023, 1, 1), status="todo")
             >>> # Assuming current date is after 2023-01-01
@@ -122,6 +122,30 @@ class Task(EntityModel):
         if not self.due_date or self.status == "complete":
             return False
         return self.due_date < datetime.utcnow().date()
+
+    @property
+    def due_date_display(self) -> str:
+        """Format due date for display with relative time information."""
+        if not self.due_date:
+            return "No due date"
+
+        from datetime import date
+        today = date.today()
+        days_diff = (self.due_date - today).days
+        formatted_date = self.due_date.strftime('%d/%m/%y')
+
+        if days_diff < 0:
+            days_ago = abs(days_diff)
+            return f"Due: {formatted_date} ({days_ago} day{'s' if days_ago != 1 else ''} ago)"
+        elif days_diff == 0:
+            return f"Due: {formatted_date} (Today)"
+        else:
+            return f"Due: {formatted_date} ({days_diff} day{'s' if days_diff != 1 else ''} left)"
+
+    @property
+    def due_date_css_class(self) -> str:
+        """Return CSS class for due date styling."""
+        return "text-overdue" if self.is_overdue else ""
 
     @property
     def entity_name(self) -> Optional[str]:

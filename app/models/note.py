@@ -71,6 +71,32 @@ class Note(BaseModel):
 
         return entity.name if hasattr(entity, "name") else str(entity)
 
+    @property
+    def created_at_display(self) -> str:
+        """Format creation time for display with relative time information."""
+        if not self.created_at:
+            return ""
+
+        from datetime import datetime
+        now = datetime.utcnow()
+        diff = now - self.created_at
+        formatted_date = self.created_at.strftime('%d/%m/%y %H:%M')
+
+        if diff.days == 0:
+            hours = diff.seconds // 3600
+            if hours == 0:
+                minutes = diff.seconds // 60
+                if minutes == 0:
+                    return f"{formatted_date} (Just now)"
+                return f"{formatted_date} ({minutes} minute{'s' if minutes != 1 else ''} ago)"
+            return f"{formatted_date} ({hours} hour{'s' if hours != 1 else ''} ago)"
+        elif diff.days == 1:
+            return f"{formatted_date} (Yesterday)"
+        elif diff.days < 7:
+            return f"{formatted_date} ({diff.days} days ago)"
+        else:
+            return formatted_date  # Just show date/time for older notes
+
     def to_display_dict(self) -> Dict[str, Any]:
         """
         Convert note to dictionary with pre-formatted display fields.
@@ -93,7 +119,8 @@ class Note(BaseModel):
         # Add note-specific computed fields
         result['entity_name'] = self.entity_name
         result['content_preview'] = self.content[:100] + '...' if len(self.content) > 100 else self.content
-        
+        result['created_at_display'] = self.created_at_display
+
         return result
 
     def __repr__(self) -> str:
