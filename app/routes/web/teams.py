@@ -1,28 +1,12 @@
 from datetime import date
 from flask import Blueprint, render_template, request
 from app.models import User, Company, Opportunity
-from app.utils.core.base_handlers import BaseRouteHandler, EntityFilterManager, EntityGrouper
-from app.utils.core.model_introspection import ModelIntrospector
-from app.utils.core.entity_handlers import TeamHandler, UniversalEntityManager
+from app.utils.routes import add_content_route
 from collections import defaultdict
 
+# Create blueprint and add DRY content route
 teams_bp = Blueprint("teams", __name__)
-team_handler = BaseRouteHandler(User, "teams")
-
-# Create metadata-driven universal entity manager
-team_entity_manager = UniversalEntityManager(User, TeamHandler())
-team_filter_manager = EntityFilterManager(User, "team_member")
-
-
-# Use universal entity manager methods instead of duplicated functions
-def team_custom_filters(query, filters):
-    """Team-specific filtering using universal manager"""
-    return team_entity_manager.apply_custom_filters(query, filters)
-
-
-def team_custom_groupers(entities, group_by):
-    """Team-specific grouping using universal manager"""
-    return team_entity_manager.apply_custom_grouping(entities, group_by)
+add_content_route(teams_bp, User)
 
 
 @teams_bp.route("/")
@@ -131,14 +115,6 @@ def get_filtered_team_context():
 
 
 
-@teams_bp.route("/content")
-def content():
-    """HTMX endpoint for filtered team member content - DRY version"""
-    context = team_filter_manager.get_content_context(
-        custom_filters=team_custom_filters,
-        custom_grouper=team_custom_groupers
-    )
-    
-    return render_template("shared/entity_content.html", **context)
+# Content route now provided by DRY factory
 
 

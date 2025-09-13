@@ -6,67 +6,13 @@ listing, filtering, grouping, and CRUD operations. Companies represent
 business organizations that the CRM system manages relationships with.
 """
 
-from datetime import date
-from typing import List, Dict, Any
-from flask import Blueprint, render_template, request
-from app.models import Company, Stakeholder, Opportunity, db
-from app.utils.core.base_handlers import BaseRouteHandler, EntityFilterManager, EntityGrouper
-from app.utils.core.model_introspection import ModelIntrospector
-from app.utils.core.entity_handlers import CompanyHandler, UniversalEntityManager
-from collections import defaultdict
+from flask import Blueprint, render_template
+from app.models import Company, Stakeholder, Opportunity
+from app.utils.routes import add_content_route
 
+# Create blueprint and add DRY content route
 companies_bp = Blueprint("companies", __name__)
-company_handler = BaseRouteHandler(Company, "companies")
-
-# Create metadata-driven universal entity manager
-company_entity_manager = UniversalEntityManager(Company, CompanyHandler())
-company_filter_manager = EntityFilterManager(Company, "company")
-
-
-# Use universal entity manager methods instead of duplicated functions
-def company_custom_filters(query, filters: Dict[str, Any]):
-    """Company-specific filtering using universal manager"""
-    return company_entity_manager.apply_custom_filters(query, filters)
-
-
-def company_custom_groupers(entities: List[Company], group_by: str) -> List[Dict[str, Any]]:
-    """Company-specific grouping using universal manager"""
-    return company_entity_manager.apply_custom_grouping(entities, group_by)
-
-
-def get_filtered_companies_context() -> Dict[str, Any]:
-    """
-    Get filtered and sorted companies context for HTMX endpoints.
-    
-    Provides server-side filtering and sorting functionality for companies
-    with custom filtering and grouping logic applied.
-    
-    Returns:
-        Dictionary containing filtered companies and related context data.
-    """
-    return company_filter_manager.get_filtered_context(
-        custom_filters=company_custom_filters,
-        custom_grouper=company_custom_groupers
-    )
-
-
-@companies_bp.route("/content")
-def content():
-    """
-    HTMX endpoint for dynamically filtered company content.
-    
-    Returns partial HTML content for companies list with applied filters,
-    sorting, and grouping. Used for dynamic updates without full page refresh.
-    
-    Returns:
-        Rendered HTML template with filtered company data.
-    """
-    context = company_filter_manager.get_content_context(
-        custom_filters=company_custom_filters,
-        custom_grouper=company_custom_groupers
-    )
-    
-    return render_template("shared/entity_content.html", **context)
+add_content_route(companies_bp, Company)
 
 
 @companies_bp.route("/")

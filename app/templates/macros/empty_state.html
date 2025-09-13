@@ -19,8 +19,8 @@
 #}
 {% macro empty_state(entity_config, title=None, subtitle=None, icon_name=None, additional_classes='') %}
   {% set display_title = title or 'No results found' %}
-  {% set display_subtitle = subtitle or ('Try adjusting your filters or create a new ' + entity_config.entity_name_singular.lower() + '.') %}
-  {% set display_icon = icon_name or entity_config.entity_type %}
+  {% set display_subtitle = subtitle or ('Try adjusting your filters or create a new ' + entity_config.display_name_singular.lower() + '.') %}
+  {% set display_icon = icon_name or entity_config.endpoint_name %}
 
   <div class="empty-state-container {{ additional_classes }}">
     {{ icon(display_icon, 'xl', 'empty-state-icon') }}
