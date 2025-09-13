@@ -117,3 +117,21 @@
     </div>
 </div>
 {% endmacro %}
+
+{#
+  Navigation Link - DRY navigation link with active state
+
+  Parameters:
+  - endpoint (required): Flask endpoint name (e.g., 'companies.index')
+  - text (required): Link text to display
+  - endpoint_prefix (optional): Endpoint prefix for active state (defaults to endpoint prefix)
+
+  Usage:
+  {{ nav_link('companies.index', 'Companies') }}
+  {{ nav_link('stakeholders.index', 'Stakeholders', 'stakeholders.') }}
+#}
+{% macro nav_link(endpoint, text, endpoint_prefix=None) %}
+    {% set prefix = endpoint_prefix or (endpoint.split('.')[0] + '.') %}
+    <a href="{{ url_for(endpoint) }}"
+       class="nav-link{% if request.endpoint and request.endpoint.startswith(prefix) %} nav-link--active{% endif %}">{{ text }}</a>
+{% endmacro %}
