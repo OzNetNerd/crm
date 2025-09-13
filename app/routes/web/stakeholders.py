@@ -3,78 +3,31 @@ from flask import Blueprint, render_template, request
 from app.models import Stakeholder, Company, Opportunity
 from app.utils.core.base_handlers import BaseRouteHandler, EntityFilterManager, EntityGrouper
 from app.utils.core.model_introspection import ModelIntrospector
+from app.utils.core.entity_handlers import StakeholderHandler, UniversalEntityManager
 from collections import defaultdict
 
 stakeholders_bp = Blueprint("stakeholders", __name__)
 stakeholder_handler = BaseRouteHandler(Stakeholder, "stakeholders")
+
+# Create metadata-driven universal entity manager
+stakeholder_entity_manager = UniversalEntityManager(Stakeholder, StakeholderHandler())
 stakeholder_filter_manager = EntityFilterManager(Stakeholder, "stakeholder")
 
 
+# Use universal entity manager methods instead of duplicated functions
 def stakeholder_custom_filters(query, filters):
-    """Stakeholder-specific filtering logic"""
-    if filters['primary_filter']:
-        query = query.filter(Stakeholder.job_title.in_(filters['primary_filter']))
-    
-    if filters['secondary_filter']:
-        query = query.filter(Company.name.in_(filters['secondary_filter']))
-    
-    return query
+    """Stakeholder-specific filtering using universal manager"""
+    return stakeholder_entity_manager.apply_custom_filters(query, filters)
 
 
 def stakeholder_custom_sorting(query, sort_by, sort_direction):
-    """Stakeholder-specific sorting logic"""
-    if sort_by == "name":
-        if sort_direction == "desc":
-            return query.order_by(Stakeholder.name.desc())
-        else:
-            return query.order_by(Stakeholder.name.asc())
-    elif sort_by == "company":
-        if sort_direction == "desc":
-            return query.order_by(Company.name.desc(), Stakeholder.name.asc())
-        else:
-            return query.order_by(Company.name.asc(), Stakeholder.name.asc())
-    else:
-        # Default sort by name
-        return query.order_by(Stakeholder.name.asc())
+    """Stakeholder-specific sorting using universal manager"""
+    return stakeholder_entity_manager.apply_custom_sorting(query, sort_by, sort_direction)
 
 
 def stakeholder_custom_groupers(entities, group_by):
-    """Stakeholder-specific grouping logic"""
-    grouped = defaultdict(list)
-    
-    if group_by == "company":
-        for stakeholder in entities:
-            company_name = stakeholder.company.name if stakeholder.company else "No Company"
-            grouped[company_name].append(stakeholder)
-        
-        result = []
-        for company_name in sorted(grouped.keys()):
-            if grouped[company_name]:
-                result.append({
-                    "key": company_name,
-                    "label": company_name,
-                    "entities": grouped[company_name],
-                    "count": len(grouped[company_name])
-                })
-        return result
-        
-    elif group_by == "job_title":
-        for stakeholder in entities:
-            job_title = stakeholder.job_title or "Other"
-            grouped[job_title].append(stakeholder)
-        
-        result = []
-        for job_title in sorted(grouped.keys()):
-            if grouped[job_title]:
-                result.append({
-                    "key": job_title,
-                    "label": job_title,
-                    "entities": grouped[job_title],
-                    "count": len(grouped[job_title])
-                })
-        return result
-    
-    return None  # Use default grouping
+    """Stakeholder-specific grouping using universal manager"""
+    return stakeholder_entity_manager.apply_custom_grouping(entities, group_by)
 
 
 @stakeholders_bp.route("/")

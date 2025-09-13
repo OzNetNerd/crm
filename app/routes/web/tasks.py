@@ -11,136 +11,31 @@ from app.utils.core.base_handlers import (
     EntityGrouper,
 )
 from app.utils.core.model_introspection import ModelIntrospector
+from app.utils.core.entity_handlers import TaskHandler, UniversalEntityManager
 from collections import defaultdict
 
 tasks_bp = Blueprint("tasks", __name__)
 task_handler = BaseRouteHandler(Task, "tasks")
+
+# Create metadata-driven universal entity manager
+task_entity_manager = UniversalEntityManager(Task, TaskHandler())
 task_filter_manager = EntityFilterManager(Task, "task")
 
 
+# Use universal entity manager methods instead of duplicated functions
 def task_custom_filters(query, filters):
-    """Task-specific filtering logic"""
-    if not filters['show_completed']:
-        query = query.filter(Task.status != 'complete')
-    
-    if filters['priority_filter']:
-        query = query.filter(Task.priority.in_(filters['priority_filter']))
-        
-    if filters['entity_filter']:
-        query = query.filter(Task.entity_type.in_(filters['entity_filter']))
-    
-    return query
+    """Task-specific filtering using universal manager"""
+    return task_entity_manager.apply_custom_filters(query, filters)
 
 
 def task_custom_sorting(query, sort_by, sort_direction):
-    """Task-specific sorting logic"""
-    if sort_by == "due_date":
-        if sort_direction == "desc":
-            return query.order_by(Task.due_date.desc().nulls_last())
-        else:
-            return query.order_by(Task.due_date.asc().nulls_first())
-    elif sort_by == "priority":
-        # Custom priority order: high, medium, low
-        priority_order = ["high", "medium", "low"]
-        if sort_direction == "desc":
-            priority_order.reverse()
-        
-        from sqlalchemy import case
-        priority_case = case(
-            {priority: i for i, priority in enumerate(priority_order)},
-            value=Task.priority
-        )
-        return query.order_by(priority_case)
-    elif sort_by == "created_at":
-        if sort_direction == "desc":
-            return query.order_by(Task.created_at.desc())
-        else:
-            return query.order_by(Task.created_at.asc())
-    else:
-        # Default sort
-        return query.order_by(Task.created_at.desc())
+    """Task-specific sorting using universal manager"""
+    return task_entity_manager.apply_custom_sorting(query, sort_by, sort_direction)
 
 
 def task_custom_groupers(entities, group_by):
-    """Task-specific grouping logic"""
-    grouped = defaultdict(list)
-    
-    if group_by == "status":
-        # Predefined status groups
-        status_groups = ["todo", "in-progress", "complete"]
-        for task in entities:
-            status = task.status or "todo"
-            grouped[status].append(task)
-        
-        # Return in predefined order
-        result = []
-        for status in status_groups:
-            if grouped[status]:
-                result.append({
-                    "key": status,
-                    "label": status.replace("-", " ").title(),
-                    "entities": grouped[status],
-                    "count": len(grouped[status])
-                })
-        return result
-        
-    elif group_by == "priority":
-        # Predefined priority groups
-        priority_groups = ["high", "medium", "low"]
-        for task in entities:
-            priority = task.priority or "medium"
-            grouped[priority].append(task)
-        
-        # Return in priority order
-        result = []
-        for priority in priority_groups:
-            if grouped[priority]:
-                result.append({
-                    "key": priority,
-                    "label": priority.title(),
-                    "entities": grouped[priority],
-                    "count": len(grouped[priority])
-                })
-        return result
-        
-    elif group_by == "due_date":
-        # Group by due date categories
-        today = date.today()
-        
-        for task in entities:
-            if not task.due_date:
-                grouped["no_date"].append(task)
-            elif task.due_date < today:
-                grouped["overdue"].append(task)
-            elif task.due_date == today:
-                grouped["today"].append(task)
-            elif task.due_date <= today + timedelta(days=7):
-                grouped["this_week"].append(task)
-            else:
-                grouped["future"].append(task)
-        
-        # Return in chronological order
-        date_groups = ["overdue", "today", "this_week", "future", "no_date"]
-        labels = {
-            "overdue": "Overdue",
-            "today": "Due Today", 
-            "this_week": "Due This Week",
-            "future": "Future",
-            "no_date": "No Due Date"
-        }
-        
-        result = []
-        for group_key in date_groups:
-            if grouped[group_key]:
-                result.append({
-                    "key": group_key,
-                    "label": labels[group_key],
-                    "entities": grouped[group_key],
-                    "count": len(grouped[group_key])
-                })
-        return result
-    
-    return None  # Use default grouping
+    """Task-specific grouping using universal manager"""
+    return task_entity_manager.apply_custom_grouping(entities, group_by)
 
 
 def get_all_tasks_context():

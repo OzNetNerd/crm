@@ -3,90 +3,31 @@ from flask import Blueprint, render_template, request, jsonify
 from app.models import Opportunity, Company, Stakeholder, Note, db
 from app.utils.core.base_handlers import GenericAPIHandler, EntityFilterManager, EntityGrouper
 from app.utils.core.model_introspection import ModelIntrospector
+from app.utils.core.entity_handlers import OpportunityHandler, UniversalEntityManager
 from collections import defaultdict
 
 opportunities_bp = Blueprint("opportunities", __name__)
 opportunity_handler = GenericAPIHandler(Opportunity, "opportunity")
+
+# Create metadata-driven universal entity manager
+opportunity_entity_manager = UniversalEntityManager(Opportunity, OpportunityHandler())
 opportunity_filter_manager = EntityFilterManager(Opportunity, "opportunity")
 
 
+# Use universal entity manager methods instead of duplicated functions
 def opportunity_custom_filters(query, filters):
-    """Opportunity-specific filtering logic"""
-    if filters['primary_filter']:
-        query = query.filter(Opportunity.stage.in_(filters['primary_filter']))
-    
-    if filters['secondary_filter']:
-        query = query.filter(Company.name.in_(filters['secondary_filter']))
-    
-    return query
+    """Opportunity-specific filtering using universal manager"""
+    return opportunity_entity_manager.apply_custom_filters(query, filters)
 
 
 def opportunity_custom_sorting(query, sort_by, sort_direction):
-    """Opportunity-specific sorting logic"""
-    if sort_by == "name":
-        if sort_direction == "desc":
-            return query.order_by(Opportunity.name.desc())
-        else:
-            return query.order_by(Opportunity.name.asc())
-    elif sort_by == "value":
-        if sort_direction == "desc":
-            return query.order_by(Opportunity.value.desc().nulls_last())
-        else:
-            return query.order_by(Opportunity.value.asc().nulls_last())
-    elif sort_by == "stage":
-        if sort_direction == "desc":
-            return query.order_by(Opportunity.stage.desc())
-        else:
-            return query.order_by(Opportunity.stage.asc())
-    elif sort_by == "expected_close_date":
-        if sort_direction == "desc":
-            return query.order_by(Opportunity.expected_close_date.desc().nulls_last())
-        else:
-            return query.order_by(Opportunity.expected_close_date.asc().nulls_last())
-    else:
-        # Default sort by value
-        return query.order_by(Opportunity.value.desc().nulls_last())
+    """Opportunity-specific sorting using universal manager"""
+    return opportunity_entity_manager.apply_custom_sorting(query, sort_by, sort_direction)
 
 
 def opportunity_custom_groupers(entities, group_by):
-    """Opportunity-specific grouping logic"""
-    grouped = defaultdict(list)
-    
-    if group_by == "stage":
-        for opportunity in entities:
-            stage = opportunity.stage or "Other"
-            grouped[stage].append(opportunity)
-        
-        # Return in stage order
-        stage_order = ["prospect", "qualified", "proposal", "negotiation", "closed-won", "closed-lost", "Other"]
-        result = []
-        for stage in stage_order:
-            if stage in grouped and grouped[stage]:
-                result.append({
-                    "key": stage,
-                    "label": stage.replace("-", " ").title(),
-                    "entities": grouped[stage],
-                    "count": len(grouped[stage])
-                })
-        return result
-        
-    elif group_by == "company":
-        for opportunity in entities:
-            company_name = opportunity.company.name if opportunity.company else "No Company"
-            grouped[company_name].append(opportunity)
-        
-        result = []
-        for company_name in sorted(grouped.keys()):
-            if grouped[company_name]:
-                result.append({
-                    "key": company_name,
-                    "label": company_name,
-                    "entities": grouped[company_name],
-                    "count": len(grouped[company_name])
-                })
-        return result
-    
-    return None  # Use default grouping
+    """Opportunity-specific grouping using universal manager"""
+    return opportunity_entity_manager.apply_custom_grouping(entities, group_by)
 
 
 @opportunities_bp.route("/")

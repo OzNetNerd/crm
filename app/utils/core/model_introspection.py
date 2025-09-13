@@ -134,20 +134,19 @@ class ModelIntrospector:
                     
                     is_groupable = False
                     
-                    # Check if field has groupable choices
-                    if 'choices' in info:
-                        choices_config = info['choices']
-                        if isinstance(choices_config, dict) and choices_config:
-                            has_groupable = any(
-                                config.get('groupable', False) 
-                                for config in choices_config.values()
-                            )
-                            if has_groupable:
-                                is_groupable = True
-                    
-                    # Check if field is explicitly marked as groupable
-                    if info.get('groupable', False):
-                        is_groupable = True
+                    # Intelligent groupable detection - consistent with UniversalEntityManager:
+                    # 1. Explicitly marked as groupable
+                    # 2. Has choices (categorical data is inherently groupable)
+                    # 3. Has date_groupings (date fields with grouping config)
+                    # 4. Has priority_ranges (value-based grouping)
+                    # 5. Common groupable field names
+                    is_groupable = (
+                        info.get('groupable', False) or
+                        'choices' in info or
+                        'date_groupings' in info or
+                        'priority_ranges' in info or
+                        attr_name in ['stage', 'status', 'priority', 'industry', 'job_title', 'size_category']
+                    )
                     
                     # Add field only once if it's groupable and not already added
                     if is_groupable and attr_name not in seen_fields:
@@ -195,20 +194,13 @@ class ModelIntrospector:
                     
                     is_sortable = False
                     
-                    # Check if field has sortable choices
-                    if 'choices' in info:
-                        choices_config = info['choices']
-                        if isinstance(choices_config, dict) and choices_config:
-                            has_sortable = any(
-                                config.get('sortable', True)  # Default to sortable
-                                for config in choices_config.values()
-                            )
-                            if has_sortable:
-                                is_sortable = True
-                    
-                    # Check if field is explicitly marked as sortable (default True)
-                    if info.get('sortable', True):
-                        is_sortable = True
+                    # Intelligent sortable detection:
+                    # Most fields are sortable by default, except certain types
+                    # Exclude fields that don't make sense to sort by
+                    exclude_from_sorting = ['id', 'created_at', 'updated_at'] if attr_name in ['id', 'created_at', 'updated_at'] and not info.get('sortable', True) else []
+
+                    # Default to sortable unless explicitly marked as non-sortable
+                    is_sortable = info.get('sortable', True) and attr_name not in exclude_from_sorting
                     
                     # Add field only once if it's sortable and not already added
                     if is_sortable and attr_name not in seen_fields:
