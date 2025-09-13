@@ -1,7 +1,7 @@
 {% extends "base/layout.html" %}
 {% from "macros/imports/universal.html" import modal_container %}
 {% from "macros/dashboard/pipeline_section.html" import dashboard_pipeline_section %}
-{% from "macros/dashboard/activity_section.html" import dashboard_left_column, dashboard_right_column %}
+{% from "macros/dashboard/activity_section.html" import dashboard_overdue_section, dashboard_notes_section, dashboard_tasks_section, dashboard_opportunities_section %}
 {% from "macros/base/layout.html" import page_layout %}
 
 
@@ -14,11 +14,27 @@
 {{ dashboard_pipeline_section(pipeline_stats) }}
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <!-- Left Column: Overdue Tasks + Closing Soon (alerts) + Recent Tasks -->
-    {{ dashboard_left_column(overdue_tasks, closing_soon, recent_tasks) }}
+    <!-- Top Row -->
+    <div class="space-y-6">
+        <!-- Top-left: Overdue Tasks -->
+        {{ dashboard_overdue_section(overdue_tasks) }}
+    </div>
 
-    <!-- Right Column: Recent Notes (top) + Recent Opportunities (bottom) -->
-    {{ dashboard_right_column(recent_notes, recent_opportunities) }}
+    <div class="space-y-6">
+        <!-- Top-right: Recent Notes -->
+        {{ dashboard_notes_section(recent_notes) }}
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="space-y-6">
+        <!-- Bottom-left: Recent Tasks -->
+        {{ dashboard_tasks_section(recent_tasks) }}
+    </div>
+
+    <div class="space-y-6">
+        <!-- Bottom-right: Recent Opportunities -->
+        {{ dashboard_opportunities_section(recent_opportunities) }}
+    </div>
 </div>
 {% endblock %}
 

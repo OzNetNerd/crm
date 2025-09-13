@@ -2,75 +2,59 @@
 {% from "macros/ui/metadata_display.html" import task_metadata %}
 {% from "macros/base/icons.html" import icon %}
 
-{% macro dashboard_left_column(overdue_tasks, closing_soon, recent_tasks) %}
-{# Dashboard left column: Overdue Tasks + Closing Soon (alerts) + Recent Tasks #}
-<div class="space-y-6">
-    <!-- Overdue Tasks Alert -->
-    {% if overdue_tasks %}
-    {% call list_section('Overdue Tasks', href='/tasks/', theme_color='red', icon_macro=icon('exclamation-circle-solid', 'md', 'c-icon--danger')) %}
-        {% for task in overdue_tasks %}
-            {{ alert_list_item(
-                title=task.description,
-                warning_text=task_metadata(task),
-                warning_color='red',
-                action_href='/tasks/'
-            ) }}
-        {% endfor %}
-    {% endcall %}
-    {% endif %}
-
-    <!-- Closing Soon Opportunities -->
-    {% if closing_soon %}
-    {% call list_section('Closing Soon', href='/opportunities/', theme_color='yellow', icon_macro=icon('calendar-days', 'md', 'c-icon--warning')) %}
-        {% for opp in closing_soon %}
-            {{ alert_list_item(
-                title=opp.name,
-                warning_text=opp.value_formatted + ' • ' + opp.expected_close_date_formatted,
-                warning_color='yellow',
-                action_href='/opportunities/'
-            ) }}
-        {% endfor %}
-    {% endcall %}
-    {% endif %}
-
-    <!-- Recent Tasks -->
-    {% call list_section('Recent Tasks', href='/tasks/') %}
-        {% for task in recent_tasks %}
-            {{ simple_list_item(
-                title=task.description,
-                subtitle=task_metadata(task),
-                badge_text=task.priority|title,
-                badge_color='badge-' + task.priority
-            ) }}
-        {% endfor %}
-    {% endcall %}
-</div>
+{% macro dashboard_overdue_section(overdue_tasks) %}
+{# Dashboard top-left: Overdue Tasks only #}
+{% if overdue_tasks %}
+{% call list_section('Overdue Tasks', href='/tasks/', theme_color='red', icon_macro=icon('exclamation-circle-solid', 'md', 'c-icon--danger')) %}
+    {% for task in overdue_tasks %}
+        {{ alert_list_item(
+            title=task.description,
+            warning_text=task_metadata(task),
+            warning_color='red',
+            action_href='/tasks/'
+        ) }}
+    {% endfor %}
+{% endcall %}
+{% endif %}
 {% endmacro %}
 
-{% macro dashboard_right_column(recent_notes, recent_opportunities) %}
-{# Dashboard right column: Recent Notes (top) + Recent Opportunities (bottom) #}
-<div class="space-y-6">
-    <!-- Recent Notes -->
-    {% call list_section('Recent Notes') %}
-        {% for note in recent_notes %}
-            {{ note_list_item(
-                content=note.content,
-                metadata=note.created_at_formatted + ((' • ' + note.entity_name) if note.entity_name else ''),
-                accent_color='blue'
-            ) }}
-        {% endfor %}
-    {% endcall %}
+{% macro dashboard_notes_section(recent_notes) %}
+{# Dashboard top-right: Recent Notes only #}
+{% call list_section('Recent Notes') %}
+    {% for note in recent_notes %}
+        {{ note_list_item(
+            content=note.content,
+            metadata=note.created_at_formatted + ((' • ' + note.entity_name) if note.entity_name else ''),
+            accent_color='blue'
+        ) }}
+    {% endfor %}
+{% endcall %}
+{% endmacro %}
 
-    <!-- Recent Opportunities -->
-    {% call list_section('Recent Opportunities', href='/opportunities/') %}
-        {% for opp in recent_opportunities %}
-            {{ simple_list_item(
-                title='<span class="text-opportunity">' + opp.name + '</span>',
-                subtitle='<span class="text-company">' + opp.company_name + '</span> • <span class="text-deal">' + opp.value_formatted + '</span>',
-                badge_text=opp.stage|title,
-                badge_color='badge-' + opp.stage
-            ) }}
-        {% endfor %}
-    {% endcall %}
-</div>
+{% macro dashboard_tasks_section(recent_tasks) %}
+{# Dashboard bottom-left: Recent Tasks only #}
+{% call list_section('Recent Tasks', href='/tasks/') %}
+    {% for task in recent_tasks %}
+        {{ simple_list_item(
+            title=task.description,
+            subtitle=task_metadata(task),
+            badge_text=task.priority|title,
+            badge_color='badge-' + task.priority
+        ) }}
+    {% endfor %}
+{% endcall %}
+{% endmacro %}
+
+{% macro dashboard_opportunities_section(recent_opportunities) %}
+{# Dashboard bottom-right: Recent Opportunities only #}
+{% call list_section('Recent Opportunities', href='/opportunities/') %}
+    {% for opp in recent_opportunities %}
+        {{ simple_list_item(
+            title='<span class="text-opportunity">' + opp.name + '</span>',
+            subtitle='<span class="text-company">' + opp.company_name + '</span> • <span class="text-deal">' + opp.value_formatted + '</span>',
+            badge_text=opp.stage|title,
+            badge_color='badge-' + opp.stage
+        ) }}
+    {% endfor %}
+{% endcall %}
 {% endmacro %}
