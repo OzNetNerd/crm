@@ -64,7 +64,7 @@
             <button type="submit"
                     id="modal-save-button"
                     class="px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 transition-colors duration-200 shadow-sm"
-                    disabled
+                    data-initial-disabled="true"
                     hx-indicator="#save-spinner">
                 <span class="save-text">Save</span>
                 <span id="save-spinner" class="htmx-indicator flex items-center">
@@ -80,4 +80,48 @@
 {% endcall %}
 
 <script type="module" src="{{ url_for('static', filename='js/features/modal-validation.js') }}"></script>
+<script>
+// Simple confirmation handler for dangerous actions
+document.addEventListener('click', function(e) {
+    const confirmButton = e.target.closest('[data-confirm]');
+    if (confirmButton) {
+        const message = confirmButton.getAttribute('data-confirm');
+        if (!confirm(message)) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }
+});
+
+// Enhanced error handling for HTMX responses
+document.addEventListener('htmx:responseError', function(event) {
+    if (event.detail.xhr.status === 409) { // Duplicate error
+        try {
+            const response = JSON.parse(event.detail.xhr.responseText);
+            if (response.type === 'duplicate') {
+                // Show duplicate error in modal content area
+                const errorHtml = `
+                    <div class="modal-error-message p-4 bg-red-50 border border-red-200 rounded-md mb-4">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-red-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                            <div class="text-red-800">
+                                <p class="font-medium">${response.error}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                const contentArea = document.getElementById('modal-content-area');
+                if (contentArea) {
+                    contentArea.insertAdjacentHTML('afterbegin', errorHtml);
+                }
+            }
+        } catch (e) {
+            console.error('Error parsing duplicate response:', e);
+        }
+    }
+});
+</script>
 

@@ -63,7 +63,14 @@
          selectSingle(value) {
              this.selectedValue = value;
              this.close();
-             this.$nextTick(() => this.$refs.hiddenInput.dispatchEvent(new Event('change')));
+             this.$nextTick(() => {
+                 this.$refs.hiddenInput.dispatchEvent(new Event('change'));
+                 // Dispatch custom event for modal validation
+                 this.$refs.hiddenInput.dispatchEvent(new CustomEvent('dropdown:change', {
+                     bubbles: true,
+                     detail: { value: value }
+                 }));
+             });
          },
          toggleMulti(value) {
              if (this.selectedValues.includes(value)) {
@@ -71,7 +78,14 @@
              } else {
                  this.selectedValues.push(value);
              }
-             this.$nextTick(() => this.$refs.hiddenInput.dispatchEvent(new Event('change')));
+             this.$nextTick(() => {
+                 this.$refs.hiddenInput.dispatchEvent(new Event('change'));
+                 // Dispatch custom event for modal validation
+                 this.$refs.hiddenInput.dispatchEvent(new CustomEvent('dropdown:change', {
+                     bubbles: true,
+                     detail: { values: this.selectedValues }
+                 }));
+             });
          },
          getDisplayText() {
              {% if is_single %}
@@ -223,7 +237,14 @@
          selectOption(value) {
              this.selectedValue = value;
              this.close();
-             this.$nextTick(() => this.$refs.hiddenInput.dispatchEvent(new Event('change')));
+             this.$nextTick(() => {
+                 this.$refs.hiddenInput.dispatchEvent(new Event('change'));
+                 // Dispatch custom event for modal validation
+                 this.$refs.hiddenInput.dispatchEvent(new CustomEvent('dropdown:change', {
+                     bubbles: true,
+                     detail: { value: value }
+                 }));
+             });
          },
          getDisplayText() {
              {% for option in options %}

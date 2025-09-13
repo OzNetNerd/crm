@@ -155,9 +155,14 @@ class GenericAPIHandler:
             return jsonify({"error": str(e)}), 500
 
     def create_entity(self, allowed_fields):
-        """Generic create handler"""
+        """Generic create handler with duplicate checking"""
         try:
             data = request.get_json()
+
+            # Check for duplicates before creating
+            duplicate_error = self._check_duplicates(data)
+            if duplicate_error:
+                return duplicate_error
 
             # Create entity with allowed fields
             entity_data = {}
@@ -178,6 +183,36 @@ class GenericAPIHandler:
         except Exception as e:
             db.session.rollback()
             return jsonify({"error": str(e)}), 400
+
+    def _check_duplicates(self, data):
+        """Check for duplicate entities based on unique fields"""
+        # Define which fields should be unique for each entity type
+        unique_fields = {
+            'Company': ['name'],  # Company names should be unique
+            'Stakeholder': ['email'],  # Stakeholder emails should be unique
+            'Opportunity': [],  # Opportunities can have duplicate names (different companies)
+            'Task': []  # Tasks can have duplicate descriptions
+        }
+
+        entity_name = self.model_class.__name__
+        fields_to_check = unique_fields.get(entity_name, [])
+
+        for field in fields_to_check:
+            if field in data and data[field]:
+                # Check if entity with this field value already exists
+                existing = self.model_class.query.filter(
+                    getattr(self.model_class, field).ilike(data[field])
+                ).first()
+
+                if existing:
+                    field_label = field.replace('_', ' ').title()
+                    return jsonify({
+                        "error": f"A {entity_name.lower()} with this {field_label.lower()} already exists.",
+                        "field": field,
+                        "type": "duplicate"
+                    }), 409
+
+        return None
 
     def update_entity(self, entity_id, allowed_fields):
         """Generic update handler"""

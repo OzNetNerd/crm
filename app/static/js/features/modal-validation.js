@@ -27,36 +27,127 @@ function initializeModalValidation(modal) {
 
     if (!form || !saveButton) return;
 
-    // Get all required fields
-    const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+    // Enhanced field detection: get all required fields including hidden inputs from dropdowns
+    function getRequiredFields() {
+        const allRequired = [];
+
+        // Direct required fields
+        const directRequired = form.querySelectorAll('input[required], select[required], textarea[required]');
+        allRequired.push(...directRequired);
+
+        // Hidden required fields (from styled dropdowns)
+        const hiddenRequired = form.querySelectorAll('input[type="hidden"][required]');
+        allRequired.push(...hiddenRequired);
+
+        // WTForms fields marked with asterisk (fallback detection)
+        const fieldContainers = form.querySelectorAll('.field-container');
+        fieldContainers.forEach(container => {
+            const label = container.querySelector('label');
+            if (label && label.textContent.includes('*')) {
+                const field = container.querySelector('input, select, textarea, input[type="hidden"]');
+                if (field && !allRequired.includes(field)) {
+                    allRequired.push(field);
+                }
+            }
+        });
+
+        return allRequired;
+    }
+
+    // Function to check if a field has a valid value
+    function isFieldFilled(field) {
+        if (field.type === 'checkbox') {
+            return field.checked;
+        } else if (field.type === 'hidden') {
+            // Hidden inputs from dropdowns should have non-empty values
+            return field.value && field.value.trim() !== '';
+        } else {
+            return field.value && field.value.trim() !== '';
+        }
+    }
 
     // Function to check if all required fields are filled
     function checkRequiredFields() {
+        const requiredFields = getRequiredFields();
         let allFilled = true;
 
         requiredFields.forEach(field => {
-            if (field.type === 'checkbox') {
-                if (!field.checked) allFilled = false;
-            } else {
-                if (!field.value.trim()) allFilled = false;
+            if (!isFieldFilled(field)) {
+                allFilled = false;
+            }
+        });
+
+        // Also check for WTForms validation - look for fields with validator requirements
+        const wtformsFields = form.querySelectorAll('[data-required="true"], .field-container');
+        wtformsFields.forEach(fieldContainer => {
+            const label = fieldContainer.querySelector('label');
+            if (label && label.textContent.includes('*')) {
+                // This is a required field, find its input
+                const input = fieldContainer.querySelector('input, select, textarea, input[type="hidden"]');
+                if (input && !isFieldFilled(input)) {
+                    allFilled = false;
+                }
             }
         });
 
         saveButton.disabled = !allFilled;
+
+        // Debug logging in development
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.debug('Modal validation check:', {
+                requiredFields: requiredFields.length,
+                allFilled,
+                fieldStates: Array.from(requiredFields).map(f => ({
+                    name: f.name,
+                    type: f.type,
+                    value: f.value,
+                    filled: isFieldFilled(f)
+                }))
+            });
+        }
     }
 
-    // Initial check
-    checkRequiredFields();
+    // Add event listeners with enhanced selector to catch all form changes
+    function addValidationListeners() {
+        const allInputs = form.querySelectorAll('input, select, textarea');
+        allInputs.forEach(input => {
+            input.addEventListener('input', debouncedCheck);
+            input.addEventListener('change', checkRequiredFields);
+        });
+
+        // Also listen for custom events from Alpine.js dropdowns
+        form.addEventListener('dropdown:change', checkRequiredFields);
+        form.addEventListener('alpine:change', checkRequiredFields);
+    }
 
     // Create debounced validation function
     const debouncedCheck = debounce(checkRequiredFields, 150);
 
-    // Add event listeners to all form inputs
-    const allInputs = form.querySelectorAll('input, select, textarea');
-    allInputs.forEach(input => {
-        input.addEventListener('input', debouncedCheck);
-        input.addEventListener('change', checkRequiredFields); // Immediate for change events
-    });
+    // Progressive enhancement: disable save button only if JavaScript is working
+    if (saveButton.hasAttribute('data-initial-disabled')) {
+        saveButton.disabled = true;
+        saveButton.removeAttribute('data-initial-disabled');
+    }
+
+    // Initial setup with delay to allow Alpine.js to initialize
+    setTimeout(() => {
+        addValidationListeners();
+        checkRequiredFields(); // Initial check after components load
+    }, 100);
+
+    // Also run immediate validation for quick setup
+    addValidationListeners();
+    checkRequiredFields();
+
+    // Fallback: if no required fields detected after 500ms, enable save button
+    // This handles cases where form field detection fails
+    setTimeout(() => {
+        const requiredFields = getRequiredFields();
+        if (requiredFields.length === 0) {
+            saveButton.disabled = false;
+            console.debug('Modal validation: No required fields detected, enabling save button as fallback');
+        }
+    }, 500);
 }
 
 /**
@@ -89,3 +180,8 @@ document.addEventListener('htmx:afterSwap', handleModalAfterSwap);
 
 // Export functions for module usage
 export { initializeModalValidation, initializeModalFocus, handleModalAfterSwap };
+
+// Also attach to window for global access (needed for debugging and fallbacks)
+window.initializeModalValidation = initializeModalValidation;
+window.initializeModalFocus = initializeModalFocus;
+window.handleModalAfterSwap = handleModalAfterSwap;
