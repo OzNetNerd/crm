@@ -21,7 +21,9 @@
     {% for result in results %}
     <div class="border-b border-gray-100 last:border-b-0" data-search-result="{{ result.type }}">
         <a href="#"
-           onclick="window.dispatchEvent(new CustomEvent('open-detail-{{ result.model_type }}-modal', { detail: { id: {{ result.id }}, readOnly: true } })); return false;"
+           hx-get="{{ url_for('modals.view_modal', model_name=result.model_type, entity_id=result.id) }}"
+           hx-target="body"
+           hx-swap="beforeend"
            class="flex items-center space-x-3 px-4 py-3 block hover:bg-blue-50 transition-colors duration-150"
            data-entity-type="{{ result.model_type }}"
            data-entity-id="{{ result.id }}">
