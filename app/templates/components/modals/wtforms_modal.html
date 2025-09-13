@@ -21,9 +21,9 @@
     <!-- Form -->
     <form method="POST"
           action="{{ action_url }}"
-          hx-post="{{ action_url }}" 
-          hx-target="#modal-content-area"
-          hx-swap="innerHTML"
+          hx-post="{{ action_url }}"
+          hx-target=".modal-overlay"
+          hx-swap="outerHTML"
           class="modal-form">
         
         {{ form.hidden_tag() }}
