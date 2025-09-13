@@ -657,12 +657,10 @@ class DropdownConfigGenerator:
                 plural_label = model_class.__entity_config__.get('display_name', 'Items')
                 filter_name = f'All {plural_label}'
         
-        # HTMX targets using model configuration
-        singular = entity_name.rstrip('s')  # Simple fallback
-        if model_class:
-            config = model_class.__entity_config__
-            # Use display name singular for more accurate mapping
-            singular = config.get('display_name_singular', singular).lower().replace(' ', '-')
+        # HTMX targets using model metadata
+        from app.utils.model_registry import ModelRegistry
+        metadata = ModelRegistry.get_model_metadata(model_class.__name__.lower())
+        singular = metadata.display_name.lower().replace(' ', '-')
         
         hx_target = f'#{singular}-content'
         hx_get = f'/{entity_name}/content'

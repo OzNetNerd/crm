@@ -93,16 +93,18 @@ class EntityConfigRegistry:
             cls._model_registry = {}
             
             for model_class in all_models:
-                # Use model's table name as the key
-                entity_type = model_class.__tablename__.rstrip('s')
+                # Use model metadata for proper singular/plural handling
+                from app.utils.model_registry import ModelRegistry
+                model_name = model_class.__name__.lower()
+                metadata = ModelRegistry.get_model_metadata(model_name)
+
+                # Register by singular display name
+                entity_type = metadata.display_name.lower()
                 cls._model_registry[entity_type] = model_class
-                
-                # Also add any explicit entity type mapping
-                if hasattr(model_class, '__entity_config__'):
-                    config = model_class.__entity_config__
-                    endpoint_name = config.get('endpoint_name')
-                    if endpoint_name:
-                        cls._model_registry[endpoint_name.rstrip('s')] = model_class
+
+                # Also register by plural display name
+                plural_type = metadata.display_name_plural.lower()
+                cls._model_registry[plural_type] = model_class
                         
         except ImportError:
             # Fallback if models aren't available

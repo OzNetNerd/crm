@@ -201,7 +201,7 @@ class UniversalContextBuilder:
             entity_name=metadata.display_name_plural,
             entity_name_singular=metadata.display_name,
             entity_description=metadata.description or f"Manage your {metadata.display_name_plural.lower()}",
-            entity_type=entity_name.rstrip('s'),
+            entity_type=metadata.display_name.lower(),
             entity_endpoint=metadata.api_endpoint,
             entity_buttons=entity_buttons
         )
