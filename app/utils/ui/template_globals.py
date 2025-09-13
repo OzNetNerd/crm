@@ -133,7 +133,11 @@ def get_model_form_fields(model_name):
 
 
 def get_model_config(model_class):
-    """Get complete model configuration for templates."""
+    """Get complete model configuration for templates.
+
+    DEPRECATED: Use ModelRegistry.get_model_metadata() instead.
+    This function will be removed in a future version.
+    """
     return ModelIntrospector.get_model_config(model_class)
 
 
