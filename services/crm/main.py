@@ -27,6 +27,7 @@ from app.utils.ui.template_globals import (
 )
 from app.utils.cards.config_builder import CardConfigBuilder
 from app.utils.css.dynamic_classes import inject_css_context
+from app.utils.logging.config import setup_structured_logging
 
 
 def get_database_path():
@@ -66,10 +67,9 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = get_database_path()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # Configure logging
-    if not app.debug:
-        logging.basicConfig(level=logging.INFO)
-        app.logger.info('CRM Application startup')
+    # ADR-012: Configure structured logging
+    setup_structured_logging(app, "crm-service")
+    app.logger.info('CRM Application startup with structured logging')
         
     # Enable Jinja2 do extension for template logic
     app.jinja_env.add_extension('jinja2.ext.do')
