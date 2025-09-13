@@ -1,4 +1,26 @@
-{# Badge Components - Consistent badge and status indicators #}
+{# Badge Components - DRY badge system with helper macros #}
+
+{# Helper macro for consistent text normalization #}
+{% macro normalize_badge_value(value) -%}
+{%- if value -%}
+  {%- set normalized = value|string|lower|replace(' ', '-')|replace('_', '-') -%}
+  {%- set display = value|string|replace('-', ' ')|replace('_', ' ')|title -%}
+  {{ {'normalized': normalized, 'display': display} }}
+{%- else -%}
+  {{ {'normalized': 'unknown', 'display': 'Unknown'} }}
+{%- endif -%}
+{% endmacro %}
+
+{# Universal badge macro following ADR-011 dynamic class pattern #}
+{% macro universal_badge(value, badge_type='status', entity_type=None, size='md', additional_classes='') -%}
+{%- set norm = normalize_badge_value(value) -%}
+{%- if norm.normalized in ['high', 'medium', 'low'] and badge_type == 'status' -%}
+  {%- set badge_type = 'priority' -%}
+{%- endif -%}
+<span class="badge badge-{{ badge_type }}-{{ norm.normalized }}{% if entity_type %} badge-entity-{{ entity_type|lower }}{% endif %} {{ additional_classes }}">
+  {{ norm.display }}
+</span>
+{%- endmacro %}
 
 {#
   Stakeholder Info Badge - Display contact information status
@@ -34,95 +56,90 @@
 {% endmacro %}
 
 {#
-  Status Badge - Consistent status indicator
-  
+  Status Badge - Consistent status indicator using universal badge system
+
   Parameters:
   - status (required): Status value
-  - color_map (optional): Dict mapping status to colors
-  - size (optional): Badge size ('sm', 'md', 'lg')
-  
+  - entity_type (optional): Entity type for CSS theming
+  - badge_type (optional): Badge type ('status', 'priority')
+  - additional_classes (optional): Extra CSS classes
+
   Usage:
   {{ status_badge(task.status) }}
-  {{ status_badge(company.status, {'active': 'green', 'inactive': 'red'}) }}
+  {{ status_badge(task.priority, badge_type='priority') }}
+  {{ status_badge(company.status, entity_type='company') }}
 #}
-{% macro status_badge(status, color_map=None, size='md', entity_type=None, badge_type='status') %}
-{%- set status_str = status|string if status else 'unknown' -%}
-{%- set normalized_status = status_str|lower|replace(' ', '-') -%}
-{%- set display_text = status_str|replace('-', ' ')|replace('_', ' ')|title -%}
-{%- if normalized_status in ['high', 'medium', 'low'] and badge_type == 'status' -%}
-    {%- set badge_type = 'priority' -%}
-{%- endif -%}
-<span class="badge badge-{{ badge_type }}-{{ normalized_status }}{% if entity_type %} badge-entity-{{ entity_type|lower }}{% endif %}">
-    {{ display_text }}
-</span>
+{% macro status_badge(status, entity_type=None, badge_type='status', additional_classes='') %}
+{{ universal_badge(status, badge_type=badge_type, entity_type=entity_type, additional_classes=additional_classes) }}
 {% endmacro %}
 
 {#
-  Priority Badge - Specific badge for priority values
+  Priority Badge - Simplified wrapper for priority values
 
   Parameters:
   - priority (required): Priority value (high, medium, low)
+  - entity_type (optional): Entity type for CSS theming
 
   Usage:
   {{ priority_badge(task.priority) }}
+  {{ priority_badge(task.priority, entity_type='task') }}
 #}
-{% macro priority_badge(priority) %}
-{%- set normalized_priority = priority|lower|replace(' ', '-') if priority else 'unknown' -%}
-{%- set display_text = priority|replace('-', ' ')|replace('_', ' ')|title if priority else 'Unknown' -%}
-<span class="badge badge-priority-{{ normalized_priority }}">
-    {{ display_text }}
-</span>
+{% macro priority_badge(priority, entity_type=None) %}
+{{ universal_badge(priority, badge_type='priority', entity_type=entity_type) }}
 {% endmacro %}
 
 {#
-  Badge Count Helper - DRY macro for task count badges with consistent formatting
-  
+  DRY Filter Helper - Unified filtering logic for task collections
+#}
+{% macro apply_task_filter(tasks, filter_type, filter_value=None, show_completed=False) -%}
+{%- if filter_type == 'status' -%}
+  {%- set filtered = tasks|selectattr('status', 'equalto', filter_value) -%}
+{%- elif filter_type == 'priority' -%}
+  {%- set filtered = tasks|selectattr('priority', 'equalto', filter_value) -%}
+{%- elif filter_type == 'overdue' -%}
+  {%- set filtered = tasks|selectattr('is_overdue', 'equalto', True) -%}
+{%- elif filter_type == 'due_today' -%}
+  {%- set filtered = tasks|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete') -%}
+{%- elif filter_type == 'no_date' -%}
+  {%- set filtered = tasks|selectattr('due_date', 'none') -%}
+  {%- if not show_completed -%}
+    {%- set filtered = filtered|selectattr('status', 'ne', 'complete') -%}
+  {%- endif -%}
+{%- elif filter_type == 'entity' -%}
+  {%- if filter_value == 'unrelated' -%}
+    {%- set filtered = tasks|selectattr('entity_type', 'none') -%}
+  {%- else -%}
+    {%- set filtered = tasks|selectattr('entity_type', 'equalto', filter_value) -%}
+  {%- endif -%}
+  {%- if not show_completed -%}
+    {%- set filtered = filtered|selectattr('status', 'ne', 'complete') -%}
+  {%- endif -%}
+{%- else -%}
+  {%- set filtered = [] -%}
+{%- endif -%}
+{{ filtered|list|length }}
+{%- endmacro %}
+
+{#
+  Badge Count Helper - Simplified using DRY filter logic
+
   Parameters:
-  - filter_type (required): Type of filtering ('status', 'priority', 'due_date', 'entity', 'overdue', 'custom')
-  - filter_value (optional): Specific value to filter by (e.g., 'todo', 'high', 'company')
-  - color (required): Badge color class ('blue', 'red', 'green', etc.)
-  - tasks_list (optional): Tasks list to use (default: 'tasks')
-  - show_completed (optional): Whether to include completed tasks (default: varies by type)
-  - custom_count (optional): Pre-calculated count for complex filters
-  
+  - filter_type (required): Type of filtering ('status', 'priority', 'overdue', 'due_today', 'no_date', 'entity')
+  - filter_value (optional): Value to filter by
+  - color (required): Badge color class
+  - show_completed (optional): Include completed tasks (default: False)
+  - custom_count (optional): Pre-calculated count
+
   Usage:
   {{ badge_count_helper('status', 'todo', 'blue') }}
   {{ badge_count_helper('priority', 'high', 'red') }}
-  {{ badge_count_helper('custom', color='gray', custom_count=custom_task_list|length) }}
+  {{ badge_count_helper('overdue', color='red') }}
 #}
-{% macro badge_count_helper(filter_type, filter_value=None, color='gray', tasks_list='tasks_objects', show_completed=None, custom_count=None) %}
+{% macro badge_count_helper(filter_type, filter_value=None, color='gray', show_completed=False, custom_count=None) %}
 {%- if custom_count is not none -%}
-    {%- set count = custom_count -%}
-{%- elif filter_type == 'status' -%}
-    {%- set count = (tasks_objects|selectattr('status', 'equalto', filter_value)|list|length) -%}
-{%- elif filter_type == 'priority' -%}
-    {%- set count = (tasks_objects|selectattr('priority', 'equalto', filter_value)|list|length) -%}
-{%- elif filter_type == 'overdue' -%}
-    {%- set count = (tasks_objects|selectattr('is_overdue', 'equalto', True)|list|length) -%}
-{%- elif filter_type == 'due_today' -%}
-    {%- set count = (tasks_objects|selectattr('due_date', 'equalto', today)|selectattr('status', 'ne', 'complete')|list|length) -%}
-{%- elif filter_type == 'no_date' -%}
-    {%- if show_completed -%}
-        {%- set count = (tasks_objects|selectattr('due_date', 'none')|list|length) -%}
-    {%- else -%}
-        {%- set count = (tasks_objects|selectattr('due_date', 'none')|selectattr('status', 'ne', 'complete')|list|length) -%}
-    {%- endif -%}
-{%- elif filter_type == 'entity' -%}
-    {%- if filter_value == 'unrelated' -%}
-        {%- if show_completed -%}
-            {%- set count = (tasks_objects|selectattr('entity_type', 'none')|list|length) -%}
-        {%- else -%}
-            {%- set count = (tasks_objects|selectattr('entity_type', 'none')|selectattr('status', 'ne', 'complete')|list|length) -%}
-        {%- endif -%}
-    {%- else -%}
-        {%- if show_completed -%}
-            {%- set count = (tasks_objects|selectattr('entity_type', 'equalto', filter_value)|list|length) -%}
-        {%- else -%}
-            {%- set count = (tasks_objects|selectattr('entity_type', 'equalto', filter_value)|selectattr('status', 'ne', 'complete')|list|length) -%}
-        {%- endif -%}
-    {%- endif -%}
+  {%- set count = custom_count -%}
 {%- else -%}
-    {%- set count = 0 -%}
+  {%- set count = apply_task_filter(tasks_objects, filter_type, filter_value, show_completed) -%}
 {%- endif -%}
 <span class="ml-2 badge-standard badge-count-{{ color }}">{{ count }}</span>
 {%- endmacro %}
