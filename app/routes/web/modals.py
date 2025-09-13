@@ -46,30 +46,28 @@ def view_modal(model_name, entity_id):
 def create_entity(model_name):
     """
     Handle form submission for creating new entity.
-    
+
     POST /modals/{model_name}/create
     """
     result = ModalService.process_form_submission(model_name)
-    
-    if result['success']:
-        return result['html']
-    else:
-        return result['html'], 400
+
+    # Always return 200 status for HTMX to properly swap content
+    # The error state is indicated in the HTML itself
+    return result['html']
 
 
 @modals_bp.route('/<model_name>/<int:entity_id>/update', methods=['POST'])
 def update_entity(model_name, entity_id):
     """
     Handle form submission for updating existing entity.
-    
+
     POST /modals/{model_name}/{entity_id}/update
     """
     result = ModalService.process_form_submission(model_name, entity_id)
-    
-    if result['success']:
-        return result['html']
-    else:
-        return result['html'], 400
+
+    # Always return 200 status for HTMX to properly swap content
+    # The error state is indicated in the HTML itself
+    return result['html']
 
 
 @modals_bp.route('/close')

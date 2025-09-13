@@ -207,26 +207,82 @@ class ModalService:
             
             # Validate form using WTForms
             if form.validate_on_submit():
-                # Create or update entity
-                if not entity:
-                    entity = model_class()
-                
-                # Populate entity with form data using WTForms
-                form.populate_obj(entity)
-                
-                # Save to database
+                # For create operations, use GenericAPIHandler for duplicate checking
                 if not entity_id:
-                    db.session.add(entity)
-                db.session.commit()
-                
-                return {
-                    'success': True,
-                    'message': f"{model_name} {operation} successfully",
-                    'entity_id': entity.id,
-                    'html': render_template('components/modals/form_success.html', 
-                                          message=f"{model_name} {operation} successfully",
-                                          entity=entity)
-                }
+                    from app.utils.core.base_handlers import GenericAPIHandler
+
+                    # Get form data as dict
+                    form_data = {}
+                    for field in form:
+                        if field.name != 'csrf_token':
+                            form_data[field.name] = field.data
+
+                    # Determine allowed fields based on model
+                    allowed_fields_map = {
+                        'Company': ['name', 'industry', 'website', 'employee_count'],
+                        'Stakeholder': ['name', 'job_title', 'email', 'company_id'],
+                        'Opportunity': ['description', 'value', 'stage', 'close_date', 'company_id', 'priority'],
+                        'Task': ['description', 'due_date', 'priority', 'status', 'next_step_type', 'task_type']
+                    }
+                    allowed_fields = allowed_fields_map.get(model_name, [])
+
+                    # Use GenericAPIHandler for creation with duplicate checking
+                    handler = GenericAPIHandler(model_class, model_name.lower())
+                    result = handler.create_entity_from_data(form_data, allowed_fields)
+
+                    if result['success']:
+                        entity = result['entity']
+                        return {
+                            'success': True,
+                            'message': f"{model_name} {operation} successfully",
+                            'entity_id': entity.id,
+                            'html': render_template('components/modals/form_success.html',
+                                                  message=f"{model_name} {operation} successfully",
+                                                  entity=entity)
+                        }
+                    else:
+                        # Handle duplicate error by adding to form errors
+                        if result.get('type') == 'duplicate' and result.get('field'):
+                            field = getattr(form, result['field'], None)
+                            if field:
+                                field.errors.append(result['error'])
+                        else:
+                            # General error - add to form
+                            form.errors['general'] = [result.get('error', 'Unknown error')]
+
+                        # Re-render form with errors
+                        action_url = f'/modals/{model_name}/create'
+                        modal_title = f'Create {model_name}'
+
+                        template_vars = {
+                            'model_name': model_name,
+                            'model_class': model_class,
+                            'form': form,
+                            'action_url': action_url,
+                            'modal_title': modal_title,
+                            'is_edit': False,
+                        }
+
+                        return {
+                            'success': False,
+                            'errors': form.errors,
+                            'html': render_template('components/modals/wtforms_modal.html', **template_vars)
+                        }
+
+                else:
+                    # For update operations, use existing logic
+                    # Populate entity with form data using WTForms
+                    form.populate_obj(entity)
+                    db.session.commit()
+
+                    return {
+                        'success': True,
+                        'message': f"{model_name} {operation} successfully",
+                        'entity_id': entity.id,
+                        'html': render_template('components/modals/form_success.html',
+                                              message=f"{model_name} {operation} successfully",
+                                              entity=entity)
+                    }
             else:
                 # Form validation failed - re-render form with errors
                 action_url = f'/modals/{model_name}/create' if not entity_id else f'/modals/{model_name}/{entity_id}/update'
