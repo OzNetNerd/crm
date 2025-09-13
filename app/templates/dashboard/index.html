@@ -1,7 +1,7 @@
 {% extends "base/layout.html" %}
 {% from "macros/imports/universal.html" import modal_container %}
 {% from "macros/dashboard/pipeline_section.html" import dashboard_pipeline_section %}
-{% from "macros/dashboard/activity_section.html" import dashboard_alerts_section, dashboard_recent_activity_section %}
+{% from "macros/dashboard/activity_section.html" import dashboard_left_column, dashboard_right_column %}
 {% from "macros/base/layout.html" import page_layout %}
 
 
@@ -14,11 +14,11 @@
 {{ dashboard_pipeline_section(pipeline_stats) }}
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <!-- Critical Alerts -->
-    {{ dashboard_alerts_section(overdue_tasks, closing_soon) }}
+    <!-- Left Column: Overdue Tasks (top) + Recent Tasks (bottom) -->
+    {{ dashboard_left_column(overdue_tasks, recent_tasks) }}
 
-    <!-- Recent Activity -->
-    {{ dashboard_recent_activity_section(recent_tasks, recent_opportunities, recent_notes) }}
+    <!-- Right Column: Closing Soon + Recent Notes (top) + Recent Opportunities (bottom) -->
+    {{ dashboard_right_column(closing_soon, recent_notes, recent_opportunities) }}
 </div>
 {% endblock %}
 

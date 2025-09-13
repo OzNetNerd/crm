@@ -2,8 +2,8 @@
 {% from "macros/ui/metadata_display.html" import task_metadata %}
 {% from "macros/base/icons.html" import icon %}
 
-{% macro dashboard_alerts_section(overdue_tasks, closing_soon) %}
-{# Dashboard-specific critical alerts section #}
+{% macro dashboard_left_column(overdue_tasks, recent_tasks) %}
+{# Dashboard left column: Overdue Tasks (top) + Recent Tasks (bottom) #}
 <div class="space-y-6">
     <!-- Overdue Tasks Alert -->
     {% if overdue_tasks %}
@@ -19,6 +19,23 @@
     {% endcall %}
     {% endif %}
 
+    <!-- Recent Tasks -->
+    {% call list_section('Recent Tasks', href='/tasks/') %}
+        {% for task in recent_tasks %}
+            {{ simple_list_item(
+                title=task.description,
+                subtitle=task_metadata(task),
+                badge_text=task.priority|title,
+                badge_color='badge-' + task.priority
+            ) }}
+        {% endfor %}
+    {% endcall %}
+</div>
+{% endmacro %}
+
+{% macro dashboard_right_column(closing_soon, recent_notes, recent_opportunities) %}
+{# Dashboard right column: Closing Soon + Recent Notes (top) + Recent Opportunities (bottom) #}
+<div class="space-y-6">
     <!-- Closing Soon Opportunities -->
     {% if closing_soon %}
     {% call list_section('Closing Soon', href='/opportunities/', theme_color='yellow', icon_macro=icon('calendar-days', 'md', 'c-icon--warning')) %}
@@ -32,20 +49,14 @@
         {% endfor %}
     {% endcall %}
     {% endif %}
-</div>
-{% endmacro %}
 
-{% macro dashboard_recent_activity_section(recent_tasks, recent_opportunities, recent_notes) %}
-{# Dashboard-specific recent activity section #}
-<div class="space-y-6">
-    <!-- Recent Tasks -->
-    {% call list_section('Recent Tasks', href='/tasks/') %}
-        {% for task in recent_tasks %}
-            {{ simple_list_item(
-                title=task.description,
-                subtitle=task_metadata(task),
-                badge_text=task.priority|title,
-                badge_color='badge-' + task.priority
+    <!-- Recent Notes -->
+    {% call list_section('Recent Notes') %}
+        {% for note in recent_notes %}
+            {{ note_list_item(
+                content=note.content,
+                metadata=note.created_at_formatted + ((' • ' + note.entity_name) if note.entity_name else ''),
+                accent_color='blue'
             ) }}
         {% endfor %}
     {% endcall %}
@@ -58,17 +69,6 @@
                 subtitle='<span class="text-company">' + opp.company_name + '</span> • <span class="text-deal">' + opp.value_formatted + '</span>',
                 badge_text=opp.stage|title,
                 badge_color='badge-' + opp.stage
-            ) }}
-        {% endfor %}
-    {% endcall %}
-
-    <!-- Recent Notes -->
-    {% call list_section('Recent Notes') %}
-        {% for note in recent_notes %}
-            {{ note_list_item(
-                content=note.content,
-                metadata=note.created_at_formatted + ((' • ' + note.entity_name) if note.entity_name else ''),
-                accent_color='blue'
             ) }}
         {% endfor %}
     {% endcall %}
