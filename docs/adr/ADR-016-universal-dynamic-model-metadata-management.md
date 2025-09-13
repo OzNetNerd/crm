@@ -254,21 +254,19 @@ class ModelMetadata:
         if self.display_name is None:
             self.display_name = self.model_class.__name__
         if self.display_name_plural is None:
-            # Use proper pluralization instead of string manipulation
-            try:
-                from inflect import engine
-                p = engine()
-                self.display_name_plural = p.plural(self.display_name)
-            except ImportError:
-                # Fallback to simple pluralization if inflect not available
-                if self.display_name.endswith('y'):
-                    self.display_name_plural = self.display_name[:-1] + 'ies'
-                elif self.display_name.endswith(('s', 'sh', 'ch', 'x', 'z')):
-                    self.display_name_plural = self.display_name + 'es'
-                else:
-                    self.display_name_plural = self.display_name + 's'
+            # Use values from model __entity_config__ - NO string manipulation
+            if hasattr(self.model_class, '__entity_config__'):
+                config = self.model_class.__entity_config__
+                self.display_name_plural = config.get('display_name', self.display_name)
+            else:
+                self.display_name_plural = self.display_name
         if self.api_endpoint is None:
-            self.api_endpoint = self.display_name.lower() + 's'
+            # Use endpoint from model config
+            if hasattr(self.model_class, '__entity_config__'):
+                config = self.model_class.__entity_config__
+                self.api_endpoint = config.get('endpoint_name', self.display_name.lower())
+            else:
+                self.api_endpoint = self.display_name.lower()
             
         # Auto-discover fields if not provided
         if not self.fields:
