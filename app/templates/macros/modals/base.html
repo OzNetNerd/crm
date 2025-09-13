@@ -7,11 +7,11 @@
      tabindex="-1" 
      onkeydown="if(event.key === 'Escape') this.remove()">
     <!-- Backdrop -->
-    <div class="modal-backdrop fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+    <div class="modal-backdrop fixed inset-0" style="background-color: rgba(17, 24, 39, 0.6);"
          {% if backdrop_click_close %}onclick="this.parentElement.remove()"{% endif %}></div>
-    
+
     <!-- Modal Content -->
-    <div class="modal-content relative bg-white rounded-2xl shadow-2xl ring-1 ring-black ring-opacity-5 {{ max_width }} w-full mx-4 max-h-[90vh] overflow-y-auto transform transition-all">
+    <div class="modal-content relative bg-white rounded-xl shadow-2xl {{ max_width }} w-full mx-4 max-h-[90vh] overflow-y-auto border border-gray-200 transform transition-all">
         {{ caller() }}
     </div>
 </div>
@@ -40,7 +40,7 @@
 
 {# Modern HTMX-compatible modal header with entity icon support #}
 {% macro htmx_modal_header(title, model_name=none) %}
-<div class="modal-header flex items-center justify-between p-6 border-b">
+<div class="modal-header flex items-center justify-between p-6 border-b bg-gray-50">
     <div class="flex items-center gap-3">
         {% if model_name %}
         <div class="entity-icon">
@@ -78,7 +78,7 @@
 {% endmacro %}
 
 {# Modern HTMX-compatible modal footer #}
-{% macro htmx_modal_footer(align="right", classes="flex items-center justify-end p-6 border-t space-x-3") %}
+{% macro htmx_modal_footer(align="right", classes="flex items-center justify-end p-6 border-t space-x-3 bg-gray-50") %}
 <div class="modal-footer {{ classes if 'justify-' in classes else 'flex items-center p-6 border-t space-x-3 ' + ('justify-center' if align == 'center' else 'justify-start' if align == 'left' else 'justify-end') }}">
     {{ caller() }}
 </div>

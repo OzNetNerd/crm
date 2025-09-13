@@ -70,8 +70,9 @@
                     <div class="font-medium text-gray-900 mb-1">{{ task.description }}</div>
                     <div class="text-sm text-gray-600">{{ task_metadata(task) }}</div>
                 </div>
-                <span class="ml-3 inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-{{ task.priority }}-100 text-{{ task.priority }}-700">
-                    {{ task.priority|title }}
+                {% from "macros/ui/badges.html" import priority_badge %}
+                <span class="ml-3">
+                    {{ priority_badge(task.priority) }}
                 </span>
             </div>
         </div>

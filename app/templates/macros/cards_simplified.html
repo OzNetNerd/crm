@@ -58,9 +58,10 @@
                         </p>
                         {% endif %}
                         {% if entity.status %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ entity_type }}-100 text-{{ entity_type }}-800 mt-2">
-                            {{ entity.status }}
-                        </span>
+                        {% from "macros/ui/badges.html" import status_badge %}
+                        <div class="mt-2">
+                            {{ status_badge(entity.status, entity_type=entity_type) }}
+                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -115,9 +116,10 @@
                     </p>
                     {% endif %}
                     {% if entity.status %}
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ entity_type }}-100 text-{{ entity_type }}-800 mt-2">
-                        {{ entity.status }}
-                    </span>
+                    {% from "macros/ui/badges.html" import status_badge %}
+                    <div class="mt-2">
+                        {{ status_badge(entity.status, entity_type=entity_type) }}
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -167,9 +169,8 @@
     <div>
         <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
         <div class="p-3 bg-white/70 backdrop-blur-sm rounded-lg border border-white/30">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-{{ entity.__class__.__name__.lower() }}-100 text-{{ entity.__class__.__name__.lower() }}-800">
-                {{ entity.status }}
-            </span>
+            {% from "macros/ui/badges.html" import status_badge %}
+            {{ status_badge(entity.status, entity_type=entity.__class__.__name__.lower()) }}
         </div>
     </div>
     {% endif %}

@@ -1132,6 +1132,114 @@
 }
 
 /* ========================================
+ * BADGE SYSTEM
+ * Standardized badge classes for status, priority, and entity types
+ * DRY approach using data attributes for color mapping
+ * ======================================== */
+
+/* Base badge styling */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1rem;
+    border-radius: 9999px;
+}
+
+/* Status badges with semantic colors */
+.badge-status-prospect,
+.badge-status-new,
+.badge-status-draft {
+    background-color: #dbeafe; /* blue-100 */
+    color: #1e40af; /* blue-800 */
+}
+
+.badge-status-qualified,
+.badge-status-active {
+    background-color: #e0e7ff; /* indigo-100 */
+    color: #3730a3; /* indigo-800 */
+}
+
+.badge-status-proposal,
+.badge-status-pending,
+.badge-status-in-progress,
+.badge-status-todo {
+    background-color: #fef3c7; /* yellow-100 */
+    color: #92400e; /* yellow-800 */
+}
+
+.badge-status-negotiation {
+    background-color: #ede9fe; /* purple-100 */
+    color: #5b21b6; /* purple-800 */
+}
+
+.badge-status-closed-won,
+.badge-status-complete,
+.badge-status-success {
+    background-color: #d1fae5; /* green-100 */
+    color: #065f46; /* green-800 */
+}
+
+.badge-status-closed-lost,
+.badge-status-failed,
+.badge-status-overdue {
+    background-color: #fee2e2; /* red-100 */
+    color: #991b1b; /* red-800 */
+}
+
+.badge-status-inactive,
+.badge-status-archived {
+    background-color: #f3f4f6; /* gray-100 */
+    color: #1f2937; /* gray-800 */
+}
+
+.badge-status-unknown,
+.badge-priority-unknown {
+    background-color: #f3f4f6; /* gray-100 */
+    color: #6b7280; /* gray-500 */
+}
+
+/* Priority badges */
+.badge-priority-high {
+    background-color: #fee2e2; /* red-100 */
+    color: #991b1b; /* red-800 */
+}
+
+.badge-priority-medium {
+    background-color: #fef3c7; /* yellow-100 */
+    color: #92400e; /* yellow-800 */
+}
+
+.badge-priority-low {
+    background-color: #dbeafe; /* blue-100 */
+    color: #1e40af; /* blue-800 */
+}
+
+/* Entity type badges */
+.badge-entity-company {
+    background-color: #dbeafe; /* blue-100 */
+    color: #1e40af; /* blue-800 */
+}
+
+.badge-entity-contact,
+.badge-entity-stakeholder {
+    background-color: #d1fae5; /* green-100 */
+    color: #065f46; /* green-800 */
+}
+
+.badge-entity-opportunity {
+    background-color: #ede9fe; /* purple-100 */
+    color: #5b21b6; /* purple-800 */
+}
+
+.badge-entity-task {
+    background-color: #fed7aa; /* orange-100 */
+    color: #9a3412; /* orange-800 */
+}
+
+/* ========================================
  * TAILWIND UTILITY CLASSES
  * Essential utility classes for modal overlays and other components
  * ======================================== */
