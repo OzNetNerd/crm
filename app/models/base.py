@@ -1,5 +1,6 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional, List
 from abc import ABC, abstractmethod
+from datetime import date, timedelta
 from . import db
 from app.utils.core.model_helpers import auto_serialize
 
@@ -140,3 +141,92 @@ class EntityModel(BaseModel):
             'Tasks'
         """
         return getattr(cls, '__entity_config__', {})
+
+    @classmethod
+    def get_recent(cls, limit: int = 5, exclude_status: Optional[str] = None) -> List:
+        """
+        Get recent items ordered by creation date.
+
+        Generic method for fetching recently created items with optional
+        status exclusion. Useful for dashboard widgets and activity feeds.
+
+        Args:
+            limit: Maximum number of items to return (default: 5)
+            exclude_status: Optional status value to exclude (e.g., 'complete')
+
+        Returns:
+            List of model instances ordered by creation date (newest first)
+
+        Example:
+            >>> recent_tasks = Task.get_recent(limit=10, exclude_status='complete')
+        """
+        query = cls.query
+        if exclude_status and hasattr(cls, 'status'):
+            query = query.filter(getattr(cls, 'status') != exclude_status)
+        if hasattr(cls, 'created_at'):
+            query = query.order_by(cls.created_at.desc())
+        return query.limit(limit).all()
+
+    @classmethod
+    def get_overdue(cls, date_field: str = 'due_date',
+                    exclude_status: Optional[str] = 'complete',
+                    limit: int = 5) -> List:
+        """
+        Get overdue items based on a date field.
+
+        Identifies items that are past their due date, commonly used for
+        tasks, opportunities, and other time-sensitive entities.
+
+        Args:
+            date_field: Name of the date column to check (default: 'due_date')
+            exclude_status: Optional status to exclude (default: 'complete')
+            limit: Maximum number of items to return (default: 5)
+
+        Returns:
+            List of overdue model instances
+
+        Example:
+            >>> overdue_tasks = Task.get_overdue(limit=10)
+            >>> closing_late = Opportunity.get_overdue(date_field='expected_close_date')
+        """
+        if not hasattr(cls, date_field):
+            return []
+
+        date_column = getattr(cls, date_field)
+        query = cls.query.filter(date_column < date.today())
+
+        if exclude_status and hasattr(cls, 'status'):
+            query = query.filter(getattr(cls, 'status') != exclude_status)
+
+        return query.limit(limit).all()
+
+    @classmethod
+    def calculate_sum(cls, field: str, filter_by: Optional[Dict] = None) -> float:
+        """
+        Calculate sum of a numeric field with optional filtering.
+
+        Generic aggregation method for summing numeric fields across
+        entities, with support for filtering by field values.
+
+        Args:
+            field: Name of the numeric field to sum
+            filter_by: Optional dict of field:value pairs to filter by
+
+        Returns:
+            Sum of the specified field values
+
+        Example:
+            >>> total_value = Opportunity.calculate_sum('value')
+            >>> pipeline_value = Opportunity.calculate_sum('value', {'stage': 'proposal'})
+        """
+        if not hasattr(cls, field):
+            return 0
+
+        query = cls.query
+        if filter_by:
+            for key, value in filter_by.items():
+                if hasattr(cls, key):
+                    query = query.filter(getattr(cls, key) == value)
+
+        items = query.all()
+        return sum(getattr(item, field) or 0 for item in items)

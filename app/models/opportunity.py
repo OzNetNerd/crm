@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from typing import Dict, Any, List, Optional
 from . import db
 from .base import EntityModel
@@ -221,10 +221,86 @@ class Opportunity(EntityModel):
         return 'low'
     
     @classmethod
+    def calculate_pipeline_value(cls, stage: Optional[str] = None) -> float:
+        """
+        Calculate total value for opportunities in given stage.
+
+        Business method for calculating pipeline value, optionally filtered
+        by specific stage. Used for dashboard metrics and reporting.
+
+        Args:
+            stage: Optional stage to filter by (e.g., 'proposal', 'qualified')
+
+        Returns:
+            Total value of opportunities in the specified stage
+
+        Example:
+            >>> total = Opportunity.calculate_pipeline_value()
+            >>> proposal_value = Opportunity.calculate_pipeline_value('proposal')
+        """
+        if stage:
+            return cls.calculate_sum('value', {'stage': stage})
+        return cls.calculate_sum('value')
+
+    @classmethod
+    def get_pipeline_breakdown(cls) -> Dict[str, float]:
+        """
+        Get pipeline value breakdown by stage.
+
+        Calculates total opportunity value for each pipeline stage,
+        providing a complete view of the sales pipeline distribution.
+
+        Returns:
+            Dictionary mapping stage names to total values
+
+        Example:
+            >>> breakdown = Opportunity.get_pipeline_breakdown()
+            >>> {'prospect': 150000, 'qualified': 250000, ...}
+        """
+        from app.utils.core.model_introspection import ModelIntrospector
+        stages = ModelIntrospector.get_field_choices(cls, 'stage')
+
+        breakdown = {}
+        for stage_value, stage_label in stages:
+            breakdown[stage_value] = cls.calculate_pipeline_value(stage_value)
+
+        # Add total
+        breakdown['total'] = cls.calculate_pipeline_value()
+
+        return breakdown
+
+    @classmethod
+    def get_closing_soon(cls, days: int = 7, limit: int = 5) -> List:
+        """
+        Get opportunities closing within specified days.
+
+        Identifies opportunities in active stages that are expected to
+        close soon, useful for sales focus and priority management.
+
+        Args:
+            days: Number of days to look ahead (default: 7)
+            limit: Maximum number of opportunities to return (default: 5)
+
+        Returns:
+            List of opportunities closing within the specified timeframe
+
+        Example:
+            >>> urgent = Opportunity.get_closing_soon(days=3)
+            >>> this_month = Opportunity.get_closing_soon(days=30, limit=20)
+        """
+        cutoff = date.today() + timedelta(days=days)
+
+        return cls.query.filter(
+            cls.expected_close_date <= cutoff,
+            cls.expected_close_date >= date.today(),
+            cls.stage.in_(['proposal', 'negotiation'])
+        ).limit(limit).all()
+
+    @classmethod
     def get_stage_choices(cls) -> Dict[str, Dict[str, str]]:
         """
         Get stage choices from model metadata.
-        
+
         Retrieves the available pipeline stage options defined in the model's
         field configuration for use in forms and validation.
         
