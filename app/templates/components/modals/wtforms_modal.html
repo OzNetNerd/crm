@@ -21,10 +21,11 @@
     <!-- Form -->
     <form method="POST"
           action="{{ action_url }}"
-          hx-post="{{ action_url }}" 
-          hx-target="#modal-content-area"
-          hx-swap="innerHTML"
-          class="modal-form">
+          hx-post="{{ action_url }}"
+          hx-target=".modal-overlay"
+          hx-swap="outerHTML"
+          class="modal-form"
+          id="modal-form">
         
         {{ form.hidden_tag() }}
         
@@ -90,6 +91,24 @@ document.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             return false;
+        }
+    }
+});
+
+// Prevent form submission if inline validation errors exist
+document.addEventListener('htmx:beforeRequest', function(event) {
+    if (event.target.id === 'modal-form') {
+        // Check if any validation error messages are displayed
+        const errorMessages = event.target.querySelectorAll('[id$="-validation-message"] p.text-red-600');
+        if (errorMessages.length > 0) {
+            // Prevent the form submission
+            event.preventDefault();
+            // Optionally, focus the first field with an error
+            const firstError = errorMessages[0].closest('.field-container');
+            if (firstError) {
+                const input = firstError.querySelector('input, select, textarea');
+                if (input) input.focus();
+            }
         }
     }
 });

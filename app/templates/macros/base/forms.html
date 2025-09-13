@@ -272,20 +272,48 @@
             {% if "email" in field.name.lower() %}
                 {% set input_type = "email" %}
             {% elif "phone" in field.name.lower() or "tel" in field.name.lower() %}
-                {% set input_type = "tel" %}  
+                {% set input_type = "tel" %}
             {% elif "website" in field.name.lower() or "url" in field.name.lower() %}
                 {% set input_type = "url" %}
             {% endif %}
-            
-            {{ field(class="form-input" + error_class, type=input_type) }}
+
+            <!-- Add HTMX validation for unique fields -->
+            {% set needs_validation = false %}
+            {% set entity_type = "" %}
+            {% if field.form.__class__.__name__ == 'CompanyModalForm' and field.name == 'name' %}
+                {% set needs_validation = true %}
+                {% set entity_type = "company" %}
+            {% elif field.form.__class__.__name__ == 'StakeholderModalForm' and field.name == 'email' %}
+                {% set needs_validation = true %}
+                {% set entity_type = "stakeholder" %}
+            {% endif %}
+
+            {% if needs_validation %}
+                <input type="{{ input_type }}"
+                       id="{{ field.id }}"
+                       name="{{ field.name }}"
+                       class="form-input{{ error_class }}"
+                       value="{{ field.data or '' }}"
+                       {% if field.flags.required %}required{% endif %}
+                       hx-post="/api/validate/{{ entity_type }}/{{ field.name }}"
+                       hx-trigger="blur, keyup changed delay:500ms"
+                       hx-target="#{{ field.id }}-validation-message"
+                       hx-swap="innerHTML"
+                       hx-vals='js:{"value": document.getElementById("{{ field.id }}").value}'>
+            {% else %}
+                {{ field(class="form-input" + error_class, type=input_type) }}
+            {% endif %}
         {% endif %}
-        
+
         <!-- Field Errors -->
         {% if field.errors %}
             {% for error in field.errors %}
             <p class="mt-1 text-sm text-red-600">{{ error }}</p>
             {% endfor %}
         {% endif %}
+
+        <!-- Inline Validation Message Container -->
+        <div id="{{ field.id }}-validation-message"></div>
         
         <!-- Field Description/Help Text -->
         {% if field.description %}

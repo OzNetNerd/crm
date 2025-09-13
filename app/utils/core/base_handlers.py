@@ -184,6 +184,47 @@ class GenericAPIHandler:
             db.session.rollback()
             return jsonify({"error": str(e)}), 400
 
+    def create_entity_from_data(self, data, allowed_fields):
+        """Generic create handler for form data with duplicate checking"""
+        try:
+            # Check for duplicates before creating
+            duplicate_error = self._check_duplicates(data)
+            if duplicate_error:
+                # Convert JSON response to structured error for form handling
+                error_response, status_code = duplicate_error
+                error_data = error_response.get_json()
+                return {
+                    'success': False,
+                    'error': error_data.get('error'),
+                    'field': error_data.get('field'),
+                    'type': error_data.get('type'),
+                    'status_code': status_code
+                }
+
+            # Create entity with allowed fields
+            entity_data = {}
+            for field in allowed_fields:
+                if field in data:
+                    entity_data[field] = data[field]
+
+            entity = self.model_class(**entity_data)
+            db.session.add(entity)
+            db.session.commit()
+
+            return {
+                'success': True,
+                'entity': entity,
+                'entity_id': entity.id
+            }
+
+        except Exception as e:
+            db.session.rollback()
+            return {
+                'success': False,
+                'error': str(e),
+                'status_code': 400
+            }
+
     def _check_duplicates(self, data):
         """Check for duplicate entities based on unique fields"""
         # Define which fields should be unique for each entity type

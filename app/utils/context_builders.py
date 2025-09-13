@@ -143,11 +143,7 @@ class UniversalContextBuilder:
     def _build_ui_config(entity_name: str, request_params: Dict, **kwargs) -> Dict[str, Any]:
         """Build UI configuration with defaults and overrides - ADR-017"""
         metadata = ModelRegistry.get_model_metadata(entity_name)
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> c8ca0c9 (fix: repair broken imports and simplify overengineered abstractions)
         return {
             'show_filters': kwargs.get('show_filters', True),
             'show_grouping': kwargs.get('show_grouping', True),
