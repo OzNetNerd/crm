@@ -139,12 +139,15 @@ class UniversalContextBuilder:
             'entity_endpoint': metadata.api_endpoint,
             'entity_buttons': entity_buttons
         }
-
     @staticmethod
     def _build_ui_config(entity_name: str, request_params: Dict, **kwargs) -> Dict[str, Any]:
         """Build UI configuration with defaults and overrides - ADR-017"""
         metadata = ModelRegistry.get_model_metadata(entity_name)
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> c8ca0c9 (fix: repair broken imports and simplify overengineered abstractions)
         return {
             'show_filters': kwargs.get('show_filters', True),
             'show_grouping': kwargs.get('show_grouping', True),
@@ -162,7 +165,6 @@ class UniversalContextBuilder:
                                 if meta.filterable and field != 'id'],
             'active_group': request_params['group_by'] if request_params['group_by'] else None
         }
-
     @staticmethod
     def _build_dropdown_configs(entity_name: str, request_params: Dict) -> Dict[str, Dict[str, Any]]:
         """Build dropdown configurations using ModelIntrospector"""

@@ -12,7 +12,9 @@ from app.models import db
 from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
 from app.forms.modals.company import CompanyModalForm
 from app.forms.modals.task import TaskModalForm
+from app.forms.base.base_forms import BaseForm
 # No icon functions needed - templates handle CSS class generation
+
 
 
 class ModalService:
@@ -189,7 +191,7 @@ class ModalService:
             else:
                 entity = None
                 operation = 'created'
-            
+
             # Get explicit form class and populate with request data
             form_class = ModalService._get_form_class(model_name)
             if not form_class:
