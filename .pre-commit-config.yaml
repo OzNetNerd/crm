@@ -47,3 +47,10 @@ repos:
         language: system
         files: '\.py$'
         always_run: true
+
+      - id: detect-legacy-patterns
+        name: Detect legacy code patterns (ADR-010)
+        entry: python scripts/detect_legacy_patterns.py --fail-fast
+        language: system
+        files: '\.(py|html)$'
+        always_run: true
