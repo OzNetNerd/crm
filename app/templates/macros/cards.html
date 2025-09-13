@@ -34,10 +34,10 @@
   {{ card(stakeholder, overrides={'actions': custom_actions}) }}
 #}
 {% macro card(entity, expansion_enabled=true, card_classes='', content=none, overrides={}) %}
-{# Extract entity type from table name and get singular form #}
-{% set entity_type_plural = entity.__tablename__.rstrip('s') %}
-{% set labels = get_entity_labels(entity_type_plural) %}
-{% set entity_type = labels.singular.lower() %}
+{# Get entity type from metadata #}
+{% set metadata = get_model_metadata(entity.__class__.__name__.lower()) %}
+{% set entity_type = metadata.display_name.lower() %}
+{% set entity_type_plural = metadata.display_name_plural.lower() %}
 
 {% if content is none %}
     {% set content = build_dynamic_card_config(entity_type_plural, entity) %}

@@ -111,6 +111,17 @@ class EntityModel(BaseModel):
 
             # Register with the exact endpoint name from entity config
             ModelRegistry.register_model(cls, endpoint_name)
+            ModelRegistry.register_model(cls, cls.__name__.lower())
+
+            # Register both singular and plural forms using metadata
+            metadata = ModelRegistry.get_model_metadata(cls.__name__.lower())
+            singular_name = metadata.display_name.lower()
+            plural_name = metadata.display_name_plural.lower()
+
+            if singular_name not in ModelRegistry._models:
+                ModelRegistry._models[singular_name] = cls
+            if plural_name not in ModelRegistry._models:
+                ModelRegistry._models[plural_name] = cls
 
     @classmethod
     def get_entity_config(cls) -> Dict[str, Any]:

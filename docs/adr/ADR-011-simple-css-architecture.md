@@ -114,9 +114,9 @@ def get_entity_labels(entity_type: str) -> Dict[str, str]:
 ```jinja2
 <!-- Simplified template usage -->
 {% macro card(entity) %}
-{% set entity_type_plural = entity.__tablename__.rstrip('s') %}
-{% set labels = get_entity_labels(entity_type_plural) %}
-{% set entity_type = labels.singular.lower() %}
+{% set metadata = get_model_metadata(entity.__class__.__name__.lower()) %}
+{% set entity_type = metadata.display_name.lower() %}
+{% set entity_type_plural = metadata.display_name_plural.lower() %}
 <div class="{{entity_type}}-card">
     <!-- Renders as: company-card, task-card, etc. -->
 </div>
