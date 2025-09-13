@@ -15,7 +15,7 @@ from pathlib import Path
 # Add project root to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from app.models import db, Company, Stakeholder, Opportunity, Task, Note
+from app.models import db, Company, Stakeholder, Opportunity, Task, Note, User
 from services.crm.main import create_app
 
 # Enhanced sample data for comprehensive testing
@@ -165,6 +165,22 @@ JOB_TITLES = [
     "Account Manager",
     "Senior Developer",
     "HR Director",
+]
+
+# Team member names for seeding User model
+TEAM_MEMBER_NAMES = [
+    "Alex Johnson",
+    "Sarah Martinez",
+    "Mike Thompson",
+    "Lisa Chen",
+    "David Rodriguez",
+    "Emma Wilson",
+    "Ryan Davis",
+    "Kate Anderson",
+    "Tom Foster",
+    "Nina Garcia",
+    "Chris Parker",
+    "Amy Taylor",
 ]
 
 # Enhanced opportunity templates for varied deal sizes
@@ -414,6 +430,28 @@ def create_contacts(companies):
     db.session.commit()
     print(f"Created {len(contacts)} contacts")
     return contacts
+
+
+def create_team_members():
+    """Create team members (Users) with job titles for grouping functionality"""
+    team_members = []
+    
+    for name in TEAM_MEMBER_NAMES:
+        # Generate realistic email from name
+        email_name = name.lower().replace(" ", ".")
+        email = f"{email_name}@company.com"
+        
+        team_member = User(
+            name=name,
+            email=email,
+            job_title=random.choice(JOB_TITLES)
+        )
+        team_members.append(team_member)
+        db.session.add(team_member)
+    
+    db.session.commit()
+    print(f"Created {len(team_members)} team members")
+    return team_members
 
 
 def create_opportunities(companies, contacts):
@@ -772,6 +810,7 @@ def seed_database():
     Opportunity.query.delete()
     Stakeholder.query.delete()
     Company.query.delete()
+    User.query.delete()
     db.session.commit()
     print("Existing data cleared")
     print()
@@ -782,6 +821,9 @@ def seed_database():
     
     contacts = create_contacts(companies)
     db.session.flush()  # Ensure contacts have IDs
+    
+    team_members = create_team_members()
+    db.session.flush()  # Ensure team members have IDs
     
     opportunities = create_opportunities(companies, contacts)
     db.session.flush()  # Ensure opportunities have IDs
@@ -796,6 +838,7 @@ def seed_database():
     print("Database Statistics:")
     print(f"📊 Companies: {len(companies)}")
     print(f"👥 Contacts: {len(contacts)}")
+    print(f"🏢 Team Members: {len(team_members)}")
     print(f"💰 Opportunities: {len(opportunities)}")
     print(f"✅ Tasks: {len(tasks)}")
     print(f"📝 Notes: {len(notes)}")

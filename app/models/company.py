@@ -41,13 +41,15 @@ class Company(BaseModel):
         nullable=False,
         info={
             'display_label': 'Company Name',
-            'required': True
+            'required': True,
+            'groupable': True
         }
     )
     industry = db.Column(
         db.String(100),
         info={
             'display_label': 'Industry',
+            'groupable': True,
             'choices': {
                 'technology': {
                     'label': 'Technology',
@@ -100,6 +102,7 @@ class Company(BaseModel):
         db.String(50),
         info={
             'display_label': 'Company Size',
+            'groupable': True,
             'choices': {
                 'startup': {
                     'label': 'Startup (1-10)',

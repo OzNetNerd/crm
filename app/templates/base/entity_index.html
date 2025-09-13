@@ -34,6 +34,11 @@
         entity_type=entity_type,
         group_options=dropdown_configs.group_by.options if dropdown_configs.group_by else [],
         sort_options=dropdown_configs.sort_by.options if dropdown_configs.sort_by else [],
+        current_group_by=request.args.get('group_by', dropdown_configs.group_by.current_value if dropdown_configs.group_by else ''),
+        current_sort_by=request.args.get('sort_by', dropdown_configs.sort_by.current_value if dropdown_configs.sort_by else ''),
+        primary_filter_options=dropdown_configs.primary_filter.options if dropdown_configs.primary_filter else [],
+        current_primary_filter=request.args.getlist('primary_filter'),
+        primary_filter_name=dropdown_configs.primary_filter.button_text if dropdown_configs.primary_filter else 'Filter',
         show_view_toggle=true,
         expand_collapse_target=entity_type + 'Sections'
     ) }}
