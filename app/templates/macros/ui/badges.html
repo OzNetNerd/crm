@@ -45,10 +45,31 @@
   {{ status_badge(task.status) }}
   {{ status_badge(company.status, {'active': 'green', 'inactive': 'red'}) }}
 #}
-{% macro status_badge(status, color_map=None, size='md', entity_type=None) %}
+{% macro status_badge(status, color_map=None, size='md', entity_type=None, badge_type='status') %}
 {%- set normalized_status = status|lower|replace(' ', '-') if status else 'unknown' -%}
-<span class="badge badge-status-{{ normalized_status }}{% if entity_type %} badge-entity-{{ entity_type|lower }}{% endif %}">
-    {{ status|title if status else 'Unknown' }}
+{%- set display_text = status|replace('-', ' ')|replace('_', ' ')|title if status else 'Unknown' -%}
+{%- if normalized_status in ['high', 'medium', 'low'] and badge_type == 'status' -%}
+    {%- set badge_type = 'priority' -%}
+{%- endif -%}
+<span class="badge badge-{{ badge_type }}-{{ normalized_status }}{% if entity_type %} badge-entity-{{ entity_type|lower }}{% endif %}">
+    {{ display_text }}
+</span>
+{% endmacro %}
+
+{#
+  Priority Badge - Specific badge for priority values
+
+  Parameters:
+  - priority (required): Priority value (high, medium, low)
+
+  Usage:
+  {{ priority_badge(task.priority) }}
+#}
+{% macro priority_badge(priority) %}
+{%- set normalized_priority = priority|lower|replace(' ', '-') if priority else 'unknown' -%}
+{%- set display_text = priority|replace('-', ' ')|replace('_', ' ')|title if priority else 'Unknown' -%}
+<span class="badge badge-priority-{{ normalized_priority }}">
+    {{ display_text }}
 </span>
 {% endmacro %}
 
