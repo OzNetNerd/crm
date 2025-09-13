@@ -861,6 +861,35 @@
 }
 
 /* ========================================
+ * BUTTON CONTAINER UTILITIES
+ * DRY solution for button groups throughout the application
+ * ======================================== */
+
+.button-container {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+    .button-container {
+        flex-direction: column;
+    }
+}
+
+.button-container-horizontal {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.button-container-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* ========================================
  * SEMANTIC TEXT CLASSES
  * Consistent typography throughout the application
  * ======================================== */
