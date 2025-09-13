@@ -27,18 +27,32 @@
   Header only: {{ page_layout("Title", "Subtitle", buttons=buttons, header_only=true) }}
 #}
 {% macro page_layout(title, subtitle, buttons=None, summary_data=None, additional_header_content=None, filter_content=None, entity_name=None, bulk_actions=None, header_only=false) %}
-<!-- Standardized Page Header -->
-<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4{% if bulk_actions %} mb-4{% endif %}">
-    <div>
-        <h1 class="text-page-title">{{ title }}</h1>
-        <p class="text-secondary-dark">{{ subtitle }}</p>
-        {% if additional_header_content %}{{ additional_header_content }}{% endif %}
+<!-- Modern Page Header with Gradient Background -->
+<div class="relative mb-8 p-8 rounded-2xl bg-gradient-to-br from-white via-gray-50 to-blue-50 border border-white/50 backdrop-blur-xl shadow-xl overflow-hidden">
+    <!-- Subtle background pattern -->
+    <div class="absolute inset-0 opacity-20">
+        <div class="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
+        <div class="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-green-500/20 to-blue-500/20 rounded-full blur-xl"></div>
     </div>
-    {% if buttons %}
-    <div class="flex-shrink-0">
-        {{ entity_buttons(buttons) }}
+
+    <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div class="flex-1">
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-gray-900 bg-clip-text text-transparent mb-3">
+                {{ title }}
+            </h1>
+            <p class="text-lg text-gray-600 font-medium">{{ subtitle }}</p>
+            {% if additional_header_content %}
+            <div class="mt-4">{{ additional_header_content }}</div>
+            {% endif %}
+        </div>
+        {% if buttons %}
+        <div class="flex-shrink-0">
+            <div class="flex flex-wrap gap-3">
+                {{ entity_buttons(buttons) }}
+            </div>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 
 <!-- Bulk Actions Bar - Disabled (Alpine.js removed) -->
@@ -47,32 +61,32 @@
 {% endif %}
 
 {% if not header_only %}
-<!-- Optional Summary Section -->
+<!-- Modern Summary Section -->
 {% if summary_data %}
-<div class="mb-8 card-padded-lg">
-    <h2 class="text-section-title mb-4">{{ summary_data.title }}</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-center min-h-[80px]">
+<div class="mb-8 p-6 bg-gradient-to-r from-white via-blue-50 to-white rounded-2xl border border-white/50 backdrop-blur-xl shadow-lg">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">{{ summary_data.title }}</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
         {% for stat in summary_data.stats %}
-        <div class="text-center flex flex-col justify-center">
-            <div class="text-2xl font-bold {{ ('text-color-' + entity_name) if entity_name else 'text-gray-900' }}">
+        <div class="text-center p-4 bg-white/70 backdrop-blur-sm rounded-xl border border-white/30 hover:bg-white/90 transition-all duration-300 hover:scale-105">
+            <div class="text-3xl font-bold {{ ('text-' + entity_name + '-600') if entity_name else 'text-blue-600' }} mb-2">
                 {{ stat.value }}
             </div>
-            <div class="text-secondary">{{ stat.label }}</div>
+            <div class="text-sm font-semibold text-gray-600 uppercase tracking-wider">{{ stat.label }}</div>
         </div>
         {% endfor %}
     </div>
 </div>
 {% endif %}
 
-<!-- Optional Filter Section -->
+<!-- Modern Filter Section -->
 {% if filter_content %}
-<div class="mb-6">
+<div class="mb-8 p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-md">
     {{ filter_content|safe }}
 </div>
 {% endif %}
 
-<!-- Main Content Area -->
-<div class="space-y-6">
+<!-- Main Content Area with Modern Styling -->
+<div class="space-y-8">
     {{ caller() }}
 </div>
 {% endif %}

@@ -3,58 +3,134 @@
 {% from "macros/base/icons.html" import icon %}
 
 {% macro dashboard_overdue_section(overdue_tasks) %}
-{# Dashboard top-left: Overdue Tasks only #}
+{# Modern Overdue Tasks Section #}
 {% if overdue_tasks %}
-{% call list_section('Overdue Tasks', href='/tasks/', theme_color='red', icon_macro=icon('exclamation-circle-solid', 'md', 'c-icon--danger')) %}
-    {% for task in overdue_tasks %}
-        {{ alert_list_item(
-            title=task.description,
-            warning_text=task_metadata(task),
-            warning_color='red',
-            action_href='/tasks/'
-        ) }}
-    {% endfor %}
-{% endcall %}
+<div class="relative p-6 bg-gradient-to-br from-white via-red-50 to-pink-50 rounded-xl border border-white/50 backdrop-blur-xl shadow-lg overflow-hidden">
+    <!-- Warning decoration -->
+    <div class="absolute top-0 left-0 w-24 h-24 bg-gradient-to-br from-red-500/10 to-orange-500/10 rounded-full blur-xl"></div>
+
+    <div class="relative z-10">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-red-700 flex items-center">
+                {{ icon('exclamation-triangle', 'md', 'text-red-600 mr-2') }}
+                Overdue Tasks
+            </h3>
+            <a href="/tasks/" class="text-red-600 hover:text-red-800 font-medium text-sm transition-colors">
+                View All →
+            </a>
+        </div>
+
+        <div class="space-y-3">
+            {% for task in overdue_tasks %}
+            <div class="p-4 bg-white/80 backdrop-blur-sm rounded-lg border border-red-200/50 hover:bg-white/90 transition-all">
+                <div class="font-semibold text-gray-900 mb-1 line-clamp-2">{{ task.description }}</div>
+                <div class="text-sm text-red-600 font-medium">{{ task_metadata(task) }}</div>
+                <a href="/tasks/" class="inline-block mt-2 text-xs text-red-600 hover:text-red-800 transition-colors">View Task →</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endif %}
 {% endmacro %}
 
 {% macro dashboard_notes_section(recent_notes) %}
-{# Dashboard top-right: Recent Notes only #}
-{% call list_section('Recent Notes') %}
-    {% for note in recent_notes %}
-        {{ note_list_item(
-            content=note.content,
-            metadata=note.created_at_formatted + ((' • ' + note.entity_name) if note.entity_name else ''),
-            accent_color='blue'
-        ) }}
-    {% endfor %}
-{% endcall %}
+{# Modern Recent Notes Section #}
+<div class="relative p-6 bg-gradient-to-br from-white via-blue-50 to-indigo-50 rounded-xl border border-white/50 backdrop-blur-xl shadow-lg overflow-hidden">
+    <!-- Background decoration -->
+    <div class="absolute bottom-0 right-0 w-28 h-28 bg-gradient-to-tl from-blue-500/10 to-indigo-500/10 rounded-full blur-xl"></div>
+
+    <div class="relative z-10">
+        <h3 class="text-xl font-bold text-blue-700 mb-4 flex items-center">
+            {{ icon('document-text', 'md', 'text-blue-600 mr-2') }}
+            Recent Notes
+        </h3>
+
+        <div class="space-y-3">
+            {% for note in recent_notes %}
+            <div class="p-4 bg-white/80 backdrop-blur-sm rounded-lg border border-blue-200/50 hover:bg-white/90 transition-all">
+                <p class="text-gray-800 mb-2 line-clamp-3">{{ note.content }}</p>
+                <p class="text-sm text-blue-600 font-medium">
+                    {{ note.created_at_formatted }}{{ (' • ' + note.entity_name) if note.entity_name else '' }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endmacro %}
 
 {% macro dashboard_tasks_section(recent_tasks) %}
-{# Dashboard bottom-left: Recent Tasks only #}
-{% call list_section('Recent Tasks', href='/tasks/') %}
-    {% for task in recent_tasks %}
-        {{ simple_list_item(
-            title=task.description,
-            subtitle=task_metadata(task),
-            badge_text=task.priority|title,
-            badge_color='badge-' + task.priority
-        ) }}
-    {% endfor %}
-{% endcall %}
+{# Modern Recent Tasks Section #}
+<div class="relative p-6 bg-gradient-to-br from-white via-orange-50 to-yellow-50 rounded-xl border border-white/50 backdrop-blur-xl shadow-lg overflow-hidden">
+    <!-- Background decoration -->
+    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-500/10 to-yellow-500/10 rounded-full blur-xl"></div>
+
+    <div class="relative z-10">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-orange-700 flex items-center">
+                {{ icon('clipboard-list', 'md', 'text-orange-600 mr-2') }}
+                Recent Tasks
+            </h3>
+            <a href="/tasks/" class="text-orange-600 hover:text-orange-800 font-medium text-sm transition-colors">
+                View All →
+            </a>
+        </div>
+
+        <div class="space-y-3">
+            {% for task in recent_tasks %}
+            <div class="p-4 bg-white/80 backdrop-blur-sm rounded-lg border border-orange-200/50 hover:bg-white/90 transition-all">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900 mb-1 line-clamp-2">{{ task.description }}</div>
+                        <div class="text-sm text-gray-600">{{ task_metadata(task) }}</div>
+                    </div>
+                    <span class="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ task.priority }}-100 text-{{ task.priority }}-800">
+                        {{ task.priority|title }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endmacro %}
 
 {% macro dashboard_opportunities_section(recent_opportunities) %}
-{# Dashboard bottom-right: Recent Opportunities only #}
-{% call list_section('Recent Opportunities', href='/opportunities/') %}
-    {% for opp in recent_opportunities %}
-        {{ simple_list_item(
-            title='<span class="text-opportunity">' + opp.name + '</span>',
-            subtitle='<span class="text-company">' + opp.company_name + '</span> • <span class="text-deal">' + opp.value_formatted + '</span>',
-            badge_text=opp.stage|title,
-            badge_color='badge-' + opp.stage
-        ) }}
-    {% endfor %}
-{% endcall %}
+{# Modern Recent Opportunities Section #}
+<div class="relative p-6 bg-gradient-to-br from-white via-green-50 to-emerald-50 rounded-xl border border-white/50 backdrop-blur-xl shadow-lg overflow-hidden">
+    <!-- Background decoration -->
+    <div class="absolute bottom-0 left-0 w-28 h-28 bg-gradient-to-tr from-green-500/10 to-emerald-500/10 rounded-full blur-xl"></div>
+
+    <div class="relative z-10">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-green-700 flex items-center">
+                {{ icon('currency-dollar', 'md', 'text-green-600 mr-2') }}
+                Recent Opportunities
+            </h3>
+            <a href="/opportunities/" class="text-green-600 hover:text-green-800 font-medium text-sm transition-colors">
+                View All →
+            </a>
+        </div>
+
+        <div class="space-y-3">
+            {% for opp in recent_opportunities %}
+            <div class="p-4 bg-white/80 backdrop-blur-sm rounded-lg border border-green-200/50 hover:bg-white/90 transition-all">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="font-semibold text-green-700 mb-1 line-clamp-2">{{ opp.name }}</div>
+                        <div class="text-sm text-gray-600">
+                            <span class="text-blue-600">{{ opp.company_name }}</span> •
+                            <span class="font-semibold text-green-600">{{ opp.value_formatted }}</span>
+                        </div>
+                    </div>
+                    <span class="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        {{ opp.stage|title }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endmacro %}

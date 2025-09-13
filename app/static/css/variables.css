@@ -8,24 +8,27 @@
 
 :root {
     /* ========================================
-     * BRAND COLORS
-     * Primary, secondary, accent color system
+     * MODERN BRAND COLORS
+     * Sophisticated color system with gradients and depth
      * ======================================== */
-    
-    --color-primary: #2563eb; /* blue-600 */
-    --color-primary-hover: #1e40af; /* blue-800 */
-    --color-primary-light: #dbeafe; /* blue-100 */
-    --color-primary-lighter: #eff6ff; /* blue-50 */
-    
-    --color-secondary: #16a34a; /* green-600 */
-    --color-secondary-hover: #166534; /* green-800 */
-    --color-secondary-light: #dcfce7; /* green-100 */
-    --color-secondary-lighter: #f0fdf4; /* green-50 */
-    
-    --color-accent: #7c3aed; /* purple-700 */
-    --color-accent-hover: #6d28d9; /* purple-800 */
-    --color-accent-light: #faf5ff; /* purple-100 */
-    --color-accent-lighter: #f3e8ff; /* purple-200 */
+
+    --color-primary: #3b82f6; /* Modern blue */
+    --color-primary-hover: #1d4ed8;
+    --color-primary-light: #dbeafe;
+    --color-primary-lighter: #eff6ff;
+    --color-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+
+    --color-secondary: #10b981; /* Vibrant green */
+    --color-secondary-hover: #047857;
+    --color-secondary-light: #d1fae5;
+    --color-secondary-lighter: #ecfdf5;
+    --color-secondary-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
+
+    --color-accent: #8b5cf6; /* Rich purple */
+    --color-accent-hover: #7c3aed;
+    --color-accent-light: #ede9fe;
+    --color-accent-lighter: #f5f3ff;
+    --color-accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
     
     /* ========================================
      * SEMANTIC COLORS
@@ -64,51 +67,70 @@
     --color-gray-900: #111827;
     
     /* ========================================
-     * ENTITY COLORS - ADR-011 REQUIREMENT
+     * MODERN ENTITY COLORS - VIBRANT & DISTINCTIVE
      * Dynamic class generation colors per entity type
+     * Each entity gets unique, modern color palette with gradients
      * ======================================== */
-    
-    /* Company Colors */
-    --company-bg-color: #f0fdf4;
-    --company-primary-color: #16a34a;
-    --company-hover-color: #15803d;
-    --company-ring-color: #22c55e;
-    --company-light-color: #dcfce7;
-    
-    /* Task Colors */
-    --task-bg-color: #eff6ff;
-    --task-primary-color: #2563eb;
-    --task-hover-color: #1d4ed8;
-    --task-ring-color: #3b82f6;
-    --task-light-color: #dbeafe;
-    
-    /* Opportunity Colors */  
-    --opportunity-bg-color: #faf5ff;
-    --opportunity-primary-color: #9333ea;
-    --opportunity-hover-color: #7c3aed;
-    --opportunity-ring-color: #a855f7;
-    --opportunity-light-color: #f3e8ff;
-    
-    /* Stakeholder Colors */
-    --stakeholder-bg-color: #fefce8;
-    --stakeholder-primary-color: #ca8a04;
-    --stakeholder-hover-color: #a16207;
-    --stakeholder-ring-color: #eab308;
-    --stakeholder-light-color: #fef3c7;
-    
-    /* Team Colors */
-    --teams-bg-color: #fef2f2;
-    --teams-primary-color: #dc2626;
-    --teams-hover-color: #b91c1c;
-    --teams-ring-color: #ef4444;
-    --teams-light-color: #fee2e2;
-    
-    /* User Colors */
-    --user-bg-color: #fef2f2;
-    --user-primary-color: #dc2626;
-    --user-hover-color: #b91c1c;
-    --user-ring-color: #ef4444;
-    --user-light-color: #fee2e2;
+
+    /* Company Colors - Professional Blue */
+    --company-bg-color: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    --company-primary-color: #3b82f6;
+    --company-hover-color: #2563eb;
+    --company-ring-color: #60a5fa;
+    --company-light-color: #dbeafe;
+    --company-accent: #1e40af;
+    --company-gradient: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    --company-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.15);
+
+    /* Task Colors - Energetic Orange */
+    --task-bg-color: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+    --task-primary-color: #f97316;
+    --task-hover-color: #ea580c;
+    --task-ring-color: #fb923c;
+    --task-light-color: #fed7aa;
+    --task-accent: #c2410c;
+    --task-gradient: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    --task-shadow: 0 4px 14px 0 rgba(249, 115, 22, 0.15);
+
+    /* Opportunity Colors - Success Green */
+    --opportunity-bg-color: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    --opportunity-primary-color: #10b981;
+    --opportunity-hover-color: #059669;
+    --opportunity-ring-color: #34d399;
+    --opportunity-light-color: #d1fae5;
+    --opportunity-accent: #047857;
+    --opportunity-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --opportunity-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.15);
+
+    /* Stakeholder Colors - Warm Purple */
+    --stakeholder-bg-color: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+    --stakeholder-primary-color: #8b5cf6;
+    --stakeholder-hover-color: #7c3aed;
+    --stakeholder-ring-color: #a78bfa;
+    --stakeholder-light-color: #ede9fe;
+    --stakeholder-accent: #6d28d9;
+    --stakeholder-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    --stakeholder-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.15);
+
+    /* Team Colors - Dynamic Pink */
+    --teams-bg-color: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+    --teams-primary-color: #ec4899;
+    --teams-hover-color: #db2777;
+    --teams-ring-color: #f472b6;
+    --teams-light-color: #fce7f3;
+    --teams-accent: #be185d;
+    --teams-gradient: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    --teams-shadow: 0 4px 14px 0 rgba(236, 72, 153, 0.15);
+
+    /* User Colors - Sophisticated Slate */
+    --user-bg-color: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    --user-primary-color: #475569;
+    --user-hover-color: #334155;
+    --user-ring-color: #64748b;
+    --user-light-color: #f1f5f9;
+    --user-accent: #1e293b;
+    --user-gradient: linear-gradient(135deg, #475569 0%, #334155 100%);
+    --user-shadow: 0 4px 14px 0 rgba(71, 85, 105, 0.15);
     
     /* ========================================
      * SPACING SCALE
@@ -160,13 +182,39 @@
     --transition-slow: 0.3s ease-in-out;
     
     /* ========================================
-     * SHADOWS
-     * Elevation system
+     * MODERN SHADOW SYSTEM
+     * Sophisticated elevation with multiple shadow layers
      * ======================================== */
-    
+
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+    /* Colored Shadows */
+    --shadow-primary: 0 4px 14px 0 rgba(59, 130, 246, 0.15);
+    --shadow-secondary: 0 4px 14px 0 rgba(16, 185, 129, 0.15);
+    --shadow-accent: 0 4px 14px 0 rgba(139, 92, 246, 0.15);
+
+    /* Interactive Shadows */
+    --shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.1);
+
+    /* ========================================
+     * MODERN ANIMATIONS & TRANSITIONS
+     * Smooth, professional interactions
+     * ======================================== */
+
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* Transform Utilities */
+    --scale-hover: scale(1.02);
+    --scale-active: scale(0.98);
+    --translate-hover: translateY(-1px);
 }
 
 /* ========================================
