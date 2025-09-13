@@ -17,7 +17,6 @@
 {# Import core card system components #}
 {% from "macros/cards/container.html" import card_container, simple_card_container %}
 {% from "macros/cards/content_renderers.html" import render_content_section, render_action_section, render_field %}
-{% from "macros/cards/builders.html" import card as card_builder %}
 
 {#
   Card - Main entry point for the card system
@@ -36,7 +35,16 @@
   {{ card('stakeholder', stakeholder, overrides={'actions': custom_actions}) }}
 #}
 {% macro card(entity_type, entity, expansion_enabled=true, card_classes='', content=none, overrides={}) %}
-{{ card_builder(entity_type, entity, expansion_enabled, card_classes, content, overrides) }}
+{% if content is none %}
+    {% set content = build_dynamic_card_config(entity_type, entity) %}
+    
+    {# Apply overrides #}
+    {% for section, override_config in overrides.items() %}
+        {% do content.update({section: override_config}) %}
+    {% endfor %}
+{% endif %}
+
+{{ card_container(entity_type, entity.id, expansion_enabled, card_classes, content) }}
 {% endmacro %}
 
 {#

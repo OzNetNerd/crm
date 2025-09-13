@@ -27,6 +27,7 @@ from app.utils.ui.template_globals import (
     get_entity_labels,
     get_empty_state_config,
 )
+from app.utils.cards.config_builder import CardConfigBuilder
 
 
 def get_database_path():
@@ -103,6 +104,11 @@ def create_app():
     app.jinja_env.globals["get_entity_icon"] = get_entity_icon
     app.jinja_env.globals["get_entity_labels"] = get_entity_labels
     app.jinja_env.globals["get_empty_state_config"] = get_empty_state_config
+    
+    # Dynamic card system
+    app.jinja_env.globals["build_dynamic_card_config"] = CardConfigBuilder.build_card_config
+    app.jinja_env.globals["getattr"] = getattr
+    app.jinja_env.globals["hasattr"] = hasattr
     
     
     # Modal configs removed - using WTForms modal system now (keeping main branch approach)
