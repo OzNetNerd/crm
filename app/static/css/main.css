@@ -45,6 +45,118 @@
  * Essential styles that aren't provided by Tailwind
  * ======================================== */
 
+/* Modal Design System Variables */
+:root {
+    --modal-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    --modal-radius: 1rem;
+    --modal-backdrop: rgba(0, 0, 0, 0.6);
+    --modal-animation: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    --modal-max-height: 90vh;
+}
+
+/* Modal Animations */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes modalFadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes modalSlideOut {
+    from {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+}
+
+/* Modal Overlay Styling */
+.modal-overlay {
+    animation: modalFadeIn var(--modal-animation) forwards;
+}
+
+.modal-overlay.modal-fade-out {
+    animation: modalFadeOut var(--modal-animation) forwards;
+}
+
+/* Modal Backdrop Styling */
+.modal-backdrop {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    background: var(--modal-backdrop);
+    transition: opacity var(--modal-animation);
+}
+
+/* Modal Content Styling */
+.modal-content {
+    animation: modalSlideIn var(--modal-animation) forwards;
+    box-shadow: var(--modal-shadow);
+    max-height: var(--modal-max-height);
+}
+
+.modal-fade-out .modal-content {
+    animation: modalSlideOut var(--modal-animation) forwards;
+}
+
+/* Modal Header Styling */
+.modal-header {
+    background: linear-gradient(to right, rgb(249 250 251), rgb(255 255 255));
+    border-bottom: 1px solid rgb(229 231 235);
+}
+
+/* Modal Footer Styling */
+.modal-footer {
+    background: rgba(249, 250, 251, 0.5);
+    border-top: 1px solid rgb(229 231 235);
+}
+
+/* Modal Close Button Enhancement */
+.modal-close-button {
+    transition: all 150ms ease;
+    border-radius: 0.375rem;
+    padding: 0.25rem;
+}
+
+.modal-close-button:hover {
+    background: rgba(0, 0, 0, 0.05);
+    transform: rotate(90deg);
+}
+
+/* Body scroll lock when modal is open */
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Smooth scrolling for modal content */
+.modal-content > * {
+    scroll-behavior: smooth;
+}
+
 /* Hide all loading animations and indicators */
 .htmx-indicator,
 .modal-loading,
