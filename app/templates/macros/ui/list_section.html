@@ -136,19 +136,6 @@
 {#
   Simple variants for common use cases
 #}
-{#
-  Status Badge - Standardized badge with consistent styling
-  
-  Parameters:
-  - text (required): Badge text content
-  - color (optional): Badge color - red, yellow, green, blue, orange, gray (default)
-  - use_title_case (optional): Apply title case formatting (default: true)
-#}
-{% macro status_badge(text, color='gray', use_title_case=true) %}
-  <span class="badge-standard badge-{{ color }}">
-    {{ text|title if use_title_case else text }}
-  </span>
-{% endmacro %}
 
 {% macro simple_list_section(title, items, href=None) %}
   {% call list_section(title, href=href) %}

@@ -46,8 +46,9 @@
   {{ status_badge(company.status, {'active': 'green', 'inactive': 'red'}) }}
 #}
 {% macro status_badge(status, color_map=None, size='md', entity_type=None, badge_type='status') %}
-{%- set normalized_status = status|lower|replace(' ', '-') if status else 'unknown' -%}
-{%- set display_text = status|replace('-', ' ')|replace('_', ' ')|title if status else 'Unknown' -%}
+{%- set status_str = status|string if status else 'unknown' -%}
+{%- set normalized_status = status_str|lower|replace(' ', '-') -%}
+{%- set display_text = status_str|replace('-', ' ')|replace('_', ' ')|title -%}
 {%- if normalized_status in ['high', 'medium', 'low'] and badge_type == 'status' -%}
     {%- set badge_type = 'priority' -%}
 {%- endif -%}
