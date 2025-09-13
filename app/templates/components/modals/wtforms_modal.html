@@ -48,7 +48,7 @@
             {% for field in form %}
                 {% if field.name not in ['csrf_token', 'submit'] %}
                 <div class="space-y-2">
-                    {{ render_wtforms_field(field) }}
+                    {{ render_wtforms_field(field, fast_select=true) }}
                 </div>
                 {% endif %}
             {% endfor %}
