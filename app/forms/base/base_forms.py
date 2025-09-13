@@ -6,11 +6,10 @@ Eliminates duplication by centralizing common patterns.
 """
 
 import json
-from typing import Any, Optional, Type
+from typing import Any, Optional
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, DateField, IntegerField, SelectField
 from wtforms.validators import DataRequired, Length, Optional as OptionalValidator, NumberRange
-from .builders import DynamicFormBuilder
 
 
 class BaseForm(FlaskForm):
@@ -154,64 +153,99 @@ class FieldFactory:
             validators=[OptionalValidator(), NumberRange(min=1)]
         )
 
-    # Dynamic field creation methods using DynamicFormBuilder
+    # Dynamic field creation methods using ModelIntrospector
     @staticmethod
-    def create_priority_field(model_class: Type = None, **kwargs) -> SelectField:
-        """Create a standardized priority SelectField using DynamicFormBuilder"""
-        if model_class:
-            return DynamicFormBuilder.build_select_field(model_class, 'priority', **kwargs)
-        else:
-            # Fallback for backward compatibility - use Task model
+    def create_priority_field(model_class = None, **kwargs) -> SelectField:
+        """Create a standardized priority SelectField"""
+        from app.utils.core.model_introspection import ModelIntrospector
+
+        if model_class is None:
+            # Use Task model as default
             from app.models.task import Task
-            return DynamicFormBuilder.build_select_field(Task, 'priority', **kwargs)
-    
+            model_class = Task
+
+        choices = ModelIntrospector.get_field_choices(model_class, 'priority')
+        label = kwargs.pop('label', 'Priority')
+
+        return SelectField(
+            label,
+            choices=[('', f'Select {label.lower()}')] + choices,
+            validators=[OptionalValidator()],
+            **kwargs
+        )
+
     @staticmethod
-    def create_status_field(model_class: Type = None, **kwargs) -> SelectField:
-        """Create a standardized status SelectField using DynamicFormBuilder"""
-        if model_class:
-            return DynamicFormBuilder.build_select_field(model_class, 'status', **kwargs)
-        else:
-            # Fallback for backward compatibility - use Task model
+    def create_status_field(model_class = None, **kwargs) -> SelectField:
+        """Create a standardized status SelectField"""
+        from app.utils.core.model_introspection import ModelIntrospector
+
+        if model_class is None:
+            # Use Task model as default
             from app.models.task import Task
-            return DynamicFormBuilder.build_select_field(Task, 'status', **kwargs)
-    
+            model_class = Task
+
+        choices = ModelIntrospector.get_field_choices(model_class, 'status')
+        label = kwargs.pop('label', 'Status')
+
+        return SelectField(
+            label,
+            choices=[('', f'Select {label.lower()}')] + choices,
+            validators=[OptionalValidator()],
+            **kwargs
+        )
+
     @staticmethod
-    def create_next_step_type_field(model_class: Type = None, **kwargs) -> SelectField:
-        """Create a standardized next_step_type SelectField using DynamicFormBuilder"""
-        if model_class:
-            return DynamicFormBuilder.build_select_field(model_class, 'next_step_type', **kwargs)
-        else:
-            # Fallback for backward compatibility - use Task model
-            from app.models.task import Task
-            return DynamicFormBuilder.build_select_field(Task, 'next_step_type', **kwargs)
-    
-    @staticmethod
-    def create_task_type_field(model_class: Type = None, **kwargs) -> SelectField:
-        """Create a standardized task_type SelectField using DynamicFormBuilder"""
-        if model_class:
-            return DynamicFormBuilder.build_select_field(model_class, 'task_type', **kwargs)
-        else:
-            # Fallback for backward compatibility - use Task model
-            from app.models.task import Task
-            return DynamicFormBuilder.build_select_field(Task, 'task_type', **kwargs)
-    
-    @staticmethod
-    def create_dependency_type_field(model_class: Type = None, **kwargs) -> SelectField:
-        """Create a standardized dependency_type SelectField using DynamicFormBuilder"""
-        if model_class:
-            return DynamicFormBuilder.build_select_field(model_class, 'dependency_type', **kwargs)
-        else:
-            # Fallback for backward compatibility - use Task model
-            from app.models.task import Task
-            return DynamicFormBuilder.build_select_field(Task, 'dependency_type', **kwargs)
-    
-    @staticmethod
-    def create_due_date_field(model_class: Type = None, label: str = "Due Date", **kwargs) -> DateField:
+    def create_due_date_field(label: str = "Due Date", **kwargs) -> DateField:
         """Create a standardized due date field"""
-        if model_class:
-            return DynamicFormBuilder.build_date_field(model_class, 'due_date', label=label, **kwargs)
-        else:
-            return DateField(label, validators=[OptionalValidator()], default=None, **kwargs)
+        return DateField(label, validators=[OptionalValidator()], default=None, **kwargs)
+
+    @staticmethod
+    def create_next_step_type_field(**kwargs) -> SelectField:
+        """Create a standardized next step type SelectField"""
+        from app.utils.core.model_introspection import ModelIntrospector
+        from app.models.task import Task
+
+        choices = ModelIntrospector.get_field_choices(Task, 'next_step_type')
+        label = kwargs.pop('label', 'Next Step Type')
+
+        return SelectField(
+            label,
+            choices=[('', f'Select {label.lower()}')] + choices,
+            validators=[OptionalValidator()],
+            **kwargs
+        )
+
+    @staticmethod
+    def create_task_type_field(**kwargs) -> SelectField:
+        """Create a standardized task type SelectField"""
+        from app.utils.core.model_introspection import ModelIntrospector
+        from app.models.task import Task
+
+        choices = ModelIntrospector.get_field_choices(Task, 'task_type')
+        label = kwargs.pop('label', 'Task Type')
+
+        return SelectField(
+            label,
+            choices=[('', f'Select {label.lower()}')] + choices,
+            validators=[OptionalValidator()],
+            **kwargs
+        )
+
+    @staticmethod
+    def create_dependency_type_field(**kwargs) -> SelectField:
+        """Create a standardized dependency type SelectField"""
+        from app.utils.core.model_introspection import ModelIntrospector
+        from app.models.task import Task
+
+        choices = ModelIntrospector.get_field_choices(Task, 'dependency_type')
+        label = kwargs.pop('label', 'Dependency Type')
+
+        return SelectField(
+            label,
+            choices=[('', f'Select {label.lower()}')] + choices,
+            validators=[OptionalValidator()],
+            **kwargs
+        )
 
 
 class FormConstants:
