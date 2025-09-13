@@ -307,7 +307,7 @@ def _perform_search(query, entity_type, limit):
                 "id": company.id,
                 "type": "company",
                 "title": company.name,
-                "subtitle": f"{company.industry} • {company.location}" if company.industry else company.location,
+                "subtitle": f"{company.industry} • {company.address}" if company.industry and company.address else (company.industry or company.address or ""),
                 "url": f"/companies/{company.id}",
             })
 
@@ -369,25 +369,19 @@ def _perform_search(query, entity_type, limit):
     if "task" in entity_types:
         if query:
             tasks = (
-                Task.query.join(Company, Task.company)
-                .filter(
-                    or_(
-                        Task.description.ilike(f"%{query}%"),
-                        Company.name.ilike(f"%{query}%"),
-                    )
-                )
+                Task.query.filter(Task.description.ilike(f"%{query}%"))
                 .limit(limit)
                 .all()
             )
         else:
-            tasks = Task.query.join(Company, Task.company).limit(limit).all()
+            tasks = Task.query.limit(limit).all()
 
         for task in tasks:
             results.append({
                 "id": task.id,
                 "type": "task",
                 "title": task.description,
-                "subtitle": f"{task.company.name} • {task.priority}" if task.priority else task.company.name,
+                "subtitle": f"{task.priority} priority" if task.priority else "No priority set",
                 "url": f"/tasks/{task.id}",
             })
 
