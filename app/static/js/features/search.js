@@ -45,9 +45,9 @@ class SearchManager {
             }
         });
         
-        // Escape key to close
+        // Escape key to close (only for global search results)
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
+            if (e.key === 'Escape' && !this.searchResults.classList.contains('hidden')) {
                 this.hideResults();
                 this.searchInput.blur();
             }
@@ -178,12 +178,12 @@ class SearchManager {
         
         Object.entries(this.entityTypes).forEach(([type, config]) => {
             const label = document.createElement('label');
-            label.className = 'flex items-center';
+            label.className = 'flex items-center whitespace-nowrap';
             label.innerHTML = `
                 <input type="checkbox" 
                        id="search-${type}" 
                        checked 
-                       class="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                       class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                 <span class="text-sm text-gray-700">${config.icon} ${config.name}</span>
             `;
             container.appendChild(label);
@@ -197,72 +197,58 @@ class SearchManager {
             advancedBtn.addEventListener('click', () => this.openAdvancedSearch());
         }
         
-        // Advanced search modal events
-        const advancedSubmit = document.getElementById('advanced-search-submit');
-        if (advancedSubmit) {
-            advancedSubmit.addEventListener('click', () => this.performAdvancedSearch());
-        }
-        
-        // Sync query between regular and advanced search inputs
+        // Wire advanced search input to use same logic as global search
         const advancedQuery = document.getElementById('advanced-search-query');
         if (advancedQuery) {
-            // Copy current search to advanced modal when opened
+            // Copy current search when modal opens
             document.addEventListener('click', (e) => {
                 if (e.target.id === 'advanced-search-btn') {
                     advancedQuery.value = this.searchInput.value;
                 }
             });
+            
+            // Make advanced search work like global search with entity filtering
+            advancedQuery.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                this.updateEntityTypesFromModal();
+                clearTimeout(this.debounceTimer);
+                this.debounceTimer = setTimeout(() => {
+                    this.performSearch(query);
+                }, 300);
+            });
+            
+            // Update entity types when checkboxes change
+            document.addEventListener('change', (e) => {
+                if (e.target.id && e.target.id.startsWith('search-')) {
+                    this.updateEntityTypesFromModal();
+                    this.performSearch(advancedQuery.value.trim());
+                }
+            });
         }
     }
     
+    updateEntityTypesFromModal() {
+        const selectedTypes = [];
+        Object.keys(this.entityTypes).forEach(type => {
+            const checkbox = document.getElementById(`search-${type}`);
+            if (checkbox && checkbox.checked) {
+                selectedTypes.push(type);
+            }
+        });
+        this.selectedEntityTypes = selectedTypes.length === 0 ? ['all'] : selectedTypes;
+    }
+    
     openAdvancedSearch() {
-        // Use existing modal utilities
         if (typeof openModalById === 'function') {
             openModalById('advanced-search-modal');
         }
         
-        // Focus on the query input
         setTimeout(() => {
             const queryInput = document.getElementById('advanced-search-query');
             if (queryInput) {
                 queryInput.focus();
             }
         }, 100);
-    }
-    
-    performAdvancedSearch() {
-        // Get selected entity types dynamically
-        this.selectedEntityTypes = [];
-        
-        Object.keys(this.entityTypes).forEach(type => {
-            const checkbox = document.getElementById(`search-${type}`);
-            if (checkbox && checkbox.checked) {
-                this.selectedEntityTypes.push(type);
-            }
-        });
-        
-        // If no types selected, default to all
-        if (this.selectedEntityTypes.length === 0) {
-            this.selectedEntityTypes = ['all'];
-        }
-        
-        // Get query from advanced search input
-        const advancedQuery = document.getElementById('advanced-search-query');
-        const query = advancedQuery ? advancedQuery.value.trim() : '';
-        
-        // Update main search input
-        this.searchInput.value = query;
-        
-        // Perform search with selected filters
-        this.performSearch(query);
-        
-        // Close modal
-        if (typeof closeModalById === 'function') {
-            closeModalById('advanced-search-modal');
-        }
-        
-        // Focus back on main search
-        this.searchInput.focus();
     }
     
     displayResults(results) {
