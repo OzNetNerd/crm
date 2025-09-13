@@ -109,20 +109,20 @@ class ModelMetadata:
             if self.display_name is None:
                 self.display_name = config.get('display_name_singular', self.model_class.__name__)
             if self.display_name_plural is None:
-                self.display_name_plural = config.get('display_name', self.display_name + 's')
+                self.display_name_plural = config.get('display_name', self.display_name)
             if self.api_endpoint is None:
-                self.api_endpoint = config.get('endpoint_name', self.display_name.lower() + 's')
+                self.api_endpoint = config.get('endpoint_name')
         else:
-            # Fallback to defaults
+            # Fallback to defaults - only use what's available, no string manipulation
             if self.display_name is None:
                 self.display_name = self.model_class.__name__
             if self.display_name_plural is None:
-                self.display_name_plural = self.display_name + 's'
+                self.display_name_plural = self.display_name  # Just use singular if no config
             if self.api_endpoint is None:
                 if hasattr(self.model_class, '__tablename__'):
                     self.api_endpoint = self.model_class.__tablename__
                 else:
-                    self.api_endpoint = self.display_name.lower() + 's'
+                    self.api_endpoint = self.display_name.lower()
             
         # Auto-discover fields if not provided
         if not self.fields:
