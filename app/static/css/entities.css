@@ -1080,3 +1080,68 @@
 .text-status-closed-lost {
     color: var(--danger-color);
 }
+
+/* ========================================
+ * TAILWIND UTILITY CLASSES
+ * Essential utility classes for modal overlays and other components
+ * ======================================== */
+
+/* Background Colors */
+.bg-black {
+    background-color: var(--color-black);
+}
+
+.bg-white {
+    background-color: #ffffff;
+}
+
+/* Background Opacity Classes */
+.bg-opacity-50 {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.bg-opacity-25 {
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
+/* Position Classes */
+.fixed {
+    position: fixed;
+}
+
+.inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+/* Z-Index */
+.z-50 {
+    z-index: 50;
+}
+
+/* Flexbox */
+.flex {
+    display: flex;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+/* Display */
+.hidden {
+    display: none;
+}
+
+/* Transitions */
+.transition-opacity {
+    transition-property: opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
