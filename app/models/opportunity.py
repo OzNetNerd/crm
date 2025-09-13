@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from . import db
-from .base import BaseModel
+from .base import EntityModel
 from app.utils.core.model_helpers import auto_serialize
 
 
-class Opportunity(BaseModel):
+class Opportunity(EntityModel):
     """
     Opportunity model representing sales opportunities in the CRM system.
     

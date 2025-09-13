@@ -1,10 +1,10 @@
 from typing import Dict, Any, List, Optional
 from . import db
-from .base import BaseModel
+from .base import EntityModel
 from app.utils.core.model_helpers import auto_serialize
 
 
-class Company(BaseModel):
+class Company(EntityModel):
     """
     Company model representing business organizations in the CRM system.
     
