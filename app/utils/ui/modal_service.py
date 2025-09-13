@@ -2,7 +2,7 @@
 Modal Service for HTMX-based form handling.
 
 This service provides a clean interface for handling modal forms using HTMX,
-leveraging WTForms with DynamicFormBuilder for form generation and validation.
+leveraging WTForms with specific form classes for generation and validation.
 """
 
 from typing import Dict, Any, Optional

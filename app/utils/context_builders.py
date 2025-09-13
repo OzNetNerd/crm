@@ -5,81 +5,9 @@ Configuration object classes and universal context builder that replaces
 ad-hoc dictionary building with typed, extensible configuration objects.
 """
 
-from dataclasses import dataclass, asdict
 from typing import Dict, List, Any, Optional
 from flask import request
 from .model_registry import ModelRegistry
-
-
-@dataclass
-class EntityConfig:
-    """Standard entity configuration object - ADR-017"""
-    entity_name: str
-    entity_name_singular: str
-    entity_description: str
-    entity_type: str
-    entity_endpoint: str
-    entity_buttons: List[Dict[str, str]]
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for template usage"""
-        return asdict(self)
-
-    def to_json_safe(self) -> Dict[str, Any]:
-        """Convert to JSON-safe dictionary for JavaScript"""
-        return self.to_dict()
-
-
-@dataclass 
-class UIConfig:
-    """Standard UI configuration object - ADR-017"""
-    show_filters: bool = True
-    show_grouping: bool = True
-    show_sorting: bool = True
-    show_search: bool = True
-    items_per_page: int = 20
-    default_view: str = "card"  # card, table, list
-    
-    # Filter configurations
-    available_filters: List[str] = None
-    active_filters: Dict[str, Any] = None
-    
-    # Sorting configurations  
-    available_sorts: List[str] = None
-    active_sort: Dict[str, str] = None
-    
-    # Grouping configurations
-    available_groups: List[str] = None
-    active_group: str = None
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
-
-
-@dataclass
-class DropdownConfig:
-    """Standard dropdown configuration object - ADR-017"""
-    options: List[Dict[str, Any]]
-    selected_values: List[str] = None
-    placeholder: str = "Select..."
-    multiple: bool = False
-    searchable: bool = False
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
-
-
-@dataclass
-class FormConfig:
-    """Standard form configuration object - ADR-017"""
-    fields: Dict[str, Dict[str, Any]]
-    layout: Dict[str, Any]
-    validation_rules: Dict[str, List[str]]
-    submit_url: str
-    method: str = "POST"
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
 
 
 class UniversalContextBuilder:
@@ -138,19 +66,18 @@ class UniversalContextBuilder:
         relationship_labels = UniversalContextBuilder._build_relationship_labels()
         
         return {
-            # Configuration objects for complex, extensible data
-            'entity_config': entity_config.to_dict(),
-            'ui_config': ui_config.to_dict(),
-            'dropdown_configs': {name: config.to_dict()
-                               for name, config in dropdown_configs.items()},
+            # Simplified direct dictionary building - no need for dataclass overhead
+            'entity_config': entity_config,
+            'ui_config': ui_config,
+            'dropdown_configs': dropdown_configs,
 
             # Individual entity variables for template compatibility
-            'entity_name': entity_config.entity_name,
-            'entity_name_singular': entity_config.entity_name_singular,
-            'entity_description': entity_config.entity_description,
-            'entity_type': entity_config.entity_type,
-            'entity_endpoint': entity_config.entity_endpoint,
-            'entity_buttons': entity_config.entity_buttons,
+            'entity_name': entity_config['entity_name'],
+            'entity_name_singular': entity_config['entity_name_singular'],
+            'entity_description': entity_config['entity_description'],
+            'entity_type': entity_config['entity_type'],
+            'entity_endpoint': entity_config['entity_endpoint'],
+            'entity_buttons': entity_config['entity_buttons'],
 
             # Individual variables for simple, stable data
             'current_page': request.args.get('page', 1, type=int),
@@ -196,7 +123,7 @@ class UniversalContextBuilder:
         }
     
     @staticmethod
-    def _build_entity_config(entity_name: str) -> EntityConfig:
+    def _build_entity_config(entity_name: str) -> Dict[str, Any]:
         """Build entity configuration from model metadata - ADR-016"""
         # Use registry instead of direct model access
         metadata = ModelRegistry.get_model_metadata(entity_name)
@@ -204,70 +131,80 @@ class UniversalContextBuilder:
         # Simple entity button - no complex generator needed
         entity_buttons = [entity_name]  # Template will derive button properties
 
-        return EntityConfig(
-            entity_name=metadata.display_name_plural,
-            entity_name_singular=metadata.display_name,
-            entity_description=metadata.description or f"Manage your {metadata.display_name_plural.lower()}",
-            entity_type=metadata.display_name.lower(),
-            entity_endpoint=metadata.api_endpoint,
-            entity_buttons=entity_buttons
-        )
-    
+        return {
+            'entity_name': metadata.display_name_plural,
+            'entity_name_singular': metadata.display_name,
+            'entity_description': metadata.description or f"Manage your {metadata.display_name_plural.lower()}",
+            'entity_type': metadata.display_name.lower(),
+            'entity_endpoint': metadata.api_endpoint,
+            'entity_buttons': entity_buttons
+        }
+
     @staticmethod
-    def _build_ui_config(entity_name: str, request_params: Dict, **kwargs) -> UIConfig:
+    def _build_ui_config(entity_name: str, request_params: Dict, **kwargs) -> Dict[str, Any]:
         """Build UI configuration with defaults and overrides - ADR-017"""
         metadata = ModelRegistry.get_model_metadata(entity_name)
-        
-        return UIConfig(
-            show_filters=kwargs.get('show_filters', True),
-            show_grouping=kwargs.get('show_grouping', True),
-            show_sorting=kwargs.get('show_sorting', True),
-            show_search=kwargs.get('show_search', True),
-            items_per_page=kwargs.get('items_per_page', metadata.list_per_page),
-            default_view=kwargs.get('default_view', 'card'),
-            available_filters=metadata.list_filters,
-            active_filters={k: v for k, v in request_params.items() if v and k.endswith('_filter')},
-            available_sorts=[field for field, meta in metadata.fields.items() 
-                           if meta.sortable],
-            active_sort={'field': request_params['sort_by'], 'direction': request_params['sort_direction']} 
-                       if request_params['sort_by'] else None,
-            available_groups=[field for field, meta in metadata.fields.items() 
-                            if meta.filterable and field != 'id'],
-            active_group=request_params['group_by'] if request_params['group_by'] else None
-        )
-    
+
+        return {
+            'show_filters': kwargs.get('show_filters', True),
+            'show_grouping': kwargs.get('show_grouping', True),
+            'show_sorting': kwargs.get('show_sorting', True),
+            'show_search': kwargs.get('show_search', True),
+            'items_per_page': kwargs.get('items_per_page', metadata.list_per_page),
+            'default_view': kwargs.get('default_view', 'card'),
+            'available_filters': metadata.list_filters,
+            'active_filters': {k: v for k, v in request_params.items() if v and k.endswith('_filter')},
+            'available_sorts': [field for field, meta in metadata.fields.items()
+                               if meta.sortable],
+            'active_sort': {'field': request_params['sort_by'], 'direction': request_params['sort_direction']}
+                           if request_params['sort_by'] else None,
+            'available_groups': [field for field, meta in metadata.fields.items()
+                                if meta.filterable and field != 'id'],
+            'active_group': request_params['group_by'] if request_params['group_by'] else None
+        }
+
     @staticmethod
-    def _build_dropdown_configs(entity_name: str, request_params: Dict) -> Dict[str, DropdownConfig]:
-        """Build dropdown configurations using existing generator - transitional"""
-        # Use existing dropdown generator during transition
-        try:
-            from app.forms.base.builders import DropdownConfigGenerator
-            
-            dropdown_data = DropdownConfigGenerator.generate_entity_dropdown_configs(
-                entity_name=entity_name,
-                group_by=request_params['group_by'],
-                sort_by=request_params['sort_by'],
-                sort_direction=request_params['sort_direction'],
-                primary_filter=request_params['primary_filter']
-            )
-            
-            # Convert to DropdownConfig objects
-            dropdown_configs = {}
-            for key, data in dropdown_data.items():
-                if isinstance(data, dict) and 'options' in data:
-                    dropdown_configs[key] = DropdownConfig(
-                        options=data['options'],
-                        selected_values=data.get('selected_values', []),
-                        placeholder=data.get('placeholder', 'Select...'),
-                        multiple=data.get('multiple', False),
-                        searchable=data.get('searchable', False)
-                    )
-            
-            return dropdown_configs
-            
-        except ImportError:
-            # Fallback if dropdown generator not available
+    def _build_dropdown_configs(entity_name: str, request_params: Dict) -> Dict[str, Dict[str, Any]]:
+        """Build dropdown configurations using ModelIntrospector"""
+        from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
+
+        model_class = get_model_by_name(entity_name)
+        if not model_class:
             return {}
+
+        dropdown_configs = {}
+
+        # Build group_by dropdown
+        groupable_fields = ModelIntrospector.get_groupable_fields(model_class)
+        if groupable_fields:
+            options = [{'value': field, 'label': label} for field, label in groupable_fields]
+            dropdown_configs['group_by'] = {
+                'options': options,
+                'selected_values': [request_params.get('group_by', '')] if request_params.get('group_by') else [],
+                'placeholder': 'Group by...'
+            }
+
+        # Build sort_by dropdown
+        sortable_fields = ModelIntrospector.get_sortable_fields(model_class)
+        if sortable_fields:
+            options = [{'value': field, 'label': label} for field, label in sortable_fields]
+            dropdown_configs['sort_by'] = {
+                'options': options,
+                'selected_values': [request_params.get('sort_by', '')] if request_params.get('sort_by') else [],
+                'placeholder': 'Sort by...'
+            }
+
+        # Build sort_direction dropdown
+        dropdown_configs['sort_direction'] = {
+            'options': [
+                {'value': 'asc', 'label': 'Ascending'},
+                {'value': 'desc', 'label': 'Descending'}
+            ],
+            'selected_values': [request_params.get('sort_direction', 'asc')],
+            'placeholder': 'Order'
+        }
+
+        return dropdown_configs
     
     @staticmethod
     def _build_relationship_labels() -> Dict[str, Dict[str, str]]:

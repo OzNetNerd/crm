@@ -1,30 +1,77 @@
 """
 Opportunity Forms
 
-Dynamic opportunity form creation using DRY patterns.
+Simple opportunity form using WTForms with model introspection.
 """
 
+from wtforms import StringField, IntegerField, SelectField, DateField
+from wtforms.validators import DataRequired, Optional, NumberRange, Length
 from ..base.base_forms import BaseForm
-from ..base.builders import DynamicFormBuilder
+from app.utils.core.model_introspection import ModelIntrospector
 
 
-# Lazy form creation with caching
-_opportunity_form_cache = None
+class OpportunityForm(BaseForm):
+    """Form for creating and editing opportunities"""
 
-def _get_opportunity_form():
-    """Lazy opportunity form creation with caching"""
-    global _opportunity_form_cache
-    if _opportunity_form_cache is None:
-        # Dynamic import to avoid circular imports
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set choices from model metadata
         from app.models.opportunity import Opportunity
-        _opportunity_form_cache = DynamicFormBuilder.build_dynamic_form(Opportunity, BaseForm)
-    return _opportunity_form_cache
 
-def __getattr__(name):
-    """Lazy form creation for backward compatibility"""
-    if name == 'OpportunityForm':
-        return _get_opportunity_form()
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+        priority_choices = ModelIntrospector.get_field_choices(Opportunity, 'priority')
+        self.priority.choices = [('', 'Select priority')] + priority_choices
 
-# Export for direct access
-OpportunityForm = None  # Will be set via __getattr__ when accessed
+        stage_choices = ModelIntrospector.get_field_choices(Opportunity, 'stage')
+        self.stage.choices = [('', 'Select stage')] + stage_choices
+
+        # Set company choices
+        from app.models.company import Company
+        companies = Company.query.order_by(Company.name).all()
+        self.company_id.choices = [('', 'Select company')] + [
+            (str(company.id), company.name) for company in companies
+        ]
+
+    name = StringField(
+        'Opportunity Name',
+        validators=[DataRequired(), Length(max=255)],
+        render_kw={'placeholder': 'Enter opportunity name...'}
+    )
+
+    value = IntegerField(
+        'Deal Value',
+        validators=[Optional(), NumberRange(min=0)],
+        render_kw={'placeholder': 'Enter deal value...', 'min': 0}
+    )
+
+    probability = IntegerField(
+        'Win Probability (%)',
+        validators=[Optional(), NumberRange(min=0, max=100)],
+        render_kw={'placeholder': '0-100', 'min': 0, 'max': 100},
+        default=0
+    )
+
+    priority = SelectField(
+        'Priority',
+        validators=[Optional()],
+        choices=[]  # Will be populated in __init__
+    )
+
+    expected_close_date = DateField(
+        'Expected Close Date',
+        validators=[Optional()],
+        render_kw={'placeholder': 'Select date...'}
+    )
+
+    stage = SelectField(
+        'Pipeline Stage',
+        validators=[Optional()],
+        choices=[],  # Will be populated in __init__
+        default='prospect'
+    )
+
+    company_id = SelectField(
+        'Company',
+        validators=[DataRequired()],
+        choices=[],  # Will be populated in __init__
+        coerce=int
+    )

@@ -7,7 +7,6 @@ All form-related code has been consolidated here for better maintainability.
 
 # Base form components
 from .base.base_forms import BaseForm, FieldFactory, FormConstants
-from .base.builders import DynamicFormBuilder, FormConfigManager, DynamicChoiceProvider
 
 # Task forms
 from .tasks.task_forms import TaskForm, QuickTaskForm, ChildTaskForm, MultiTaskForm
@@ -31,11 +30,10 @@ def __getattr__(name):
 __all__ = [
     # Base components
     'BaseForm', 'FieldFactory', 'FormConstants',
-    'DynamicFormBuilder', 'FormConfigManager', 'DynamicChoiceProvider',
-    
-    # Task forms  
+
+    # Task forms
     'TaskForm', 'QuickTaskForm', 'ChildTaskForm', 'MultiTaskForm',
-    
+
     # Entity forms
     'CompanyForm', 'StakeholderForm', 'OpportunityForm', 'NoteForm',
 ]

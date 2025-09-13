@@ -1,30 +1,60 @@
 """
 Company Forms
 
-Dynamic company form creation using DRY patterns.
+Simple company form using WTForms with model introspection.
 """
 
+from wtforms import StringField, TextAreaField, SelectField
+from wtforms.validators import DataRequired, Optional, URL, Length
 from ..base.base_forms import BaseForm
-from ..base.builders import DynamicFormBuilder
+from app.utils.core.model_introspection import ModelIntrospector
 
 
-# Lazy form creation with caching
-_company_form_cache = None
+class CompanyForm(BaseForm):
+    """Form for creating and editing companies"""
 
-def _get_company_form():
-    """Lazy company form creation with caching"""
-    global _company_form_cache
-    if _company_form_cache is None:
-        # Dynamic import to avoid circular imports
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set industry choices from model metadata
         from app.models.company import Company
-        _company_form_cache = DynamicFormBuilder.build_dynamic_form(Company, BaseForm)
-    return _company_form_cache
+        industry_choices = ModelIntrospector.get_field_choices(Company, 'industry')
+        self.industry.choices = [('', 'Select industry')] + industry_choices
 
-def __getattr__(name):
-    """Lazy form creation for backward compatibility"""
-    if name == 'CompanyForm':
-        return _get_company_form()
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+        size_choices = ModelIntrospector.get_field_choices(Company, 'size')
+        self.size.choices = [('', 'Select size')] + size_choices
 
-# Export for direct access
-CompanyForm = None  # Will be set via __getattr__ when accessed
+    name = StringField(
+        'Company Name',
+        validators=[DataRequired(), Length(max=255)],
+        render_kw={'placeholder': 'Enter company name...'}
+    )
+
+    industry = SelectField(
+        'Industry',
+        validators=[Optional()],
+        choices=[]  # Will be populated in __init__
+    )
+
+    website = StringField(
+        'Website',
+        validators=[Optional(), URL()],
+        render_kw={'placeholder': 'https://...'}
+    )
+
+    size = SelectField(
+        'Company Size',
+        validators=[Optional()],
+        choices=[]  # Will be populated in __init__
+    )
+
+    phone = StringField(
+        'Phone',
+        validators=[Optional(), Length(max=50)],
+        render_kw={'placeholder': 'Enter phone number...'}
+    )
+
+    address = TextAreaField(
+        'Address',
+        validators=[Optional()],
+        render_kw={'rows': 2, 'placeholder': 'Enter company address...'}
+    )
