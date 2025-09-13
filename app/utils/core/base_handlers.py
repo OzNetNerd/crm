@@ -358,8 +358,16 @@ class EntityFilterManager:
         grouper = EntityGrouper(self.model_class, self.entity_name)
         grouped_entities = grouper.group_by_field(filtered_entities, group_by, custom_grouper)
         
+        # Get proper plural from model metadata instead of string manipulation
+        from app.utils.model_registry import ModelRegistry
+        try:
+            metadata = ModelRegistry.get_model_metadata(self.model_class.__name__.lower())
+            entity_plural = metadata.display_name_plural.lower().replace(' ', '_')
+        except:
+            entity_plural = f"{self.entity_name}s"  # Fallback only if metadata fails
+
         return {
-            f"grouped_{self.entity_name}s": grouped_entities,
+            f"grouped_{entity_plural}": grouped_entities,
             "grouped_entities": grouped_entities,  # Universal key
             "group_by": group_by,
             "total_count": len(filtered_entities),
@@ -411,8 +419,8 @@ class EntityFilterManager:
         context = self.get_filtered_context(custom_filters, custom_sorting, custom_grouper, joins)
         
         # Add universal template configuration
-        # Use model config for plural names
-        entity_plural = self.model_class.__entity_config__.get('display_name', f'{self.entity_name}s')
+        # Use model config for plural names - NO string manipulation
+        entity_plural = self.model_class.__entity_config__.get('display_name', self.entity_name)
         
         context.update({
             'entity_type': self.entity_name,
@@ -502,7 +510,7 @@ class EntityGrouper:
         # Fallback: return all entities in one group
         return [{
             "key": "all",
-            "label": f"All {self.model_class.__entity_config__.get('display_name', f'{self.entity_name}s').title()}",
+            "label": f"All {self.model_class.__entity_config__.get('display_name', self.entity_name).title()}",
             "entities": entities,
             "count": len(entities)
         }]

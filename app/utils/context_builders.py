@@ -141,9 +141,17 @@ class UniversalContextBuilder:
             # Configuration objects for complex, extensible data
             'entity_config': entity_config.to_dict(),
             'ui_config': ui_config.to_dict(),
-            'dropdown_configs': {name: config.to_dict() 
+            'dropdown_configs': {name: config.to_dict()
                                for name, config in dropdown_configs.items()},
-            
+
+            # Individual entity variables for template compatibility
+            'entity_name': entity_config.entity_name,
+            'entity_name_singular': entity_config.entity_name_singular,
+            'entity_description': entity_config.entity_description,
+            'entity_type': entity_config.entity_type,
+            'entity_endpoint': entity_config.entity_endpoint,
+            'entity_buttons': entity_config.entity_buttons,
+
             # Individual variables for simple, stable data
             'current_page': request.args.get('page', 1, type=int),
             'total_items': len(entities_data),

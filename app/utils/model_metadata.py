@@ -103,23 +103,26 @@ class ModelMetadata:
     permissions: Dict[str, List[str]] = field(default_factory=dict)
     
     def __post_init__(self):
-        # Extract from entity config first if available
+        # Extract from entity config first if available - USE THE PROVIDED VALUES
         if hasattr(self.model_class, '__entity_config__'):
             config = self.model_class.__entity_config__
             if self.display_name is None:
                 self.display_name = config.get('display_name_singular', self.model_class.__name__)
             if self.display_name_plural is None:
-                self.display_name_plural = config.get('display_name', f"{self.display_name}s")
+                self.display_name_plural = config.get('display_name', self.display_name + 's')
             if self.api_endpoint is None:
-                self.api_endpoint = config.get('endpoint_name')
+                self.api_endpoint = config.get('endpoint_name', self.display_name.lower() + 's')
         else:
             # Fallback to defaults
             if self.display_name is None:
                 self.display_name = self.model_class.__name__
             if self.display_name_plural is None:
-                self.display_name_plural = f"{self.display_name}s"
+                self.display_name_plural = self.display_name + 's'
             if self.api_endpoint is None:
-                self.api_endpoint = self.model_class.__tablename__
+                if hasattr(self.model_class, '__tablename__'):
+                    self.api_endpoint = self.model_class.__tablename__
+                else:
+                    self.api_endpoint = self.display_name.lower() + 's'
             
         # Auto-discover fields if not provided
         if not self.fields:
