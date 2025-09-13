@@ -162,7 +162,7 @@ class UniversalEntityManager:
 
     def apply_custom_grouping(self, entities: List[Any], group_by: str) -> Optional[List[Dict[str, Any]]]:
         """
-        Apply entity-specific grouping to entities.
+        Apply entity-specific grouping to entities with intelligent value handling.
 
         Args:
             entities: List of entity objects
@@ -181,6 +181,7 @@ class UniversalEntityManager:
 
         # Group entities by field value
         grouped = defaultdict(list)
+
         for entity in entities:
             field_value = getattr(entity, field_name, None)
 
@@ -191,7 +192,12 @@ class UniversalEntityManager:
                     obj = getattr(obj, attr, None) if obj else None
                 field_value = obj
 
-            group_key = field_value or default_value
+            # Handle value-based groupings (e.g., deal value ranges)
+            if 'value_ranges' in group_config and field_value is not None:
+                group_key = self._get_value_range_group(field_value, group_config['value_ranges'])
+            else:
+                group_key = field_value or default_value
+
             grouped[group_key].append(entity)
 
         # Build result in specified order
@@ -218,6 +224,22 @@ class UniversalEntityManager:
                     })
 
         return result
+
+    def _get_value_range_group(self, value: float, value_ranges: List[tuple]) -> str:
+        """
+        Determine which value range group a numeric value belongs to.
+
+        Args:
+            value: Numeric value to categorize
+            value_ranges: List of (min_value, group_key, label) tuples
+
+        Returns:
+            Group key for the value
+        """
+        for min_value, group_key, label in value_ranges:
+            if value >= min_value:
+                return group_key
+        return 'Other'
 
     def _format_group_label(self, key: str, group_config: Dict[str, Any]) -> str:
         """
@@ -278,15 +300,26 @@ class MetadataDrivenHandler(EntityHandler):
         return self._filter_mapping
 
     def get_group_mapping(self) -> Dict[str, Dict[str, Any]]:
-        """Extract groupable fields from model metadata."""
+        """Extract groupable fields from model metadata with intelligent detection."""
         if self._group_mapping is None:
             self._group_mapping = {}
 
             for column in self.model_class.__table__.columns:
                 info = column.info or {}
 
-                # Check if field is marked as groupable
-                if info.get('groupable', False):
+                # Intelligent groupable detection:
+                # 1. Explicitly marked as groupable
+                # 2. Has choices (categorical data is inherently groupable)
+                # 3. Has date_groupings (date fields with grouping config)
+                # 4. Specific field names that are commonly groupable
+                is_groupable = (
+                    info.get('groupable', False) or
+                    'choices' in info or
+                    'date_groupings' in info or
+                    column.name in ['stage', 'status', 'priority', 'industry', 'job_title', 'size_category']
+                )
+
+                if is_groupable:
                     group_config = {
                         'field': column.name,
                         'default_value': 'Other'
@@ -301,14 +334,22 @@ class MetadataDrivenHandler(EntityHandler):
                     if 'date_groupings' in info:
                         group_config.update(info['date_groupings'])
 
+                    # Handle value-based groupings (e.g., deal value ranges)
+                    if 'priority_ranges' in info:
+                        ranges = info['priority_ranges']
+                        group_config['value_ranges'] = ranges
+                        group_config['order'] = [range_info[1] for range_info in ranges] + ['Other']
+
                     self._group_mapping[column.name] = group_config
 
-            # Add relationship-based grouping
-            if hasattr(self.model_class, 'company'):
-                self._group_mapping['company'] = {
-                    'field': 'company.name',
-                    'default_value': 'No Company'
-                }
+            # Add intelligent relationship-based grouping
+            # Look for foreign key relationships
+            for relationship_name in ['company', 'stakeholder', 'user', 'opportunity']:
+                if hasattr(self.model_class, relationship_name):
+                    self._group_mapping[relationship_name] = {
+                        'field': f'{relationship_name}.name',
+                        'default_value': f'No {relationship_name.title()}'
+                    }
 
         return self._group_mapping
 
