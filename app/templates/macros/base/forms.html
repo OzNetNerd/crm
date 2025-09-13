@@ -114,10 +114,10 @@
   {{ bulk_selection_checkbox(contact.id, 'selectedStakeholders') }}
 #}
 {% macro bulk_selection_checkbox(item_id, model='selected_items', additional_classes='') %}
-<input type="checkbox" 
-       name="{{ model }}" 
+<input type="checkbox"
+       name="{{ model }}"
        value="{{ item_id }}"
-       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded {{ additional_classes }}"
+       class="form-checkbox {{ additional_classes }}"
        onclick="event.stopPropagation()">
 {% endmacro %}
 
@@ -139,7 +139,7 @@
            :checked="{{ model }}.length === {{ total_items }} && {{ total_items }} > 0"
            :indeterminate="{{ model }}.length > 0 && {{ model }}.length < {{ total_items }}"
            @change="{{ model }} = $event.target.checked ? allItemIds : []"
-           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+           class="form-checkbox">
     <span class="text-sm text-gray-700">{{ label }}</span>
 </label>
 {% endmacro %}
@@ -160,9 +160,9 @@
     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
         {{ icon('magnifying-glass', 'md', 'text-gray-400') }}
     </div>
-    <input type="text" 
+    <input type="text"
            x-model="{{ model }}"
-           class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm {{ additional_classes }}"
+           class="form-input pl-10 pr-3 {{ additional_classes }}"
            placeholder="{{ placeholder }}">
     <div x-show="{{ model }}.length > 0" class="absolute inset-y-0 right-0 pr-3 flex items-center">
         <button @click="{{ model }} = ''" class="text-gray-400 hover:text-gray-600">
@@ -184,36 +184,36 @@
         </label>
         
         <!-- Field Rendering based on field type -->
-        {% set error_class = " border-red-300" if field.errors else "" %}
-        {% set base_class = "block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %}
+        {% set error_class = " error" if field.errors else "" %}
+        {% set base_class = "form-field-base" %}
         
         {% if field.widget.__class__.__name__ == 'Select' %}
-            {{ field(class=base_class + error_class) }}
+            {{ field(class="form-select" + error_class) }}
             
         {% elif field.widget.__class__.__name__ == 'TextArea' %}
-            {{ field(class=base_class + error_class, rows=field.render_kw.get('rows', 3) if field.render_kw else 3) }}
+            {{ field(class="form-textarea" + error_class, rows=field.render_kw.get('rows', 3) if field.render_kw else 3) }}
             
         {% elif field.widget.__class__.__name__ == 'CheckboxInput' %}
             <div class="flex items-center">
-                {{ field(class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded") }}
+                {{ field(class="form-checkbox") }}
                 <span class="ml-2 text-sm text-gray-700">{{ field.description or field.label.text }}</span>
             </div>
             
         {% elif field.widget.__class__.__name__ == 'DateInput' %}
-            {{ field(class=base_class + error_class) }}
+            {{ field(class="form-input" + error_class) }}
             
         {% elif field.widget.__class__.__name__ == 'NumberInput' %}
-            {{ field(class=base_class + error_class) }}
+            {{ field(class="form-input" + error_class) }}
             
         {% elif field.widget.__class__.__name__ == 'SelectMultipleField' %}
             <div class="border border-gray-300 rounded-md p-2 max-h-32 overflow-y-auto">
                 {% for choice in field.choices %}
                 <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                    <input type="checkbox" 
-                           name="{{ field.name }}" 
+                    <input type="checkbox"
+                           name="{{ field.name }}"
                            value="{{ choice[0] }}"
                            {% if choice[0] in (field.data or []) %}checked{% endif %}
-                           class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                           class="form-checkbox">
                     <span class="text-sm">{{ choice[1] }}</span>
                 </label>
                 {% endfor %}
@@ -230,7 +230,7 @@
                 {% set input_type = "url" %}
             {% endif %}
             
-            {{ field(class=base_class + error_class, type=input_type) }}
+            {{ field(class="form-input" + error_class, type=input_type) }}
         {% endif %}
         
         <!-- Field Errors -->
@@ -323,11 +323,11 @@
       class="notes-form mt-4">
     
     <div class="button-container">
-        <input type="text" 
-               name="content" 
+        <input type="text"
+               name="content"
                placeholder="{{ placeholder }}"
                required
-               class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+               class="form-input flex-1">
         
         <input type="hidden" name="is_internal" value="true">
         

@@ -80,10 +80,11 @@
                     <template x-for="field in fields" :key="field.name || field.type">
 
                         <!-- Text Input Fields -->
-                        <div x-show="isTextField(field)" class="space-y-2">
+                        <div x-show="isTextField(field)" class="form-field">
                             <label :for="field.name"
-                                   x-text="field.label + (field.required ? ' *' : '')"
-                                   class="block text-sm font-medium text-gray-700"></label>
+                                   x-text="field.label"
+                                   :class="{'form-label-required': field.required}"
+                                   class="form-label"></label>
                             <input :type="field.type"
                                    :id="field.name"
                                    :name="field.name"
@@ -91,39 +92,41 @@
                                    :required="field.required"
                                    x-model="formData[field.name]"
                                    @blur="validateField(field.name)"
-                                   :class="{'border-red-500': errors[field.name]}"
-                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                   :class="{'error': errors[field.name]}"
+                                   class="form-input">
                             <p x-show="errors[field.name]"
                                x-text="errors[field.name]"
-                               class="text-sm text-red-600"></p>
+                               class="form-error"></p>
                         </div>
 
                         <!-- Select Fields -->
-                        <div x-show="isSelectField(field)" class="space-y-2">
+                        <div x-show="isSelectField(field)" class="form-field">
                             <label :for="field.name"
-                                   x-text="field.label + (field.required ? ' *' : '')"
-                                   class="block text-sm font-medium text-gray-700"></label>
+                                   x-text="field.label"
+                                   :class="{'form-label-required': field.required}"
+                                   class="form-label"></label>
                             <select :id="field.name"
                                     :name="field.name"
                                     :required="field.required"
                                     x-model="formData[field.name]"
                                     @change="validateField(field.name)"
-                                    :class="{'border-red-500': errors[field.name]}"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    :class="{'error': errors[field.name]}"
+                                    class="form-select">
                                 <template x-for="option in field.options" :key="option.value">
                                     <option :value="option.value" x-text="option.label"></option>
                                 </template>
                             </select>
                             <p x-show="errors[field.name]"
                                x-text="errors[field.name]"
-                               class="text-sm text-red-600"></p>
+                               class="form-error"></p>
                         </div>
 
                         <!-- Textarea Fields -->
-                        <div x-show="isTextareaField(field)" class="space-y-2">
+                        <div x-show="isTextareaField(field)" class="form-field">
                             <label :for="field.name"
-                                   x-text="field.label + (field.required ? ' *' : '')"
-                                   class="block text-sm font-medium text-gray-700"></label>
+                                   x-text="field.label"
+                                   :class="{'form-label-required': field.required}"
+                                   class="form-label"></label>
                             <textarea :id="field.name"
                                       :name="field.name"
                                       :placeholder="field.placeholder"
@@ -131,21 +134,22 @@
                                       x-model="formData[field.name]"
                                       @blur="validateField(field.name)"
                                       :rows="field.rows || 3"
-                                      :class="{'border-red-500': errors[field.name]}"
-                                      class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                                      :class="{'error': errors[field.name]}"
+                                      class="form-textarea"></textarea>
                             <p x-show="errors[field.name]"
                                x-text="errors[field.name]"
-                               class="text-sm text-red-600"></p>
+                               class="form-error"></p>
                         </div>
 
                         <!-- Grid Layout Fields -->
                         <div x-show="isGridField(field)" class="space-y-4">
                             <div :class="`grid grid-cols-${field.columns || 2} gap-4`">
                                 <template x-for="subField in field.fields" :key="subField.name">
-                                    <div class="space-y-2">
+                                    <div class="form-field">
                                         <label :for="subField.name"
-                                               x-text="subField.label + (subField.required ? ' *' : '')"
-                                               class="block text-sm font-medium text-gray-700"></label>
+                                               x-text="subField.label"
+                                               :class="{'form-label-required': subField.required}"
+                                               class="form-label"></label>
 
                                         <!-- Sub-field input (simplified - could be extended) -->
                                         <input :type="subField.type"
@@ -155,12 +159,12 @@
                                                :required="subField.required"
                                                x-model="formData[subField.name]"
                                                @blur="validateField(subField.name)"
-                                               :class="{'border-red-500': errors[subField.name]}"
-                                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                               :class="{'error': errors[subField.name]}"
+                                               class="form-input">
 
                                         <p x-show="errors[subField.name]"
                                            x-text="errors[subField.name]"
-                                           class="text-sm text-red-600"></p>
+                                           class="form-error"></p>
                                     </div>
                                 </template>
                             </div>
