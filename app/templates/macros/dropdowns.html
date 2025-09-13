@@ -176,3 +176,112 @@
     {% endif %}
 </div>
 {% endmacro %}
+
+{#
+  Simple Form Select → Styled Dropdown Converter
+
+  Converts standard HTML select elements to styled dropdowns that match existing design.
+  Maximizes DRY by reusing existing dropdown CSS classes and Alpine.js patterns.
+
+  Parameters:
+  - name (required): Form field name
+  - options (required): List of {'value': 'val', 'label': 'Label'} dicts OR simple string list
+  - current_value (optional): Currently selected value
+  - placeholder (optional): Placeholder text when nothing selected
+  - required (optional): Whether field is required
+  - additional_classes (optional): Extra CSS classes for container
+
+  Usage Examples:
+  1. Industry dropdown:
+     {{ form_select_dropdown('industry', [
+         {'value': '', 'label': 'Select industry'},
+         {'value': 'technology', 'label': 'Technology'},
+         {'value': 'healthcare', 'label': 'Healthcare'}
+     ]) }}
+
+  2. Simple string list:
+     {{ form_select_dropdown('status', ['active', 'inactive'], current_value='active') }}
+#}
+{% macro form_select_dropdown(
+    name,
+    options,
+    current_value='',
+    placeholder='Select option',
+    required=false,
+    additional_classes=''
+) %}
+
+{# Generate unique ID for this dropdown #}
+{% set dropdown_id = 'dropdown-' + name + '-' + range(1000, 9999)|random|string %}
+
+<div class="relative {{ additional_classes }}"
+     x-data="{
+         open: false,
+         selectedValue: '{{ current_value }}',
+         close() { this.open = false; },
+         toggle() { this.open = !this.open; },
+         selectOption(value) {
+             this.selectedValue = value;
+             this.close();
+             this.$nextTick(() => this.$refs.hiddenInput.dispatchEvent(new Event('change')));
+         },
+         getDisplayText() {
+             {% for option in options %}
+                 {%- if option is mapping -%}
+                     {%- set opt_val = option.value -%}
+                     {%- set opt_label = option.label -%}
+                 {%- else -%}
+                     {%- set opt_val = option -%}
+                     {%- set opt_label = option|string|title -%}
+                 {%- endif -%}
+                 if (this.selectedValue === '{{ opt_val }}') return '{{ opt_label }}';
+             {% endfor %}
+             return '{{ placeholder }}';
+         }
+     }"
+     @click.away="close()"
+     @keydown.escape="close()">
+
+    <button type="button" @click="toggle()"
+            class="dropdown-button">
+        <span class="truncate dropdown-button-text" x-text="getDisplayText()"></span>
+        <svg class="dropdown-chevron" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+
+    <div x-show="open"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="dropdown-menu"
+         x-cloak>
+
+        {% for option in options %}
+            {%- if option is mapping -%}
+                {%- set option_value = option.value -%}
+                {%- set option_label = option.label -%}
+            {%- else -%}
+                {%- set option_value = option -%}
+                {%- set option_label = option|string|title -%}
+            {%- endif -%}
+
+            <button type="button" @click="selectOption('{{ option_value }}')"
+                    class="dropdown-option"
+                    :class="selectedValue === '{{ option_value }}' ? 'bg-blue-50 text-blue-700' : ''">
+                {{ option_label }}
+            </button>
+        {% endfor %}
+    </div>
+
+    {# Hidden input for form submission #}
+    <input type="hidden"
+           name="{{ name }}"
+           :value="selectedValue"
+           x-ref="hiddenInput"
+           {% if required %}required{% endif %}>
+</div>
+{% endmacro %}
