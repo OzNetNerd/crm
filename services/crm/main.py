@@ -43,8 +43,6 @@ from app.utils.ui.template_globals import (
     get_entity_config,
     get_entity_labels,
     get_empty_state_config,
-    get_dashboard_action_buttons,
-    generate_entity_buttons,
 )
 from app.utils.cards.config_builder import CardConfigBuilder
 from app.utils.logging.config import setup_structured_logging
@@ -114,8 +112,7 @@ def create_app():
     # app.jinja_env.globals["get_all_modal_configs"] = get_all_modal_configs  # Removed
     # app.jinja_env.globals["get_all_detail_modal_configs"] = get_all_detail_modal_configs  # Removed
     # Button generation functions - DRY approach
-    app.jinja_env.globals["get_dashboard_action_buttons"] = get_dashboard_action_buttons
-    app.jinja_env.globals["generate_entity_buttons"] = generate_entity_buttons
+    # Button generator functions removed - using simple entity names in templates
     app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
     app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
     
