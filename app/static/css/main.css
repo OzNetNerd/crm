@@ -27,27 +27,6 @@
 @import url('variables.css');
 
 /* ========================================
- * BASE LAYER  
- * Reset, normalize, and base HTML element styles
- * ======================================== */
-
-@import url('base.css');
-
-/* ========================================
- * LAYOUT LAYER
- * Grid, flexbox, positioning, and spacing utilities
- * ======================================== */
-
-@import url('layout.css');
-
-/* ========================================
- * COMPONENTS LAYER
- * Reusable UI components and patterns
- * ======================================== */
-
-@import url('components.css');
-
-/* ========================================
  * ENTITIES LAYER
  * Entity-specific styling with dynamic class support
  * ======================================== */
@@ -55,20 +34,38 @@
 @import url('entities.css');
 
 /* ========================================
- * UTILITIES LAYER
- * Helper classes and final overrides
+ * LEGACY COMPATIBILITY
+ * Keep chatbot styles during transition
  * ======================================== */
 
-@import url('utilities.css');
+@import url('chatbot.css');
 
 /* ========================================
- * LEGACY COMPATIBILITY
- * Temporary imports during migration
+ * APPLICATION-SPECIFIC STYLES
+ * Essential styles that aren't provided by Tailwind
  * ======================================== */
 
-/* Keep existing modal and chatbot styles during transition */
-@import url('modals.css');
-@import url('chatbot.css');
+/* Hide all loading animations and indicators */
+.htmx-indicator,
+.modal-loading,
+.modal-spinner,
+[id*="loading-indicator"],
+[class*="loading"],
+[class*="spinner"],
+.loading-spinner,
+.animate-spin {
+    display: none !important;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+    display: none !important;
+}
+
+/* Alpine.js cloak utility */
+[x-cloak] {
+    display: none !important;
+}
 
 /* ========================================
  * ADR-011 COMPLIANCE VERIFICATION
