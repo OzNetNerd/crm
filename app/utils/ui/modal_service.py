@@ -12,6 +12,9 @@ from app.models import db
 from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
 from app.forms.modals.company import CompanyModalForm
 from app.forms.modals.task import TaskModalForm
+from app.forms.modals.stakeholder import StakeholderModalForm
+from app.forms.modals.opportunity import OpportunityModalForm
+from app.forms.modals.user import UserModalForm
 from app.forms.base.base_forms import BaseForm
 # No icon functions needed - templates handle CSS class generation
 
@@ -36,6 +39,9 @@ class ModalService:
         form_classes = {
             'Company': CompanyModalForm,
             'Task': TaskModalForm,
+            'Stakeholder': StakeholderModalForm,
+            'Opportunity': OpportunityModalForm,
+            'User': UserModalForm,
         }
         return form_classes.get(model_name)
 
