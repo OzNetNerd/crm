@@ -1,0 +1,60 @@
+{#
+  HTMX Search Results Component
+
+  Displays search results in a dropdown format
+  Used by the global search functionality
+
+  Variables:
+  - results: List of search result objects with id, type, title, subtitle, url
+  - query: The search query string
+#}
+
+{% if results %}
+<div class="py-2">
+    {% if query %}
+    <div class="px-3 py-2 text-xs text-gray-500 border-b">
+        {{ results|length }} result{% if results|length != 1 %}s{% endif %} for "{{ query }}"
+    </div>
+    {% endif %}
+
+    {% for result in results %}
+    <a href="{{ result.url }}"
+       class="block px-3 py-2 hover:bg-gray-50 border-b last:border-b-0"
+       data-search-result="{{ result.type }}">
+        <div class="flex items-start space-x-2">
+            <!-- Type icon -->
+            <span class="mt-0.5 text-sm">
+                {% if result.type == 'company' %}🏢
+                {% elif result.type == 'contact' %}👤
+                {% elif result.type == 'opportunity' %}💼
+                {% elif result.type == 'task' %}✅
+                {% else %}📄{% endif %}
+            </span>
+
+            <!-- Content -->
+            <div class="min-w-0 flex-1">
+                <div class="text-sm font-medium text-gray-900 truncate">
+                    {{ result.title }}
+                </div>
+                {% if result.subtitle %}
+                <div class="text-xs text-gray-500 truncate">
+                    {{ result.subtitle }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Type label -->
+            <span class="text-xs text-gray-400 capitalize shrink-0">
+                {{ result.type }}
+            </span>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+    {% if query %}
+    <div class="px-3 py-4 text-sm text-gray-500 text-center">
+        No results found for "{{ query }}"
+    </div>
+    {% endif %}
+{% endif %}
