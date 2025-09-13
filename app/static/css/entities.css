@@ -1,311 +1,303 @@
 /**
  * Entity-Specific Styles
  * ADR-011: Simple CSS Architecture - Entities Layer
- * 
- * Entity-specific styling with dynamic class patterns.
- * Classes follow pattern: {entity}-{component}-{state}
- * Supports dynamic class generation via Python context.
+ *
+ * Clean entity classes for dynamic template usage.
+ * Pattern: class="card-{{entity_name}}" renders as "card-company"
+ * CDN-compatible using CSS variables + Tailwind utilities.
  */
 
 /* ========================================
- * COMPANY STYLES
- * Dynamic classes: company-card, company-active, etc.
+ * DRY CARD PATTERN
+ * Usage: <div class="card-{{entity_name}}">
  * ======================================== */
 
-.company-card {
+/* Base card pattern - applies to all card-* classes */
+[class^="card-"] {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-gray-200);
+    transition: all 0.2s ease-in-out;
+}
+
+[class^="card-"]:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Entity-specific colors only */
+.card-company {
     background-color: var(--company-bg-color);
     border-left: 4px solid var(--company-primary-color);
 }
 
-.company-active {
-    border-left: 4px solid var(--success-color);
-}
-
-.company-inactive {
-    opacity: 0.6;
-    filter: grayscale(0.3);
-}
-
-.btn-company-primary {
-    background-color: var(--company-primary-color);
-    color: white;
-    border-color: var(--company-primary-color);
-}
-
-.btn-company-primary:hover {
-    background-color: var(--company-hover-color);
-    border-color: var(--company-hover-color);
-}
-
-.company-badge {
-    background-color: var(--company-light-color);
-    color: var(--company-primary-color);
-}
-
-/* ========================================
- * TASK STYLES  
- * Dynamic classes: task-card, task-completed, etc.
- * ======================================== */
-
-.task-card {
+.card-task {
     background-color: var(--task-bg-color);
     border-left: 4px solid var(--task-primary-color);
 }
 
-.task-completed {
-    text-decoration: line-through;
-    opacity: 0.7;
-}
-
-.task-overdue {
-    border-left: 4px solid var(--danger-color);
-    background-color: var(--color-danger-lighter);
-}
-
-.task-high-priority {
-    background-color: var(--color-priority-high);
-    border-left-color: var(--danger-color);
-}
-
-.task-medium-priority {
-    background-color: var(--color-priority-medium);
-    border-left-color: var(--warning-color);
-}
-
-.task-low-priority {
-    background-color: var(--color-priority-low);
-    border-left-color: var(--success-color);
-}
-
-.btn-task-primary {
-    background-color: var(--task-primary-color);
-    color: white;
-    border-color: var(--task-primary-color);
-}
-
-.btn-task-primary:hover {
-    background-color: var(--task-hover-color);
-    border-color: var(--task-hover-color);
-}
-
-.task-badge {
-    background-color: var(--task-light-color);
-    color: var(--task-primary-color);
-}
-
-/* ========================================
- * OPPORTUNITY STYLES
- * Dynamic classes: opportunity-card, opportunity-won, etc.
- * ======================================== */
-
-.opportunity-card {
+.card-opportunity {
     background-color: var(--opportunity-bg-color);
     border-left: 4px solid var(--opportunity-primary-color);
 }
 
-.opportunity-won {
-    border-left: 4px solid var(--success-color);
+.card-stakeholder {
+    background-color: var(--stakeholder-bg-color);
+    border-left: 4px solid var(--stakeholder-primary-color);
+}
+
+.card-team {
+    background-color: var(--teams-bg-color);
+    border-left: 4px solid var(--teams-primary-color);
+}
+
+/* ========================================
+ * DRY BUTTON PATTERN
+ * Usage: <button class="btn-{{entity_name}}">
+ * ======================================== */
+
+/* Base button pattern - applies to all btn-* classes */
+[class^="btn-"] {
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+/* Entity-specific button colors */
+.btn-company {
+    background-color: var(--company-primary-color);
+}
+
+.btn-company:hover {
+    background-color: var(--company-hover-color);
+}
+
+.btn-task {
+    background-color: var(--task-primary-color);
+}
+
+.btn-task:hover {
+    background-color: var(--task-hover-color);
+}
+
+.btn-opportunity {
+    background-color: var(--opportunity-primary-color);
+}
+
+.btn-opportunity:hover {
+    background-color: var(--opportunity-hover-color);
+}
+
+.btn-stakeholder {
+    background-color: var(--stakeholder-primary-color);
+}
+
+.btn-stakeholder:hover {
+    background-color: var(--stakeholder-hover-color);
+}
+
+.btn-team {
+    background-color: var(--teams-primary-color);
+}
+
+.btn-team:hover {
+    background-color: var(--teams-hover-color);
+}
+
+/* ========================================
+ * DRY BADGE PATTERN
+ * Usage: <span class="badge-{{entity_name}}-{{status}}">
+ * ======================================== */
+
+/* Base badge pattern - applies to all badge-* classes */
+[class^="badge-"] {
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+/* Entity badge colors */
+.badge-company {
+    background-color: var(--company-light-color);
+    color: var(--company-primary-color);
+}
+
+.badge-task {
+    background-color: var(--task-light-color);
+    color: var(--task-primary-color);
+}
+
+.badge-opportunity {
+    background-color: var(--opportunity-light-color);
+    color: var(--opportunity-primary-color);
+}
+
+.badge-stakeholder {
+    background-color: var(--stakeholder-light-color);
+    color: var(--stakeholder-primary-color);
+}
+
+.badge-team {
+    background-color: var(--teams-light-color);
+    color: var(--teams-primary-color);
+}
+
+/* Status-specific badge overrides */
+.badge-active,
+[class*="badge-"][class*="-active"] {
+    background-color: var(--color-secondary-lighter);
+    color: var(--color-secondary);
+}
+
+.badge-completed,
+[class*="badge-"][class*="-completed"] {
+    background-color: var(--color-secondary-lighter);
+    color: var(--color-secondary);
+    text-decoration: line-through;
+}
+
+.badge-overdue,
+[class*="badge-"][class*="-overdue"] {
+    background-color: var(--color-danger-lighter);
+    color: var(--color-danger);
+}
+
+/* ========================================
+ * FORM PATTERN
+ * Usage: <form class="form-{{entity_name}}">
+ * ======================================== */
+
+/* Base form pattern */
+[class^="form-"] {
+    background: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-gray-200);
+}
+
+[class^="form-"] .form-group {
+    margin-bottom: 1rem;
+}
+
+[class^="form-"] label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+}
+
+[class^="form-"] input,
+[class^="form-"] textarea,
+[class^="form-"] select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0.375rem;
+    transition: border-color 0.2s;
+}
+
+[class^="form-"] input:focus,
+[class^="form-"] textarea:focus,
+[class^="form-"] select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Entity-specific form accents */
+.form-company input:focus,
+.form-company textarea:focus,
+.form-company select:focus {
+    border-color: var(--company-primary-color);
+    box-shadow: 0 0 0 3px var(--company-light-color);
+}
+
+.form-task input:focus,
+.form-task textarea:focus,
+.form-task select:focus {
+    border-color: var(--task-primary-color);
+    box-shadow: 0 0 0 3px var(--task-light-color);
+}
+
+.form-opportunity input:focus,
+.form-opportunity textarea:focus,
+.form-opportunity select:focus {
+    border-color: var(--opportunity-primary-color);
+    box-shadow: 0 0 0 3px var(--opportunity-light-color);
+}
+
+.form-stakeholder input:focus,
+.form-stakeholder textarea:focus,
+.form-stakeholder select:focus {
+    border-color: var(--stakeholder-primary-color);
+    box-shadow: 0 0 0 3px var(--stakeholder-light-color);
+}
+
+.form-team input:focus,
+.form-team textarea:focus,
+.form-team select:focus {
+    border-color: var(--teams-primary-color);
+    box-shadow: 0 0 0 3px var(--teams-light-color);
+}
+
+/* ========================================
+ * PRIORITY & STATUS UTILITIES
+ * Usage: class="priority-high", class="status-active"
+ * ======================================== */
+
+.priority-high {
+    border-left: 4px solid var(--danger-color) !important;
+    background-color: var(--color-priority-high);
+}
+
+.priority-medium {
+    border-left: 4px solid var(--warning-color) !important;
+    background-color: var(--color-priority-medium);
+}
+
+.priority-low {
+    border-left: 4px solid var(--success-color) !important;
+    background-color: var(--color-priority-low);
+}
+
+.status-active {
+    border-left-color: var(--success-color) !important;
+}
+
+.status-inactive {
+    opacity: 0.6;
+    filter: grayscale(0.3);
+}
+
+.status-completed {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.status-won {
+    border-left-color: var(--success-color) !important;
     background-color: var(--color-secondary-lighter);
 }
 
-.opportunity-lost {
+.status-lost {
     opacity: 0.5;
     text-decoration: line-through;
     filter: grayscale(0.5);
 }
 
-.opportunity-active {
-    border-left: 4px solid var(--opportunity-primary-color);
-}
-
-.btn-opportunity-primary {
-    background-color: var(--opportunity-primary-color);
-    color: white;
-    border-color: var(--opportunity-primary-color);
-}
-
-.btn-opportunity-primary:hover {
-    background-color: var(--opportunity-hover-color);
-    border-color: var(--opportunity-hover-color);
-}
-
-.opportunity-badge {
-    background-color: var(--opportunity-light-color);
-    color: var(--opportunity-primary-color);
-}
-
-/* ========================================
- * STAKEHOLDER STYLES
- * Dynamic classes: stakeholder-card, stakeholder-active, etc.
- * ======================================== */
-
-.stakeholder-card {
-    background-color: var(--stakeholder-bg-color);
-    border-left: 4px solid var(--stakeholder-primary-color);
-}
-
-.stakeholder-active {
-    border-left: 4px solid var(--stakeholder-primary-color);
-}
-
-.stakeholder-inactive {
-    opacity: 0.6;
-    filter: grayscale(0.3);
-}
-
-.btn-stakeholder-primary {
-    background-color: var(--stakeholder-primary-color);
-    color: white;
-    border-color: var(--stakeholder-primary-color);
-}
-
-.btn-stakeholder-primary:hover {
-    background-color: var(--stakeholder-hover-color);
-    border-color: var(--stakeholder-hover-color);
-}
-
-.stakeholder-badge {
-    background-color: var(--stakeholder-light-color);
-    color: var(--stakeholder-primary-color);
-}
-
-/* ========================================
- * TEAM STYLES
- * Dynamic classes: team-card, team-active, etc.
- * ======================================== */
-
-.team-card {
-    background-color: var(--teams-bg-color);
-    border-left: 4px solid var(--teams-primary-color);
-}
-
-.team-active {
-    border-left: 4px solid var(--teams-primary-color);
-}
-
-.btn-team-primary {
-    background-color: var(--teams-primary-color);
-    color: white;
-    border-color: var(--teams-primary-color);
-}
-
-.btn-team-primary:hover {
-    background-color: var(--teams-hover-color);
-    border-color: var(--teams-hover-color);
-}
-
-.team-badge {
-    background-color: var(--teams-light-color);
-    color: var(--teams-primary-color);
-}
-
-/* ========================================
- * USER STYLES
- * Dynamic classes: user-card, user-active, etc.
- * ======================================== */
-
-.user-card {
-    background-color: var(--user-bg-color);
-    border-left: 4px solid var(--user-primary-color);
-}
-
-.user-active {
-    border-left: 4px solid var(--user-primary-color);
-}
-
-.btn-user-primary {
-    background-color: var(--user-primary-color);
-    color: white;
-    border-color: var(--user-primary-color);
-}
-
-.btn-user-primary:hover {
-    background-color: var(--user-hover-color);
-    border-color: var(--user-hover-color);
-}
-
-.user-badge {
-    background-color: var(--user-light-color);
-    color: var(--user-primary-color);
-}
-
-/* ========================================
- * GENERIC ENTITY PATTERNS
- * Reusable patterns for any entity type
- * ======================================== */
-
-/* Entity status indicators */
-.entity-status-active {
-    border-left: 4px solid var(--success-color);
-}
-
-.entity-status-inactive {
-    opacity: 0.6;
-}
-
-.entity-status-completed {
-    text-decoration: line-through;
-    opacity: 0.7;
-}
-
-/* Entity priority indicators */
-.entity-priority-high {
-    border-left: 4px solid var(--danger-color);
-}
-
-.entity-priority-medium {
-    border-left: 4px solid var(--warning-color);
-}
-
-.entity-priority-low {
-    border-left: 4px solid var(--success-color);
-}
-
-/* Entity action states */
-.entity-hover {
-    transition: all var(--transition-fast);
-    cursor: pointer;
-}
-
-.entity-hover:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-}
-
-/* ========================================
- * DYNAMIC CLASS SUPPORT
- * Classes that can be generated dynamically
- * Pattern: {{entity_name}}-{{component}}-{{state}}
- * ======================================== */
-
-/* Base card pattern for all entities */
-[class*="-card"] {
-    background-color: white;
-    border: 1px solid var(--color-gray-200);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-fast);
-}
-
-/* Base button pattern for all entities */
-[class*="btn-"][class*="-primary"] {
-    padding: var(--spacing-sm) var(--spacing-lg);
-    border-radius: var(--radius-md);
-    font-weight: var(--font-medium);
-    transition: all var(--transition-fast);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Base badge pattern for all entities */
-[class*="-badge"] {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--radius-full);
-    font-size: var(--text-xs);
-    font-weight: var(--font-medium);
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
+.status-overdue {
+    border-left-color: var(--danger-color) !important;
+    background-color: var(--color-danger-lighter);
 }
