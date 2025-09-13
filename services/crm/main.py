@@ -16,16 +16,14 @@ from app.utils.ui.template_globals import (
     get_field_options,
     get_model_form_fields,
     get_model_config,
-    # get_create_modal_config,  # Removed - using WTForms modal system now
-    # get_detail_modal_config,  # Removed - using WTForms modal system now
-    # get_all_modal_configs,  # Removed - using WTForms modal system now
-    # get_all_detail_modal_configs,  # Removed - using WTForms modal system now
     PRIORITY_OPTIONS,
     SIZE_OPTIONS,
     get_entity_config,
     get_entity_icon, 
     get_entity_labels,
     get_empty_state_config,
+    get_dashboard_action_buttons,
+    generate_entity_buttons,
 )
 from app.utils.cards.config_builder import CardConfigBuilder
 
@@ -95,7 +93,9 @@ def create_app():
     # app.jinja_env.globals["get_detail_modal_config"] = get_detail_modal_config  # Removed
     # app.jinja_env.globals["get_all_modal_configs"] = get_all_modal_configs  # Removed
     # app.jinja_env.globals["get_all_detail_modal_configs"] = get_all_detail_modal_configs  # Removed
-    # Dashboard buttons now generated in templates using Jinja macros
+    # Button generation functions - DRY approach
+    app.jinja_env.globals["get_dashboard_action_buttons"] = get_dashboard_action_buttons
+    app.jinja_env.globals["generate_entity_buttons"] = generate_entity_buttons
     app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
     app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
     

@@ -1,13 +1,13 @@
 {% from "macros/base/icons.html" import icon %}
 
 
-{% macro entity_buttons(entities) %}
+{% macro entity_buttons(button_configs) %}
 <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-    {% for entity in entities %}
-    <button hx-get="/modals/{{ entity|title }}/create"
-            hx-target="body"
-            hx-swap="beforeend"
-            class="flex items-center gap-2 btn-{{ entity|lower }}">
+    {% for button in button_configs %}
+    <button hx-get="{{ button.hx_get }}"
+            hx-target="{{ button.hx_target }}"
+            hx-swap="{{ button.hx_swap }}"
+            class="flex items-center gap-2 btn-{{ button.entity|lower }}">
         {% set entity_icons = {
             'companies': 'building-office',
             'tasks': 'clipboard-list', 
@@ -15,16 +15,16 @@
             'stakeholders': 'user',
             'teams': 'users'
         } %}
-        {{ icon(entity_icons.get(entity|lower, 'plus'), 'sm') }}
-        New {{ entity|title }}
+        {{ icon(entity_icons.get(button.entity|lower, 'plus'), 'sm') }}
+        {{ button.label }}
     </button>
     {% endfor %}
 </div>
 {% endmacro %}
 
 {% macro default_dashboard_actions() %}
-{# Default dashboard buttons - Python just passes entity names #}
-{{ entity_buttons(['companies', 'tasks', 'opportunities', 'stakeholders', 'teams']) }}
+{# Default dashboard buttons - Generated from model configurations #}
+{{ entity_buttons(get_dashboard_action_buttons()) }}
 {% endmacro %}
 
 {# 

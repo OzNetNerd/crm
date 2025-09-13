@@ -54,52 +54,26 @@ class EntityConfig:
 class EntityConfigRegistry:
     """Registry for all entity configurations - DRY approach using model metadata"""
     
-    # Only store presentation-specific data (icons, empty states)
-    # Extract entity names, plurals, etc. from actual models
+    # Only store presentation-specific data (icons)
+    # All text and labels come from model configs to avoid duplication
     _presentation_overrides: Dict[str, Dict] = {
         'task': {
-            'icon': 'clipboard-list',
-            'empty_state': EmptyStateConfig(
-                title='No tasks found',
-                subtitle='Try adjusting your filters or create a new task.'
-            )
+            'icon': 'clipboard-list'
         },
         'stakeholder': {
-            'icon': 'user',
-            'empty_state': EmptyStateConfig(
-                title='No stakeholders found',
-                subtitle='Try adjusting your filters or create a new stakeholder.'
-            )
+            'icon': 'user'
         },
         'company': {
-            'icon': 'building-office-alt',
-            'empty_state': EmptyStateConfig(
-                title='No companies found',
-                subtitle='Try adjusting your filters or create a new company.'
-            )
+            'icon': 'building-office-alt'
         },
         'opportunity': {
-            'icon': 'currency-dollar-circle',
-            'empty_state': EmptyStateConfig(
-                title='No opportunities found',
-                subtitle='Try adjusting your filters or create a new opportunity.'
-            )
+            'icon': 'currency-dollar-circle'
         },
         'user': {
-            'icon': 'user-circle',
-            'singular': 'team member',  # Override display name
-            'plural': 'team members',
-            'empty_state': EmptyStateConfig(
-                title='No team members found',
-                subtitle='Try adjusting your filters or add new team members.'
-            )
+            'icon': 'user-circle'
         },
         'note': {
-            'icon': 'document-text',
-            'empty_state': EmptyStateConfig(
-                title='No notes found',
-                subtitle='No notes have been added yet.'
-            )
+            'icon': 'document-text'
         }
     }
     
@@ -112,17 +86,24 @@ class EntityConfigRegistry:
             return  # Already registered
             
         try:
-            from app.models import Task, Stakeholder, Company, Opportunity, User, Note
+            from app.utils.core.model_introspection import get_all_entity_models
             
-            # Map entity types to model classes
-            cls._model_registry = {
-                'task': Task,
-                'stakeholder': Stakeholder, 
-                'company': Company,
-                'opportunity': Opportunity,
-                'user': User,
-                'note': Note
-            }
+            # Build mapping dynamically from model configurations
+            all_models = get_all_entity_models()
+            cls._model_registry = {}
+            
+            for model_class in all_models:
+                # Use model's table name as the key
+                entity_type = model_class.__tablename__.rstrip('s')
+                cls._model_registry[entity_type] = model_class
+                
+                # Also add any explicit entity type mapping
+                if hasattr(model_class, '__entity_config__'):
+                    config = model_class.__entity_config__
+                    endpoint_name = config.get('endpoint_name')
+                    if endpoint_name:
+                        cls._model_registry[endpoint_name.rstrip('s')] = model_class
+                        
         except ImportError:
             # Fallback if models aren't available
             pass
@@ -163,17 +144,26 @@ class EntityConfigRegistry:
         # Get presentation overrides
         overrides = cls._presentation_overrides.get(entity_type, {})
         
-        # Merge with precedence: overrides > model_data > defaults
-        singular = overrides.get('singular', model_data.get('singular', entity_type))
-        plural = overrides.get('plural', model_data.get('plural', f"{entity_type}s"))
-        icon = overrides.get('icon', 'document')
-        display_name = overrides.get('display_name', model_data.get('display_name', singular.title()))
+        # Use model __entity_config__ as primary source, then overrides, then model data
+        model_class = model_data.get('model_class')
+        if model_class and hasattr(model_class, '__entity_config__'):
+            entity_config = model_class.__entity_config__
+            singular = entity_config.get('display_name_singular', entity_type)
+            plural = entity_config.get('display_name', f"{entity_type}s")
+            display_name = entity_config.get('display_name', singular.title())
+        else:
+            # Fallback to extracted data
+            singular = model_data.get('singular', entity_type)
+            plural = model_data.get('plural', f"{entity_type}s")
+            display_name = model_data.get('display_name', singular.title())
         
-        # Empty state with fallbacks
-        empty_state = overrides.get('empty_state', EmptyStateConfig(
-            title=f'No {plural} found',
-            subtitle=f'Try adjusting your filters or create a new {singular}.'
-        ))
+        icon = overrides.get('icon', 'document')
+        
+        # Generate empty state dynamically from model configuration
+        empty_state = EmptyStateConfig(
+            title=f'No {plural.lower()} found',
+            subtitle=f'Try adjusting your filters or create a new {singular.lower()}.'
+        )
         
         return EntityConfig(
             icon=icon,
