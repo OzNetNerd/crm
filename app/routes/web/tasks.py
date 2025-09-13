@@ -7,35 +7,16 @@ from app.utils.core.base_handlers import (
     BaseRouteHandler,
     parse_int_field,
     get_entity_data_for_forms,
-    EntityFilterManager,
-    EntityGrouper,
 )
-from app.utils.core.model_introspection import ModelIntrospector
-from app.utils.core.entity_handlers import TaskHandler, UniversalEntityManager
+from app.utils.routes import add_content_route
 from collections import defaultdict
 
+# Create blueprint and add DRY content route
 tasks_bp = Blueprint("tasks", __name__)
+add_content_route(tasks_bp, Task)
+
+# Keep existing task handler for other routes
 task_handler = BaseRouteHandler(Task, "tasks")
-
-# Create metadata-driven universal entity manager
-task_entity_manager = UniversalEntityManager(Task, TaskHandler())
-task_filter_manager = EntityFilterManager(Task, "task")
-
-
-# Use universal entity manager methods instead of duplicated functions
-def task_custom_filters(query, filters):
-    """Task-specific filtering using universal manager"""
-    return task_entity_manager.apply_custom_filters(query, filters)
-
-
-def task_custom_sorting(query, sort_by, sort_direction):
-    """Task-specific sorting using universal manager"""
-    return task_entity_manager.apply_custom_sorting(query, sort_by, sort_direction)
-
-
-def task_custom_groupers(entities, group_by):
-    """Task-specific grouping using universal manager"""
-    return task_entity_manager.apply_custom_grouping(entities, group_by)
 
 
 def get_all_tasks_context():
@@ -82,16 +63,7 @@ def get_filtered_tasks_context():
 
 
 
-@tasks_bp.route("/content")
-def content():
-    """HTMX endpoint for filtered task content - DRY version"""
-    context = task_filter_manager.get_content_context(
-        custom_filters=task_custom_filters,
-        custom_sorting=task_custom_sorting,
-        custom_grouper=task_custom_groupers
-    )
-    
-    return render_template("shared/entity_content.html", **context)
+# Content route now provided by DRY factory
 
 
 @tasks_bp.route("/")

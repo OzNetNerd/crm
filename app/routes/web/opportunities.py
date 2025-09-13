@@ -1,33 +1,11 @@
 from datetime import date
 from flask import Blueprint, render_template, request, jsonify
 from app.models import Opportunity, Company, Stakeholder, Note, db
-from app.utils.core.base_handlers import GenericAPIHandler, EntityFilterManager, EntityGrouper
-from app.utils.core.model_introspection import ModelIntrospector
-from app.utils.core.entity_handlers import OpportunityHandler, UniversalEntityManager
-from collections import defaultdict
+from app.utils.routes import add_content_route
 
+# Create blueprint and add DRY content route
 opportunities_bp = Blueprint("opportunities", __name__)
-opportunity_handler = GenericAPIHandler(Opportunity, "opportunity")
-
-# Create metadata-driven universal entity manager
-opportunity_entity_manager = UniversalEntityManager(Opportunity, OpportunityHandler())
-opportunity_filter_manager = EntityFilterManager(Opportunity, "opportunity")
-
-
-# Use universal entity manager methods instead of duplicated functions
-def opportunity_custom_filters(query, filters):
-    """Opportunity-specific filtering using universal manager"""
-    return opportunity_entity_manager.apply_custom_filters(query, filters)
-
-
-def opportunity_custom_sorting(query, sort_by, sort_direction):
-    """Opportunity-specific sorting using universal manager"""
-    return opportunity_entity_manager.apply_custom_sorting(query, sort_by, sort_direction)
-
-
-def opportunity_custom_groupers(entities, group_by):
-    """Opportunity-specific grouping using universal manager"""
-    return opportunity_entity_manager.apply_custom_grouping(entities, group_by)
+add_content_route(opportunities_bp, Opportunity)
 
 
 @opportunities_bp.route("/")
@@ -205,17 +183,7 @@ def get_filtered_opportunities_context():
 
 
 
-@opportunities_bp.route("/content")
-def content():
-    """HTMX endpoint for filtered opportunity content - DRY version"""
-    context = opportunity_filter_manager.get_content_context(
-        custom_filters=opportunity_custom_filters,
-        custom_sorting=opportunity_custom_sorting,
-        custom_grouper=opportunity_custom_groupers,
-        joins=[Company]
-    )
-    
-    return render_template("shared/entity_content.html", **context)
+# Content route now provided by DRY factory
 
 
 @opportunities_bp.route("/create", methods=["GET", "POST"])

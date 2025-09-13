@@ -1,33 +1,12 @@
 from datetime import date
 from flask import Blueprint, render_template, request
 from app.models import Stakeholder, Company, Opportunity
-from app.utils.core.base_handlers import BaseRouteHandler, EntityFilterManager, EntityGrouper
-from app.utils.core.model_introspection import ModelIntrospector
-from app.utils.core.entity_handlers import StakeholderHandler, UniversalEntityManager
+from app.utils.routes import add_content_route
 from collections import defaultdict
 
+# Create blueprint and add DRY content route
 stakeholders_bp = Blueprint("stakeholders", __name__)
-stakeholder_handler = BaseRouteHandler(Stakeholder, "stakeholders")
-
-# Create metadata-driven universal entity manager
-stakeholder_entity_manager = UniversalEntityManager(Stakeholder, StakeholderHandler())
-stakeholder_filter_manager = EntityFilterManager(Stakeholder, "stakeholder")
-
-
-# Use universal entity manager methods instead of duplicated functions
-def stakeholder_custom_filters(query, filters):
-    """Stakeholder-specific filtering using universal manager"""
-    return stakeholder_entity_manager.apply_custom_filters(query, filters)
-
-
-def stakeholder_custom_sorting(query, sort_by, sort_direction):
-    """Stakeholder-specific sorting using universal manager"""
-    return stakeholder_entity_manager.apply_custom_sorting(query, sort_by, sort_direction)
-
-
-def stakeholder_custom_groupers(entities, group_by):
-    """Stakeholder-specific grouping using universal manager"""
-    return stakeholder_entity_manager.apply_custom_grouping(entities, group_by)
+add_content_route(stakeholders_bp, Stakeholder)
 
 
 @stakeholders_bp.route("/")
@@ -116,17 +95,7 @@ def get_filtered_stakeholders_context():
 
 
 
-@stakeholders_bp.route("/content")
-def content():
-    """HTMX endpoint for filtered stakeholder content - DRY version"""
-    context = stakeholder_filter_manager.get_content_context(
-        custom_filters=stakeholder_custom_filters,
-        custom_sorting=stakeholder_custom_sorting,
-        custom_grouper=stakeholder_custom_groupers,
-        joins=[Company]
-    )
-    
-    return render_template("shared/entity_content.html", **context)
+# Content route now provided by DRY factory
 
 
 @stakeholders_bp.route("/modals/create", methods=['GET'])
