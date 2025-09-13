@@ -1,0 +1,188 @@
+{#
+  Alpine.js Dynamic Modal Template
+
+  Replaces wtforms_modal.html with client-side form rendering.
+  Works with formBuilder.js Alpine.js component.
+#}
+<div x-data="formBuilder({ modelName: '{{ model_name }}', entityId: {{ entity_id or 'null' }}, formType: '{{ form_type or 'create' }}' })"
+     x-show="isOpen"
+     x-cloak
+     @open-modal.window="openModal($event.detail.type, $event.detail.id)"
+     class="fixed inset-0 z-50 flex items-center justify-center">
+
+    <!-- Modal Backdrop -->
+    <div x-show="isOpen"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="closeModal()"
+         class="fixed inset-0 bg-black bg-opacity-50"></div>
+
+    <!-- Modal Content -->
+    <div x-show="isOpen"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform scale-95"
+         x-transition:enter-end="opacity-100 transform scale-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100 transform scale-100"
+         x-transition:leave-end="opacity-0 transform scale-95"
+         @click.stop
+         class="relative bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-hidden">
+
+        <!-- Loading State -->
+        <div x-show="loading" class="p-8 text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p class="mt-2 text-gray-600">Loading form...</p>
+        </div>
+
+        <!-- Form Content -->
+        <div x-show="!loading && formConfig" class="flex flex-col max-h-[90vh]">
+
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <div class="flex items-center">
+                    <div class="text-2xl mr-3">
+                        <i :class="`icon-${modelName}`" class="text-blue-600"></i>
+                    </div>
+                    <h3 x-text="title" class="text-lg font-semibold text-gray-900"></h3>
+                </div>
+                <button @click="closeModal()"
+                        class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Form Body -->
+            <div class="flex-1 overflow-y-auto p-6">
+
+                <!-- General Error -->
+                <div x-show="errors.general"
+                     x-text="errors.general"
+                     class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4"></div>
+
+                <!-- Dynamic Form Fields -->
+                <div class="space-y-4">
+                    <template x-for="field in fields" :key="field.name || field.type">
+
+                        <!-- Text Input Fields -->
+                        <div x-show="isTextField(field)" class="space-y-2">
+                            <label :for="field.name"
+                                   x-text="field.label + (field.required ? ' *' : '')"
+                                   class="block text-sm font-medium text-gray-700"></label>
+                            <input :type="field.type"
+                                   :id="field.name"
+                                   :name="field.name"
+                                   :placeholder="field.placeholder"
+                                   :required="field.required"
+                                   x-model="formData[field.name]"
+                                   @blur="validateField(field.name)"
+                                   :class="{'border-red-500': errors[field.name]}"
+                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <p x-show="errors[field.name]"
+                               x-text="errors[field.name]"
+                               class="text-sm text-red-600"></p>
+                        </div>
+
+                        <!-- Select Fields -->
+                        <div x-show="isSelectField(field)" class="space-y-2">
+                            <label :for="field.name"
+                                   x-text="field.label + (field.required ? ' *' : '')"
+                                   class="block text-sm font-medium text-gray-700"></label>
+                            <select :id="field.name"
+                                    :name="field.name"
+                                    :required="field.required"
+                                    x-model="formData[field.name]"
+                                    @change="validateField(field.name)"
+                                    :class="{'border-red-500': errors[field.name]}"
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <template x-for="option in field.options" :key="option.value">
+                                    <option :value="option.value" x-text="option.label"></option>
+                                </template>
+                            </select>
+                            <p x-show="errors[field.name]"
+                               x-text="errors[field.name]"
+                               class="text-sm text-red-600"></p>
+                        </div>
+
+                        <!-- Textarea Fields -->
+                        <div x-show="isTextareaField(field)" class="space-y-2">
+                            <label :for="field.name"
+                                   x-text="field.label + (field.required ? ' *' : '')"
+                                   class="block text-sm font-medium text-gray-700"></label>
+                            <textarea :id="field.name"
+                                      :name="field.name"
+                                      :placeholder="field.placeholder"
+                                      :required="field.required"
+                                      x-model="formData[field.name]"
+                                      @blur="validateField(field.name)"
+                                      :rows="field.rows || 3"
+                                      :class="{'border-red-500': errors[field.name]}"
+                                      class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            <p x-show="errors[field.name]"
+                               x-text="errors[field.name]"
+                               class="text-sm text-red-600"></p>
+                        </div>
+
+                        <!-- Grid Layout Fields -->
+                        <div x-show="isGridField(field)" class="space-y-4">
+                            <div :class="`grid grid-cols-${field.columns || 2} gap-4`">
+                                <template x-for="subField in field.fields" :key="subField.name">
+                                    <div class="space-y-2">
+                                        <label :for="subField.name"
+                                               x-text="subField.label + (subField.required ? ' *' : '')"
+                                               class="block text-sm font-medium text-gray-700"></label>
+
+                                        <!-- Sub-field input (simplified - could be extended) -->
+                                        <input :type="subField.type"
+                                               :id="subField.name"
+                                               :name="subField.name"
+                                               :placeholder="subField.placeholder"
+                                               :required="subField.required"
+                                               x-model="formData[subField.name]"
+                                               @blur="validateField(subField.name)"
+                                               :class="{'border-red-500': errors[subField.name]}"
+                                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+
+                                        <p x-show="errors[subField.name]"
+                                           x-text="errors[subField.name]"
+                                           class="text-sm text-red-600"></p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                    </template>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex justify-end space-x-3 px-6 py-4 border-t border-gray-200">
+                <button @click="closeModal()"
+                        :disabled="saving"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
+                    Cancel
+                </button>
+                <button @click="submitForm()"
+                        :disabled="saving || Object.keys(errors).length > 0"
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
+                    <span x-show="!saving">Save</span>
+                    <span x-show="saving" class="flex items-center">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle>
+                            <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75"></path>
+                        </svg>
+                        Saving...
+                    </span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script type="module" src="{{ url_for('static', filename='js/alpine/formBuilder.js') }}"></script>
