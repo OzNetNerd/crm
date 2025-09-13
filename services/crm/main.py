@@ -135,7 +135,7 @@ if __name__ == "__main__":
     app = create_app()
 
     try:
-        app.run(debug=True, port=args.port)
+        app.run(debug=os.environ.get('DEBUG', 'False').lower() == 'true', port=args.port)
     except OSError as e:
         if "Address already in use" in str(e):
             print(f"\n❌ Error: Port {args.port} is already in use!")

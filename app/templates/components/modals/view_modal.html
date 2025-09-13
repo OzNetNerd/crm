@@ -110,7 +110,7 @@
     {% endcall %}
     
     {% call htmx_modal_footer(classes="flex justify-end p-6 border-t bg-gray-50") %}
-        <button onclick="this.closest('.modal-overlay').remove()" 
+        <button data-action="close-modal"
                 class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
             Close
         </button>

@@ -20,7 +20,7 @@ from logging_config import setup_chatbot_logging, log_request_middleware
 app = FastAPI(title="CRM Chatbot Service", version="1.0.0")
 
 # ADR-012: Configure structured logging for chatbot service
-setup_chatbot_logging("chatbot-service", debug=True)
+setup_chatbot_logging("chatbot-service", debug=os.environ.get('DEBUG', 'False').lower() == 'true')
 
 # Add request correlation middleware
 app.middleware("http")(log_request_middleware)

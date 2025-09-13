@@ -16,14 +16,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-50">
-    <style>
-        /* Prevent layout shift when scrollbar appears */
-        html {
-            overflow-y: scroll;
-        }
-    </style>
-    <nav class="bg-white border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav class="bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-white">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-8">
                     <a href="{{ url_for('dashboard.index') }}" class="nav-brand">CRM</a>
@@ -37,15 +31,31 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="relative flex items-center">
-                        <input type="text" 
-                               id="global-search"
-                               placeholder="Search companies, contacts, opportunities..." 
-                               class="px-3 py-2 pr-10 border border-gray-300 rounded-md text-sm w-64">
-                        <button id="advanced-search-btn" 
-                                class="absolute right-2 p-1 hover:bg-gray-100 rounded"
-                                title="Advanced Search">
-                            {{ icon('funnel', 'sm', 'text-gray-400 hover:text-gray-600') }}
-                        </button>
+                        <div class="relative">
+                            <input type="text"
+                                   id="global-search"
+                                   name="q"
+                                   placeholder="Search companies, contacts, opportunities..."
+                                   class="px-3 py-2 pr-10 border border-gray-300 rounded-md text-sm w-64"
+                                   hx-get="/htmx/search"
+                                   hx-trigger="input changed delay:300ms"
+                                   hx-target="#search-results"
+                                   hx-indicator="#search-spinner">
+                            <button id="advanced-search-btn"
+                                    class="absolute right-2 p-1 hover:bg-gray-100 rounded"
+                                    title="Advanced Search">
+                                {{ icon('funnel', 'sm', 'text-gray-400 hover:text-gray-600') }}
+                            </button>
+                            <!-- Search spinner -->
+                            <div id="search-spinner" class="htmx-indicator absolute right-8 top-2.5">
+                                {{ icon('spinner', 'xs', 'animate-spin text-gray-400') }}
+                            </div>
+                        </div>
+
+                        <!-- Search results dropdown -->
+                        <div id="search-results"
+                             class="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-b-md shadow-lg z-50 max-h-96 overflow-y-auto hidden">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -65,15 +75,15 @@
     {% include 'components/chat_widget.html' %}
     
     <!-- Data container for clean server-to-client data passing -->
-    <div id="app-data" style="display: none;"
+    <div id="app-data" class="hidden"
          {% block data_attributes %}{% endblock %}>
     </div>
-    
+
     <!-- Core JavaScript - Reduced to essential functionality only -->
     <script src="{{ url_for('static', filename='js/core/modal-utils.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/features/search.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/features/search-htmx.js') }}"></script>
     <script src="{{ url_for('static', filename='js/features/modal_handlers.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/features/data-initializer.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/features/controls.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
