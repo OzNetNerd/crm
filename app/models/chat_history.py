@@ -1,9 +1,26 @@
 from datetime import datetime
+from typing import Dict, Any
 from . import db
 from .base import BaseModel
 
 
 class ChatHistory(BaseModel):
+    """
+    ChatHistory model for storing chatbot conversation history.
+    
+    This model records all interactions between users and the CRM chatbot,
+    including the user messages, bot responses, context used for generation,
+    and metadata about the response generation process.
+    
+    Attributes:
+        id: Primary key identifier.
+        session_id: Session identifier for grouping related messages.
+        user_message: User's input message.
+        bot_response: Chatbot's response message.
+        context_used: Context data used to generate response (JSON).
+        response_metadata: Metadata about response generation (JSON).
+        created_at: Chat interaction timestamp.
+    """
     __tablename__ = "chat_history"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -26,9 +43,15 @@ class ChatHistory(BaseModel):
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def to_dict(self):
-        """Convert chat history to dictionary for JSON serialization"""
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert chat history to dictionary for JSON serialization.
+        
+        Returns:
+            Dictionary representation of the chat history record.
+        """
         return super().to_dict()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return string representation of the chat history."""
         return f"<ChatHistory {self.session_id} - {self.user_message[:50]}...>"

@@ -1,10 +1,31 @@
 from datetime import datetime
+from typing import Dict, Any, List, Optional
 from . import db
 from .base import BaseModel
 from app.utils.core.model_helpers import auto_serialize
 
 
 class Opportunity(BaseModel):
+    """
+    Opportunity model representing sales opportunities in the CRM system.
+    
+    This model tracks sales opportunities through various pipeline stages,
+    including deal value, probability, timeline, and relationships with
+    companies and stakeholders. Each opportunity represents a potential
+    sale or business transaction.
+    
+    Attributes:
+        id: Primary key identifier.
+        name: Opportunity name/title (required).
+        value: Deal value in whole dollars.
+        probability: Win probability percentage (0-100).
+        priority: Priority level (low, medium, high).
+        expected_close_date: Expected deal closure date.
+        stage: Current pipeline stage.
+        created_at: Opportunity creation timestamp.
+        company_id: Associated company foreign key.
+        company: Related company entity.
+    """
     __tablename__ = "opportunities"
     
     __entity_config__ = {
@@ -119,12 +140,42 @@ class Opportunity(BaseModel):
     company_id = db.Column(db.Integer, db.ForeignKey("companies.id"), nullable=False)
 
     @property
-    def deal_age(self):
+    def deal_age(self) -> int:
+        """
+        Calculate the age of the deal in days.
+        
+        Computes the number of days since the opportunity was created,
+        providing insights into deal velocity and aging.
+        
+        Returns:
+            Number of days since opportunity creation.
+            
+        Example:
+            >>> opp = Opportunity(name="Test Deal")
+            >>> # After 5 days
+            >>> opp.deal_age
+            5
+        """
         return (datetime.utcnow() - self.created_at).days
     
     @property
-    def calculated_priority(self):
-        """Calculate priority based on deal value using model metadata"""
+    def calculated_priority(self) -> str:
+        """
+        Calculate priority based on deal value using model metadata.
+        
+        Automatically determines opportunity priority by comparing
+        the deal value against predefined thresholds in model metadata.
+        This provides dynamic priority calculation based on monetary value.
+        
+        Returns:
+            Priority string: 'low', 'medium', or 'high'.
+            Returns 'low' if value is None or doesn't meet any thresholds.
+            
+        Example:
+            >>> opp = Opportunity(value=75000)
+            >>> opp.calculated_priority
+            'high'  # Assuming 50000+ is high priority threshold
+        """
         if not self.value:
             return 'low'
             
@@ -139,19 +190,73 @@ class Opportunity(BaseModel):
         return 'low'
     
     @classmethod
-    def get_stage_choices(cls):
-        """Get stage choices from model metadata"""
+    def get_stage_choices(cls) -> Dict[str, Dict[str, str]]:
+        """
+        Get stage choices from model metadata.
+        
+        Retrieves the available pipeline stage options defined in the model's
+        field configuration for use in forms and validation.
+        
+        Returns:
+            Dictionary mapping stage keys to their display information:
+            - label: Human-readable stage name
+            - description: Detailed stage description
+            
+        Example:
+            >>> choices = Opportunity.get_stage_choices()
+            >>> print(choices['qualified'])
+            {'label': 'Qualified', 'description': 'Meets our criteria'}
+        """
         from app.utils.core.model_introspection import ModelIntrospector
         return ModelIntrospector.get_field_choices(cls, 'stage')
     
     @classmethod
-    def get_stage_css_class(cls, stage_value):
-        """Get CSS class for a stage value"""
+    def get_stage_css_class(cls, stage_value: Optional[str]) -> str:
+        """
+        Get CSS class for a stage value.
+        
+        Generates appropriate CSS class names for styling stage-specific
+        elements in the user interface.
+        
+        Args:
+            stage_value: The stage value to get CSS class for.
+                        Can be None for unknown/unset stages.
+        
+        Returns:
+            CSS class string for the given stage value.
+            Returns empty string if stage_value is None or invalid.
+            
+        Example:
+            >>> cls = Opportunity.get_stage_css_class('qualified')
+            >>> print(cls)
+            'stage-qualified'
+        """
         from app.utils.core.model_introspection import ModelIntrospector
         return ModelIntrospector.get_field_css_class(cls, 'stage', stage_value)
 
-    def get_stakeholders(self):
-        """Get all stakeholders for this opportunity with their MEDDPICC roles"""
+    def get_stakeholders(self) -> List[Dict[str, Any]]:
+        """
+        Get all stakeholders for this opportunity with their MEDDPICC roles.
+        
+        Retrieves stakeholders associated with this opportunity, including
+        their contact information and MEDDPICC roles for sales methodology
+        tracking. Results are sorted alphabetically by name.
+        
+        Returns:
+            List of dictionaries containing stakeholder information:
+            - id: Stakeholder ID
+            - name: Stakeholder's full name
+            - job_title: Stakeholder's job title
+            - email: Stakeholder's email address
+            - phone: Stakeholder's phone number
+            - meddpicc_roles: List of MEDDPICC role names
+            
+        Example:
+            >>> opp = Opportunity.query.first()
+            >>> stakeholders = opp.get_stakeholders()
+            >>> print(stakeholders[0])
+            {'id': 1, 'name': 'John Doe', 'meddpicc_roles': ['Champion', 'Decision Maker']}
+        """
         # Use the ORM relationship and sort by name
         sorted_stakeholders = sorted(self.stakeholders, key=lambda s: s.name)
 
@@ -167,8 +272,29 @@ class Opportunity(BaseModel):
             for stakeholder in sorted_stakeholders
         ]
 
-    def get_full_account_team(self):
-        """Get full account team including inherited company team and opportunity-specific assignments"""
+    def get_full_account_team(self) -> List[Dict[str, Any]]:
+        """
+        Get full account team including inherited company team and opportunity-specific assignments.
+        
+        Combines account team members from both the parent company and
+        opportunity-specific assignments. Handles deduplication when users
+        are assigned at both levels, and provides source tracking to indicate
+        the origin of each team member assignment.
+        
+        Returns:
+            List of dictionaries containing team member information:
+            - id: User ID
+            - name: User's full name
+            - email: User's email address
+            - job_title: User's job title or None
+            - source: Assignment source ('company', 'opportunity', or 'both')
+            
+        Example:
+            >>> opp = Opportunity.query.first()
+            >>> team = opp.get_full_account_team()
+            >>> print(team[0])
+            {'id': 1, 'name': 'Jane Smith', 'source': 'both'}
+        """
         # Get company account team members using ORM
         company_team = []
         if self.company:
@@ -214,9 +340,29 @@ class Opportunity(BaseModel):
             all_team.values(), key=lambda x: (x["job_title"] or "", x["name"])
         )
 
-    def to_dict(self):
-        """Convert opportunity to dictionary for JSON serialization"""
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert opportunity to dictionary for JSON serialization.
         
+        Creates a comprehensive dictionary representation including
+        all database fields, computed properties, related entities,
+        and UI helper fields like CSS classes.
+        
+        Returns:
+            Dictionary containing:
+            - All database column values
+            - Computed properties (calculated_priority, deal_age)
+            - Related entity summaries (stakeholders with MEDDPICC roles)
+            - UI helper fields (company_name, stage_css_class)
+            
+        Example:
+            >>> opp = Opportunity(name="Big Deal", stage="qualified")
+            >>> data = opp.to_dict()
+            >>> print(data['name'])
+            'Big Deal'
+            >>> print(data['stage_css_class'])
+            'stage-qualified'
+        """
         # Define properties to include beyond database columns
         include_properties = ["calculated_priority", "deal_age"]
         
@@ -243,8 +389,29 @@ class Opportunity(BaseModel):
         
         return result
 
-    def to_display_dict(self):
-        """Convert opportunity to dictionary with pre-formatted display fields"""
+    def to_display_dict(self) -> Dict[str, Any]:
+        """
+        Convert opportunity to dictionary with pre-formatted display fields.
+        
+        Extends the basic dictionary representation with formatted
+        fields optimized for display in user interfaces. This includes
+        formatted currency values, percentages, and other UI-specific formatting.
+        
+        Returns:
+            Dictionary with all standard fields plus display-formatted versions
+            of fields that benefit from special formatting:
+            - value_formatted: Currency formatted deal value
+            - probability_formatted: Percentage formatted probability
+            - deal_age_formatted: Human-readable deal age
+            
+        Example:
+            >>> opp = Opportunity(value=50000, probability=75)
+            >>> display_data = opp.to_display_dict()
+            >>> print(display_data['value_formatted'])
+            '$50,000'
+            >>> print(display_data['probability_formatted'])
+            '75%'
+        """
         from app.utils.ui.formatters import create_display_dict, DisplayFormatter
         
         # Get base dictionary
@@ -261,5 +428,6 @@ class Opportunity(BaseModel):
         
         return result
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return string representation of the opportunity."""
         return f"<Opportunity {self.name}>"

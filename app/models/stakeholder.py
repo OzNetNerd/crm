@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Dict, Any, List, Optional
 from . import db
 from .base import BaseModel
 
@@ -40,7 +41,23 @@ stakeholder_opportunities = db.Table(
 
 
 class Stakeholder(BaseModel):
-    """Stakeholder model (formerly Contact) - customer-side contacts with MEDDPICC roles"""
+    """
+    Stakeholder model representing customer-side contacts in the CRM system.
+    
+    This model manages stakeholder relationships including MEDDPICC role tracking,
+    opportunity associations, and relationship ownership. Stakeholders are
+    individuals within customer organizations who influence or participate
+    in business opportunities.
+    
+    Attributes:
+        id: Primary key identifier.
+        name: Stakeholder full name (required).
+        job_title: Professional title/position.
+        email: Primary email address.
+        phone: Contact phone number.
+        company_id: Associated company foreign key.
+        created_at: Stakeholder creation timestamp.
+    """
 
     __tablename__ = "stakeholders"
     
@@ -273,7 +290,8 @@ class Stakeholder(BaseModel):
         else:
             return 'missing'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return string representation of the stakeholder."""
         return f"<Stakeholder {self.name} ({self.job_title}) at {self.company.name if self.company else 'Unknown'}>"
 
 

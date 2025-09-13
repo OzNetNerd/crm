@@ -1,9 +1,25 @@
 from datetime import datetime
+from typing import Dict, Any, Optional
 from . import db
 from .base import BaseModel
 
 
 class Note(BaseModel):
+    """
+    Note model for attaching text notes to any entity in the CRM system.
+    
+    This model provides a flexible note-taking system that can be attached
+    to any entity (companies, stakeholders, opportunities, tasks) using
+    polymorphic relationships. Notes can be marked as internal or external-facing.
+    
+    Attributes:
+        id: Primary key identifier.
+        content: Note text content (required).
+        is_internal: Whether note is internal-only or customer-facing.
+        created_at: Note creation timestamp.
+        entity_type: Type of entity this note is attached to.
+        entity_id: ID of the entity this note is attached to.
+    """
     __tablename__ = "notes"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -18,7 +34,19 @@ class Note(BaseModel):
     entity_id = db.Column(db.Integer)
 
     @property
-    def entity_name(self):
+    def entity_name(self) -> Optional[str]:
+        """
+        Get the name of the entity this note is attached to.
+        
+        Returns:
+            Name of the attached entity, or None if no entity attached
+            or entity not found.
+            
+        Example:
+            >>> note = Note(entity_type="company", entity_id=1)
+            >>> note.entity_name
+            'Acme Corp'
+        """
         if not self.entity_type or not self.entity_id:
             return None
 
@@ -43,8 +71,20 @@ class Note(BaseModel):
 
         return entity.name if hasattr(entity, "name") else str(entity)
 
-    def to_display_dict(self):
-        """Convert note to dictionary with pre-formatted display fields"""
+    def to_display_dict(self) -> Dict[str, Any]:
+        """
+        Convert note to dictionary with pre-formatted display fields.
+        
+        Returns:
+            Dictionary with formatted fields including entity name and
+            content preview for UI display.
+            
+        Example:
+            >>> note = Note(content="Long content here...")
+            >>> display_data = note.to_display_dict()
+            >>> print(display_data['content_preview'])
+            'Long content here...'
+        """
         from app.utils.ui.formatters import create_display_dict
         
         # Create base display dictionary with all formatted fields
@@ -56,5 +96,6 @@ class Note(BaseModel):
         
         return result
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return string representation of the note."""
         return f"<Note {self.content[:50]}>"

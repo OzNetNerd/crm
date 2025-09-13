@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Dict, Any, List, Optional
 from . import db
 from .base import BaseModel
 from app.utils.core.model_helpers import (
@@ -28,6 +29,29 @@ task_entities = db.Table(
 
 @create_model_choice_methods(['priority', 'status'])
 class Task(BaseModel):
+    """
+    Task model representing work items and activities in the CRM system.
+    
+    This model provides comprehensive task management functionality including
+    parent-child task hierarchies, entity linking, dependency management,
+    and progress tracking. Tasks can be linked to multiple entities (companies,
+    opportunities, stakeholders) and support both single tasks and multi-task
+    projects with sequential or parallel execution.
+    
+    Attributes:
+        id: Primary key identifier.
+        description: Task description/title (required).
+        due_date: Task due date.
+        priority: Priority level (high, medium, low).
+        status: Current status (todo, in-progress, complete).
+        next_step_type: Type of next step (meeting, demo, call, email).
+        created_at: Task creation timestamp.
+        completed_at: Task completion timestamp.
+        task_type: Task hierarchy type (single, parent, child).
+        parent_task_id: Parent task foreign key for child tasks.
+        sequence_order: Execution order for child tasks.
+        dependency_type: Execution dependency (sequential, parallel).
+    """
     __tablename__ = "tasks"
     
     __entity_config__ = {
@@ -78,14 +102,44 @@ class Task(BaseModel):
     )  # 'sequential', 'parallel'
 
     @property
-    def is_overdue(self):
+    def is_overdue(self) -> bool:
+        """
+        Check if the task is overdue.
+        
+        A task is considered overdue if it has a due date that has passed
+        and the task is not yet complete.
+        
+        Returns:
+            True if task is overdue, False otherwise.
+            Returns False if no due date is set or task is complete.
+            
+        Example:
+            >>> task = Task(due_date=date(2023, 1, 1), status="todo")
+            >>> # Assuming current date is after 2023-01-01
+            >>> task.is_overdue
+            True
+        """
         if not self.due_date or self.status == "complete":
             return False
         return self.due_date < datetime.utcnow().date()
 
     @property
-    def entity_name(self):
-        """Get primary entity name for backward compatibility"""
+    def entity_name(self) -> Optional[str]:
+        """
+        Get primary entity name for backward compatibility.
+        
+        Returns the name of the first linked entity, primarily used
+        for backward compatibility with single-entity task linking.
+        
+        Returns:
+            Name of the first linked entity, or None if no entities linked.
+            
+        Example:
+            >>> task = Task()
+            >>> task.add_linked_entity("company", 1)
+            >>> task.entity_name
+            'Acme Corp'
+        """
         entities = self.linked_entities
         return entities[0]["name"] if entities else None
 
@@ -317,8 +371,29 @@ class Task(BaseModel):
         db.session.commit()
 
 
-    def to_dict(self):
-        """Convert task to dictionary for JSON serialization"""
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert task to dictionary for JSON serialization.
+        
+        Creates a comprehensive dictionary representation including
+        all database fields, computed properties, linked entities,
+        and UI helper fields like CSS classes.
+        
+        Returns:
+            Dictionary containing:
+            - All database column values
+            - Computed properties (is_overdue, completion_percentage, etc.)
+            - Linked entity information
+            - UI helper fields (priority_css_class, status_css_class)
+            
+        Example:
+            >>> task = Task(description="Follow up", priority="high")
+            >>> data = task.to_dict()
+            >>> print(data['description'])
+            'Follow up'
+            >>> print(data['priority_css_class'])
+            'priority-high'
+        """
         # Define properties to include beyond database columns
         include_properties = [
             "is_overdue", "entity_name", "opportunity_value", "company_name", 
@@ -345,8 +420,25 @@ class Task(BaseModel):
         
         return result
 
-    def to_display_dict(self):
-        """Convert task to dictionary with pre-formatted display fields"""
+    def to_display_dict(self) -> Dict[str, Any]:
+        """
+        Convert task to dictionary with pre-formatted display fields.
+        
+        Extends the basic dictionary representation with formatted
+        fields optimized for display in user interfaces. This includes
+        formatted currency values for linked opportunities and other
+        UI-specific formatting.
+        
+        Returns:
+            Dictionary with all standard fields plus display-formatted versions
+            of fields that benefit from special formatting.
+            
+        Example:
+            >>> task = Task(description="Big deal follow-up")
+            >>> display_data = task.to_display_dict()
+            >>> print(display_data.get('opportunity_value_formatted'))
+            '$50,000'
+        """
         from app.utils.ui.formatters import create_display_dict
         
         # Get base dictionary
@@ -363,5 +455,6 @@ class Task(BaseModel):
         
         return result
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return string representation of the task."""
         return f"<Task {self.task_type}: {self.description[:50]}>"

@@ -1,10 +1,24 @@
 from datetime import datetime
+from typing import Dict, Any
 from . import db
 from .base import BaseModel
 
 
 class User(BaseModel):
-    """User model for account team members - single source of truth for job titles"""
+    """
+    User model representing team members in the CRM system.
+    
+    This model manages internal team members who are assigned to
+    manage customer accounts and opportunities. Users serve as the
+    single source of truth for job titles and team assignments.
+    
+    Attributes:
+        id: Primary key identifier.
+        name: User's full name (required).
+        email: Unique email address.
+        job_title: Professional title/role (single source of truth).
+        created_at: User creation timestamp.
+    """
 
     __tablename__ = "users"
     
@@ -66,7 +80,8 @@ class User(BaseModel):
             for stakeholder in sorted_stakeholders
         ]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return string representation of the user."""
         return f"<User {self.name} - {self.job_title}>"
 
 
@@ -99,7 +114,8 @@ class CompanyAccountTeam(BaseModel):
         
         return result
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return string representation of the company account team assignment."""
         return f"<CompanyAccountTeam {self.user.name if self.user else 'Unknown'} → {self.company.name if self.company else 'Unknown'}>"
 
 
@@ -134,5 +150,6 @@ class OpportunityAccountTeam(BaseModel):
         
         return result
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return string representation of the opportunity account team assignment."""
         return f"<OpportunityAccountTeam {self.user.name if self.user else 'Unknown'} → {self.opportunity.name if self.opportunity else 'Unknown'}>"
