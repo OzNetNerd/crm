@@ -2,7 +2,7 @@ from datetime import datetime, date, timedelta
 import logging
 from flask import Blueprint, render_template, request, jsonify
 from app.models import db, Task, Company, Stakeholder, Opportunity, Note
-from app.config.entity_config import should_show_entity_metrics_on_dashboard
+# Entity config import removed - function not used
 from app.utils.ui.formatters import DisplayFormatter
 
 dashboard_bp = Blueprint("dashboard", __name__)

@@ -43,10 +43,6 @@ from .entities import (
 # UI utilities
 from .ui import (
     # ModalService,  # Temporarily removed to avoid circular import
-    get_modal_config,
-    get_detail_modal_config,
-    MODAL_CONFIGS,
-    DETAIL_MODAL_CONFIGS,
     style_task_description,
     safe_tojson,
     register_template_filters,
@@ -82,8 +78,6 @@ __all__ = [
     
     # UI
     # 'ModalService',  # Temporarily removed
-    'get_modal_config',
-    'get_detail_modal_config',
     'register_template_filters',
     'UniversalIndexHelper',
     

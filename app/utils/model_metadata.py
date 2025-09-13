@@ -78,27 +78,27 @@ class ModelMetadata:
     """Comprehensive model metadata for universal handling"""
     model_class: type
     fields: Dict[str, FieldMetadata] = field(default_factory=dict)
-    
+
     # Display metadata
     display_name: str = None
     display_name_plural: str = None
     description: str = None
-    
+
     # API metadata
     api_endpoint: str = None
     allowed_methods: List[str] = field(default_factory=lambda: ['GET', 'POST', 'PUT', 'DELETE'])
-    
+
     # Form metadata
     form_fields: List[str] = field(default_factory=list)
     form_exclude: List[str] = field(default_factory=list)
     form_layout: Dict[str, Any] = field(default_factory=dict)
-    
+
     # List/Table metadata
     list_fields: List[str] = field(default_factory=list)
     list_filters: List[str] = field(default_factory=list)
     list_search_fields: List[str] = field(default_factory=list)
     list_per_page: int = 20
-    
+
     # Permissions metadata
     permissions: Dict[str, List[str]] = field(default_factory=dict)
     
@@ -123,6 +123,7 @@ class ModelMetadata:
                     self.api_endpoint = self.model_class.__tablename__
                 else:
                     self.api_endpoint = self.display_name.lower()
+
             
         # Auto-discover fields if not provided
         if not self.fields:

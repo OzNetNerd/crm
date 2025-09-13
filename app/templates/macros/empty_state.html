@@ -5,24 +5,23 @@
 
 {#
   Standard Empty State Component - Consistent empty state display
-  
+
   Parameters:
-  - entity_type (required): Entity type for icon and messaging
+  - entity_config (required): Entity config from context
   - title (optional): Override default title
   - subtitle (optional): Override default subtitle
   - icon_name (optional): Override default icon
   - additional_classes (optional): Additional CSS classes
-  
+
   Usage:
-  {{ empty_state('task') }}
-  {{ empty_state('company', title='Custom Title', subtitle='Custom message') }}
+  {{ empty_state(entity_config) }}
+  {{ empty_state(entity_config, title='Custom Title', subtitle='Custom message') }}
 #}
-{% macro empty_state(entity_type, title=None, subtitle=None, icon_name=None, additional_classes='') %}
-  {% set config = get_empty_state_config(entity_type) %}
-  {% set display_title = title or config.title %}
-  {% set display_subtitle = subtitle or config.subtitle %}
-  {% set display_icon = icon_name or entity_type %}
-  
+{% macro empty_state(entity_config, title=None, subtitle=None, icon_name=None, additional_classes='') %}
+  {% set display_title = title or 'No results found' %}
+  {% set display_subtitle = subtitle or ('Try adjusting your filters or create a new ' + entity_config.entity_name_singular.lower() + '.') %}
+  {% set display_icon = icon_name or entity_config.entity_type %}
+
   <div class="empty-state-container {{ additional_classes }}">
     {{ icon(display_icon, 'xl', 'empty-state-icon') }}
     <p class="empty-state-title">{{ display_title }}</p>
