@@ -358,8 +358,16 @@ class EntityFilterManager:
         grouper = EntityGrouper(self.model_class, self.entity_name)
         grouped_entities = grouper.group_by_field(filtered_entities, group_by, custom_grouper)
         
+        # Get proper plural from model metadata instead of string manipulation
+        from app.utils.model_registry import ModelRegistry
+        try:
+            metadata = ModelRegistry.get_model_metadata(self.model_class.__name__.lower())
+            entity_plural = metadata.display_name_plural.lower().replace(' ', '_')
+        except:
+            entity_plural = f"{self.entity_name}s"  # Fallback only if metadata fails
+
         return {
-            f"grouped_{self.entity_name}s": grouped_entities,
+            f"grouped_{entity_plural}": grouped_entities,
             "grouped_entities": grouped_entities,  # Universal key
             "group_by": group_by,
             "total_count": len(filtered_entities),
