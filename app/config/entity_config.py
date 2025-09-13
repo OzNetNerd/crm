@@ -163,7 +163,7 @@ class EntityConfigRegistry:
         
         # Generate empty state dynamically from model configuration
         empty_state = EmptyStateConfig(
-            title=f'No {plural.lower()} found',
+            title='No results found',
             subtitle=f'Try adjusting your filters or create a new {singular.lower()}.'
         )
         
