@@ -29,17 +29,10 @@
   }
 #}
 {% macro card_container(card_type, entity_id, expansion_enabled=true, card_classes='', content={}) %}
-{%- set base_classes = card_type + '-card card-padded relative mb-3' -%}
-{%- set color_classes = {
-    'task': 'ring-2 ring-gray-200 bg-gray-50',
-    'opportunity': 'ring-2 ring-blue-200 bg-blue-50', 
-    'contact': 'ring-2 ring-green-200 bg-green-50',
-    'stakeholder': 'ring-2 ring-green-200 bg-green-50',
-    'company': 'ring-2 ring-blue-200 bg-blue-50'
-} -%}
+{%- set base_classes = 'card-' + card_type + ' relative mb-3' -%}
 
 {% if expansion_enabled %}
-<details class="{{ base_classes }} {{ color_classes.get(card_type, 'ring-2 ring-gray-200 bg-gray-50') }} {{ card_classes }}" 
+<details class="{{ base_classes }} {{ card_classes }}"
          data-{{ card_type }}-id="{{ entity_id }}">
     <summary class="cursor-pointer list-none flex items-center justify-between">
         <div class="flex-1 flex items-center justify-between">
@@ -85,7 +78,7 @@
 </details>
 {% else %}
 <!-- Non-expandable card -->
-<div class="{{ base_classes }} {{ color_classes.get(card_type, 'ring-2 ring-gray-200 bg-gray-50') }} {{ card_classes }}" 
+<div class="{{ base_classes }} {{ card_classes }}"
      data-{{ card_type }}-id="{{ entity_id }}">
     <div class="flex items-center justify-between">
         <div class="flex items-center space-x-3">

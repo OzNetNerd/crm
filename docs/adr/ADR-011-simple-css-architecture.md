@@ -27,14 +27,15 @@ The current system prioritizes theoretical CSS architecture over practical devel
 1. **Flat CSS Organization**: Single-level directory structure with descriptive filenames
 2. **Entity-Driven CSS Classes**: CSS classes mirror entity names and states directly
 3. **Dynamic Class Generation**: Python passes entity context to Jinja for dynamic class construction
-4. **Minimal Layer Structure**: Only essential CSS organization (variables, components, utilities)
-5. **Readable Class Names**: Self-documenting CSS classes that match business logic
+4. **Clean Template Syntax**: Encapsulated classes using Tailwind @apply for readable templates
+5. **Minimal Layer Structure**: Only essential CSS organization (variables, entities, main)
+6. **Readable Class Names**: Self-documenting CSS classes that match business logic
 
 **Architecture Pattern:**
 ```
-Entity Object → Jinja Templates → Dynamic CSS Classes
-company_entity → '{{entity.singular}}-card' → 'company-card'
-task_entity → '{{entity.singular}}-{{status}}' → 'task-completed'
+Entity Object → Jinja Templates → Clean Dynamic CSS Classes → Tailwind Utilities
+company_entity → 'card-{{entity_name}}' → 'card-company' → '@apply bg-company-50 border-company-600'
+task_entity → 'badge-{{entity_name}}-{{status}}' → 'badge-task-completed' → '@apply bg-green-100 text-green-800'
 ```
 
 ### Rationale
@@ -128,20 +129,56 @@ def get_entity_labels(entity_type: str) -> Dict[str, str]:
 {{ card(opportunity) }}
 ```
 
-**Entity-Specific CSS Classes:**
+**Clean Entity CSS Classes (CDN-Compatible):**
 ```css
-/* entities.css - Singular naming convention */
-.company-card { background: var(--company-bg-color); }
-.company-active { border-left: 4px solid var(--success-color); }
-.company-inactive { opacity: 0.6; }
+/* entities.css - Clean classes using CSS variables (CDN-compatible) */
+.card-company {
+  background-color: var(--company-bg-color);
+  border-left: 4px solid var(--company-primary-color);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
 
-.task-card { background: var(--task-bg-color); }
-.task-completed { text-decoration: line-through; }
-.task-overdue { border-left: 4px solid var(--danger-color); }
+.btn-company {
+  background-color: var(--company-primary-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
 
-.opportunity-card { background: var(--opportunity-bg-color); }
-.opportunity-won { border-left: 4px solid var(--success-color); }
-.opportunity-lost { opacity: 0.5; }
+.btn-company:hover {
+  background-color: var(--company-hover-color);
+}
+
+.badge-company-active {
+  background-color: var(--company-light-color);
+  color: var(--company-primary-color);
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.card-task {
+  background-color: var(--task-bg-color);
+  border-left: 4px solid var(--task-primary-color);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.badge-task-completed {
+  background-color: var(--color-secondary-lighter);
+  color: var(--color-secondary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-decoration: line-through;
+}
 ```
 
 **CSS Variable Strategy:**
