@@ -135,17 +135,16 @@ def index():
             company_options.append({'value': company, 'label': company})
     
     # Add additional filters to context
-    params = context['request_params']
     context['dropdown_configs']['secondary_filter'] = {
         'button_text': 'All Job Titles',
         'options': job_title_options,
-        'current_values': params['primary_filter'] or [],
-        'name': 'secondary_filter' 
+        'current_values': context['primary_filter'] or [],
+        'name': 'secondary_filter'
     }
     context['dropdown_configs']['tertiary_filter'] = {
         'button_text': 'All Companies',
         'options': company_options,
-        'current_values': params['secondary_filter'] or [],
+        'current_values': context['secondary_filter'] or [],
         'name': 'tertiary_filter'
     }
 

@@ -21,17 +21,17 @@
 {% from "macros/modals/confirmation.html" import confirmation_modal %}
 
 {# Set page title based on entity context #}
-{% block title %}{{ entity_name or "Entity" }} - CRM{% endblock %}
+{% block title %}{{ entity_config.entity_name or "Entity" }} - CRM{% endblock %}
 
 {% block content %}
 {# Generate filter controls based on entity type using modern widget system #}
 {% set entity_filter_controls %}
-<form hx-get="{{ url_for(entity_endpoint + '.content') }}" 
-      hx-target="#{{ entity_type }}-content"
+<form hx-get="{{ url_for(entity_config.entity_endpoint + '.content') }}"
+      hx-target="#{{ entity_config.entity_type }}-content"
       hx-trigger="change, submit">
     {% from "macros/widgets/filters.html" import entity_filter_controls %}
     {{ entity_filter_controls(
-        entity_type=entity_type,
+        entity_type=entity_config.entity_type,
         group_options=dropdown_configs.group_by.options if dropdown_configs.group_by else [],
         sort_options=dropdown_configs.sort_by.options if dropdown_configs.sort_by else [],
         current_group_by=request.args.get('group_by', dropdown_configs.group_by.current_value if dropdown_configs.group_by else ''),
@@ -40,27 +40,27 @@
         current_primary_filter=request.args.getlist('primary_filter'),
         primary_filter_name=dropdown_configs.primary_filter.button_text if dropdown_configs.primary_filter else 'Filter',
         show_view_toggle=true,
-        expand_collapse_target=entity_type + 'Sections'
+        expand_collapse_target=entity_config.entity_type + 'Sections'
     ) }}
 </form>
 {% endset %}
 
 {% call page_layout(
-    entity_name or "Entity", 
+    entity_config.entity_name or "Entity", 
     entity_description or "Manage entities", 
     buttons=entity_buttons or [], 
     summary_data=entity_stats or {},
     filter_content=entity_filter_controls,
-    entity_name=entity_name
+    entity_name=entity_config.entity_name
 ) %}
 
 <!-- Dynamic Content Area -->
-<div id="{{ entity_type }}-content" 
-     hx-get="{{ url_for(entity_endpoint + '.content') }}?{{ request.query_string.decode('utf-8') }}"
+<div id="{{ entity_config.entity_type }}-content"
+     hx-get="{{ url_for(entity_config.entity_endpoint + '.content') }}?{{ request.query_string.decode('utf-8') }}"
      hx-trigger="load">
     <!-- Content will be loaded here via HTMX -->
     <div class="p-8 text-center text-gray-500">
-        Loading {{ entity_name|lower }}...
+        Loading {{ entity_config.entity_name|lower }}...
     </div>
 </div>
 
@@ -68,5 +68,5 @@
 {% endblock %}
 
 {% block modals %}
-{{ confirmation_modal((entity_type or 'entity') + '-confirmation-modal') }}
+{{ confirmation_modal((entity_config.entity_type or 'entity') + '-confirmation-modal') }}
 {% endblock %}
