@@ -36,12 +36,12 @@
 #}
 {% macro expand_collapse_controls(target_sections, additional_classes='') %}
 <div class="flex space-x-2 {{ additional_classes }}">
-    <button onclick="document.querySelectorAll('details').forEach(d => d.open = true)"
+    <button data-action="expand-all"
             class="text-sm text-blue-600 hover:text-blue-800">
         Expand All
     </button>
     <span class="text-gray-300">|</span>
-    <button onclick="document.querySelectorAll('details').forEach(d => d.open = false)"
+    <button data-action="collapse-all"
             class="text-sm text-blue-600 hover:text-blue-800">
         Collapse All
     </button>
@@ -101,7 +101,7 @@
        name="{{ model }}" 
        value="{{ item_id }}"
        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded {{ additional_classes }}"
-       onclick="event.stopPropagation()">
+       data-stop-propagation>
 {% endmacro %}
 
 {#

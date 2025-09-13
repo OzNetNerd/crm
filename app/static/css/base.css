@@ -18,6 +18,8 @@
 html {
     font-size: 100%;
     line-height: 1.5;
+    /* Prevent layout shift when scrollbar appears */
+    overflow-y: scroll;
 }
 
 body {

@@ -94,7 +94,7 @@
         <div class="card-padded">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-gray-900">Child Tasks</h3>
-                <button type="button" class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700" onclick="showNextChildTask()">Add Child Task</button>
+                <button type="button" class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700" data-action="show-next-child-task">Add Child Task</button>
             </div>
             
             <div id="childTasksContainer" class="space-y-4">
@@ -131,13 +131,19 @@
 
 
 {% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/features/multi-create.js') }}"></script>
 <script>
-// Multi-task functionality
-function showNextChildTask() {
-    const hiddenTask = document.querySelector('.child-task.hidden');
-    if (hiddenTask) {
-        hiddenTask.classList.remove('hidden');
+// Initialize event handlers for multi-create functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const addChildButton = document.querySelector('[data-action="show-next-child-task"]');
+    if (addChildButton) {
+        addChildButton.addEventListener('click', function() {
+            const hiddenTask = document.querySelector('.child-task.hidden');
+            if (hiddenTask) {
+                hiddenTask.classList.remove('hidden');
+            }
+        });
     }
-}
+});
 </script>
 {% endblock %}

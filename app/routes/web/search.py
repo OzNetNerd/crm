@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from sqlalchemy import or_
 from app.models import Task, Company, Stakeholder, Opportunity, User
 from app.utils.core.model_introspection import get_model_by_name
@@ -273,3 +273,138 @@ def autocomplete():
         ]
 
     return jsonify(suggestions)
+
+
+def _perform_search(query, entity_type, limit):
+    """Common search logic used by both JSON and HTMX endpoints"""
+    searchable_types = get_searchable_entity_types()
+    if entity_type == "all":
+        entity_types = list(searchable_types.keys())
+    else:
+        entity_types = [t.strip() for t in entity_type.split(",") if t.strip() in searchable_types]
+        if not entity_types:
+            entity_types = list(searchable_types.keys())
+
+    results = []
+
+    if "company" in entity_types:
+        if query:
+            companies = (
+                Company.query.filter(
+                    or_(
+                        Company.name.ilike(f"%{query}%"),
+                        Company.industry.ilike(f"%{query}%"),
+                    )
+                )
+                .limit(limit)
+                .all()
+            )
+        else:
+            companies = Company.query.limit(limit).all()
+
+        for company in companies:
+            results.append({
+                "id": company.id,
+                "type": "company",
+                "title": company.name,
+                "subtitle": f"{company.industry} • {company.location}" if company.industry else company.location,
+                "url": f"/companies/{company.id}",
+            })
+
+    if "stakeholder" in entity_types:
+        if query:
+            contacts = (
+                Stakeholder.query.join(Company)
+                .filter(
+                    or_(
+                        Stakeholder.name.ilike(f"%{query}%"),
+                        Stakeholder.email.ilike(f"%{query}%"),
+                        Company.name.ilike(f"%{query}%"),
+                    )
+                )
+                .limit(limit)
+                .all()
+            )
+        else:
+            contacts = Stakeholder.query.join(Company).limit(limit).all()
+
+        for contact in contacts:
+            results.append({
+                "id": contact.id,
+                "type": "contact",
+                "title": contact.name,
+                "subtitle": (
+                    f"{contact.job_title} at {contact.company.name}"
+                    if contact.job_title
+                    else contact.company.name
+                ),
+                "url": f"/contacts/{contact.id}",
+            })
+
+    if "opportunity" in entity_types:
+        if query:
+            opportunities = (
+                Opportunity.query.join(Company)
+                .filter(
+                    or_(
+                        Opportunity.name.ilike(f"%{query}%"),
+                        Company.name.ilike(f"%{query}%"),
+                    )
+                )
+                .limit(limit)
+                .all()
+            )
+        else:
+            opportunities = Opportunity.query.join(Company).limit(limit).all()
+
+        for opportunity in opportunities:
+            results.append({
+                "id": opportunity.id,
+                "type": "opportunity",
+                "title": opportunity.name,
+                "subtitle": f"{opportunity.company.name} • ${opportunity.value:,.0f}" if opportunity.value else opportunity.company.name,
+                "url": f"/opportunities/{opportunity.id}",
+            })
+
+    if "task" in entity_types:
+        if query:
+            tasks = (
+                Task.query.join(Company, Task.company)
+                .filter(
+                    or_(
+                        Task.description.ilike(f"%{query}%"),
+                        Company.name.ilike(f"%{query}%"),
+                    )
+                )
+                .limit(limit)
+                .all()
+            )
+        else:
+            tasks = Task.query.join(Company, Task.company).limit(limit).all()
+
+        for task in tasks:
+            results.append({
+                "id": task.id,
+                "type": "task",
+                "title": task.description,
+                "subtitle": f"{task.company.name} • {task.priority}" if task.priority else task.company.name,
+                "url": f"/tasks/{task.id}",
+            })
+
+    # Sort results by type and title
+    if results:
+        type_order = {"company": 0, "contact": 1, "opportunity": 2, "task": 3}
+        results.sort(key=lambda x: (type_order.get(x["type"], 4), x["title"].lower()))
+
+    return results[:limit]
+
+
+@search_bp.route("/htmx/search")
+def htmx_search():
+    """HTMX endpoint for live search - returns HTML instead of JSON"""
+    query = request.args.get("q", "").strip()
+    entity_type = request.args.get("type", "all")
+    limit = min(int(request.args.get("limit", 10)), 20)
+
+    results = _perform_search(query, entity_type, limit)
+    return render_template('components/search_results.html', results=results, query=query)

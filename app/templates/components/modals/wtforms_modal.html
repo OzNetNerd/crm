@@ -71,58 +71,5 @@
     </form>
 {% endcall %}
 
-<script>
-// Auto-focus modal for keyboard navigation and escape key handling
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.querySelector('.modal-overlay');
-    if (modal) {
-        modal.focus();
-        initializeModalValidation(modal);
-    }
-});
-
-// Also focus when modal is dynamically added via HTMX
-document.addEventListener('htmx:afterSwap', function(event) {
-    const modal = event.target.querySelector('.modal-overlay');
-    if (modal) {
-        modal.focus();
-        initializeModalValidation(modal);
-    }
-});
-
-function initializeModalValidation(modal) {
-    const form = modal.querySelector('form');
-    const saveButton = modal.querySelector('#modal-save-button');
-    
-    if (!form || !saveButton) return;
-    
-    // Get all required fields
-    const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
-    
-    // Function to check if all required fields are filled
-    function checkRequiredFields() {
-        let allFilled = true;
-        
-        requiredFields.forEach(field => {
-            if (field.type === 'checkbox') {
-                if (!field.checked) allFilled = false;
-            } else {
-                if (!field.value.trim()) allFilled = false;
-            }
-        });
-        
-        saveButton.disabled = !allFilled;
-    }
-    
-    // Initial check
-    checkRequiredFields();
-    
-    // Add event listeners to all form inputs
-    const allInputs = form.querySelectorAll('input, select, textarea');
-    allInputs.forEach(input => {
-        input.addEventListener('input', checkRequiredFields);
-        input.addEventListener('change', checkRequiredFields);
-    });
-}
-</script>
+<script type="module" src="{{ url_for('static', filename='js/features/modal-validation.js') }}"></script>
 

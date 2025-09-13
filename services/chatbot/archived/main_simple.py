@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from typing import List, Dict
 import json
+import os
 from datetime import datetime
 
 from database_simple import get_sync_session
@@ -181,4 +182,4 @@ def get_chat_widget():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main_simple:app", host="127.0.0.1", port=8001, reload=True)
+    uvicorn.run("main_simple:app", host="127.0.0.1", port=int(os.environ.get('PORT', '8001')), reload=True)

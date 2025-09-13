@@ -84,9 +84,9 @@ details > summary::-webkit-details-marker {
         </h3>
         {% if with_buttons %}
         <div class="flex items-center space-x-2 text-sm text-gray-500" x-show="expandedSections['{{ section_key }}']">
-            <button onclick="document.querySelectorAll('[data-group=\"{{ section_key }}\"] details').forEach(d => d.open = true)" class="hover:text-blue-600 transition-colors">Expand All</button>
+            <button data-action="expand-all" data-section="{{ section_key }}" class="hover:text-blue-600 transition-colors">Expand All</button>
             <span>|</span>
-            <button onclick="document.querySelectorAll('[data-group=\"{{ section_key }}\"] details').forEach(d => d.open = false)" class="hover:text-blue-600 transition-colors">Collapse All</button>
+            <button data-action="collapse-all" data-section="{{ section_key }}" class="hover:text-blue-600 transition-colors">Collapse All</button>
         </div>
         {% endif %}
     </div>

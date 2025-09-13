@@ -90,8 +90,7 @@
 #}
 {% macro bulk_actions_bar(entity_type, entity_plural, primary_action, secondary_action) %}
 <div id="bulk-actions-bar" 
-     style="display: none;" 
-     class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+     class="hidden bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
     <div class="flex items-center space-x-4">
         <span class="text-blue-800 font-medium" id="selected-count">0 {{ entity_plural }} selected</span>
         
@@ -112,7 +111,7 @@
         {% endif %}
     </div>
     
-    <button onclick="clearSelection()" class="text-blue-600 hover:text-blue-800">
+    <button data-action="clear-selection" class="text-blue-600 hover:text-blue-800">
         {{ icon('x-mark', 'md') }}
     </button>
 </div>
@@ -131,10 +130,10 @@
 #}
 {% macro css_expand_collapse_controls(data_group='', additional_classes='') %}
 <div class="flex items-center gap-4 border-l pl-4 {{ additional_classes }}">
-    <button onclick="document.querySelectorAll('details{% if data_group %}[data-group=\"{{ data_group }}\"]{% endif %}').forEach(d => d.open = true)"
+    <button data-action="expand-all"{% if data_group %} data-section="{{ data_group }}"{% endif %}
             class="text-secondary-dark hover:text-gray-900">Expand All</button>
     <div class="border-l border-gray-300 h-5"></div>
-    <button onclick="document.querySelectorAll('details{% if data_group %}[data-group=\"{{ data_group }}\"]{% endif %}').forEach(d => d.open = false)"
+    <button data-action="collapse-all"{% if data_group %} data-section="{{ data_group }}"{% endif %}
             class="text-secondary-dark hover:text-gray-900">Collapse All</button>
 </div>
 {% endmacro %}
