@@ -8,6 +8,7 @@ from wtforms import StringField, SelectField
 from wtforms.validators import DataRequired, Optional, Email, Length
 from ..base.base_forms import BaseForm
 from app.utils.core.model_introspection import ModelIntrospector
+from app.utils.forms.helpers import safe_int_coerce
 
 
 class StakeholderForm(BaseForm):
@@ -65,7 +66,7 @@ class StakeholderForm(BaseForm):
         'Company',
         validators=[DataRequired()],
         choices=[],  # Will be populated in __init__
-        coerce=int
+        coerce=safe_int_coerce
     )
 
     def get_modal_fields(self):

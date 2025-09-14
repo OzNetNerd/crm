@@ -2,6 +2,7 @@ from datetime import date
 from flask import Blueprint, render_template, request, jsonify
 from app.models import Opportunity, Company, Stakeholder, Note, db
 from app.utils.routes import add_content_route
+from app.utils.route_helpers.helpers import build_dropdown_configs, calculate_entity_stats, build_entity_buttons
 from app.utils.ui.formatters import DisplayFormatter
 
 # Create blueprint and add DRY content route
@@ -13,64 +14,21 @@ add_content_route(opportunities_bp, Opportunity)
 def index():
     """
     Opportunities index page with pipeline overview.
-
-    Uses model methods for cleaner aggregation logic.
     """
-    # Get filter parameters for initial state and URL persistence
-    group_by = request.args.get("group_by", "stage")
-    sort_by = request.args.get("sort_by", "value")
-    sort_direction = request.args.get("sort_direction", "desc")
-    show_completed = request.args.get("show_completed", "false").lower() == "true"
-    primary_filter = (
-        request.args.get("primary_filter", "").split(",")
-        if request.args.get("primary_filter")
-        else []
+    # Use DRY helpers instead of duplicated static strings
+    entity_config = Opportunity.__entity_config__.copy()
+    entity_config['entity_buttons'] = build_entity_buttons(Opportunity)
+
+    # Map model field names to template expected names for compatibility
+    entity_config['entity_endpoint'] = entity_config['endpoint_name']
+    entity_config['entity_name'] = entity_config['display_name']
+    entity_config['entity_name_singular'] = entity_config['display_name_singular']
+
+    return render_template("base/entity_index.html",
+        entity_config=entity_config,
+        dropdown_configs=build_dropdown_configs(Opportunity),
+        entity_stats=calculate_entity_stats(Opportunity)
     )
-    secondary_filter = (
-        request.args.get("secondary_filter", "").split(",")
-        if request.args.get("secondary_filter")
-        else []
-    )
-
-    # Get all opportunities for display
-    opportunities = Opportunity.query.join(Company).all()
-
-    # Use model method for total value calculation
-    total_value = Opportunity.calculate_pipeline_value()
-
-    # Generate opportunity stats
-    entity_stats = {
-        'title': 'Opportunities Overview',
-        'stats': [
-            {
-                'value': len(opportunities),
-                'label': 'Total Opportunities'
-            },
-            {
-                'value': DisplayFormatter.format_currency(total_value),
-                'label': 'Total Pipeline Value'
-            },
-            {
-                'value': len([e for e in opportunities if e.stage == 'closed-won']),
-                'label': 'Closed Won'
-            },
-            {
-                'value': len(set(e.company_id for e in opportunities if e.company_id)),
-                'label': 'Companies in Pipeline'
-            }
-        ]
-    }
-
-    # Get standardized context using universal helper
-    # Removed over-engineered helper
-    # Simple context with basic dropdown configs
-    context = {
-        "entity_config": {"entity_name": "Opportunities", "entity_type": "opportunity", "entity_endpoint": "opportunities", "entity_buttons": ["opportunities"]},
-        "dropdown_configs": {"group_by": {"options": [{"value": "stage", "label": "Stage"}], "current_value": "stage"}, "sort_by": {"options": [{"value": "name", "label": "Name"}], "current_value": "name"}},
-        "entity_stats": entity_stats or {}
-    }
-
-    return render_template("base/entity_index.html", **context)
 
 
 @opportunities_bp.route("/<int:opportunity_id>", methods=["DELETE"])

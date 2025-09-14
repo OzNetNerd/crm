@@ -9,6 +9,7 @@ business organizations that the CRM system manages relationships with.
 from flask import Blueprint, render_template, request
 from app.models import Company, Stakeholder, Opportunity
 from app.utils.routes import add_content_route
+from app.utils.route_helpers.helpers import build_dropdown_configs, calculate_entity_stats, build_entity_buttons
 
 # Create blueprint and add DRY content route
 companies_bp = Blueprint("companies", __name__)
@@ -19,16 +20,8 @@ add_content_route(companies_bp, Company)
 def index():
     """
     Main companies index page displaying all companies with statistics.
-
-    Provides a comprehensive view of all companies in the system including
-    associated stakeholders and opportunities. Includes statistical overview
-    and supports filtering, sorting, and grouping operations.
-
-    Returns:
-        Rendered HTML template with companies data, statistics, and UI controls.
     """
-    
-    # Get all companies with relationships
+    # Get company data for templates that need it
     companies = Company.query.all()
 
     # Get all contacts and opportunities for global data
@@ -77,65 +70,22 @@ def index():
         for company in companies
     ]
 
-    # Generate company stats directly
-    entity_stats = {
-        'title': 'Companies Overview',
-        'stats': [
-            {
-                'value': len(companies),
-                'label': 'Total Companies'
-            },
-            {
-                'value': len([c for c in companies if c.industry]),
-                'label': 'With Industry'
-            },
-            {
-                'value': sum(len(c.stakeholders or []) for c in companies),
-                'label': 'Total Stakeholders'
-            },
-            {
-                'value': sum(len(c.opportunities or []) for c in companies),
-                'label': 'Total Opportunities'
-            }
-        ]
-    }
-    
+    # Use DRY helpers instead of duplicated static strings
+    entity_config = Company.__entity_config__.copy()
+    entity_config['entity_buttons'] = build_entity_buttons(Company)
 
-    # Simple context building - no over-engineered helpers
-    context = {
-        'entity_config': {
-            'entity_name': 'Companies',
-            'entity_name_singular': 'Company',
-            'entity_description': 'Manage your companies',
-            'entity_type': 'company',
-            'entity_endpoint': 'companies',
-            'entity_buttons': ['companies']
-        },
-        'entity_stats': entity_stats,
-        'companies': companies,
-        'companies_data': companies_data,
-        'dropdown_configs': {
-            'group_by': {
-                'options': [
-                    {'value': 'industry', 'label': 'Industry'},
-                    {'value': 'name', 'label': 'Name'}
-                ],
-                'current_value': request.args.get('group_by', 'industry'),
-                'placeholder': 'Group by...'
-            },
-            'sort_by': {
-                'options': [
-                    {'value': 'name', 'label': 'Name'},
-                    {'value': 'industry', 'label': 'Industry'},
-                    {'value': 'created_at', 'label': 'Created Date'}
-                ],
-                'current_value': request.args.get('sort_by', 'name'),
-                'placeholder': 'Sort by...'
-            }
-        }
-    }
+    # Map model field names to template expected names for compatibility
+    entity_config['entity_endpoint'] = entity_config['endpoint_name']
+    entity_config['entity_name'] = entity_config['display_name']
+    entity_config['entity_name_singular'] = entity_config['display_name_singular']
 
-    return render_template("base/entity_index.html", **context)
+    return render_template("base/entity_index.html",
+        entity_config=entity_config,
+        dropdown_configs=build_dropdown_configs(Company),
+        entity_stats=calculate_entity_stats(Company),
+        companies=companies,
+        companies_data=companies_data
+    )
 
 
 
