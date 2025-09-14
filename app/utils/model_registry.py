@@ -1,49 +1,48 @@
 """
-Model Registry - Simple model lookup and metadata management
+Simple Model Registry - DRY model lookup without unnecessary abstraction.
+
+Uses the existing get_entity_config() auto-generation instead of duplicating
+field discovery and pluralization logic.
 """
 
-from typing import Dict, List, Type
-from .model_metadata import ModelMetadata
+# Simple dict to store model classes
+MODELS = {}
 
 
-class ModelRegistry:
-    """Simple model registry for dynamic model access"""
-    _models: Dict[str, Type] = {}
-    _metadata_cache: Dict[str, ModelMetadata] = {}
+def register_model(model_class, name=None):
+    """
+    Register a model class for dynamic access.
 
-    @classmethod
-    def register_model(cls, model_class: Type, name: str = None) -> Type:
-        """Register a model class for dynamic access"""
-        model_name = name or model_class.__name__.lower()
-        cls._models[model_name] = model_class
-        cls._metadata_cache[model_name] = ModelMetadata(model_class)
-        return model_class
+    Args:
+        model_class: The model class to register
+        name: Optional custom name (defaults to class name lowercased)
 
-    @classmethod
-    def get_model(cls, model_name: str) -> Type:
-        """Get model class by name"""
-        if model_name not in cls._models:
-            raise ValueError(f"Model '{model_name}' not registered in ModelRegistry")
-        return cls._models[model_name]
+    Returns:
+        The model class (for decorator usage)
+    """
+    name = name or model_class.__name__.lower()
+    MODELS[name] = model_class
+    return model_class
 
-    @classmethod
-    def get_model_metadata(cls, model_name: str) -> ModelMetadata:
-        """Get cached metadata for model"""
-        if model_name not in cls._metadata_cache:
-            model_class = cls.get_model(model_name)
-            cls._metadata_cache[model_name] = ModelMetadata(model_class)
-        return cls._metadata_cache[model_name]
 
-    @classmethod
-    def list_models(cls) -> List[str]:
-        """Get all registered model names"""
-        return list(cls._models.keys())
+def get_model(name):
+    """
+    Get model class by name.
 
-    @classmethod
-    def get_display_names(cls, model_name: str) -> Dict[str, str]:
-        """Get display names for entity"""
-        metadata = cls.get_model_metadata(model_name)
-        return {
-            'singular': metadata.display_name,
-            'plural': metadata.display_name_plural
-        }
+    Args:
+        name: Model name (case-insensitive)
+
+    Returns:
+        Model class or None if not found
+    """
+    return MODELS.get(name.lower())
+
+
+def list_models():
+    """
+    Get all registered model names.
+
+    Returns:
+        List of registered model names
+    """
+    return list(MODELS.keys())

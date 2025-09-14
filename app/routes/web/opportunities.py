@@ -1,27 +1,26 @@
-from datetime import date
-from flask import Blueprint, render_template, request, jsonify
-from app.models import Opportunity, Company, Stakeholder, Note, db
-from app.utils.routes import add_content_route
-from app.utils.route_helpers.helpers import build_dropdown_configs, calculate_entity_stats, build_entity_buttons
-from app.utils.ui.formatters import DisplayFormatter
+"""
+Opportunity web routes for the CRM application.
+"""
 
-# Create blueprint and add DRY content route
+from flask import Blueprint, jsonify
+from app.models import Opportunity, Company, Note, db
+
+# Create blueprint
 opportunities_bp = Blueprint("opportunities", __name__)
-add_content_route(opportunities_bp, Opportunity)
 
 
 @opportunities_bp.route("/")
 def index():
-    """
-    Opportunities index page with pipeline overview.
-    """
-    return render_template("base/entity_index.html",
-        entity_config={
-            **Opportunity.get_entity_config(),
-            'entity_buttons': build_entity_buttons(Opportunity)
-        },
-        dropdown_configs=build_dropdown_configs(Opportunity),
-        entity_stats=calculate_entity_stats(Opportunity)
+    """Main opportunities index page."""
+    return Opportunity.render_index()
+
+
+@opportunities_bp.route("/content")
+def content():
+    """HTMX endpoint for filtered opportunity content."""
+    return Opportunity.render_content(
+        filter_fields=['company_id', 'stage', 'priority'],
+        join_map={'company_name': [Company]}
     )
 
 
