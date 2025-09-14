@@ -17,11 +17,7 @@ from .model_helpers import (
     DUE_DATE_GROUPINGS
 )
 
-from .model_introspection import (
-    ModelIntrospector,
-    get_model_by_name,
-    get_all_model_configs
-)
+# Compatibility imports moved to end of file after stub definitions
 
 __all__ = [
     'create_choice_field_info',
