@@ -123,7 +123,7 @@
     
     <div x-show="open"
          class="dropdown-menu"
-         x-cloak
+         x-cloak>
         {% if is_single %}
             {# Single select options #}
             {% for option in options %}
@@ -264,7 +264,7 @@
 
     <div x-show="open"
          class="dropdown-menu"
-         x-cloak
+         x-cloak>
 
         {% for option in options %}
             {%- if option is mapping -%}
