@@ -297,16 +297,9 @@ class Stakeholder(BaseModel):
 
     def to_display_dict(self):
         """Convert stakeholder to dictionary with pre-formatted display fields"""
-        from app.utils.ui.formatters import create_display_dict
-        
-        # Get base dictionary
-        result = self.to_dict()
-        
-        # Add formatted display fields at source
-        display_fields = create_display_dict(self)
-        result.update(display_fields)
-        
-        return result
+        # For now, just return the base dictionary
+        # Templates will handle formatting using Jinja2 macros
+        return self.to_dict()
     
     @property
     def contact_info_status(self):

@@ -1,5 +1,6 @@
 {# Use modern action buttons from base buttons macro #}
 {% from 'macros/base/buttons.html' import action_button %}
+{% from 'macros/formatting.html' import format_datetime %}
 {# Notes Display Component - Shows list of notes with standardized action buttons #}
 <div class="notes-list space-y-3" id="notes-{{ entity_id }}">
     {% for note in notes %}
@@ -7,7 +8,7 @@
             <div class="flex justify-between items-start">
                 <div class="flex-1">
                     <p class="text-sm text-gray-800">{{ note.content }}</p>
-                    <p class="text-xs text-gray-500 mt-1">{{ note.created_at_formatted or 'Today' }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ format_datetime(note.created_at, '%d/%m/%y %H:%M') if note.created_at else 'Today' }}</p>
                 </div>
                 {% if show_delete|default(true) %}
                 <div class="ml-2">

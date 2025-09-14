@@ -579,19 +579,8 @@ class Task(BaseModel):
             >>> print(display_data['status_display'])
             'In Progress'
         """
-        from app.utils.ui.formatters import create_display_dict
-
         # Get base dictionary
         result = self.to_dict()
-
-        # Add formatted display fields at source
-        display_fields = create_display_dict(self)
-        result.update(display_fields)
-
-        # Add task-specific formatted fields
-        if self.opportunity_value:
-            from app.utils.ui.formatters import DisplayFormatter
-            result['opportunity_value_formatted'] = DisplayFormatter.format_currency(self.opportunity_value)
 
         # Add display-friendly versions of choice fields
         result['status_display'] = self.status.replace('-', ' ').replace('_', ' ').title() if self.status else ''

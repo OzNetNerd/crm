@@ -252,10 +252,10 @@ class Opportunity(BaseModel):
             >>> {'prospect': 150000, 'qualified': 250000, ...}
         """
         # Get stages using existing DRY method
-        stages = cls.get_field_choices('stage')
+        stages = cls.get_stage_choices()
 
         breakdown = {}
-        for stage_value, stage_label in stages:
+        for stage_value in stages:
             breakdown[stage_value] = cls.calculate_pipeline_value(stage_value)
 
         # Add total
@@ -511,18 +511,10 @@ class Opportunity(BaseModel):
             >>> print(display_data['stage_display'])
             'Closed Won'
         """
-        from app.utils.ui.formatters import create_display_dict, DisplayFormatter
-
         # Get base dictionary
         result = self.to_dict()
 
-        # Add formatted display fields at source
-        display_fields = create_display_dict(self)
-        result.update(display_fields)
-
-        # Add opportunity-specific formatted fields
-        result['value_formatted'] = DisplayFormatter.format_currency(self.value)
-        result['probability_formatted'] = DisplayFormatter.format_percentage(self.probability / 100.0 if self.probability else 0)
+        # Add opportunity-specific computed fields
         result['deal_age_formatted'] = f"{self.deal_age} days old"
 
         # Add display-friendly versions of choice fields

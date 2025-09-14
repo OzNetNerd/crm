@@ -8,7 +8,6 @@ Centralizes dashboard data fetching and processing to keep routes clean.
 from typing import Dict, Any, List
 from datetime import date
 from app.models import Task, Company, Stakeholder, Opportunity, Note, User
-from app.utils.ui.formatters import DisplayFormatter
 
 
 class DashboardService:
@@ -28,12 +27,14 @@ class DashboardService:
         breakdown = Opportunity.get_pipeline_breakdown()
 
         # Get first 4 stages for dashboard display
-        stages = Opportunity.get_field_choices('stage')[:4]
+        # Get stage choices and convert to list of tuples
+        stage_choices = Opportunity.get_stage_choices()
+        stages = [(k, v['label']) for k, v in list(stage_choices.items())[:4]]
 
         stats = []
         for stage_value, stage_label in stages:
             stats.append({
-                'value': DisplayFormatter.format_currency(breakdown.get(stage_value, 0)),
+                'value': breakdown.get(stage_value, 0),  # Return raw value, let template format
                 'label': stage_label.title(),
                 'status': stage_value
             })
@@ -53,16 +54,15 @@ class DashboardService:
         Returns:
             Dictionary with recent_tasks, recent_notes, recent_opportunities
         """
-        # Get recent items using model methods
-        recent_tasks = Task.get_recent(exclude_status='complete')
-        # Note doesn't inherit from EntityModel, so use direct query
+        # Get recent items using direct queries
+        recent_tasks = Task.query.filter(Task.status != 'complete').order_by(Task.created_at.desc()).limit(5).all()
         recent_notes = Note.query.order_by(Note.created_at.desc()).limit(3).all()
-        recent_opportunities = Opportunity.get_recent(limit=3)
+        recent_opportunities = Opportunity.query.order_by(Opportunity.created_at.desc()).limit(3).all()
 
         return {
-            'recent_tasks': [task.to_display_dict() for task in recent_tasks],
-            'recent_notes': [note.to_display_dict() for note in recent_notes],
-            'recent_opportunities': [opp.to_display_dict() for opp in recent_opportunities]
+            'recent_tasks': recent_tasks,  # Pass raw objects, let templates handle formatting
+            'recent_notes': recent_notes,
+            'recent_opportunities': recent_opportunities
         }
 
     @staticmethod
@@ -75,12 +75,20 @@ class DashboardService:
         Returns:
             Dictionary with overdue_tasks and closing_soon opportunities
         """
-        overdue_tasks = Task.get_overdue()
+        from datetime import datetime, timedelta
+
+        # Get overdue tasks
+        overdue_tasks = Task.query.filter(
+            Task.due_date < date.today(),
+            Task.status != 'complete'
+        ).limit(5).all()
+
+        # Get opportunities closing soon
         closing_soon = Opportunity.get_closing_soon()
 
         return {
-            'overdue_tasks': [task.to_display_dict() for task in overdue_tasks],
-            'closing_soon': [opp.to_display_dict() for opp in closing_soon]
+            'overdue_tasks': overdue_tasks,  # Pass raw objects
+            'closing_soon': closing_soon
         }
 
     @staticmethod
@@ -94,16 +102,8 @@ class DashboardService:
         Returns:
             List of endpoint names for dashboard buttons
         """
-        models = [Company, Task, Opportunity, Stakeholder, User]
-        buttons = []
-
-        for model in models:
-            config = model.get_entity_config()
-            if config.get('show_dashboard_button', True):
-                # Use just tablename for dashboard buttons, not full endpoint
-                buttons.append(model.__tablename__)
-
-        return buttons
+        # Just return the main entity types for dashboard buttons
+        return ['companies', 'tasks', 'opportunities', 'stakeholders', 'users']
 
     @staticmethod
     def get_dashboard_data() -> Dict[str, Any]:
