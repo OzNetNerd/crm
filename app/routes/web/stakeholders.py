@@ -11,7 +11,7 @@ add_content_route(stakeholders_bp, Stakeholder)
 
 @stakeholders_bp.route("/")
 def index():
-    from app.utils.ui.index_helpers import UniversalIndexHelper
+    # Removed over-engineered helper
     
     # Get all stakeholders for stats
     stakeholders = Stakeholder.query.join(Company).all()
@@ -39,15 +39,12 @@ def index():
         ]
     }
     
-    context = UniversalIndexHelper.get_standardized_index_context(
-        entity_name='stakeholders',
-        default_group_by='company',
-        default_sort_by='name',
-        additional_context={
-            'entity_stats': entity_stats,
-            'stakeholders': stakeholders,
-        }
-    )
+    # Simple context with basic dropdown configs
+    context = {
+        "entity_config": {"entity_name": "Stakeholders", "entity_type": "stakeholder", "entity_endpoint": "stakeholders", "entity_buttons": ["stakeholders"]},
+        "dropdown_configs": {"group_by": {"options": [{"value": "job_title", "label": "Job Title"}], "current_value": "job_title"}, "sort_by": {"options": [{"value": "name", "label": "Name"}], "current_value": "name"}},
+        "entity_stats": entity_stats or {}
+    }
     
     # Add custom filters for stakeholders (job titles and companies)
     # Get unique job titles for secondary filter

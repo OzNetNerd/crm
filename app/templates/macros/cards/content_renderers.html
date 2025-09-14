@@ -97,7 +97,7 @@
     {% elif field_type == 'badge' %}
         {% if field_value %}
         {%- set normalized_value = field_value|lower|replace(' ', '-') -%}
-        {%- set badge_type = field_config.get('badge_type', 'status') -%}
+        {%- set badge_type = 'priority' if field_name == 'priority' else 'status' -%}
         {%- set display_text = field_value|replace('-', ' ')|replace('_', ' ')|title -%}
         <span class="badge badge-{{ badge_type }}-{{ normalized_value }}">
             {{ display_text }}

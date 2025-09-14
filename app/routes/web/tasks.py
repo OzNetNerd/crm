@@ -19,46 +19,6 @@ add_content_route(tasks_bp, Task)
 task_handler = BaseRouteHandler(Task, "tasks")
 
 
-def get_all_tasks_context():
-    """Simplified function to get all tasks for frontend-only filtering"""
-    # Get URL parameters for initial state (frontend will handle filtering/sorting)
-    show_completed = request.args.get("show_completed", "false").lower() == "true"
-    sort_by = request.args.get("sort_by", "due_date")
-    sort_direction = request.args.get("sort_direction", "asc")
-    group_by = request.args.get("group_by", "status")
-    primary_filter = (
-        request.args.get("priority_filter", "").split(",")
-        if request.args.get("priority_filter", "")
-        else []
-    )
-    entity_filter = (
-        request.args.get("entity_filter", "").split(",")
-        if request.args.get("entity_filter", "")
-        else []
-    )
-
-    # Get ALL tasks - filtering/sorting will be done in frontend
-    all_tasks = Task.query.order_by(Task.created_at.desc()).all()
-
-    return {
-        "all_tasks": all_tasks,
-        "show_completed": show_completed,
-        "sort_by": sort_by,
-        "sort_direction": sort_direction,
-        "group_by": group_by,
-        "primary_filter": primary_filter,
-        "entity_filter": entity_filter,
-        "today": date.today(),
-    }
-
-
-def get_filtered_tasks_context():
-    """Server-side filtering and sorting for HTMX endpoints - DRY version"""
-    return task_filter_manager.get_filtered_context(
-        custom_filters=task_custom_filters,
-        custom_sorting=task_custom_sorting,
-        custom_grouper=task_custom_groupers
-    )
 
 
 
@@ -68,32 +28,27 @@ def get_filtered_tasks_context():
 
 @tasks_bp.route("/")
 def index():
-    from app.utils.ui.index_helpers import UniversalIndexHelper
-    
-    # Get all context data for frontend-only filtering
-    context = get_all_tasks_context()
+    # Get all tasks
+    all_tasks = Task.query.order_by(Task.created_at.desc()).all()
 
     # Convert tasks to dictionaries for JSON serialization (for Alpine.js compatibility)
     tasks = []
-    for i, task in enumerate(context["all_tasks"]):
+    for i, task in enumerate(all_tasks):
         try:
             task_dict = task.to_dict()
             tasks.append(task_dict)
         except Exception as e:
             logging.error(f"Task {i} (ID: {task.id}) failed to serialize: {e}")
 
-
     # Test final JSON serialization
     try:
         import json
-
         json_str = json.dumps(tasks)
     except Exception as e:
         logging.error(f"Final JSON serialization failed: {e}")
         tasks = []
 
-    # Custom entity stats for tasks
-    all_tasks = context["all_tasks"]
+    # Simple entity stats
     entity_stats = {
         'title': 'Task Summary',
         'stats': [
@@ -116,19 +71,43 @@ def index():
         ]
     }
 
-    # Get standardized context using universal helper, preserving existing params from context
-    base_context = UniversalIndexHelper.get_standardized_index_context(
-        entity_name='tasks',
-        default_group_by=context.get("group_by", "status"),
-        default_sort_by=context.get("sort_by", "due_date"),
-        additional_context={
-            'entity_stats': entity_stats,
-            'tasks': tasks,
-            'tasks_objects': context["all_tasks"],
+    # Simple context building - no over-engineered helpers
+    base_context = {
+        'entity_config': {
+            'entity_name': 'Tasks',
+            'entity_name_singular': 'Task',
+            'entity_description': 'Manage your tasks',
+            'entity_type': 'task',
+            'entity_endpoint': 'tasks',
+            'entity_buttons': ['tasks']
+        },
+        'entity_stats': entity_stats,
+        'tasks': tasks,
+        'tasks_objects': all_tasks,
+        'dropdown_configs': {
+            'group_by': {
+                'options': [
+                    {'value': 'status', 'label': 'Status'},
+                    {'value': 'priority', 'label': 'Priority'},
+                    {'value': 'due_date', 'label': 'Due Date'}
+                ],
+                'current_value': request.args.get('group_by', 'status'),
+                'placeholder': 'Group by...'
+            },
+            'sort_by': {
+                'options': [
+                    {'value': 'due_date', 'label': 'Due Date'},
+                    {'value': 'priority', 'label': 'Priority'},
+                    {'value': 'created_at', 'label': 'Created Date'},
+                    {'value': 'status', 'label': 'Status'}
+                ],
+                'current_value': request.args.get('sort_by', 'due_date'),
+                'placeholder': 'Sort by...'
+            }
         }
-    )
+    }
     
-    # Add custom entity filter for tasks
+    # Add custom filter dropdowns for tasks
     ENTITY_TYPES = [
         {'value': 'company', 'label': Company.__name__},
         {'value': 'opportunity', 'label': Opportunity.__name__}
@@ -136,8 +115,34 @@ def index():
     base_context['dropdown_configs']['entity_filter'] = {
         'button_text': 'All Entities',
         'options': ENTITY_TYPES,
-        'current_values': context["entity_filter"],
+        'current_values': request.args.getlist('entity_filter'),
         'name': 'entity_filter'
+    }
+
+    # Add status filter
+    STATUS_OPTIONS = [
+        {'value': 'todo', 'label': 'To Do'},
+        {'value': 'in-progress', 'label': 'In Progress'},
+        {'value': 'complete', 'label': 'Complete'}
+    ]
+    base_context['dropdown_configs']['primary_filter'] = {
+        'button_text': 'All Status',
+        'options': STATUS_OPTIONS,
+        'current_values': request.args.getlist('primary_filter'),
+        'name': 'primary_filter'
+    }
+
+    # Add priority filter
+    PRIORITY_OPTIONS = [
+        {'value': 'high', 'label': 'High'},
+        {'value': 'medium', 'label': 'Medium'},
+        {'value': 'low', 'label': 'Low'}
+    ]
+    base_context['dropdown_configs']['secondary_filter'] = {
+        'button_text': 'All Priority',
+        'options': PRIORITY_OPTIONS,
+        'current_values': request.args.getlist('secondary_filter'),
+        'name': 'secondary_filter'
     }
 
     return render_template("base/entity_index.html", **base_context)
