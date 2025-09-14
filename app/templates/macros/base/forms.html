@@ -280,10 +280,10 @@
             <!-- Add HTMX validation for unique fields -->
             {% set needs_validation = false %}
             {% set entity_type = "" %}
-            {% if field.form.__class__.__name__ == 'CompanyModalForm' and field.name == 'name' %}
+            {% if field.form.__class__.__name__ == 'CompanyForm' and field.name == 'name' %}
                 {% set needs_validation = true %}
                 {% set entity_type = "company" %}
-            {% elif field.form.__class__.__name__ == 'StakeholderModalForm' and field.name == 'email' %}
+            {% elif field.form.__class__.__name__ == 'StakeholderForm' and field.name == 'name' %}
                 {% set needs_validation = true %}
                 {% set entity_type = "stakeholder" %}
             {% endif %}
