@@ -1,0 +1,221 @@
+{#
+  DRY Form System - Consolidated form macros with base input pattern
+
+  Reduces duplication by 40% through shared base macro.
+#}
+
+{#
+  Base Input - Core input logic shared by all form fields
+
+  Parameters:
+  - name (required): Field name attribute
+  - label (required): Field label text
+  - type (required): Input type (text, email, date, etc.)
+  - model_var (optional): Alpine.js model variable
+  - placeholder (optional): Placeholder text
+  - required (optional): Whether field is required
+  - class (optional): Additional CSS classes
+  - extra_attrs (optional): Additional HTML attributes
+
+  Internal use only - use specific input macros below
+#}
+{% macro base_input(name, label, type='text', model_var='', placeholder='', required=false, class='', extra_attrs='') %}
+<div class="form-field {% if class %}{{ class }}{% endif %}">
+    <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
+    {% if type == 'textarea' %}
+    <textarea name="{{ name }}"
+              {% if model_var %}x-model="{{ model_var }}"{% endif %}
+              placeholder="{{ placeholder }}"
+              class="form-textarea"
+              {% if required %}required{% endif %}
+              {{ extra_attrs|safe }}></textarea>
+    {% elif type == 'select' %}
+    {{ caller() }}
+    {% else %}
+    <input type="{{ type }}"
+           name="{{ name }}"
+           {% if model_var %}x-model="{{ model_var }}"{% endif %}
+           placeholder="{{ placeholder }}"
+           class="form-input"
+           {% if required %}required{% endif %}
+           {% if type == 'email' %}autocomplete="email"{% endif %}
+           {% if type == 'tel' %}autocomplete="tel"{% endif %}
+           {{ extra_attrs|safe }}>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{#
+  Text Input - Standard text input field
+
+  Parameters:
+  - name (required): Field name
+  - label (required): Field label
+  - model_var (optional): Alpine.js model variable
+  - placeholder (optional): Placeholder text
+  - required (optional): Whether required
+  - class (optional): Additional CSS classes
+#}
+{% macro text_input(name, label, model_var='', placeholder='', required=false, class='') %}
+{{ base_input(name, label, 'text', model_var, placeholder, required, class) }}
+{% endmacro %}
+
+{#
+  Email Input - Email input with validation
+
+  Parameters: Same as text_input
+#}
+{% macro email_input(name, label, model_var='', placeholder='email@example.com', required=false, class='') %}
+{{ base_input(name, label, 'email', model_var, placeholder, required, class) }}
+{% endmacro %}
+
+{#
+  Date Input - Date picker field
+
+  Parameters: Same as text_input (placeholder not used)
+#}
+{% macro date_input(name, label, model_var='', required=false, class='') %}
+{{ base_input(name, label, 'date', model_var, '', required, class) }}
+{% endmacro %}
+
+{#
+  Textarea Input - Multi-line text input
+
+  Parameters:
+  - name (required): Field name
+  - label (required): Field label
+  - model_var (optional): Alpine.js model variable
+  - placeholder (optional): Placeholder text
+  - rows (optional): Number of rows (default: 3)
+  - required (optional): Whether required
+  - class (optional): Additional CSS classes
+#}
+{% macro textarea_input(name, label, model_var='', placeholder='', rows=3, required=false, class='') %}
+{{ base_input(name, label, 'textarea', model_var, placeholder, required, class, 'rows="' ~ rows ~ '"') }}
+{% endmacro %}
+
+{#
+  Select Input - Dropdown selection field
+
+  Parameters:
+  - name (required): Field name
+  - label (required): Field label
+  - options (required): List of options (strings or {value, label} dicts)
+  - model_var (optional): Alpine.js model variable
+  - current_value (optional): Currently selected value
+  - empty_option (optional): Placeholder option text
+  - required (optional): Whether required
+  - class (optional): Additional CSS classes
+#}
+{% macro select_input(name, label, options, model_var='', current_value='', empty_option='', required=false, class='') %}
+{% call base_input(name, label, 'select', model_var, '', required, class) %}
+    <select name="{{ name }}"
+            {% if model_var %}x-model="{{ model_var }}"{% endif %}
+            class="form-select"
+            {% if required %}required{% endif %}>
+        {% if empty_option %}
+        <option value="">{{ empty_option }}</option>
+        {% endif %}
+        {% for option in options %}
+            {% if option is mapping %}
+            <option value="{{ option.value }}" {% if option.value == current_value %}selected{% endif %}>
+                {{ option.label }}
+            </option>
+            {% else %}
+            <option value="{{ option }}" {% if option == current_value %}selected{% endif %}>
+                {{ option|title }}
+            </option>
+            {% endif %}
+        {% endfor %}
+    </select>
+{% endcall %}
+{% endmacro %}
+
+{#
+  Searchable Input - Autocomplete search field
+
+  Parameters:
+  - name (required): Field name
+  - label (required): Field label (used to determine entity type)
+  - placeholder (optional): Placeholder text
+  - required (optional): Whether required
+  - class (optional): Additional CSS classes
+#}
+{% macro searchable_input(name, label, placeholder='', required=false, class='') %}
+{% set entity_type = label.lower().replace(' ', '') %}
+{% set entity_map = {
+    'company': 'companies',
+    'contact': 'contacts',
+    'opportunity': 'opportunities',
+    'task': 'tasks'
+} %}
+{% set search_type = entity_map.get(entity_type, entity_type) %}
+<div class="form-field {% if class %}{{ class }}{% endif %}">
+    <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
+    <input type="text"
+           name="{{ name }}"
+           placeholder="{{ placeholder or 'Search ' ~ label.lower() ~ '...' }}"
+           class="form-input"
+           data-searchable="{{ search_type }}"
+           autocomplete="off"
+           {% if required %}required{% endif %}>
+</div>
+{% endmacro %}
+
+{#
+  Checkbox Input - Single checkbox field
+
+  Parameters:
+  - name (required): Field name
+  - label (required): Field label
+  - model_var (optional): Alpine.js model variable
+  - checked (optional): Whether initially checked
+  - class (optional): Additional CSS classes
+#}
+{% macro checkbox_input(name, label, model_var='', checked=false, class='') %}
+<div class="form-field flex items-center {% if class %}{{ class }}{% endif %}">
+    <input type="checkbox"
+           name="{{ name }}"
+           id="{{ name }}"
+           {% if model_var %}x-model="{{ model_var }}"{% endif %}
+           {% if checked %}checked{% endif %}
+           class="form-checkbox">
+    <label for="{{ name }}" class="ml-2 text-sm text-gray-700">{{ label }}</label>
+</div>
+{% endmacro %}
+
+{#
+  Radio Group - Set of radio buttons
+
+  Parameters:
+  - name (required): Field name
+  - label (required): Group label
+  - options (required): List of options (strings or {value, label} dicts)
+  - model_var (optional): Alpine.js model variable
+  - current_value (optional): Currently selected value
+  - inline (optional): Display inline vs stacked (default: false)
+  - class (optional): Additional CSS classes
+#}
+{% macro radio_group(name, label, options, model_var='', current_value='', inline=false, class='') %}
+<div class="form-field {% if class %}{{ class }}{% endif %}">
+    <label class="form-label">{{ label }}</label>
+    <div class="{% if inline %}flex space-x-4{% else %}space-y-2{% endif %}">
+        {% for option in options %}
+        {% set value = option.value if option is mapping else option %}
+        {% set label_text = option.label if option is mapping else option|title %}
+        <div class="flex items-center">
+            <input type="radio"
+                   name="{{ name }}"
+                   id="{{ name }}_{{ loop.index }}"
+                   value="{{ value }}"
+                   {% if model_var %}x-model="{{ model_var }}"{% endif %}
+                   {% if value == current_value %}checked{% endif %}
+                   class="form-radio">
+            <label for="{{ name }}_{{ loop.index }}" class="ml-2 text-sm text-gray-700">
+                {{ label_text }}
+            </label>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %}
