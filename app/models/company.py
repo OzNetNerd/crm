@@ -26,7 +26,9 @@ class Company(EntityModel):
     __tablename__ = "companies"
     
     __entity_config__ = {
-        'description': 'Manage your company relationships'
+        'description': 'Manage your company relationships',
+        'filter_fields': ['industry', 'size'],
+        'join_map': {}
     }
 
     id = db.Column(db.Integer, primary_key=True)

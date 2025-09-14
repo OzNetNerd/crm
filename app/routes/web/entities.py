@@ -9,29 +9,26 @@ from app.models import Company, Stakeholder, Opportunity, User
 # Create blueprint for generic entity routes
 entities_web_bp = Blueprint("entities", __name__)
 
-# Entity mapping - same as API but for web routes
-WEB_ENTITIES = {
-    'companies': {
-        'model': Company,
-        'filter_fields': ['industry', 'size'],
-        'join_map': {}
-    },
-    'stakeholders': {
-        'model': Stakeholder,
-        'filter_fields': ['company_id', 'job_title'],
-        'join_map': {'company_name': [Company]}
-    },
-    'opportunities': {
-        'model': Opportunity,
-        'filter_fields': ['company_id', 'stage', 'priority'],
-        'join_map': {'company_name': [Company]}
-    },
-    'teams': {
-        'model': User,
-        'filter_fields': ['job_title', 'department'],
-        'join_map': {}
-    }
-}
+# Dynamic entity mapping - DRY approach using model configuration
+def get_web_entities():
+    """Build WEB_ENTITIES dynamically from model configurations"""
+    entities = {}
+    models = [Company, Stakeholder, Opportunity, User]
+
+    for model in models:
+        config = model.get_entity_config()
+        if config.get('show_dashboard_button', True):
+            endpoint = config['entity_endpoint']
+            entities[endpoint] = {
+                'model': model,
+                'filter_fields': config.get('filter_fields', []),
+                'join_map': config.get('join_map', {})
+            }
+
+    return entities
+
+# Get entities dynamically from model configurations
+WEB_ENTITIES = get_web_entities()
 
 
 def create_web_route_handlers():

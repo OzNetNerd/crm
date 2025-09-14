@@ -62,7 +62,9 @@ class Stakeholder(EntityModel):
     __tablename__ = "stakeholders"
     
     __entity_config__ = {
-        'description': 'Manage your stakeholder relationships'
+        'description': 'Manage your stakeholder relationships',
+        'filter_fields': ['company_id', 'job_title'],
+        'join_map': {'company_name': ['Company']}
     }
 
     id = db.Column(db.Integer, primary_key=True)

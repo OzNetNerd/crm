@@ -21,10 +21,7 @@ from .entities import (
     EntityManager,
     StakeholderManager,
     TeamManager,
-    TaskEntityManager,
-    get_entities_for_forms,
-    assign_stakeholder_role,
-    get_entity_tasks,
+    TaskEntityManager
 )
 
 # UI utilities
@@ -52,7 +49,6 @@ __all__ = [
 
     # Entities
     'EntityManager',
-    'get_entities_for_forms',
 
     # UI
     # 'ModalService',  # Temporarily removed

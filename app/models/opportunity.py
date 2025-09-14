@@ -28,7 +28,9 @@ class Opportunity(EntityModel):
     __tablename__ = "opportunities"
     
     __entity_config__ = {
-        'description': 'Manage your sales opportunities'
+        'description': 'Manage your sales opportunities',
+        'filter_fields': ['company_id', 'stage', 'priority'],
+        'join_map': {'company_name': ['Company']}
     }
 
     id = db.Column(db.Integer, primary_key=True)

@@ -3,7 +3,7 @@ Entity management utilities for CRM
 Provides reusable functions for entity relationships, stakeholder management, and teams
 """
 
-from app.models import db
+from app.models import db, Company, Stakeholder, Opportunity, User, Task
 
 
 class EntityManager:
@@ -12,8 +12,6 @@ class EntityManager:
     @staticmethod
     def get_all_entities_for_selection():
         """Get all entities formatted for form selection dropdowns"""
-        from app.models import Company, Stakeholder, Opportunity
-        
         companies = Company.query.order_by(Company.name).all()
         contacts = Stakeholder.query.order_by(Stakeholder.name).all()
         opportunities = Opportunity.query.order_by(Opportunity.name).all()
@@ -42,19 +40,22 @@ class EntityManager:
             ],
         }
 
+    # Entity type mapping - DRY approach like routes
+    ENTITY_MODELS = {
+        'company': Company,
+        'stakeholder': Stakeholder,
+        'contact': Stakeholder,  # alias
+        'opportunity': Opportunity,
+        'user': User,
+        'task': Task
+    }
+
     @staticmethod
     def get_entity_by_type_and_id(entity_type, entity_id):
-        """Get entity object by type and ID - used across the application"""
-        if entity_type == "company":
-            return Company.query.get(entity_id)
-        elif entity_type == "stakeholder":
-            return Stakeholder.query.get(entity_id)
-        elif entity_type == "opportunity":
-            return Opportunity.query.get(entity_id)
-        elif entity_type == "user":
-            return User.query.get(entity_id)
-        elif entity_type == "task":
-            return Task.query.get(entity_id)
+        """Get entity object by type and ID - DRY approach"""
+        model = EntityManager.ENTITY_MODELS.get(entity_type)
+        if model:
+            return model.query.get(entity_id)
         return None
 
     @staticmethod
@@ -264,19 +265,3 @@ class TaskEntityManager:
         ]
 
 
-# Convenience functions for backward compatibility and ease of use
-def get_entities_for_forms():
-    """Convenience function for getting entities for form dropdowns"""
-    return EntityManager.get_all_entities_for_selection()
-
-
-def assign_stakeholder_role(contact_id, opportunity_id, role, is_primary=False):
-    """Convenience function for assigning stakeholder roles"""
-    return StakeholderManager.assign_stakeholder(
-        contact_id, opportunity_id, role, is_primary
-    )
-
-
-def get_entity_tasks(entity_type, entity_id, status_filter=None):
-    """Convenience function for getting entity tasks"""
-    return TaskEntityManager.get_tasks_for_entity(entity_type, entity_id, status_filter)

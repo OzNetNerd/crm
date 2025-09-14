@@ -26,7 +26,9 @@ class User(EntityModel):
         'entity_name': 'Teams',
         'entity_name_singular': 'Team Member',
         'description': 'Manage your team members',
-        'endpoint_name': 'teams'
+        'entity_endpoint': 'teams',
+        'filter_fields': ['job_title', 'department'],
+        'join_map': {}
     }
 
     id = db.Column(db.Integer, primary_key=True)
