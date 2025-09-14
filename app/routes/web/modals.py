@@ -75,7 +75,15 @@ def _render_modal(model_name, model_class, form, mode='create', entity=None, err
     if error:
         params['error'] = error
 
-    return render_template('components/modals/wtforms_modal.html', **params)
+    # Use dedicated templates for company and task modals (they have entity search)
+    if model_name.lower() == 'company':
+        template = 'components/modals/company_modal.html'
+    elif model_name.lower() == 'task':
+        template = 'components/modals/task_modal.html'
+    else:
+        template = 'components/modals/wtforms_modal.html'
+
+    return render_template(template, **params)
 
 
 def _handle_form_submission(model_name, model_class, form, entity=None):

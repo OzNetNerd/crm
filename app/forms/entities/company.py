@@ -34,6 +34,12 @@ class CompanyForm(BaseForm):
                 return
             raise ValidationError('A company with this name already exists.')
 
+    # Entity field (for related companies/stakeholders/opportunities)
+    entity = StringField(
+        'Related To',
+        validators=[Optional()],
+        render_kw={'placeholder': 'Search companies, contacts, opportunities...'}
+    )
 
     name = StringField(
         'Company Name',
@@ -76,4 +82,4 @@ class CompanyForm(BaseForm):
 
     def get_fields(self):
         """Return field names to display in modal"""
-        return ['name', 'industry', 'comments']
+        return ['entity', 'name', 'industry', 'comments']

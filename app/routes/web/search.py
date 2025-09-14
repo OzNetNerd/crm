@@ -100,6 +100,8 @@ def htmx_search():
     query = request.args.get("q", "").strip()
     entity_type = request.args.get("type", "all")
     limit = min(int(request.args.get("limit", 10)), 20)
+    mode = request.args.get("mode", "modal")  # 'modal' or 'select'
+    field_id = request.args.get("field_id", "")
 
     # Reuse the main search logic
     if entity_type == "all":
@@ -126,4 +128,8 @@ def htmx_search():
     results.sort(key=lambda x: (type_order.get(x["type"], 99), x.get("title", "").lower()))
     results = results[:limit]
 
-    return render_template('components/search_results.html', results=results, query=query)
+    return render_template('components/search_results.html',
+                         results=results,
+                         query=query,
+                         mode=mode,
+                         field_id=field_id)

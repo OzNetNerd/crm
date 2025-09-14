@@ -1,0 +1,56 @@
+{% from 'macros/base/icons.html' import icon %}
+
+{#
+  Simple Search Widget for Forms
+
+  Usage in forms:
+  {{ search_widget(form.entity) }}
+#}
+{% macro search_widget(field) %}
+<div class="relative">
+    <input type="text"
+           id="{{ field.id }}"
+           name="{{ field.name }}"
+           value="{{ field.data or '' }}"
+           placeholder="{{ field.render_kw.get('placeholder', 'Search...') if field.render_kw else 'Search...' }}"
+           class="form-input"
+           autocomplete="off"
+           hx-get="{{ url_for('search.htmx_search') }}"
+           hx-trigger="input changed delay:300ms, focus"
+           hx-target="#{{ field.id }}-results"
+           hx-vals='{"mode": "select", "field_id": "{{ field.id }}"}'>
+
+    <div id="{{ field.id }}-results" class="search-results hidden absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-auto">
+    </div>
+</div>
+{% endmacro %}
+
+{#
+  Global Search Dropdown for Navbar
+#}
+{% macro global_search_dropdown() %}
+<div class="search-container">
+    <div class="relative">
+        <input type="text"
+               id="global-search"
+               name="q"
+               placeholder="Search companies, contacts, opportunities..."
+               class="search-input"
+               autocomplete="off"
+               hx-get="{{ url_for('search.htmx_search') }}"
+               hx-trigger="input changed delay:300ms, focus"
+               hx-target="#search-results"
+               hx-indicator="#search-spinner">
+        <button id="advanced-search-btn"
+                class="search-button"
+                title="Advanced Search">
+            {{ icon('funnel', 'sm', 'text-gray-400 hover:text-gray-600') }}
+        </button>
+        <div id="search-spinner" class="htmx-indicator absolute right-8 top-2.5">
+            {{ icon('spinner', 'xs', 'animate-spin text-gray-400') }}
+        </div>
+    </div>
+    <div id="search-results" class="search-results hidden">
+    </div>
+</div>
+{% endmacro %}
