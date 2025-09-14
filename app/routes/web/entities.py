@@ -44,12 +44,6 @@ def get_default_sort(model):
     return 'id'
 
 
-def get_model_display_names(model):
-    """Get display names from model class."""
-    return {
-        'plural': model.get_display_name_plural(),
-        'singular': model.get_display_name()
-    }
 
 
 def create_routes():
@@ -92,11 +86,11 @@ def create_routes():
 def entity_index(model, table_name):
     """Generic index handler"""
     dropdown_configs = get_dropdowns_from_columns(model)
-    display_names = get_model_display_names(model)
 
-    # Get basic stats
+    # Get basic stats using model metadata
+    metadata = model.get_metadata()
     total = model.query.count()
-    stats = {'title': f'{display_names["plural"]} Overview', 'stats': [{'value': total, 'label': f'Total {display_names["plural"]}'}]}
+    stats = {'title': f'{metadata["entity_name"]} Overview', 'stats': [{'value': total, 'label': f'Total {metadata["entity_name"]}'}]}
 
     # Add status breakdown for models with status field
     if hasattr(model, 'status'):
@@ -107,12 +101,12 @@ def entity_index(model, table_name):
                 stats['stats'].append({'value': count, 'label': status.replace('-', ' ').replace('_', ' ').title()})
 
     entity_config = {
-        'entity_type': model.__name__.lower(),
-        'entity_name': display_names['plural'],
-        'entity_name_singular': display_names['singular'],
+        'entity_type': metadata['entity_type'],
+        'entity_name': metadata['entity_name'],
+        'entity_name_singular': metadata['entity_name_singular'],
         'content_endpoint': f'entities.{table_name}_content',
         'entity_buttons': [{
-            'title': f'New {display_names["singular"]}',
+            'title': f'New {metadata["entity_name_singular"]}',
             'url': f'/modals/{model.__name__}/create'
         }]
     }
@@ -184,16 +178,11 @@ def entity_content(model, table_name):
             'entities': entities
         }]
 
-    display_names = get_model_display_names(model)
-
     return render_template("shared/entity_content.html",
         grouped_entities=grouped_entities,
         group_by=group_by,
-        entity_type=model.__name__.lower(),
-        entity_name=display_names['plural'],
-        entity_name_singular=display_names['singular'],
-        entity_name_plural=display_names['plural'],
-        total_count=len(entities)
+        total_count=len(entities),
+        **model.get_metadata()
     )
 
 

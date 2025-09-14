@@ -34,13 +34,12 @@
   {{ card(stakeholder, overrides={'actions': custom_actions}) }}
 #}
 {% macro card(entity, expansion_enabled=true, card_classes='', content=none, overrides={}) %}
-{# Get entity type from metadata #}
-{% set metadata = get_model_metadata(entity.__class__.__name__.lower()) %}
-{% set entity_type = metadata.display_name.lower() %}
-{% set entity_type_plural = metadata.display_name_plural.lower() %}
+{# Self-contained - get what we need directly from entity #}
+{% set entity_type = entity.__class__.__name__.lower() %}
+{% set entity_name_plural = entity.__class__.get_display_name_plural() %}
 
 {% if content is none %}
-    {% set content = build_dynamic_card_config(entity_type_plural, entity) %}
+    {% set content = build_dynamic_card_config(entity_name_plural.lower(), entity) %}
     
     {# Apply overrides #}
     {% for section, override_config in overrides.items() %}
