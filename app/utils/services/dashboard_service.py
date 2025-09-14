@@ -100,7 +100,8 @@ class DashboardService:
         for model in models:
             config = model.get_entity_config()
             if config.get('show_dashboard_button', True):
-                buttons.append(config['entity_endpoint'])
+                # Use just tablename for dashboard buttons, not full endpoint
+                buttons.append(model.__tablename__)
 
         return buttons
 

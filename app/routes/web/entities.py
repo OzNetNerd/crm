@@ -18,8 +18,9 @@ def get_web_entities():
     for model in models:
         config = model.get_entity_config()
         if config.get('show_dashboard_button', True):
-            endpoint = config['entity_endpoint']
-            entities[endpoint] = {
+            # Use tablename as key for route generation, not full endpoint
+            tablename = model.__tablename__
+            entities[tablename] = {
                 'model': model,
                 'filter_fields': config.get('filter_fields', []),
                 'join_map': config.get('join_map', {})

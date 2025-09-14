@@ -151,7 +151,7 @@ class EntityModel(BaseModel):
             'entity_type': cls.__name__.lower(),
             'entity_name': cls.__tablename__.replace('_', ' ').title(),
             'entity_name_singular': cls.__name__,
-            'endpoint_name': cls.__tablename__,
+            'entity_endpoint': f'entities.{cls.__tablename__}',  # Full Flask endpoint name for templates
             'modal_path': f'/modals/{cls.__name__}',
             'show_dashboard_button': True
         }
