@@ -81,18 +81,120 @@
 
 {% if mode == 'select' %}
 <script>
-function selectEntity(fieldId, entityId, entityName, entityType) {
-    const field = document.getElementById(fieldId);
-    if (field) {
-        field.value = entityName;
-        field.dataset.entityId = entityId;
-        field.dataset.entityType = entityType;
+// Initialize badges on page load if there's existing data
+document.addEventListener('DOMContentLoaded', function() {
+    const widgets = document.querySelectorAll('.entity-search-widget');
+    widgets.forEach(widget => {
+        const fieldId = widget.dataset.fieldId;
+        const dataField = document.getElementById(fieldId + '-data');
+        const badgesDiv = document.getElementById(fieldId + '-badges');
 
-        const resultsDiv = document.getElementById(fieldId + '-results');
-        if (resultsDiv) {
-            resultsDiv.classList.add('hidden');
+        if (dataField && badgesDiv && dataField.value && dataField.value !== '[]') {
+            try {
+                const entities = JSON.parse(dataField.value);
+                entities.forEach(entity => {
+                    createEntityBadge(fieldId, entity.id, entity.name, entity.type);
+                });
+            } catch (e) {
+                console.error('Error loading entity badges:', e);
+            }
         }
+    });
+});
+
+function createEntityBadge(fieldId, entityId, entityName, entityType) {
+    const badgesDiv = document.getElementById(fieldId + '-badges');
+    if (!badgesDiv) return;
+
+    // Check if badge already exists
+    if (badgesDiv.querySelector(`[data-entity-id="${entityId}"][data-entity-type="${entityType}"]`)) {
+        return;
     }
+
+    const badge = document.createElement('span');
+    badge.className = `inline-flex items-center px-2 py-1 rounded-full text-xs font-medium badge badge-entity-${entityType}`;
+    badge.innerHTML = `
+        <span class="mr-1">
+            ${entityType === 'company' ? '🏢' :
+              entityType === 'contact' ? '👤' :
+              entityType === 'opportunity' ? '💼' :
+              entityType === 'task' ? '📋' : '📄'}
+        </span>
+        ${entityName}
+        <button type="button" onclick="removeEntityBadge('${fieldId}', '${entityId}', '${entityType}')" class="ml-1 text-current hover:text-red-600">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    `;
+    badge.dataset.entityId = entityId;
+    badge.dataset.entityType = entityType;
+    badgesDiv.appendChild(badge);
+}
+
+function selectEntity(fieldId, entityId, entityName, entityType) {
+    // Get elements
+    const searchField = document.getElementById(fieldId);
+    const dataField = document.getElementById(fieldId + '-data');
+    const badgesDiv = document.getElementById(fieldId + '-badges');
+    const resultsDiv = document.getElementById(fieldId + '-results');
+
+    if (!dataField || !badgesDiv) return;
+
+    // Parse existing data
+    let entities = [];
+    try {
+        entities = JSON.parse(dataField.value || '[]');
+    } catch (e) {
+        entities = [];
+    }
+
+    // Check if already selected
+    if (entities.some(e => e.id == entityId && e.type === entityType)) {
+        // Clear search and hide results
+        if (searchField) searchField.value = '';
+        if (resultsDiv) resultsDiv.classList.add('hidden');
+        return;
+    }
+
+    // Add new entity
+    entities.push({
+        id: entityId,
+        name: entityName,
+        type: entityType
+    });
+
+    // Update hidden field
+    dataField.value = JSON.stringify(entities);
+
+    // Create badge using helper function
+    createEntityBadge(fieldId, entityId, entityName, entityType);
+
+    // Clear search and hide results
+    if (searchField) searchField.value = '';
+    if (resultsDiv) resultsDiv.classList.add('hidden');
+}
+
+function removeEntityBadge(fieldId, entityId, entityType) {
+    const dataField = document.getElementById(fieldId + '-data');
+    const badgesDiv = document.getElementById(fieldId + '-badges');
+
+    if (!dataField || !badgesDiv) return;
+
+    // Parse and filter entities
+    let entities = [];
+    try {
+        entities = JSON.parse(dataField.value || '[]');
+    } catch (e) {
+        entities = [];
+    }
+
+    entities = entities.filter(e => !(e.id == entityId && e.type === entityType));
+    dataField.value = JSON.stringify(entities);
+
+    // Remove badge from display
+    const badge = badgesDiv.querySelector(`[data-entity-id="${entityId}"][data-entity-type="${entityType}"]`);
+    if (badge) badge.remove();
 }
 </script>
 {% endif %}
