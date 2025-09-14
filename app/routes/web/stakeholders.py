@@ -1,46 +1,43 @@
-from datetime import date
-from flask import Blueprint, render_template, request
-from app.models import Stakeholder, Company, Opportunity
-from app.utils.routes import add_content_route
-from app.utils.route_helpers.helpers import build_dropdown_configs, calculate_entity_stats, build_entity_buttons
-from collections import defaultdict
+"""
+Stakeholder web routes for the CRM application.
+"""
 
-# Create blueprint and add DRY content route
+from flask import Blueprint
+from app.models import Stakeholder, Company
+
+# Create blueprint
 stakeholders_bp = Blueprint("stakeholders", __name__)
-add_content_route(stakeholders_bp, Stakeholder)
 
 
 @stakeholders_bp.route("/")
 def index():
-    return render_template("base/entity_index.html",
-        entity_config={
-            **Stakeholder.get_entity_config(),
-            'entity_buttons': build_entity_buttons(Stakeholder)
-        },
-        dropdown_configs=build_dropdown_configs(Stakeholder),
-        entity_stats=calculate_entity_stats(Stakeholder)
+    """Main stakeholders index page."""
+    return Stakeholder.render_index()
+
+
+@stakeholders_bp.route("/content")
+def content():
+    """HTMX endpoint for filtered stakeholder content."""
+    return Stakeholder.render_content(
+        filter_fields=['company_id', 'job_title'],
+        join_map={'company_name': [Company]}
     )
-
-
-# Content route provided by DRY factory
 
 
 @stakeholders_bp.route("/modals/create", methods=['GET'])
 def create_modal():
-    """HTMX endpoint to show stakeholder creation modal"""
+    """HTMX endpoint to show stakeholder creation modal."""
     from app.templates.macros.modals.stakeholder.stakeholder_new import generic_new_modal
     from app.templates.macros.modals.configs import stakeholder_new_config
-    
+
     return generic_new_modal('stakeholder', stakeholder_new_config)
 
 
-@stakeholders_bp.route("/modals/<int:stakeholder_id>/edit", methods=['GET'])  
+@stakeholders_bp.route("/modals/<int:stakeholder_id>/edit", methods=['GET'])
 def edit_modal(stakeholder_id):
-    """HTMX endpoint to show stakeholder edit modal"""
+    """HTMX endpoint to show stakeholder edit modal."""
     stakeholder = Stakeholder.query.get_or_404(stakeholder_id)
     from app.templates.macros.modals.stakeholder.stakeholder_detail import generic_detail_modal
     from app.templates.macros.modals.configs import stakeholder_detail_config
-    
+
     return generic_detail_modal('stakeholder', stakeholder, stakeholder_detail_config)
-
-

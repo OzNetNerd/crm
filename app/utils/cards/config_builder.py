@@ -25,16 +25,16 @@ class CardConfigBuilder:
     
     # Special field mappings
     SPECIAL_FIELDS = {
-        'value': {'type': 'currency', 'classes': 'text-green-600 font-semibold'},
+        'value': {'type': 'currency'},
         'probability': {'type': 'progress', 'max_value': 100},
         'status': {'type': 'badge', 'color': 'auto'},
         'stage': {'type': 'badge', 'color': 'blue'},
         'priority': {'type': 'badge', 'color': 'auto'},
         'role': {'type': 'badge', 'color': 'green'},
         'size': {'type': 'badge', 'color': 'blue'},
-        'industry': {'type': 'text', 'classes': 'text-gray-600'},
+        'industry': {'type': 'text'},
         'email': {'type': 'link', 'url_template': 'mailto:{value}'},
-        'phone': {'type': 'text', 'classes': 'font-mono'},
+        'phone': {'type': 'text'},
         'website': {'type': 'link', 'url_template': '{value}'}
     }
     
@@ -55,22 +55,13 @@ class CardConfigBuilder:
         """Build header section with primary display fields."""
         header_fields = []
         
-        # Always include name/title field first with entity-specific styling
+        # Always include name/title field first
         name_field = cls._get_name_field(model_class)
         if name_field:
-            entity_name = model_class.__name__.lower()
-            # Map entity types to semantic classes for consistent styling with dashboard
-            entity_class_mapping = {
-                'company': 'text-company-name',
-                'stakeholder': 'text-stakeholder-name',
-                'team': 'text-team-member',
-                'opportunity': 'font-medium text-gray-900'  # Opportunity names don't have special styling
-            }
-            name_class = entity_class_mapping.get(entity_name, 'font-medium text-gray-900')
             header_fields.append({
                 'name': name_field,
                 'type': 'text',
-                'classes': name_class
+                'entity_type': model_class.__name__.lower()
             })
         
         # Add important status/category fields
@@ -84,8 +75,7 @@ class CardConfigBuilder:
         if hasattr(entity, 'value') and entity.value is not None:
             header_fields.append({
                 'name': 'value',
-                'type': 'currency',
-                'classes': 'text-green-600 font-semibold'
+                'type': 'currency'
             })
                     
         return {
@@ -113,8 +103,7 @@ class CardConfigBuilder:
                     'type': 'link',
                     'url': url,
                     'icon': icon,
-                    'text': text,
-                    'classes': 'btn btn-sm btn-outline'
+                    'text': text
                 })
             except:
                 # Route doesn't exist, skip

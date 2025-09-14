@@ -252,8 +252,8 @@ class Opportunity(EntityModel):
             >>> breakdown = Opportunity.get_pipeline_breakdown()
             >>> {'prospect': 150000, 'qualified': 250000, ...}
         """
-        from app.utils.core.model_introspection import ModelIntrospector
-        stages = ModelIntrospector.get_field_choices(cls, 'stage')
+        # Get stages directly from column info
+        stages = cls.stage.info.get('choices', [])
 
         breakdown = {}
         for stage_value, stage_label in stages:
@@ -309,32 +309,9 @@ class Opportunity(EntityModel):
             >>> print(choices['qualified'])
             {'label': 'Qualified', 'description': 'Meets our criteria'}
         """
-        from app.utils.core.model_introspection import ModelIntrospector
-        return ModelIntrospector.get_field_choices(cls, 'stage')
+        # Get choices directly from column info
+        return cls.stage.info.get('choices', {})
     
-    @classmethod
-    def get_stage_css_class(cls, stage_value: Optional[str]) -> str:
-        """
-        Get CSS class for a stage value.
-        
-        Generates appropriate CSS class names for styling stage-specific
-        elements in the user interface.
-        
-        Args:
-            stage_value: The stage value to get CSS class for.
-                        Can be None for unknown/unset stages.
-        
-        Returns:
-            CSS class string for the given stage value.
-            Returns empty string if stage_value is None or invalid.
-            
-        Example:
-            >>> cls = Opportunity.get_stage_css_class('qualified')
-            >>> print(cls)
-            'stage-qualified'
-        """
-        from app.utils.core.model_introspection import ModelIntrospector
-        return ModelIntrospector.get_field_css_class(cls, 'stage', stage_value)
 
     def get_stakeholders(self) -> List[Dict[str, Any]]:
         """
@@ -455,15 +432,13 @@ class Opportunity(EntityModel):
             - All database column values
             - Computed properties (calculated_priority, deal_age)
             - Related entity summaries (stakeholders with MEDDPICC roles)
-            - UI helper fields (company_name, stage_css_class)
+            - UI helper fields (company_name)
             
         Example:
             >>> opp = Opportunity(name="Big Deal", stage="qualified")
             >>> data = opp.to_dict()
             >>> print(data['name'])
             'Big Deal'
-            >>> print(data['stage_css_class'])
-            'stage-qualified'
         """
         # Define properties to include beyond database columns
         include_properties = ["calculated_priority", "deal_age"]
@@ -485,9 +460,8 @@ class Opportunity(EntityModel):
         
         result = auto_serialize(self, include_properties, field_transforms)
         
-        # Add computed company name and CSS class
+        # Add computed company name
         result["company_name"] = self.company.name if self.company else None
-        result["stage_css_class"] = self.get_stage_css_class(self.stage)
         
         return result
 

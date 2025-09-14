@@ -25,6 +25,66 @@ class ModalService:
     Service for handling modal forms using HTMX and explicit form classes.
     """
 
+    # Models that require modal_mode parameter
+    MODAL_MODE_MODELS = {'company', 'stakeholder', 'opportunity'}
+
+    # Allowed fields for each model during creation
+    ALLOWED_FIELDS_MAP = {
+        'Company': ['name', 'industry', 'website', 'employee_count'],
+        'Stakeholder': ['name', 'job_title', 'email', 'company_id'],
+        'Opportunity': ['description', 'value', 'stage', 'close_date', 'company_id', 'priority'],
+        'Task': ['description', 'due_date', 'priority', 'status', 'next_step_type', 'task_type']
+    }
+
+    @staticmethod
+    def _render_error(error_message: str) -> str:
+        """Render error modal with consistent formatting."""
+        return render_template('components/modals/error_modal.html', error=error_message)
+
+    @staticmethod
+    def _create_form(model_name: str, form_class, entity=None):
+        """Create form instance with appropriate parameters."""
+        if model_name.lower() in ModalService.MODAL_MODE_MODELS:
+            return form_class(obj=entity, modal_mode=True) if entity else form_class(modal_mode=True)
+        return form_class(obj=entity) if entity else form_class()
+
+    @staticmethod
+    def _build_template_vars(model_name: str, model_class, form,
+                            entity=None, entity_id=None, mode='create', **kwargs) -> dict:
+        """Build template variables for modal rendering."""
+        if mode == 'view':
+            return {
+                'model_name': model_name,
+                'model_class': model_class,
+                'entity': entity,
+                'entity_id': entity_id,
+                'form': form,
+                'modal_title': f'View {model_name}',
+                'mode': 'view',
+                'is_edit': False,
+                'is_view': True,
+                **kwargs
+            }
+
+        is_edit = mode == 'edit'
+        action_url = f'/modals/{model_name}/{entity_id}/update' if is_edit else f'/modals/{model_name}/create'
+        modal_title = f'Edit {model_name}' if is_edit else f'Create {model_name}'
+
+        vars = {
+            'model_name': model_name,
+            'model_class': model_class,
+            'form': form,
+            'action_url': action_url,
+            'modal_title': modal_title,
+            'is_edit': is_edit,
+            **kwargs
+        }
+
+        if entity:
+            vars['entity'] = entity
+
+        return vars
+
     @staticmethod
     def _get_form_class(model_name: str):
         """
@@ -55,87 +115,57 @@ class ModalService:
     def render_create_modal(model_name: str, **kwargs) -> str:
         """
         Render a create modal for the specified model using WTForms.
-        
+
         Args:
             model_name: Name of the model (e.g., 'Task', 'Company')
             **kwargs: Additional template variables
-            
+
         Returns:
             Rendered HTML for the modal
         """
         model_class = get_model_by_name(model_name)
         if not model_class:
-            return render_template('components/modals/error_modal.html',
-                                 error=f"Unknown model: {model_name}")
+            return ModalService._render_error(f"Unknown model: {model_name}")
 
-        # Get explicit form class
         form_class = ModalService._get_form_class(model_name)
         if not form_class:
-            return render_template('components/modals/error_modal.html',
-                                 error=f"No modal form available for {model_name}")
+            return ModalService._render_error(f"No modal form available for {model_name}")
 
-        # Create form with modal_mode=True for unified forms
-        if model_name.lower() in ['company', 'stakeholder', 'opportunity']:
-            form = form_class(modal_mode=True)
-        else:
-            form = form_class()
-        
-        template_vars = {
-            'model_name': model_name,
-            'model_class': model_class,
-            'form': form,
-            'action_url': f'/modals/{model_name}/create',
-            'modal_title': f'Create {model_name}',
-            'is_edit': False,
-            **kwargs
-        }
-        
+        form = ModalService._create_form(model_name, form_class)
+        template_vars = ModalService._build_template_vars(
+            model_name, model_class, form, mode='create', **kwargs
+        )
+
         return render_template('components/modals/wtforms_modal.html', **template_vars)
     
     @staticmethod
     def render_edit_modal(model_name: str, entity_id: int, **kwargs) -> str:
         """
         Render an edit modal for the specified model and entity using WTForms.
-        
+
         Args:
             model_name: Name of the model (e.g., 'Task', 'Company')
             entity_id: ID of the entity to edit
             **kwargs: Additional template variables
-            
+
         Returns:
             Rendered HTML for the modal
         """
         model_class = get_model_by_name(model_name)
         if not model_class:
-            return render_template('components/modals/error_modal.html',
-                                 error=f"Unknown model: {model_name}")
+            return ModalService._render_error(f"Unknown model: {model_name}")
 
-        # Get the entity
         entity = model_class.query.get_or_404(entity_id)
 
-        # Get explicit form class and populate with entity data
         form_class = ModalService._get_form_class(model_name)
         if not form_class:
-            return render_template('components/modals/error_modal.html',
-                                 error=f"No modal form available for {model_name}")
+            return ModalService._render_error(f"No modal form available for {model_name}")
 
-        # Create form with modal_mode=True for unified forms
-        if model_name.lower() in ['company', 'stakeholder', 'opportunity']:
-            form = form_class(obj=entity, modal_mode=True)
-        else:
-            form = form_class(obj=entity)
-        
-        template_vars = {
-            'model_name': model_name,
-            'model_class': model_class,
-            'entity': entity,
-            'form': form,
-            'action_url': f'/modals/{model_name}/{entity_id}/update',
-            'modal_title': f'Edit {model_name}',
-            'is_edit': True,
-            **kwargs
-        }
-        
+        form = ModalService._create_form(model_name, form_class, entity)
+        template_vars = ModalService._build_template_vars(
+            model_name, model_class, form, entity=entity, entity_id=entity_id, mode='edit', **kwargs
+        )
+
         return render_template('components/modals/wtforms_modal.html', **template_vars)
     
     @staticmethod
@@ -154,36 +184,18 @@ class ModalService:
         """
         model_class = get_model_by_name(model_name)
         if not model_class:
-            return render_template('components/modals/error_modal.html',
-                                 error=f"Unknown model: {model_name}")
+            return ModalService._render_error(f"Unknown model: {model_name}")
 
-        # Get the entity
         entity = model_class.query.get_or_404(entity_id)
 
-        # Get explicit form class and populate with entity data
         form_class = ModalService._get_form_class(model_name)
         if not form_class:
-            return render_template('components/modals/error_modal.html',
-                                 error=f"No modal form available for {model_name}")
+            return ModalService._render_error(f"No modal form available for {model_name}")
 
-        # Create form with entity data for viewing, use modal_mode for unified forms
-        if model_name.lower() in ['company', 'stakeholder', 'opportunity']:
-            form = form_class(obj=entity, modal_mode=True)
-        else:
-            form = form_class(obj=entity)
-
-        template_vars = {
-            'model_name': model_name,
-            'model_class': model_class,
-            'entity': entity,
-            'entity_id': entity_id,
-            'form': form,
-            'modal_title': f'View {model_name}',
-            'mode': 'view',  # Indicates view mode to template
-            'is_edit': False,
-            'is_view': True,  # Additional flag for clarity
-            **kwargs
-        }
+        form = ModalService._create_form(model_name, form_class, entity)
+        template_vars = ModalService._build_template_vars(
+            model_name, model_class, form, entity=entity, entity_id=entity_id, mode='view', **kwargs
+        )
 
         return render_template('components/modals/wtforms_modal.html', **template_vars)
     
@@ -338,12 +350,7 @@ class ModalService:
             
         except Exception as e:
             db.session.rollback()
-            return {
-                'success': False,
-                'error': str(e),
-                'html': render_template('components/modals/form_error.html', 
-                                      error=f"Error {operation}: {str(e)}")
-            }
+            return ModalService._render_form_error(f"Error {operation}: {str(e)}")
     
     @staticmethod
     def render_modal_close() -> str:

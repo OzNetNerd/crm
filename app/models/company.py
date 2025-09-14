@@ -207,32 +207,9 @@ class Company(EntityModel):
             >>> print(choices['technology'])
             {'label': 'Technology', 'description': 'Software and technology companies'}
         """
-        from app.utils.core.model_introspection import ModelIntrospector
-        return ModelIntrospector.get_field_choices(cls, 'industry')
+        # Get choices directly from column info
+        return cls.industry.info.get('choices', {})
     
-    @classmethod
-    def get_industry_css_class(cls, industry_value: Optional[str]) -> str:
-        """
-        Get CSS class for an industry value.
-        
-        Generates appropriate CSS class names for styling industry-specific
-        elements in the user interface.
-        
-        Args:
-            industry_value: The industry value to get CSS class for.
-                          Can be None for unknown/unset industries.
-        
-        Returns:
-            CSS class string for the given industry value.
-            Returns empty string if industry_value is None or invalid.
-            
-        Example:
-            >>> cls = Company.get_industry_css_class('technology')
-            >>> print(cls)
-            'industry-technology'
-        """
-        from app.utils.core.model_introspection import ModelIntrospector
-        return ModelIntrospector.get_field_css_class(cls, 'industry', industry_value)
     
     @property
     def size_category(self) -> str:
@@ -279,15 +256,12 @@ class Company(EntityModel):
             - All database column values
             - Computed properties (size_category, account_team)
             - Related entity summaries (stakeholders, opportunities)
-            - UI helper fields (industry_css_class)
             
         Example:
             >>> company = Company(name="Acme Corp", industry="technology")
             >>> data = company.to_dict()
             >>> print(data['name'])
             'Acme Corp'
-            >>> print(data['industry_css_class'])
-            'industry-technology'
         """
         # Define properties to include beyond database columns
         include_properties = ["size_category", "account_team"]
@@ -316,9 +290,6 @@ class Company(EntityModel):
         }
         
         result = auto_serialize(self, include_properties, field_transforms)
-        
-        # Add CSS class for industry
-        result["industry_css_class"] = self.get_industry_css_class(self.industry) if self.industry else ''
         
         return result
 

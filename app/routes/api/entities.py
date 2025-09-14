@@ -283,7 +283,7 @@ def validate_field(entity_type, field_name):
         if existing:
             field_label = field_name.replace('_', ' ').title()
             # Return HTML for the validation message
-            error_html = f'<p class="mt-1 text-sm text-red-600">A {entity_type} with this {field_label.lower()} already exists.</p>'
+            error_html = f'<p data-validation-error="true">A {entity_type} with this {field_label.lower()} already exists.</p>'
             return error_html, 200
 
         # Return empty string for valid input

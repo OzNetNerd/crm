@@ -38,7 +38,7 @@ def style_task_description(description):
         company_name = match.group(3)
 
         return Markup(
-            f'{action} for <span class="text-entity-base text-color-opportunity">{opportunity_name}</span> - <span class="text-entity-base text-color-company">{company_name}</span>'
+            f'{action} for <span data-entity="opportunity">{opportunity_name}</span> - <span data-entity="company">{company_name}</span>'
         )
 
     # Try entity pattern (could be company or opportunity)
@@ -62,11 +62,11 @@ def style_task_description(description):
             ]
         ):
             return Markup(
-                f'{action} for <span class="text-entity-base text-color-company">{entity_name}</span>'
+                f'{action} for <span data-entity="company">{entity_name}</span>'
             )
         else:
             return Markup(
-                f'{action} for <span class="text-entity-base text-color-opportunity">{entity_name}</span>'
+                f'{action} for <span data-entity="opportunity">{entity_name}</span>'
             )
 
     # Try contact pattern
@@ -76,7 +76,7 @@ def style_task_description(description):
         contact_name = match.group(2)
 
         return Markup(
-            f'{action} with <span class="text-entity-base text-color-stakeholder">{contact_name}</span>'
+            f'{action} with <span data-entity="stakeholder">{contact_name}</span>'
         )
 
     # If no pattern matches, return the original description
