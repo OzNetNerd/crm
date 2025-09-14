@@ -2,12 +2,13 @@
 
 ## ADR-017: Universal Frontend Data Passing and Configuration Object Strategies
 
-**Status:** Accepted
+**Status:** Superseded
 **Date:** 13-09-25-14h-30m-00s
 **Updated:** 14-09-25-12h-10m-00s
 **Session:** 57ad43d3-ad12-46e8-8f3e-abd7c0ebc32c.jsonl
 **Todo:** Frontend data passing and configuration patterns
 **Deciders:** Will Robinson, Development Team
+**Superseded by:** Direct parameter passing with model metadata (14-09-25)
 
 **Current Implementation**: Frontend data configuration uses:
 - `__entity_config__` patterns in models for metadata
@@ -625,9 +626,37 @@ def inject_navigation_config():
 
 **Review Required:** Mandatory - All developers must understand when to use configuration objects versus individual variables.
 
-**Next Steps:**
-1. Implement configuration object patterns in all new routes and templates
-2. Create frontend JavaScript utilities for consuming configuration objects
-3. Establish validation tools for configuration object contracts
-4. Migrate existing templates to use standardized configuration patterns where beneficial
-5. Create project templates that implement these data passing patterns by default
+## Supersession Notice
+
+**This ADR has been superseded by a simpler approach implemented on 14-09-25.**
+
+**New Approach:** Direct parameter passing using existing model metadata (`__entity_config__`) with minimal DRY helpers.
+
+**Why Superseded:**
+- The configuration object approach created unnecessary complexity
+- Over-engineered systems (UniversalIndexHelper, context builders) caused validation errors
+- Existing model metadata already provided all necessary information
+- Direct parameter passing with model metadata proved simpler and more maintainable
+
+**Replacement Implementation:**
+```python
+# Instead of complex configuration objects:
+return render_template("base/entity_index.html",
+    entity_config=Stakeholder.__entity_config__,  # Direct model metadata
+    dropdown_configs=build_dropdown_configs(Stakeholder),
+    entity_stats=calculate_entity_stats(Stakeholder)
+)
+```
+
+**Result:** 500+ lines of code eliminated, zero validation errors, simpler maintenance.
+
+**Reference:** PR #275 - "fix: eliminate validation errors and implement DRY route system"
+
+---
+
+**Original Next Steps (No longer applicable):**
+1. ~~Implement configuration object patterns in all new routes and templates~~
+2. ~~Create frontend JavaScript utilities for consuming configuration objects~~
+3. ~~Establish validation tools for configuration object contracts~~
+4. ~~Migrate existing templates to use standardized configuration patterns where beneficial~~
+5. ~~Create project templates that implement these data passing patterns by default~~
