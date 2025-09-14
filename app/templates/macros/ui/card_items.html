@@ -57,13 +57,18 @@
 {% endcall %}
 {% endmacro %}
 
-{% macro entity_card_with_badge(entity, subtitle_parts=[], badge_text=None, badge_display=None, badge_type='status') %}
+{% macro entity_card_with_badge(entity, subtitle_parts=[], badge_text=None, badge_display=None, badge_type='status', title_class='', title_field='name') %}
 {# Generic card with badge - can be used for opportunities, deals, or any entity with status #}
 {% call card_item('gray') %}
     <div class="flex items-start justify-between">
         <div class="flex-1">
-            {%- set entity_name = entity.get('name', '') if entity is mapping else entity.name -%}
-            <div class="text-card-title">{{ entity_name }}</div>
+            {%- if entity is mapping -%}
+                {%- set entity_title = entity.get(title_field, entity.get('name', '')) -%}
+            {%- else -%}
+                {%- set entity_title = getattr(entity, title_field, getattr(entity, 'name', '')) -%}
+            {%- endif -%}
+            {%- set title_css = title_class if title_class else 'text-card-title' -%}
+            <div class="{{ title_css }}">{{ entity_title }}</div>
             {% if subtitle_parts %}
             <div class="text-card-meta">
                 {% for part in subtitle_parts %}
@@ -122,7 +127,8 @@
         ],
         badge_text=entity.status if entity.status else None,
         badge_display=entity.status_display if entity.status_display is defined else None,
-        badge_type='status'
+        badge_type='status',
+        title_class='text-card-title text-company-name'
     ) }}
 {% elif entity_type == 'stakeholder' %}
     {{ entity_card_with_badge(
@@ -133,7 +139,31 @@
         ],
         badge_text=entity.status if entity.status else None,
         badge_display=entity.status_display if entity.status_display is defined else None,
-        badge_type='status'
+        badge_type='status',
+        title_class='text-card-title text-stakeholder-name'
+    ) }}
+{% elif entity_type == 'task' %}
+    {{ entity_card_with_badge(
+        entity,
+        subtitle_parts=[
+            {'text': entity.due_date.strftime('%Y-%m-%d') if entity.due_date else 'No due date', 'color': 'text-gray-600'}
+        ],
+        badge_text=entity.status if entity.status else None,
+        badge_display=entity.status_display if entity.status_display is defined else None,
+        badge_type='status',
+        title_class='text-card-title',
+        title_field='description'
+    ) }}
+{% elif entity_type == 'team' %}
+    {{ entity_card_with_badge(
+        entity,
+        subtitle_parts=[
+            {'text': entity.description, 'color': 'text-gray-600'} if entity.description else {}
+        ],
+        badge_text=entity.status if entity.status else None,
+        badge_display=entity.status_display if entity.status_display is defined else None,
+        badge_type='status',
+        title_class='text-card-title text-team-member'
     ) }}
 {% else %}
     {# Fallback for other entity types #}
@@ -142,7 +172,8 @@
         subtitle_parts=[],
         badge_text=entity.status if entity.status else None,
         badge_display=entity.status_display if entity.status_display is defined else None,
-        badge_type='status'
+        badge_type='status',
+        title_class='text-card-title'
     ) }}
 {% endif %}
 {% endmacro %}

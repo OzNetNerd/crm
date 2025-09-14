@@ -59,7 +59,14 @@ class CardConfigBuilder:
         name_field = cls._get_name_field(model_class)
         if name_field:
             entity_name = model_class.__name__.lower()
-            name_class = f'text-{entity_name}-name' if entity_name in ['company', 'stakeholder', 'team'] else 'font-medium text-gray-900'
+            # Map entity types to semantic classes for consistent styling with dashboard
+            entity_class_mapping = {
+                'company': 'text-company-name',
+                'stakeholder': 'text-stakeholder-name',
+                'team': 'text-team-member',
+                'opportunity': 'font-medium text-gray-900'  # Opportunity names don't have special styling
+            }
+            name_class = entity_class_mapping.get(entity_name, 'font-medium text-gray-900')
             header_fields.append({
                 'name': name_field,
                 'type': 'text',
@@ -211,10 +218,26 @@ class CardConfigBuilder:
     @classmethod
     def _get_name_field(cls, model_class):
         """Get the primary name/title field for an entity."""
-        name_candidates = ['name', 'title', 'subject', 'email']
-        
+        # Entity-specific field mappings for proper data hierarchy
+        entity_name = model_class.__name__.lower()
+        entity_field_mapping = {
+            'task': 'description',  # Tasks use description as primary field
+            'company': 'name',
+            'stakeholder': 'name',
+            'opportunity': 'name',
+            'team': 'name'
+        }
+
+        # Use entity-specific field if available
+        if entity_name in entity_field_mapping:
+            field_name = entity_field_mapping[entity_name]
+            if hasattr(model_class, field_name):
+                return field_name
+
+        # Fall back to common candidates
+        name_candidates = ['name', 'title', 'subject', 'email', 'description']
         for candidate in name_candidates:
             if hasattr(model_class, candidate):
                 return candidate
-                
+
         return None
