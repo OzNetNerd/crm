@@ -1,8 +1,0 @@
-{% from 'macros/modals/base.html' import htmx_form_error_message %}
-{#
-  HTMX Form Error Response - CONSOLIDATED
-  
-  Now uses the consolidated htmx_form_error_message macro from base.html
-  Maintains backward compatibility while reducing duplication.
-#}
-{{ htmx_form_error_message(error=error, errors=errors) }}

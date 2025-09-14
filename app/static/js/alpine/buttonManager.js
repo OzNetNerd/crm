@@ -146,21 +146,6 @@ window.buttonManager = (config = {}) => {
     };
 };
 
-// Global helper functions for legacy compatibility
-window.generateEntityButtons = (entityTypes) => {
-    if (typeof entityTypes === 'string') {
-        entityTypes = [entityTypes];
-    }
-
-    const manager = window.buttonManager({ entityTypes });
-    return manager.buttons;
-};
-
-window.getDashboardButtons = () => {
-    const manager = window.buttonManager();
-    return manager.dashboardButtons;
-};
-
 // Initialize global button manager
 document.addEventListener('DOMContentLoaded', function() {
     // Expose global button manager

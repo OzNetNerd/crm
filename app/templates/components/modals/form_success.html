@@ -1,8 +1,0 @@
-{% from 'macros/modals/base.html' import htmx_form_success_message %}
-{#
-  HTMX Form Success Response - CONSOLIDATED
-  
-  Now uses the consolidated htmx_form_success_message macro from base.html
-  Maintains backward compatibility while reducing duplication.
-#}
-{{ htmx_form_success_message(message, entity_id=(entity.id if entity else None)) }}

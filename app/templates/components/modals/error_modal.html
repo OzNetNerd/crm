@@ -1,8 +1,0 @@
-{% from 'macros/modals/base.html' import htmx_error_modal %}
-{#
-  Modal Error Display Template - CONSOLIDATED
-  
-  Now uses the consolidated htmx_error_modal macro from base.html
-  Maintains backward compatibility while reducing duplication.
-#}
-{{ htmx_error_modal(error if error else "An unexpected error occurred. Please try again.") }}

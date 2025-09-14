@@ -129,7 +129,7 @@ class DashboardService:
         # Add critical alerts
         data.update(DashboardService.get_critical_alerts())
 
-        # Add pipeline stats for backward compatibility
+        # Add pipeline stats
         breakdown = Opportunity.get_pipeline_breakdown()
         data['pipeline_stats'] = {
             'prospect': breakdown.get('prospect', 0),

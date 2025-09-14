@@ -174,20 +174,6 @@
         badge_type='status',
         title_class='text-card-title text-team-member'
     ) }}
-{% else %}
-    {# Fallback for other entity types #}
-    {{ entity_card_with_badge(
-        entity,
-        subtitle_parts=[],
-        badge_text=entity.status if entity.status else None,
-        badge_display=entity.status_display if entity.status_display is defined else None,
-        badge_type='status',
-        title_class='text-card-title'
-    ) }}
 {% endif %}
 {% endmacro %}
 
-{% macro opportunity_card_item(opp) %}
-{# Legacy wrapper for backward compatibility - use entity_card_item instead #}
-{{ entity_card_item(opp, 'opportunity') }}
-{% endmacro %}

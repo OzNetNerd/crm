@@ -246,25 +246,6 @@ class Task(BaseModel):
             return f"Due: {formatted_date} ({days_diff} day{'s' if days_diff != 1 else ''} left)"
 
 
-    @property
-    def entity_name(self) -> Optional[str]:
-        """
-        Get primary entity name for backward compatibility.
-        
-        Returns the name of the first linked entity, primarily used
-        for backward compatibility with single-entity task linking.
-        
-        Returns:
-            Name of the first linked entity, or None if no entities linked.
-            
-        Example:
-            >>> task = Task()
-            >>> task.add_linked_entity("company", 1)
-            >>> task.entity_name
-            'Acme Corp'
-        """
-        entities = self.linked_entities
-        return entities[0]["name"] if entities else None
 
     # Parent-child task relationships
     parent_task = db.relationship(
@@ -517,9 +498,9 @@ class Task(BaseModel):
         """
         # Define properties to include beyond database columns
         include_properties = [
-            "is_overdue", "entity_name", "opportunity_value", "company_name", 
-            "opportunity_name", "opportunity_stage", "stakeholder_opportunity_name", 
-            "stakeholder_opportunity_value", "task_type_badge", "can_start", 
+            "is_overdue", "opportunity_value", "company_name",
+            "opportunity_name", "opportunity_stage", "stakeholder_opportunity_name",
+            "stakeholder_opportunity_value", "task_type_badge", "can_start",
             "completion_percentage"
         ]
         
