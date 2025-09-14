@@ -9,6 +9,11 @@ from typing import Dict, Any, Optional
 import logging
 from flask import render_template, jsonify, request
 from app.models import db
+from app.models.company import Company
+from app.models.opportunity import Opportunity
+from app.models.task import Task
+from app.models.user import User
+from app.models.stakeholder import Stakeholder
 # ModelIntrospector removed - use model methods directly
 from app.forms.entities.company import CompanyForm
 from app.forms.entities.stakeholder import StakeholderForm
@@ -18,6 +23,17 @@ from app.forms.modals.user import UserModalForm
 from app.forms.base.base_forms import BaseForm
 # No icon functions needed - templates handle CSS class generation
 
+
+def get_model_by_name(model_name: str):
+    """Get model class by string name."""
+    model_mapping = {
+        'company': Company,
+        'opportunity': Opportunity,
+        'task': Task,
+        'user': User,
+        'stakeholder': Stakeholder
+    }
+    return model_mapping.get(model_name.lower())
 
 
 class ModalService:
