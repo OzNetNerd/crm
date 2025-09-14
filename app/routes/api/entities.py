@@ -10,6 +10,13 @@ ENTITIES = {
     'opportunities': Opportunity
 }
 
+# Singular mapping for validation endpoint
+ENTITY_SINGULAR_MAP = {
+    'company': Company,
+    'stakeholder': Stakeholder,
+    'opportunity': Opportunity
+}
+
 # Generic CRUD functions - DRY approach
 def get_entity_list(entity_name):
     """Get list of entities"""
@@ -273,49 +280,44 @@ def validate_field(entity_type, field_name):
         data = request.get_json()
         field_value = data.get('value', '').strip()
 
-        # Skip validation for empty values
+        # Allow empty values - they're handled by required validation
         if not field_value:
             return '', 200
 
-        # Use the same ENTITIES mapping for consistency
-        entity_singular = entity_type.lower()
-        if entity_singular.endswith('s'):
-            entity_plural = entity_singular
-        else:
-            entity_plural = f"{entity_singular}s"
-
-        model_class = ENTITIES.get(entity_plural)
+        # Use the singular mapping for validation
+        model_class = ENTITY_SINGULAR_MAP.get(entity_type.lower())
         if not model_class:
             return '', 200  # Unknown entity, allow
 
         # Check for duplicates based on field
         unique_fields = {
-            'Company': {'name': 'name'},
-            'Stakeholder': {'email': 'email'},
-            'Opportunity': {}  # No unique fields for opportunities
+            'Company': {'name'},
+            'Stakeholder': {'email'},
+            'Opportunity': set()  # No unique fields for opportunities
         }
 
         model_name = model_class.__name__
-        allowed_fields = unique_fields.get(model_name, {})
+        allowed_fields = unique_fields.get(model_name, set())
 
         # Only validate if this field should be unique
         if field_name not in allowed_fields:
             return '', 200
 
-        # Check if value already exists (case-insensitive)
+        # Always check database for duplicates (case-insensitive)
+        field_attribute = getattr(model_class, field_name)
         existing = model_class.query.filter(
-            getattr(model_class, field_name).ilike(field_value)
+            field_attribute.ilike(field_value)
         ).first()
+
 
         if existing:
             field_label = field_name.replace('_', ' ').title()
-            # Return HTML for the validation message
-            error_html = f'<p data-validation-error="true">A {entity_type} with this {field_label.lower()} already exists.</p>'
-            return error_html, 200
+            error_message = f'A {entity_type} with this {field_label.lower()} already exists.'
+            return jsonify({'error': error_message}), 400
 
-        # Return empty string for valid input
+        # No duplicates found - field is valid
         return '', 200
 
     except Exception as e:
-        # On error, don't block the user
+        # On error, don't block the user - but log for debugging
         return '', 200
