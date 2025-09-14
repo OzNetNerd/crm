@@ -16,7 +16,6 @@ from app.utils.core.entity_handlers import (
     TeamHandler,
     TaskHandler
 )
-from app.utils.ui.index_helpers import UniversalIndexHelper
 
 
 class UniversalRouteFactory:

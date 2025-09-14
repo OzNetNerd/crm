@@ -6,7 +6,7 @@ listing, filtering, grouping, and CRUD operations. Companies represent
 business organizations that the CRM system manages relationships with.
 """
 
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 from app.models import Company, Stakeholder, Opportunity
 from app.utils.routes import add_content_route
 
@@ -19,15 +19,14 @@ add_content_route(companies_bp, Company)
 def index():
     """
     Main companies index page displaying all companies with statistics.
-    
+
     Provides a comprehensive view of all companies in the system including
     associated stakeholders and opportunities. Includes statistical overview
     and supports filtering, sorting, and grouping operations.
-    
+
     Returns:
         Rendered HTML template with companies data, statistics, and UI controls.
     """
-    from app.utils.ui.index_helpers import UniversalIndexHelper
     
     # Get all companies with relationships
     companies = Company.query.all()
@@ -102,17 +101,39 @@ def index():
     }
     
 
-    # Get standardized context using universal helper
-    context = UniversalIndexHelper.get_standardized_index_context(
-        entity_name='companies',
-        default_group_by='industry',
-        default_sort_by='name',
-        additional_context={
-            'entity_stats': entity_stats,
-            'companies': companies,
-            'companies_data': companies_data,
+    # Simple context building - no over-engineered helpers
+    context = {
+        'entity_config': {
+            'entity_name': 'Companies',
+            'entity_name_singular': 'Company',
+            'entity_description': 'Manage your companies',
+            'entity_type': 'company',
+            'entity_endpoint': 'companies',
+            'entity_buttons': ['companies']
+        },
+        'entity_stats': entity_stats,
+        'companies': companies,
+        'companies_data': companies_data,
+        'dropdown_configs': {
+            'group_by': {
+                'options': [
+                    {'value': 'industry', 'label': 'Industry'},
+                    {'value': 'name', 'label': 'Name'}
+                ],
+                'current_value': request.args.get('group_by', 'industry'),
+                'placeholder': 'Group by...'
+            },
+            'sort_by': {
+                'options': [
+                    {'value': 'name', 'label': 'Name'},
+                    {'value': 'industry', 'label': 'Industry'},
+                    {'value': 'created_at', 'label': 'Created Date'}
+                ],
+                'current_value': request.args.get('sort_by', 'name'),
+                'placeholder': 'Sort by...'
+            }
         }
-    )
+    }
 
     return render_template("base/entity_index.html", **context)
 

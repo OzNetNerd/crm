@@ -11,7 +11,7 @@
         'tasks': 'task',
         'opportunities': 'opportunity',
         'stakeholders': 'stakeholder',
-        'teams': 'team'
+        'teams': 'team_member'
     } %}
     {# Direct icon mapping #}
     {% set icon_map = {
@@ -19,17 +19,18 @@
         'task': 'clipboard-list',
         'opportunity': 'currency-dollar-circle',
         'stakeholder': 'user',
-        'team': 'users'
+        'team_member': 'users'
     } %}
     {% set singular = singular_map.get(entity, entity.rstrip('s')) %}
     {% set singular_title = singular.title() %}
+    {% set modal_title = 'User' if singular == 'team_member' else singular_title %}
     {% set icon_name = icon_map.get(singular, 'document') %}
-    <button hx-get="/modals/{{ singular_title }}/create"
+    <button hx-get="/modals/{{ modal_title }}/create"
             hx-target="body"
             hx-swap="beforeend"
             class="flex items-center gap-2 btn-{{ singular }}">
         {{ icon(icon_name, 'sm') }}
-        New {{ singular.title() }}
+        New {{ singular.replace('_', ' ').title() }}
     </button>
     {% endfor %}
 </div>

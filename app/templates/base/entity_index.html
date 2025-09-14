@@ -39,6 +39,7 @@
         primary_filter_options=dropdown_configs.primary_filter.options if dropdown_configs.primary_filter else [],
         current_primary_filter=request.args.getlist('primary_filter'),
         primary_filter_name=dropdown_configs.primary_filter.button_text if dropdown_configs.primary_filter else 'Filter',
+        filter_options={'priority': dropdown_configs.secondary_filter.options} if dropdown_configs.secondary_filter else None,
         show_view_toggle=true,
         expand_collapse_target=entity_config.entity_type + 'Sections'
     ) }}

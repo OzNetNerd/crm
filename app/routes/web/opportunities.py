@@ -62,16 +62,13 @@ def index():
     }
 
     # Get standardized context using universal helper
-    from app.utils.ui.index_helpers import UniversalIndexHelper
-    context = UniversalIndexHelper.get_standardized_index_context(
-        entity_name='opportunities',
-        default_group_by='stage',
-        default_sort_by='name',
-        additional_context={
-            'entity_stats': entity_stats,
-            'opportunities': opportunities,
-        }
-    )
+    # Removed over-engineered helper
+    # Simple context with basic dropdown configs
+    context = {
+        "entity_config": {"entity_name": "Opportunities", "entity_type": "opportunity", "entity_endpoint": "opportunities", "entity_buttons": ["opportunities"]},
+        "dropdown_configs": {"group_by": {"options": [{"value": "stage", "label": "Stage"}], "current_value": "stage"}, "sort_by": {"options": [{"value": "name", "label": "Name"}], "current_value": "name"}},
+        "entity_stats": entity_stats or {}
+    }
 
     return render_template("base/entity_index.html", **context)
 

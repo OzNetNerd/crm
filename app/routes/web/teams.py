@@ -11,7 +11,6 @@ add_content_route(teams_bp, User)
 
 @teams_bp.route("/")
 def index():
-    from app.utils.ui.index_helpers import UniversalIndexHelper
     
     # Get all account team members
     team_members = User.query.all()
@@ -90,17 +89,39 @@ def index():
         ]
     }
     
-    # Get standardized context using universal helper
-    context = UniversalIndexHelper.get_standardized_index_context(
-        entity_name='teams',
-        default_group_by='job_title',
-        default_sort_by='name',
-        additional_context={
-            'entity_stats': entity_stats,
-            'team_members': team_members,
-            'team_data': team_data,
+    # Simple context building - no over-engineered helpers
+    context = {
+        'entity_config': {
+            'entity_name': 'Team Members',
+            'entity_name_singular': 'Team Member',
+            'entity_description': 'Manage your team members',
+            'entity_type': 'team',
+            'entity_endpoint': 'teams',
+            'entity_buttons': ['teams']
+        },
+        'entity_stats': entity_stats,
+        'team_members': team_members,
+        'team_data': team_data,
+        'dropdown_configs': {
+            'group_by': {
+                'options': [
+                    {'value': 'job_title', 'label': 'Job Title'},
+                    {'value': 'name', 'label': 'Name'}
+                ],
+                'current_value': request.args.get('group_by', 'job_title'),
+                'placeholder': 'Group by...'
+            },
+            'sort_by': {
+                'options': [
+                    {'value': 'name', 'label': 'Name'},
+                    {'value': 'job_title', 'label': 'Job Title'},
+                    {'value': 'created_at', 'label': 'Created Date'}
+                ],
+                'current_value': request.args.get('sort_by', 'name'),
+                'placeholder': 'Sort by...'
+            }
         }
-    )
+    }
 
     return render_template("base/entity_index.html", **context)
 
