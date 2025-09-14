@@ -51,6 +51,7 @@ from .ui import (
     get_groupable_fields,
     get_model_form_fields,
     get_model_config,
+    # UniversalIndexHelper removed - using DRY route helpers instead
     PRIORITY_OPTIONS,
     SIZE_OPTIONS
 )
@@ -78,6 +79,7 @@ __all__ = [
     # UI
     # 'ModalService',  # Temporarily removed
     'register_template_filters',
+    # 'UniversalIndexHelper', # removed - using DRY route helpers instead
     
     # Utils
     'auto_serialize',

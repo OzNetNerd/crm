@@ -22,7 +22,7 @@ from .template_globals import (
     SIZE_OPTIONS
 )
 
-# index_helpers removed - functionality replaced by simplified patterns
+# index_helpers removed - using DRY route helpers instead
 
 __all__ = [
     # 'ModalService',  # Temporarily removed
