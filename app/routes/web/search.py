@@ -1,18 +1,10 @@
 from flask import Blueprint, request, jsonify, render_template
 from sqlalchemy import or_
-from app.models import Task, Company, Stakeholder, Opportunity, User
+from app.models import Task, Company, Stakeholder, Opportunity, User, MODEL_REGISTRY
 
 search_bp = Blueprint("search", __name__)
 
-# Model mapping - DRY approach like entity_manager
-MODEL_MAPPING = {
-    'company': Company,
-    'stakeholder': Stakeholder,
-    'contact': Stakeholder,
-    'opportunity': Opportunity,
-    'task': Task,
-    'user': User
-}
+# Use MODEL_REGISTRY from app.models - single source of truth
 
 # DRY entity configuration for dynamic search results
 ENTITY_CONFIGS = {
@@ -26,7 +18,7 @@ ENTITY_CONFIGS = {
     },
     'stakeholder': {
         'model': Stakeholder,
-        'type_label': 'contact',
+        'type_label': 'stakeholder',
         'search_fields': ['name', 'email', 'job_title'],
         'title_field': 'name',
         'subtitle_fields': ['job_title', 'company.name'],
@@ -132,12 +124,12 @@ def get_searchable_entity_types():
     
     entity_types = {}
     for model_name in searchable_models:
-        model_class = MODEL_MAPPING.get(model_name.lower())
+        model_class = MODEL_REGISTRY.get(model_name.lower())
         if model_class:
             # Get friendly name and icon
             friendly_names = {
                 'company': {'name': 'Companies', 'icon': 'company'},
-                'stakeholder': {'name': 'Contacts', 'icon': 'stakeholder'},
+                'stakeholder': {'name': 'Stakeholders', 'icon': 'stakeholder'},
                 'opportunity': {'name': 'Opportunities', 'icon': 'opportunity'},
                 'task': {'name': 'Tasks', 'icon': 'task'}
             }
@@ -202,7 +194,7 @@ def autocomplete():
             {
                 "id": contact.id,
                 "name": contact.name,
-                "type": "contact",
+                "type": "stakeholder",
                 "company": contact.company.name if contact.company else "",
             }
             for contact in contacts
@@ -279,7 +271,7 @@ def _perform_search(query, entity_type, limit):
 
     # Sort results by type and title
     if results:
-        type_order = {"company": 0, "contact": 1, "opportunity": 2, "task": 3}
+        type_order = {"company": 0, "stakeholder": 1, "opportunity": 2, "task": 3}
         results.sort(key=lambda x: (type_order.get(x["type"], 4), x["title"].lower()))
 
     return results[:limit]
