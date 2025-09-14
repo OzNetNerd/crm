@@ -7,12 +7,12 @@ from .base import BaseModel
 class Company(BaseModel):
     """
     Company model representing business organizations in the CRM system.
-    
+
     This model stores comprehensive information about companies including
     their basic details, industry classification, contact information,
     and relationships with stakeholders and opportunities. Companies serve
     as the primary organizational entity in the CRM system.
-    
+
     Attributes:
         id: Primary key identifier.
         name: Company name (required).
@@ -26,6 +26,9 @@ class Company(BaseModel):
     """
     __tablename__ = "companies"
     __display_name__ = "Company"
+    __search_config__ = {
+        'subtitle_fields': ['industry', 'size']  # Auto-detection works well, but be explicit
+    }
     
 
     id = db.Column(db.Integer, primary_key=True)
@@ -36,7 +39,9 @@ class Company(BaseModel):
             'display_label': 'Company Name',
             'required': True,
             'groupable': True,
-            'form_include': True
+            'form_include': True,
+            'searchable': True,
+            'search_title': True
         }
     )
     industry = db.Column(
@@ -45,6 +50,8 @@ class Company(BaseModel):
             'display_label': 'Industry',
             'groupable': True,
             'form_include': True,
+            'searchable': True,
+            'search_subtitle': True,
             'choices': {
                 'technology': {
                     'label': 'Technology',

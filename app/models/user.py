@@ -23,6 +23,9 @@ class User(BaseModel):
     __tablename__ = "users"
     __display_name__ = "Team Member"
     __display_name_plural__ = "Teams"
+    __search_config__ = {
+        'subtitle_fields': ['email', 'job_title']
+    }
     
 
     id = db.Column(db.Integer, primary_key=True)

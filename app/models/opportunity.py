@@ -27,6 +27,10 @@ class Opportunity(BaseModel):
     """
     __tablename__ = "opportunities"
     __display_name__ = "Opportunity"
+    __search_config__ = {
+        'subtitle_fields': ['value', 'stage'],
+        'relationships': [('company', 'name')]
+    }
     
 
     id = db.Column(db.Integer, primary_key=True)
