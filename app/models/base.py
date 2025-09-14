@@ -108,7 +108,7 @@ class EntityModel(BaseModel):
             'entity_type': cls.__name__.lower(),
             'entity_name': cls.__tablename__.replace('_', ' ').title(),
             'entity_name_singular': cls.__name__,
-            'entity_endpoint': cls.__tablename__,
+            'endpoint_name': cls.__tablename__,
             'modal_path': f'/modals/{cls.__name__}',
             'show_dashboard_button': True
         }
@@ -137,24 +137,10 @@ class EntityModel(BaseModel):
         # Only register concrete classes (not abstract ones)
         if not getattr(cls, '__abstract__', False) and hasattr(cls, 'get_entity_config'):
             # Import here to avoid circular dependencies
-            from app.utils.model_registry import ModelRegistry
+            from app.utils.model_registry import register_model
 
-            config = cls.get_entity_config()
-            endpoint_name = config['entity_endpoint']  # Use exact endpoint name from config
-
-            # Register with the exact endpoint name from entity config
-            ModelRegistry.register_model(cls, endpoint_name)
-            ModelRegistry.register_model(cls, cls.__name__.lower())
-
-            # Register both singular and plural forms using metadata
-            metadata = ModelRegistry.get_model_metadata(cls.__name__.lower())
-            singular_name = metadata.display_name.lower()
-            plural_name = metadata.display_name_plural.lower()
-
-            if singular_name not in ModelRegistry._models:
-                ModelRegistry._models[singular_name] = cls
-            if plural_name not in ModelRegistry._models:
-                ModelRegistry._models[plural_name] = cls
+            # Auto-register the model with the registry
+            register_model(cls)
 
     @classmethod
 

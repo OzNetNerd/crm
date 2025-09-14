@@ -12,28 +12,12 @@ from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
 from app.utils.ui.template_filters import register_template_filters
 from app.models import Company, Stakeholder, Task, Opportunity, User
-from app.utils.model_registry import ModelRegistry
+from app.utils.model_registry import register_model, get_model, get_display_names
+from app.utils.model_metadata import ModelMetadata
 
 # Ensure models are registered in the Flask app process
 for model_class in [Company, Stakeholder, Task, Opportunity, User]:
-    if hasattr(model_class, 'get_entity_config'):
-        config = model_class.get_entity_config()
-        endpoint_name = config['entity_endpoint']
-
-        # Register with endpoint name from config
-        ModelRegistry.register_model(model_class, endpoint_name)
-        # Register with lowercase class name
-        ModelRegistry.register_model(model_class, model_class.__name__.lower())
-
-        # Register both singular and plural forms using metadata
-        metadata = ModelRegistry.get_model_metadata(model_class.__name__.lower())
-        singular_name = metadata.display_name.lower()
-        plural_name = metadata.display_name_plural.lower()
-
-        if singular_name not in ModelRegistry._models:
-            ModelRegistry._models[singular_name] = model_class
-        if plural_name not in ModelRegistry._models:
-            ModelRegistry._models[plural_name] = model_class
+    register_model(model_class)
 from app.utils.ui.template_globals import (
     get_field_options,
     get_model_form_fields,
@@ -116,7 +100,17 @@ def create_app():
     
     # Dynamic card system
     app.jinja_env.globals["build_dynamic_card_config"] = CardConfigBuilder.build_card_config
-    app.jinja_env.globals["get_model_metadata"] = ModelRegistry.get_model_metadata
+
+    # Create a wrapper function that provides ModelMetadata for templates
+    def get_model_metadata_wrapper(model_name):
+        """Get model metadata for templates - wrapper around new registry"""
+        try:
+            model_class = get_model(model_name)
+            return ModelMetadata(model_class)
+        except:
+            return {}
+
+    app.jinja_env.globals["get_model_metadata"] = get_model_metadata_wrapper
     app.jinja_env.globals["getattr"] = getattr
     app.jinja_env.globals["hasattr"] = hasattr
     

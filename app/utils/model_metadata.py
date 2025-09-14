@@ -111,7 +111,7 @@ class ModelMetadata:
             if self.display_name_plural is None:
                 self.display_name_plural = config.get('entity_name', self.display_name)
             if self.api_endpoint is None:
-                self.api_endpoint = config.get('entity_endpoint')
+                self.api_endpoint = config.get('endpoint_name')
         else:
             # Fallback to defaults - only use what's available, no string manipulation
             if self.display_name is None:

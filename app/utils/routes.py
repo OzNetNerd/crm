@@ -36,7 +36,7 @@ class UniversalRouteFactory:
             Configured Flask Blueprint with standard routes
         """
         config = model_class.get_entity_config()
-        endpoint_name = config['entity_endpoint']
+        endpoint_name = config['endpoint_name']
         entity_name = model_class.__name__.lower()
 
         # Create blueprint
