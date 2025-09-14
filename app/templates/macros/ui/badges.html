@@ -2,24 +2,27 @@
 
 {# Helper macro for consistent text normalization #}
 {% macro normalize_badge_value(value) -%}
-{%- if value -%}
+{%- if value and value|string|trim -%}
   {%- set normalized = value|string|lower|replace(' ', '-')|replace('_', '-') -%}
   {%- set display = value|string|replace('-', ' ')|replace('_', ' ')|title -%}
-  {{ {'normalized': normalized, 'display': display} }}
+  {{ {'normalized': normalized, 'display': display, 'is_valid': true} }}
 {%- else -%}
-  {{ {'normalized': 'unknown', 'display': 'Unknown'} }}
+  {{ {'normalized': '', 'display': '', 'is_valid': false} }}
 {%- endif -%}
 {% endmacro %}
 
 {# Universal badge macro following ADR-011 dynamic class pattern #}
 {% macro universal_badge(value, badge_type='status', entity_type=None, size='md', additional_classes='', display_text=None) -%}
-{%- set norm = normalize_badge_value(value) -%}
-{%- if norm.normalized in ['high', 'medium', 'low'] and badge_type == 'status' -%}
-  {%- set badge_type = 'priority' -%}
+{%- if value and value|string|trim -%}
+  {%- set normalized = value|string|lower|replace(' ', '-')|replace('_', '-') -%}
+  {%- set display = value|string|replace('-', ' ')|replace('_', ' ')|title -%}
+  {%- if normalized in ['high', 'medium', 'low'] and badge_type == 'status' -%}
+    {%- set badge_type = 'priority' -%}
+  {%- endif -%}
+  <span class="badge badge-{{ badge_type }}-{{ normalized }}{% if entity_type %} badge-entity-{{ entity_type|lower }}{% endif %} {{ additional_classes }}">
+    {{ display_text if display_text else display }}
+  </span>
 {%- endif -%}
-<span class="badge badge-{{ badge_type }}-{{ norm.normalized }}{% if entity_type %} badge-entity-{{ entity_type|lower }}{% endif %} {{ additional_classes }}">
-  {{ display_text if display_text else norm.display }}
-</span>
 {%- endmacro %}
 
 {#

@@ -39,20 +39,29 @@
 
 {% macro note_card_item(note) %}
 {% call card_item('gray') %}
-    <div class="text-card-title line-clamp-3">{{ note.content }}</div>
-    <div class="text-card-meta">
-        {{ smart_date_display(note.created_at, context="created") }}
-        {%- if note.entity_type == "company" and note.entity_name %}
-            • <span class="text-company-name">{{ note.entity_name }}</span>
-        {%- elif note.entity_type == "opportunity" and note.entity_name %}
-            • <span class="text-opportunity-value">{{ note.entity_name }}</span>
-            {%- if note.company_name %} • <span class="text-company-name">{{ note.company_name }}</span>{% endif %}
-        {%- elif note.entity_type == "stakeholder" and note.entity_name %}
-            • <span class="text-stakeholder-name">{{ note.entity_name }}</span>
-            {%- if note.company_name %} • <span class="text-company-name">{{ note.company_name }}</span>{% endif %}
-        {%- elif note.entity_name %}
-            • {{ note.entity_name }}
-        {%- endif %}
+    <div class="flex items-start justify-between">
+        <div class="flex-1">
+            <div class="text-card-title line-clamp-3">{{ note.content }}</div>
+            <div class="text-card-meta">
+                {{ smart_date_display(note.created_at, context="created") }}
+                {%- if note.entity_type == "company" and note.entity_name %}
+                    • <span class="text-company-name">{{ note.entity_name }}</span>
+                {%- elif note.entity_type == "opportunity" and note.entity_name %}
+                    • <span class="text-opportunity-value">{{ note.entity_name }}</span>
+                    {%- if note.company_name %} • <span class="text-company-name">{{ note.company_name }}</span>{% endif %}
+                {%- elif note.entity_type == "stakeholder" and note.entity_name %}
+                    • <span class="text-stakeholder-name">{{ note.entity_name }}</span>
+                    {%- if note.company_name %} • <span class="text-company-name">{{ note.company_name }}</span>{% endif %}
+                {%- elif note.entity_name %}
+                    • {{ note.entity_name }}
+                {%- endif %}
+            </div>
+        </div>
+        {% if note.entity_type %}
+        <span class="ml-3">
+            {{ universal_badge(note.entity_type, badge_type='status', entity_type=note.entity_type) }}
+        </span>
+        {% endif %}
     </div>
 {% endcall %}
 {% endmacro %}
