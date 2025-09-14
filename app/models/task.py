@@ -2,18 +2,6 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 from . import db
 from .base import EntityModel
-from app.utils.core.model_helpers import (
-    create_choice_field_info,
-    create_date_field_info,
-    create_model_choice_methods,
-    PRIORITY_CHOICES,
-    STATUS_CHOICES,
-    NEXT_STEP_TYPE_CHOICES,
-    TASK_TYPE_CHOICES,
-    DEPENDENCY_TYPE_CHOICES,
-    DUE_DATE_GROUPINGS,
-    auto_serialize
-)
 
 
 # Junction table for task-entity relationships
@@ -27,7 +15,6 @@ task_entities = db.Table(
 )
 
 
-@create_model_choice_methods(['priority', 'status'])
 class Task(EntityModel):
     """
     Task model representing work items and activities in the CRM system.
@@ -70,21 +57,92 @@ class Task(EntityModel):
     )
     due_date = db.Column(
         db.Date,
-        info=create_date_field_info('Due Date', date_groupings=DUE_DATE_GROUPINGS, form_include=True)
+        info={
+            'display_label': 'Due Date',
+            'groupable': True,
+            'sortable': True,
+            'form_include': True,
+            'date_groupings': {
+                'overdue': 'Overdue',
+                'today': 'Due Today',
+                'this_week': 'This Week',
+                'later': 'Later',
+                'no_date': 'No Due Date'
+            }
+        }
     )
     priority = db.Column(
         db.String(10),
         default="medium",
-        info=create_choice_field_info('Priority', PRIORITY_CHOICES, form_include=True)
+        info={
+            'display_label': 'Priority',
+            'groupable': True,
+            'sortable': True,
+            'form_include': True,
+            'choices': {
+                'high': {
+                    'label': 'High',
+                    'description': 'Urgent priority'
+                },
+                'medium': {
+                    'label': 'Medium',
+                    'description': 'Normal priority'
+                },
+                'low': {
+                    'label': 'Low',
+                    'description': 'Low priority'
+                }
+            }
+        }
     )  # high/medium/low
     status = db.Column(
-        db.String(20), 
+        db.String(20),
         default="todo",
-        info=create_choice_field_info('Status', STATUS_CHOICES)
+        info={
+            'display_label': 'Status',
+            'groupable': True,
+            'sortable': True,
+            'choices': {
+                'todo': {
+                    'label': 'To Do',
+                    'description': 'Not started'
+                },
+                'in-progress': {
+                    'label': 'In Progress',
+                    'description': 'Currently working on'
+                },
+                'complete': {
+                    'label': 'Complete',
+                    'description': 'Finished'
+                }
+            }
+        }
     )  # todo/in-progress/complete
     next_step_type = db.Column(
         db.String(20),
-        info=create_choice_field_info('Next Step Type', NEXT_STEP_TYPE_CHOICES)
+        info={
+            'display_label': 'Next Step Type',
+            'groupable': True,
+            'sortable': True,
+            'choices': {
+                'call': {
+                    'label': 'Call',
+                    'description': 'Phone call'
+                },
+                'email': {
+                    'label': 'Email',
+                    'description': 'Send email'
+                },
+                'meeting': {
+                    'label': 'Meeting',
+                    'description': 'In-person or video meeting'
+                },
+                'demo': {
+                    'label': 'Demo',
+                    'description': 'Product demonstration'
+                }
+            }
+        }
     )  # meeting/demo/call/email
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime)
@@ -92,16 +150,48 @@ class Task(EntityModel):
 
     # Multi Task support
     task_type = db.Column(
-        db.String(20), 
+        db.String(20),
         default="single",
-        info=create_choice_field_info('Task Type', TASK_TYPE_CHOICES)
+        info={
+            'display_label': 'Task Type',
+            'groupable': True,
+            'sortable': True,
+            'choices': {
+                'single': {
+                    'label': 'Single Task',
+                    'description': 'Standalone task'
+                },
+                'parent': {
+                    'label': 'Parent Task',
+                    'description': 'Task with subtasks'
+                },
+                'child': {
+                    'label': 'Child Task',
+                    'description': 'Subtask of parent'
+                }
+            }
+        }
     )  # 'single', 'parent', 'child'
     parent_task_id = db.Column(db.Integer, db.ForeignKey("tasks.id"))
     sequence_order = db.Column(db.Integer, default=0)  # For ordering child tasks
     dependency_type = db.Column(
         db.String(20),
         default="parallel",
-        info=create_choice_field_info('Dependency Type', DEPENDENCY_TYPE_CHOICES)
+        info={
+            'display_label': 'Dependency Type',
+            'groupable': True,
+            'sortable': True,
+            'choices': {
+                'parallel': {
+                    'label': 'Parallel',
+                    'description': 'Can run simultaneously'
+                },
+                'sequential': {
+                    'label': 'Sequential',
+                    'description': 'Must complete in order'
+                }
+            }
+        }
     )  # 'sequential', 'parallel'
 
     comments = db.Column(
@@ -442,7 +532,18 @@ class Task(EntityModel):
             ]
         }
         
-        result = auto_serialize(self, include_properties, field_transforms)
+        # Start with base serialization
+        result = super().to_dict()
+
+        # Add custom properties and transforms
+        for prop in include_properties:
+            if hasattr(self, prop):
+                result[prop] = getattr(self, prop)
+
+        # Apply field transforms
+        for field, transform in field_transforms.items():
+            if field in result:
+                result[field] = transform(result[field])
 
         return result
 

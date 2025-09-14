@@ -7,7 +7,7 @@ Simple opportunity form using WTForms with model introspection.
 from wtforms import StringField, IntegerField, SelectField, DateField
 from wtforms.validators import DataRequired, Optional, NumberRange, Length
 from ..base.base_forms import BaseForm
-from app.utils.core.model_introspection import ModelIntrospector
+# ModelIntrospector removed - use model methods directly
 from app.utils.forms.helpers import safe_int_coerce
 
 
@@ -22,11 +22,11 @@ class OpportunityForm(BaseForm):
 
         if not modal_mode:
             # Only set priority choices for full forms
-            priority_choices = ModelIntrospector.get_field_choices(Opportunity, 'priority')
+            priority_choices = Opportunity.get_field_choices('priority')
             self.priority.choices = [('', 'Select priority')] + priority_choices
 
         # Set stage choices (needed for both modal and full forms)
-        stage_choices = ModelIntrospector.get_field_choices(Opportunity, 'stage')
+        stage_choices = Opportunity.get_field_choices('stage')
         self.stage.choices = [('', 'Select stage')] + stage_choices
 
         # Set company choices (needed for both modal and full forms)

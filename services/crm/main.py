@@ -11,17 +11,9 @@ from app.models import db
 from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
 from app.utils.ui.template_filters import register_template_filters
-from app.models import Company, Stakeholder, Task, Opportunity, User
-from app.utils.model_registry import register_model, get_model, get_display_names
-from app.utils.model_metadata import ModelMetadata
-
-# Ensure models are registered in the Flask app process
-for model_class in [Company, Stakeholder, Task, Opportunity, User]:
-    register_model(model_class)
+# Models are imported via app.models - no registration needed
 from app.utils.ui.template_globals import (
     get_field_options,
-    get_model_form_fields,
-    get_model_config,
     PRIORITY_OPTIONS,
     SIZE_OPTIONS,
 )
@@ -62,6 +54,10 @@ def get_database_path():
 
 def create_app():
     app = Flask(__name__, template_folder="../../app/templates", static_folder="../../app/static")
+
+    # Global trailing slash handling - DRY solution for all routes
+    app.url_map.strict_slashes = False
+
     app.config["SECRET_KEY"] = os.environ.get('SECRET_KEY', os.urandom(32).hex())
     app.config["SQLALCHEMY_DATABASE_URI"] = get_database_path()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -87,7 +83,6 @@ def create_app():
 
     # Register clean template functions - no more string hacks!
     app.jinja_env.globals["get_field_options"] = get_field_options
-    app.jinja_env.globals["get_model_form_fields"] = get_model_form_fields
     # Register global template functions
     app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
     app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
@@ -96,21 +91,30 @@ def create_app():
     def get_dashboard_action_buttons():
         return ['companies', 'tasks', 'opportunities', 'stakeholders']
 
+    # Model metadata function - DRY replacement for ModelRegistry
+    def get_model_metadata(model_name):
+        """Provide model metadata for templates"""
+        metadata = {
+            'company': {'display_name': 'Company', 'display_name_plural': 'Companies'},
+            'stakeholder': {'display_name': 'Stakeholder', 'display_name_plural': 'Stakeholders'},
+            'opportunity': {'display_name': 'Opportunity', 'display_name_plural': 'Opportunities'},
+            'task': {'display_name': 'Task', 'display_name_plural': 'Tasks'},
+            'user': {'display_name': 'User', 'display_name_plural': 'Users'},
+            'note': {'display_name': 'Note', 'display_name_plural': 'Notes'},
+        }
+
+        class ModelMetadata:
+            def __init__(self, data):
+                self.display_name = data.get('display_name', model_name.title())
+                self.display_name_plural = data.get('display_name_plural', model_name.title() + 's')
+
+        return ModelMetadata(metadata.get(model_name.lower(), {}))
+
     app.jinja_env.globals["get_dashboard_action_buttons"] = get_dashboard_action_buttons
     
     # Dynamic card system
     app.jinja_env.globals["build_dynamic_card_config"] = CardConfigBuilder.build_card_config
-
-    # Create a wrapper function that provides ModelMetadata for templates
-    def get_model_metadata_wrapper(model_name):
-        """Get model metadata for templates - wrapper around new registry"""
-        try:
-            model_class = get_model(model_name)
-            return ModelMetadata(model_class)
-        except:
-            return {}
-
-    app.jinja_env.globals["get_model_metadata"] = get_model_metadata_wrapper
+    app.jinja_env.globals["get_model_metadata"] = get_model_metadata
     app.jinja_env.globals["getattr"] = getattr
     app.jinja_env.globals["hasattr"] = hasattr
     

@@ -28,8 +28,7 @@ class DashboardService:
         breakdown = Opportunity.get_pipeline_breakdown()
 
         # Get first 4 stages for dashboard display
-        from app.utils.core.model_introspection import ModelIntrospector
-        stages = ModelIntrospector.get_field_choices(Opportunity, 'stage')[:4]
+        stages = Opportunity.get_field_choices('stage')[:4]
 
         stats = []
         for stage_value, stage_label in stages:
@@ -101,7 +100,8 @@ class DashboardService:
         for model in models:
             config = model.get_entity_config()
             if config.get('show_dashboard_button', True):
-                buttons.append(config['endpoint_name'])
+                # Use just tablename for dashboard buttons, not full endpoint
+                buttons.append(model.__tablename__)
 
         return buttons
 

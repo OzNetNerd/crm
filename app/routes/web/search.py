@@ -1,9 +1,18 @@
 from flask import Blueprint, request, jsonify, render_template
 from sqlalchemy import or_
 from app.models import Task, Company, Stakeholder, Opportunity, User
-from app.utils.core.model_introspection import get_model_by_name
 
 search_bp = Blueprint("search", __name__)
+
+# Model mapping - DRY approach like entity_manager
+MODEL_MAPPING = {
+    'company': Company,
+    'stakeholder': Stakeholder,
+    'contact': Stakeholder,
+    'opportunity': Opportunity,
+    'task': Task,
+    'user': User
+}
 
 # DRY entity configuration for dynamic search results
 ENTITY_CONFIGS = {
@@ -123,7 +132,7 @@ def get_searchable_entity_types():
     
     entity_types = {}
     for model_name in searchable_models:
-        model_class = get_model_by_name(model_name)
+        model_class = MODEL_MAPPING.get(model_name.lower())
         if model_class:
             # Get friendly name and icon
             friendly_names = {

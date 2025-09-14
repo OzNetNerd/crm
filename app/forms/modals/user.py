@@ -8,7 +8,6 @@ Focuses on essential fields for quick team member creation.
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField
 from wtforms.validators import DataRequired, Length, Optional, Email
-from app.utils.core.model_introspection import ModelIntrospector
 from app.models.user import User
 
 
@@ -53,5 +52,5 @@ class UserModalForm(FlaskForm):
         super().__init__(*args, **kwargs)
 
         # Set department choices from model metadata
-        department_choices = ModelIntrospector.get_field_choices(User, 'department')
+        department_choices = User.get_field_choices('department')
         self.department.choices = [('', 'Select department')] + department_choices

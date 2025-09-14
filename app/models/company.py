@@ -1,7 +1,6 @@
 from typing import Dict, Any, List, Optional
 from . import db
 from .base import EntityModel
-from app.utils.core.model_helpers import auto_serialize
 
 
 class Company(EntityModel):
@@ -27,7 +26,9 @@ class Company(EntityModel):
     __tablename__ = "companies"
     
     __entity_config__ = {
-        'description': 'Manage your company relationships'
+        'description': 'Manage your company relationships',
+        'filter_fields': ['industry', 'size'],
+        'join_map': {}
     }
 
     id = db.Column(db.Integer, primary_key=True)
@@ -289,8 +290,19 @@ class Company(EntityModel):
             ]
         }
         
-        result = auto_serialize(self, include_properties, field_transforms)
-        
+        # Start with base serialization
+        result = super().to_dict()
+
+        # Add custom properties and transforms
+        for prop in include_properties:
+            if hasattr(self, prop):
+                result[prop] = getattr(self, prop)
+
+        # Apply field transforms
+        for field, transform in field_transforms.items():
+            if field in result:
+                result[field] = transform(result[field])
+
         return result
 
     def to_display_dict(self) -> Dict[str, Any]:

@@ -62,7 +62,9 @@ class Stakeholder(EntityModel):
     __tablename__ = "stakeholders"
     
     __entity_config__ = {
-        'description': 'Manage your stakeholder relationships'
+        'description': 'Manage your stakeholder relationships',
+        'filter_fields': ['company_id', 'job_title'],
+        'join_map': {'company_name': ['Company']}
     }
 
     id = db.Column(db.Integer, primary_key=True)
@@ -270,7 +272,18 @@ class Stakeholder(EntityModel):
             ]
         }
         
-        result = auto_serialize(self, include_properties, field_transforms)
+        # Start with base serialization
+        result = super().to_dict()
+
+        # Add custom properties and transforms
+        for prop in include_properties:
+            if hasattr(self, prop):
+                result[prop] = getattr(self, prop)
+
+        # Apply field transforms
+        for field, transform in field_transforms.items():
+            if field in result:
+                result[field] = transform(result[field])
         
         # Add computed company name
         result["company_name"] = self.company.name if self.company else None

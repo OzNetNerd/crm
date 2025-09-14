@@ -16,8 +16,6 @@ from .template_globals import (
     get_field_options,
     get_sortable_fields,
     get_groupable_fields,
-    get_model_form_fields,
-    get_model_config,
     PRIORITY_OPTIONS,
     SIZE_OPTIONS
 )
@@ -32,8 +30,6 @@ __all__ = [
     'get_field_options',
     'get_sortable_fields',
     'get_groupable_fields',
-    'get_model_form_fields',
-    'get_model_config',
     'PRIORITY_OPTIONS',
     'SIZE_OPTIONS'
 ]

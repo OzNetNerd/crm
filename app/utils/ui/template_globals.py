@@ -1,7 +1,7 @@
 """Clean template global functions - no more string-based hacks."""
 
 from app.models import db
-from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
+# ModelIntrospector removed - use model methods directly
 # Entity config functions removed - now using ModelRegistry and context_builders
 # Modal configs removed - using WTForms modal system now (keeping main branch approach)
 # from app.utils.ui.modal_configs import get_modal_config, get_detail_modal_config, MODAL_CONFIGS, DETAIL_MODAL_CONFIGS
@@ -110,30 +110,8 @@ SIZE_OPTIONS = [
 ]
 
 
-def get_model_form_fields(model_name):
-    """
-    Get form field definitions for a model by name.
-    
-    Args:
-        model_name: String name of the model (e.g., 'Task', 'Company')
-        
-    Returns:
-        List of form field definitions with name, type, label, choices, etc.
-    """
-    model_class = get_model_by_name(model_name)
-    if not model_class:
-        return []
-    
-    return ModelIntrospector.get_form_fields(model_class)
-
-
-def get_model_config(model_class):
-    """Get complete model configuration for templates.
-
-    DEPRECATED: Use ModelRegistry.get_model_metadata() instead.
-    This function will be removed in a future version.
-    """
-    return ModelIntrospector.get_model_config(model_class)
+# Removed get_model_form_fields and get_model_config - no longer needed
+# Models now have built-in methods: get_field_choices(), to_dict(), etc.
 
 
 # Modal config functions removed - using WTForms modal system now

@@ -1,12 +1,8 @@
 from flask import Blueprint, request, jsonify
-from app.models import db, Task
-from app.utils.core.base_handlers import NotesAPIHandler
+from app.models import db, Task, Note
 from datetime import timedelta, date
 
 tasks_api_bp = Blueprint("tasks_api", __name__, url_prefix="/api/tasks")
-
-# Initialize notes handler for tasks
-notes_handler = NotesAPIHandler(Task, "task")
 
 
 @tasks_api_bp.route("/<int:task_id>")
@@ -32,16 +28,38 @@ def get_task(task_id):
     return jsonify(task_data)
 
 
-@tasks_api_bp.route("/<int:task_id>/notes", methods=["GET"])
+@tasks_api_bp.route("/<int:task_id>/notes")
 def get_task_notes(task_id):
     """Get all notes for a specific task"""
-    return notes_handler.get_notes(task_id)
+    Task.query.get_or_404(task_id)  # Ensure task exists
+    notes = Note.query.filter_by(
+        entity_type='task',
+        entity_id=task_id
+    ).order_by(Note.created_at.desc()).all()
+    return jsonify([note.to_dict() for note in notes])
 
 
 @tasks_api_bp.route("/<int:task_id>/notes", methods=["POST"])
 def create_task_note(task_id):
     """Create a new note for a specific task"""
-    return notes_handler.create_note(task_id)
+    Task.query.get_or_404(task_id)  # Ensure task exists
+    data = request.get_json()
+    if not data or not data.get('content'):
+        return jsonify({'error': 'Content required'}), 400
+
+    try:
+        note = Note(
+            content=data['content'],
+            entity_type='task',
+            entity_id=task_id,
+            is_internal=data.get('is_internal', True)
+        )
+        db.session.add(note)
+        db.session.commit()
+        return jsonify(note.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
 
 
 @tasks_api_bp.route("/<int:task_id>/reschedule", methods=["PUT"])

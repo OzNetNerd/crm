@@ -7,7 +7,7 @@ Simple stakeholder form using WTForms with model introspection.
 from wtforms import StringField, SelectField
 from wtforms.validators import DataRequired, Optional, Email, Length
 from ..base.base_forms import BaseForm
-from app.utils.core.model_introspection import ModelIntrospector
+# ModelIntrospector removed - use model methods directly
 from app.utils.forms.helpers import safe_int_coerce
 
 
@@ -22,7 +22,7 @@ class StakeholderForm(BaseForm):
 
         if not modal_mode:
             # Only set MEDDPICC choices for full forms
-            meddpicc_choices = ModelIntrospector.get_field_choices(Stakeholder, 'meddpicc_role')
+            meddpicc_choices = Stakeholder.get_field_choices('meddpicc_role')
             self.meddpicc_role.choices = [('', 'Select MEDDPICC role')] + meddpicc_choices
 
         # Set company choices (needed for both modal and full forms)

@@ -3,27 +3,23 @@ import logging
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from app.models import db, Task, Company, Stakeholder, Opportunity
 from app.forms import MultiTaskForm
-from app.utils.core.base_handlers import (
-    BaseRouteHandler,
-    parse_int_field,
-    get_entity_data_for_forms,
-)
-from app.utils.routes import add_content_route
 from collections import defaultdict
 
-# Create blueprint and add DRY content route
+# Create blueprint
 tasks_bp = Blueprint("tasks", __name__)
-add_content_route(tasks_bp, Task)
-
-# Keep existing task handler for other routes
-task_handler = BaseRouteHandler(Task, "tasks")
 
 
 
 
 
 
-# Content route now provided by DRY factory
+@tasks_bp.route("/content")
+def content():
+    """HTMX endpoint for filtered task content"""
+    return Task.render_content(
+        filter_fields=['status', 'priority', 'task_type'],
+        join_map={}  # No joins needed for task sorting
+    )
 
 
 @tasks_bp.route("/")
