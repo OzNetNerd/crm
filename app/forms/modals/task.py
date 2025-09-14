@@ -8,7 +8,6 @@ Layout: Entity (top) -> Description -> Priority/Due Date (side by side) -> Comme
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SelectField, DateField
 from wtforms.validators import DataRequired, Length, Optional
-from app.utils.core.model_introspection import ModelIntrospector
 from app.models.task import Task
 from app.models.company import Company
 from app.models.opportunity import Opportunity
@@ -63,7 +62,7 @@ class TaskModalForm(FlaskForm):
         super().__init__(*args, **kwargs)
 
         # Get priority choices from Task model metadata
-        priority_choices = ModelIntrospector.get_field_choices(Task, 'priority')
+        priority_choices = Task.get_field_choices('priority')
         choices = [('', 'Select priority')]
         choices.extend(priority_choices)
         self.priority.choices = choices

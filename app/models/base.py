@@ -1,8 +1,7 @@
 from typing import Dict, Any, Optional, List
 from abc import ABC, abstractmethod
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from . import db
-from app.utils.core.model_helpers import auto_serialize
 
 
 class BaseModel(db.Model):
@@ -22,43 +21,87 @@ class BaseModel(db.Model):
     def to_dict(self) -> Dict[str, Any]:
         """
         Convert model instance to dictionary for JSON serialization.
-        
+
         This method provides a standard way to serialize model instances
-        for API responses and data exchange. The default implementation
-        uses auto_serialize but can be overridden by subclasses for
-        custom serialization logic.
-        
+        for API responses and data exchange. Handles datetime serialization
+        automatically.
+
         Returns:
             Dictionary representation of the model instance with all
             accessible attributes as key-value pairs.
-            
+
         Example:
             >>> company = Company(name="Acme Corp")
             >>> company.to_dict()
             {'id': 1, 'name': 'Acme Corp', 'created_at': '2023-01-01T00:00:00'}
         """
-        return auto_serialize(self)
+        result = {}
+
+        # Serialize all columns
+        for column in self.__table__.columns:
+            column_name = column.name
+            value = getattr(self, column_name, None)
+
+            # Handle datetime/date serialization
+            if isinstance(value, (datetime, date)):
+                result[column_name] = value.isoformat() if value else None
+            else:
+                result[column_name] = value
+
+        return result
     
     def to_display_dict(self) -> Dict[str, Any]:
         """
         Convert model instance to dictionary for display purposes.
-        
+
         This method is intended for UI display scenarios where certain
         fields may need formatting or filtering. By default, it returns
         the same result as to_dict(), but subclasses can override this
         to provide display-specific formatting.
-        
+
         Returns:
             Dictionary representation optimized for display in user
             interfaces, potentially with formatted dates, computed
             fields, or filtered sensitive information.
-            
+
         Example:
             >>> opportunity = Opportunity(value=50000)
             >>> opportunity.to_display_dict()
             {'id': 1, 'value': '$50,000', 'status': 'Active'}
         """
         return self.to_dict()
+
+    @classmethod
+    def get_field_choices(cls, field_name: str) -> List[tuple]:
+        """
+        Get choices for a field from column info metadata.
+
+        Args:
+            field_name: Name of the field to get choices for
+
+        Returns:
+            List of (value, label) tuples for the field choices.
+            Returns empty list if field doesn't exist or has no choices.
+
+        Example:
+            >>> Task.get_field_choices('priority')
+            [('high', 'High'), ('medium', 'Medium'), ('low', 'Low')]
+        """
+        if not hasattr(cls, field_name):
+            return []
+
+        column = getattr(cls, field_name)
+        if not hasattr(column, 'info') or 'choices' not in column.info:
+            return []
+
+        choices = column.info['choices']
+        choice_list = []
+
+        for choice_value, choice_data in choices.items():
+            choice_label = choice_data.get('label', choice_value)
+            choice_list.append((choice_value, choice_label))
+
+        return choice_list
 
 
 class EntityModel(BaseModel):

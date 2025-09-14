@@ -9,7 +9,7 @@ from typing import Dict, Any, Optional
 import logging
 from flask import render_template, jsonify, request
 from app.models import db
-from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
+# ModelIntrospector removed - use model methods directly
 from app.forms.entities.company import CompanyForm
 from app.forms.entities.stakeholder import StakeholderForm
 from app.forms.entities.opportunity import OpportunityForm

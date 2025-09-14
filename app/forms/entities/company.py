@@ -7,7 +7,7 @@ Simple company form using WTForms with model introspection.
 from wtforms import StringField, TextAreaField, SelectField
 from wtforms.validators import DataRequired, Optional, URL, Length
 from ..base.base_forms import BaseForm
-from app.utils.core.model_introspection import ModelIntrospector
+# ModelIntrospector removed - use model methods directly
 
 
 class CompanyForm(BaseForm):
@@ -19,12 +19,12 @@ class CompanyForm(BaseForm):
 
         # Set industry choices from model metadata
         from app.models.company import Company
-        industry_choices = ModelIntrospector.get_field_choices(Company, 'industry')
+        industry_choices = Company.get_field_choices('industry')
         self.industry.choices = [('', 'Select industry')] + industry_choices
 
         if not modal_mode:
             # Only set size choices for full forms
-            size_choices = ModelIntrospector.get_field_choices(Company, 'size')
+            size_choices = Company.get_field_choices('size')
             self.size.choices = [('', 'Select size')] + size_choices
 
     name = StringField(

@@ -1,7 +1,7 @@
 """Clean template global functions - no more string-based hacks."""
 
 from app.models import db
-from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
+# ModelIntrospector removed - use model methods directly
 # Entity config functions removed - now using ModelRegistry and context_builders
 # Modal configs removed - using WTForms modal system now (keeping main branch approach)
 # from app.utils.ui.modal_configs import get_modal_config, get_detail_modal_config, MODAL_CONFIGS, DETAIL_MODAL_CONFIGS

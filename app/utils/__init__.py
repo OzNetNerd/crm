@@ -11,12 +11,7 @@ This package provides utilities organized by logical function:
 Key imports available at package level for backwards compatibility:
 """
 
-# Core utilities
-from .core import (
-    ModelIntrospector,
-    get_model_by_name,
-    get_all_model_configs
-)
+# Core utilities - ModelIntrospector removed (use model methods directly)
 
 # Form utilities have been moved to app.forms module
 # Import directly from app.forms for new code
@@ -48,15 +43,11 @@ from .ui import (
     SIZE_OPTIONS
 )
 
-# Auto serialize utility from model_helpers
-from .core.model_helpers import auto_serialize
+# Auto serialize moved to BaseModel - no longer needed here
 
 # Make commonly used functions available at package level
 __all__ = [
-    # Core
-    'ModelIntrospector',
-    'get_model_by_name',
-    'get_all_model_configs',
+    # Core - ModelIntrospector removed, use model methods directly
 
     # Forms (moved to app.forms module)
     # Import from app.forms for new code

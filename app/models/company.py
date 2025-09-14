@@ -1,7 +1,6 @@
 from typing import Dict, Any, List, Optional
 from . import db
 from .base import EntityModel
-from app.utils.core.model_helpers import auto_serialize
 
 
 class Company(EntityModel):
