@@ -26,7 +26,7 @@ class User(EntityModel):
         'entity_name': 'Teams',
         'entity_name_singular': 'Team Member',
         'description': 'Manage your team members',
-        'entity_endpoint': 'teams'
+        'endpoint_name': 'teams'
     }
 
     id = db.Column(db.Integer, primary_key=True)

@@ -10,7 +10,7 @@
   - entity_name: Display name (e.g. "Tasks", "Companies")
   - entity_description: Page description
   - entity_type: Type identifier (e.g. "task", "company") 
-  - entity_endpoint: Blueprint name (e.g. "tasks", "companies")
+  - endpoint_name: Blueprint name (e.g. "tasks", "companies")
   - entity_stats: Stats data for summary cards
   - entity_buttons: Action buttons for header
   - dropdown_configs: Filter dropdown configurations
@@ -26,7 +26,7 @@
 {% block content %}
 {# Generate filter controls based on entity type using modern widget system #}
 {% set entity_filter_controls %}
-<form hx-get="{{ url_for(entity_config.entity_endpoint + '.content') }}"
+<form hx-get="{{ url_for(entity_config.endpoint_name + '.content') }}"
       hx-target="#{{ entity_config.entity_type }}-content"
       hx-trigger="change, submit">
     {% from "macros/widgets/filters.html" import entity_filter_controls %}
@@ -57,7 +57,7 @@
 
 <!-- Dynamic Content Area -->
 <div id="{{ entity_config.entity_type }}-content"
-     hx-get="{{ url_for(entity_config.entity_endpoint + '.content') }}?{{ request.query_string.decode('utf-8') }}"
+     hx-get="{{ url_for(entity_config.endpoint_name + '.content') }}?{{ request.query_string.decode('utf-8') }}"
      hx-trigger="load">
     <!-- Content will be loaded here via HTMX -->
     <div class="p-8 text-center text-gray-500">

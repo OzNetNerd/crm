@@ -108,7 +108,7 @@ class EntityModel(BaseModel):
             'entity_type': cls.__name__.lower(),
             'entity_name': cls.__tablename__.replace('_', ' ').title(),
             'entity_name_singular': cls.__name__,
-            'entity_endpoint': cls.__tablename__,
+            'endpoint_name': cls.__tablename__,
             'modal_path': f'/modals/{cls.__name__}',
             'show_dashboard_button': True
         }
@@ -136,25 +136,10 @@ class EntityModel(BaseModel):
         # Only register concrete classes (not abstract ones)
         if not getattr(cls, '__abstract__', False) and hasattr(cls, 'get_entity_config'):
             # Import here to avoid circular dependencies
-            from app.utils.model_registry import register_model, MODELS
+            from app.utils.model_registry import register_model
 
-            config = cls.get_entity_config()
-            endpoint_name = config['entity_endpoint']  # Use exact endpoint name from config
-
-            # Register with the exact endpoint name from entity config
-            register_model(cls, endpoint_name)
-            register_model(cls, cls.__name__.lower())
-
-            # Also register with singular and plural names from config
-            singular_name = config['entity_name_singular'].lower()
-            plural_name = config['entity_name'].lower()
-
-            if singular_name not in MODELS:
-                MODELS[singular_name] = cls
-            if plural_name not in MODELS:
-                MODELS[plural_name] = cls
-
-    @classmethod
+            # Auto-register the model with the registry
+            register_model(cls)
 
     @classmethod
     def filter_and_sort(cls, filters=None, sort_by=None, sort_dir='asc', joins=None):

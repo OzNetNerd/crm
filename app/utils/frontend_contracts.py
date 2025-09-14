@@ -15,7 +15,7 @@ class EntityConfigContract(TypedDict):
     entity_name_singular: str  
     entity_description: str
     entity_type: str
-    entity_endpoint: str
+    endpoint_name: str
     entity_buttons: List[Dict[str, str]]
 
 
@@ -93,7 +93,7 @@ class FrontendContractValidator:
         errors = []
         required_fields = [
             'entity_name', 'entity_name_singular', 'entity_description',
-            'entity_type', 'entity_endpoint', 'entity_buttons'
+            'entity_type', 'endpoint_name', 'entity_buttons'
         ]
         
         for field in required_fields:
@@ -336,10 +336,10 @@ class ContextTransformer:
         # Extract API endpoints
         entity_config = context.get('entity_config', {})
         api_endpoints = {
-            'list': f"/api/{entity_config.get('entity_endpoint', '')}",
-            'create': f"/api/{entity_config.get('entity_endpoint', '')}",
-            'update': f"/api/{entity_config.get('entity_endpoint', '')}/{{id}}",
-            'delete': f"/api/{entity_config.get('entity_endpoint', '')}/{{id}}"
+            'list': f"/api/{entity_config.get('endpoint_name', '')}",
+            'create': f"/api/{entity_config.get('endpoint_name', '')}",
+            'update': f"/api/{entity_config.get('endpoint_name', '')}/{{id}}",
+            'delete': f"/api/{entity_config.get('endpoint_name', '')}/{{id}}"
         }
         
         return JavaScriptConfig(
