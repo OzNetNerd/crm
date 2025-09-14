@@ -3,7 +3,7 @@ Smart Field Filtering and Rendering for Modals
 Handles field filtering, view/form modes, and special field types (entity search)
 #}
 
-{% macro render_filtered_fields(form, mode='form') %}
+{% macro render_filtered_fields(form, mode='form', model_name=None) %}
   {% from 'macros/base/forms.html' import render_wtforms_field %}
   {% from 'macros/widgets/search.html' import search_widget %}
 
@@ -19,7 +19,7 @@ Handles field filtering, view/form modes, and special field types (entity search
         {% if mode == 'view' %}
           {# View Mode - Read Only #}
           <label class="block text-sm font-medium text-gray-700">{{ field.label.text }}</label>
-          <div class="p-2 bg-gray-50 rounded-md border border-gray-200 text-sm text-gray-900" style="min-height: 2rem;">
+          <div class="p-2 bg-gray-50 rounded-md border border-gray-200 text-sm text-gray-900 min-h-[2rem]">
             {% if field.type == 'SelectField' %}
               {% for value, label in field.choices %}
                 {% if value == field.data %}{{ label }}{% endif %}
@@ -28,7 +28,7 @@ Handles field filtering, view/form modes, and special field types (entity search
                 <span class="text-gray-400">Not set</span>
               {% endif %}
             {% elif field.type == 'TextAreaField' %}
-              <div style="min-height: {{ (field.widget.rows | default(3)) * 1.5 }}rem;">
+              <div class="{% if (field.widget.rows | default(3)) == 3 %}min-h-[4.5rem]{% elif field.widget.rows == 4 %}min-h-[6rem]{% elif field.widget.rows == 5 %}min-h-[7.5rem]{% else %}min-h-[3rem]{% endif %}">
                 {{ field.data if field.data else '' }}
               </div>
             {% else %}
@@ -41,7 +41,7 @@ Handles field filtering, view/form modes, and special field types (entity search
           {{ search_widget(field) }}
         {% else %}
           {# Regular form field #}
-          {{ render_wtforms_field(field, fast_select=true) }}
+          {{ render_wtforms_field(field, fast_select=true, model_name=model_name) }}
         {% endif %}
       </div>
     {% endif %}

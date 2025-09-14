@@ -23,7 +23,7 @@ Variables:
   {% if mode == 'view' or is_view %}
     {# View Mode - Read Only #}
     <div id="modal-content-area" class="p-6 space-y-4 bg-white">
-      {{ render_filtered_fields(form, mode='view') }}
+      {{ render_filtered_fields(form, mode='view', model_name=model_name) }}
     </div>
     {{ render_view_footer(model_name, entity_id) }}
 
@@ -54,7 +54,7 @@ Variables:
         {% endif %}
 
         {# Render filtered fields #}
-        {{ render_filtered_fields(form, mode='form') }}
+        {{ render_filtered_fields(form, mode='form', model_name=model_name) }}
       </div>
 
       {{ render_form_footer() }}

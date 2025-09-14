@@ -3,12 +3,12 @@
 
 {# Modern HTMX-compatible modal overlay #}
 {% macro htmx_modal_overlay(backdrop_click_close=true, max_width="max-w-2xl") %}
-<div class="modal-overlay fixed inset-0 z-50 flex items-center justify-center" 
-     tabindex="-1" 
-     onkeydown="if(event.key === 'Escape') this.remove()">
+<div class="modal-overlay fixed inset-0 z-50 flex items-center justify-center"
+     tabindex="-1"
+     data-close-on-escape="true">
     <!-- Backdrop -->
-    <div class="modal-backdrop fixed inset-0" style="background-color: rgba(17, 24, 39, 0.6);"
-         {% if backdrop_click_close %}onclick="this.parentElement.remove()"{% endif %}></div>
+    <div class="modal-backdrop fixed inset-0 bg-gray-900/60"
+         {% if backdrop_click_close %}data-close-on-click="true"{% endif %}></div>
 
     <!-- Modal Content -->
     <div class="modal-content relative bg-white rounded-xl shadow-2xl {{ max_width }} w-full mx-4 max-h-[90vh] overflow-y-auto border border-gray-200 transform transition-all">
@@ -17,26 +17,6 @@
 </div>
 {% endmacro %}
 
-{# Legacy modal for backward compatibility #}
-{% macro base_modal(modal_id, backdrop_click_close=true) %}
-<div id="{{ modal_id }}" 
-     class="modal-overlay hidden"
-     aria-labelledby="{{ modal_id }}-title" 
-     role="dialog" 
-     aria-modal="true">
-    
-    <div class="modal-container">
-        <div class="modal-backdrop"
-             {% if backdrop_click_close %}onclick="closeModal('{{ modal_id }}')"{% endif %}></div>
-
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-        
-        <div class="modal-content" onclick="event.stopPropagation()">
-            {{ caller() }}
-        </div>
-    </div>
-</div>
-{% endmacro %}
 
 {# Modern HTMX-compatible modal header with entity icon support #}
 {% macro htmx_modal_header(title, model_name=none) %}
@@ -51,24 +31,13 @@
             {{ title }}
         </h3>
     </div>
-    <button onclick="this.closest('.modal-overlay').remove()"
+    <button data-modal-close="true"
             class="modal-close-button text-gray-400 hover:text-gray-600">
         {{ icon('x-mark', 'lg') }}
     </button>
 </div>
 {% endmacro %}
 
-{# Legacy modal header for backward compatibility #}
-{% macro modal_header(title, modal_id) %}
-<div class="modal-header">
-    <h3 class="modal-title" id="modal-title">
-        {{ title }}
-    </h3>
-    <button onclick="closeModal('{{ modal_id }}')" class="modal-close-button">
-        {{ icon('x-mark', 'lg') }}
-    </button>
-</div>
-{% endmacro %}
 
 {# Modern HTMX-compatible modal body #}
 {% macro htmx_modal_body(classes="p-6") %}
@@ -84,63 +53,9 @@
 </div>
 {% endmacro %}
 
-{# Legacy modal components for backward compatibility #}
-{% macro modal_body(classes="") %}
-<div class="modal-body {{ classes }}">
-    {{ caller() }}
-</div>
-{% endmacro %}
-
-{% macro modal_footer(align="right") %}
-<div class="modal-footer {% if align == 'center' %}justify-center{% elif align == 'left' %}justify-start{% else %}justify-end{% endif %}">
-    {{ caller() }}
-</div>
-{% endmacro %}
 
 {# Notes Section - Now handled by template components in components/notes/ #}
 
-{# Generic Detail Modal - Reusable detail display #}
-{% macro generic_detail_modal(modal_id, title, entity, fields) %}
-{% call base_modal(modal_id) %}
-    {{ modal_header(title, modal_id) }}
-    
-    {% call modal_body() %}
-        <div class="space-y-4">
-            {% for field in fields %}
-                <div>
-                    <label class="text-sm font-medium text-gray-500">{{ field.label }}</label>
-                    <div class="mt-1 text-sm text-gray-900">
-                        {% if field.type == 'date' and entity[field.key] %}
-                            {{ entity[field.key].strftime('%B %d, %Y') }}
-                        {% elif field.type == 'currency' and entity[field.key] %}
-                            ${{ "{:,.0f}".format(entity[field.key]) }}
-                        {% elif field.type == 'percentage' and entity[field.key] is not none %}
-                            {{ entity[field.key] }}%
-                        {% elif entity[field.key] %}
-                            {{ entity[field.key] }}
-                        {% else %}
-                            <span class="text-gray-400">Not specified</span>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endfor %}
-            
-            {% if entity.notes %}
-                {% with notes=entity.notes %}
-                    {% include 'components/notes/notes_display.html' %}
-                {% endwith %}
-            {% endif %}
-        </div>
-    {% endcall %}
-    
-    {% call modal_footer() %}
-        <button onclick="closeModal('{{ modal_id }}')" 
-                class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
-            Close
-        </button>
-    {% endcall %}
-{% endcall %}
-{% endmacro %}
 
 {# Error Modal - Consolidated error display #}
 {% macro htmx_error_modal(error_message="An unexpected error occurred. Please try again.") %}
@@ -157,9 +72,9 @@
     {% endcall %}
     
     {% call htmx_modal_footer(classes="flex justify-end p-6 border-t bg-gray-50") %}
-        <button type="button" 
+        <button type="button"
                 class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-                onclick="this.closest('.modal-overlay').remove()">
+                data-modal-close="true">
             Close
         </button>
     {% endcall %}
@@ -191,87 +106,18 @@
 
 {# Form Success Message - Success feedback with auto-close #}
 {% macro htmx_form_success_message(message, entity_id=None, auto_close_delay=1500) %}
-<div class="modal-success-message p-4 bg-green-50 border border-green-200 rounded-md">
+<div class="modal-success-message p-4 bg-green-50 border border-green-200 rounded-md"
+     data-auto-close="{{ auto_close_delay }}"
+     data-entity-id="{{ entity_id if entity_id else '' }}">
     <div class="flex items-center">
         {{ icon('check-circle-solid', 'md', 'text-green-500 mr-2') }}
         <span class="text-green-800 font-medium">{{ message }}</span>
     </div>
 </div>
-
-<script>
-// Close modal after showing success message
-setTimeout(() => {
-    document.querySelector('.modal-overlay')?.remove();
-    
-    // Trigger page refresh or content update
-    if (window.htmxModalSuccess) {
-        window.htmxModalSuccess({{ entity_id if entity_id else 'null' }});
-    } else {
-        // Default: reload the page to show updated content
-        window.location.reload();
-    }
-}, {{ auto_close_delay }});
-</script>
 {% endmacro %}
 
-{# Modal Close Script - Simple modal close response #}
+{# Modal Close - trigger close via data attribute #}
 {% macro htmx_modal_close() %}
-<script>
-// Close modal and remove from DOM
-document.querySelector('.modal-overlay')?.remove();
-// Trigger refresh of the page content if needed
-if (window.htmxModalClosed) {
-    window.htmxModalClosed();
-}
-</script>
+<div data-trigger-modal-close="true" class="hidden"></div>
 {% endmacro %}
 
-{# Modal utility JavaScript functions #}
-<script>
-// Modal management functions - CSS-based, no Alpine.js
-function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('hidden');
-        // Add animation classes
-        modal.classList.add('modal-fade-in');
-        // Prevent body scrolling when modal is open
-        document.body.classList.add('modal-open');
-    }
-}
-
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        // Add fade out animation
-        modal.classList.add('modal-fade-out');
-        
-        // Remove the modal after animation completes
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.classList.remove('modal-fade-in', 'modal-fade-out');
-            document.body.classList.remove('modal-open');
-        }, 300);
-    }
-}
-
-// Keyboard support - ESC to close modal
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        const visibleModal = document.querySelector('.modal-overlay:not(.hidden)');
-        if (visibleModal) {
-            closeModal(visibleModal.id);
-        }
-    }
-});
-
-// Auto-attach modal open handlers to elements with data-modal attribute  
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('[data-modal]').forEach(function(element) {
-        element.addEventListener('click', function() {
-            const modalId = this.getAttribute('data-modal');
-            openModal(modalId);
-        });
-    });
-});
-</script>

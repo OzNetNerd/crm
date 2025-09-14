@@ -39,17 +39,6 @@ function initializeModalValidation(modal) {
         const hiddenRequired = form.querySelectorAll('input[type="hidden"][required]');
         allRequired.push(...hiddenRequired);
 
-        // WTForms fields marked with asterisk (fallback detection)
-        const fieldContainers = form.querySelectorAll('.field-container');
-        fieldContainers.forEach(container => {
-            const label = container.querySelector('label');
-            if (label && label.textContent.includes('*')) {
-                const field = container.querySelector('input, select, textarea, input[type="hidden"]');
-                if (field && !allRequired.includes(field)) {
-                    allRequired.push(field);
-                }
-            }
-        });
 
         return allRequired;
     }
@@ -77,34 +66,9 @@ function initializeModalValidation(modal) {
             }
         });
 
-        // Also check for WTForms validation - look for fields with validator requirements
-        const wtformsFields = form.querySelectorAll('[data-required="true"], .field-container');
-        wtformsFields.forEach(fieldContainer => {
-            const label = fieldContainer.querySelector('label');
-            if (label && label.textContent.includes('*')) {
-                // This is a required field, find its input
-                const input = fieldContainer.querySelector('input, select, textarea, input[type="hidden"]');
-                if (input && !isFieldFilled(input)) {
-                    allFilled = false;
-                }
-            }
-        });
 
         saveButton.disabled = !allFilled;
 
-        // Debug logging in development
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            console.debug('Modal validation check:', {
-                requiredFields: requiredFields.length,
-                allFilled,
-                fieldStates: Array.from(requiredFields).map(f => ({
-                    name: f.name,
-                    type: f.type,
-                    value: f.value,
-                    filled: isFieldFilled(f)
-                }))
-            });
-        }
     }
 
     // Add event listeners with enhanced selector to catch all form changes
@@ -139,15 +103,6 @@ function initializeModalValidation(modal) {
     addValidationListeners();
     checkRequiredFields();
 
-    // Fallback: if no required fields detected after 500ms, enable save button
-    // This handles cases where form field detection fails
-    setTimeout(() => {
-        const requiredFields = getRequiredFields();
-        if (requiredFields.length === 0) {
-            saveButton.disabled = false;
-            console.debug('Modal validation: No required fields detected, enabling save button as fallback');
-        }
-    }, 500);
 }
 
 /**

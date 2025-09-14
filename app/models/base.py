@@ -38,7 +38,6 @@ class BaseModel(db.Model):
         for key, model_class in MODEL_REGISTRY.items():
             if model_class == cls:
                 return key
-        # Fallback for models not in registry
         return cls.__name__.lower()
 
     @classmethod
@@ -104,7 +103,6 @@ class BaseModel(db.Model):
         return {
             "id": self.id,
             "type": self.get_entity_type(),
-            "model_type": self.get_entity_type(),  # For backward compatibility
             "title": self._get_search_title(),
             "subtitle": self._build_search_subtitle(),
             "url": f"/modals/{self.get_entity_type()}/{self.id}/view"
@@ -124,7 +122,6 @@ class BaseModel(db.Model):
             if hasattr(self, field) and (value := getattr(self, field)):
                 return str(value)[:100]
 
-        # Fallback
         return f"{self.get_display_name()} #{self.id}"
 
     def _build_search_subtitle(self):
