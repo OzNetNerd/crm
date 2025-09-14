@@ -12,7 +12,6 @@ from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
 # Models are imported via app.models - no registration needed
 from app.utils.cards.config_builder import CardConfigBuilder
-from app.utils.logging.config import setup_structured_logging
 
 
 def get_database_path():
@@ -56,10 +55,9 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = get_database_path()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # ADR-012: Configure structured logging (only in reloader process, not initial)
+    # Basic logging setup
     if os.environ.get('WERKZEUG_RUN_MAIN'):
-        setup_structured_logging(app, "crm-service")
-        app.logger.info('CRM Application startup with structured logging')
+        app.logger.info('CRM Application startup')
         
     # Enable Jinja2 do extension for template logic
     app.jinja_env.add_extension('jinja2.ext.do')
