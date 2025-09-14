@@ -26,7 +26,7 @@ class StakeholderForm(BaseForm):
         # Set company choices
         from app.models.company import Company
         companies = Company.query.order_by(Company.name).all()
-        self.company_id.choices = [('', 'Select company')] + [
+        self.company_id.choices = [(None, 'Select company')] + [
             (str(company.id), company.name) for company in companies
         ]
 
