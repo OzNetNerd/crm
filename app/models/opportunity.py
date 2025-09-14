@@ -253,8 +253,8 @@ class Opportunity(EntityModel):
             >>> breakdown = Opportunity.get_pipeline_breakdown()
             >>> {'prospect': 150000, 'qualified': 250000, ...}
         """
-        # Get stages directly from column info
-        stages = cls.stage.info.get('choices', [])
+        # Get stages using existing DRY method
+        stages = cls.get_field_choices('stage')
 
         breakdown = {}
         for stage_value, stage_label in stages:
@@ -459,7 +459,18 @@ class Opportunity(EntityModel):
             ]
         }
         
-        result = auto_serialize(self, include_properties, field_transforms)
+        # Start with base serialization
+        result = super().to_dict()
+
+        # Add custom properties and transforms
+        for prop in include_properties:
+            if hasattr(self, prop):
+                result[prop] = getattr(self, prop)
+
+        # Apply field transforms
+        for field, transform in field_transforms.items():
+            if field in result:
+                result[field] = transform(result[field])
         
         # Add computed company name
         result["company_name"] = self.company.name if self.company else None

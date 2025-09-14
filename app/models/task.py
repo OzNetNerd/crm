@@ -532,7 +532,18 @@ class Task(EntityModel):
             ]
         }
         
-        result = auto_serialize(self, include_properties, field_transforms)
+        # Start with base serialization
+        result = super().to_dict()
+
+        # Add custom properties and transforms
+        for prop in include_properties:
+            if hasattr(self, prop):
+                result[prop] = getattr(self, prop)
+
+        # Apply field transforms
+        for field, transform in field_transforms.items():
+            if field in result:
+                result[field] = transform(result[field])
 
         return result
 
