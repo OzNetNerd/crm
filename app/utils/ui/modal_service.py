@@ -38,12 +38,18 @@ class ModalService:
         """
         form_classes = {
             'Company': CompanyModalForm,
+            'company': CompanyModalForm,  # Support both cases
             'Task': TaskModalForm,
+            'task': TaskModalForm,
             'Stakeholder': StakeholderModalForm,
+            'stakeholder': StakeholderModalForm,
             'Opportunity': OpportunityModalForm,
+            'opportunity': OpportunityModalForm,
             'User': UserModalForm,
+            'user': UserModalForm,
         }
-        return form_classes.get(model_name)
+        # Try exact match first, then title case
+        return form_classes.get(model_name) or form_classes.get(model_name.title())
 
     @staticmethod
     def render_create_modal(model_name: str, **kwargs) -> str:
@@ -128,44 +134,47 @@ class ModalService:
     def render_view_modal(model_name: str, entity_id: int, **kwargs) -> str:
         """
         Render a read-only view modal for the specified model and entity.
-        
+        Uses the same unified template as edit/create for DRY principles.
+
         Args:
-            model_name: Name of the model (e.g., 'Task', 'Company')  
+            model_name: Name of the model (e.g., 'Task', 'Company')
             entity_id: ID of the entity to view
             **kwargs: Additional template variables
-            
+
         Returns:
             Rendered HTML for the read-only modal
         """
         model_class = get_model_by_name(model_name)
         if not model_class:
-            return render_template('components/modals/error_modal.html', 
+            return render_template('components/modals/error_modal.html',
                                  error=f"Unknown model: {model_name}")
-        
+
         # Get the entity
         entity = model_class.query.get_or_404(entity_id)
-        
-        # Use model metadata for configuration
-        from app.utils.model_registry import ModelRegistry
 
-        # Get metadata for this entity type
-        entity_type = model_name.lower()
-        try:
-            metadata = ModelRegistry.get_model_metadata(entity_type)
-        except ValueError:
+        # Get explicit form class and populate with entity data
+        form_class = ModalService._get_form_class(model_name)
+        if not form_class:
             return render_template('components/modals/error_modal.html',
-                                 error=f"No metadata found for {model_name}")
+                                 error=f"No modal form available for {model_name}")
 
-        # Render the view modal template
+        # Create form with entity data for viewing
+        form = form_class(obj=entity)
+
         template_vars = {
-            'model_name': entity_type,
+            'model_name': model_name,
+            'model_class': model_class,
             'entity': entity,
-            'metadata': metadata,
-            'modal_title': f'View {metadata.display_name}',
+            'entity_id': entity_id,
+            'form': form,
+            'modal_title': f'View {model_name}',
+            'mode': 'view',  # Indicates view mode to template
+            'is_edit': False,
+            'is_view': True,  # Additional flag for clarity
             **kwargs
         }
-        
-        return render_template('components/modals/view_modal.html', **template_vars)
+
+        return render_template('components/modals/wtforms_modal.html', **template_vars)
     
     @staticmethod
     def process_form_submission(model_name: str, entity_id: Optional[int] = None) -> Dict[str, Any]:
