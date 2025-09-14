@@ -82,4 +82,4 @@ class CompanyForm(BaseForm):
 
     def get_fields(self):
         """Return field names to display in modal"""
-        return ['entity', 'name', 'industry', 'comments']
+        return ['name', 'industry', 'comments']
