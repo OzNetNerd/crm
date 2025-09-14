@@ -12,24 +12,22 @@ from app.utils.forms.helpers import safe_int_coerce
 
 
 class OpportunityForm(BaseForm):
-    """Unified form for creating and editing opportunities - supports both full and modal modes"""
+    """Form for creating and editing opportunities in modals"""
 
-    def __init__(self, *args, modal_mode=False, **kwargs):
-        self.modal_mode = modal_mode
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Set choices from model metadata
         from app.models.opportunity import Opportunity
 
-        if not modal_mode:
-            # Only set priority choices for full forms
-            priority_choices = Opportunity.get_field_choices('priority')
-            self.priority.choices = [('', 'Select priority')] + priority_choices
+        # Set priority choices
+        priority_choices = Opportunity.get_field_choices('priority')
+        self.priority.choices = [('', 'Select priority')] + priority_choices
 
-        # Set stage choices (needed for both modal and full forms)
+        # Set stage choices
         stage_choices = Opportunity.get_field_choices('stage')
         self.stage.choices = [('', 'Select stage')] + stage_choices
 
-        # Set company choices (needed for both modal and full forms)
+        # Set company choices
         from app.models.company import Company
         companies = Company.query.order_by(Company.name).all()
         self.company_id.choices = [('', 'Select company')] + [
@@ -81,10 +79,6 @@ class OpportunityForm(BaseForm):
         coerce=safe_int_coerce
     )
 
-    def get_modal_fields(self):
-        """Return field names to display in modal mode"""
+    def get_fields(self):
+        """Return field names to display in modal"""
         return ['name', 'company_id', 'value', 'stage']
-
-    def get_full_fields(self):
-        """Return field names to display in full form mode"""
-        return ['name', 'value', 'probability', 'priority', 'expected_close_date', 'stage', 'company_id']
