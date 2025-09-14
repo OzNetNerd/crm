@@ -1,9 +1,10 @@
 from typing import Dict, Any, List, Optional
+from datetime import datetime, date
 from . import db
-from .base import EntityModel
+from .base import BaseModel
 
 
-class Company(EntityModel):
+class Company(BaseModel):
     """
     Company model representing business organizations in the CRM system.
     
@@ -24,12 +25,8 @@ class Company(EntityModel):
         opportunities: Related business opportunities.
     """
     __tablename__ = "companies"
+    __display_name__ = "Company"
     
-    __entity_config__ = {
-        'description': 'Manage your company relationships',
-        'filter_fields': ['industry', 'size'],
-        'join_map': {}
-    }
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(
@@ -290,8 +287,17 @@ class Company(EntityModel):
             ]
         }
         
-        # Start with base serialization
-        result = super().to_dict()
+        # Start with base serialization - convert model to dict
+        result = {}
+        # Serialize all columns
+        for column in self.__table__.columns:
+            column_name = column.name
+            value = getattr(self, column_name, None)
+            # Handle datetime/date serialization
+            if isinstance(value, (datetime, date)):
+                result[column_name] = value.isoformat() if value else None
+            else:
+                result[column_name] = value
 
         # Add custom properties and transforms
         for prop in include_properties:

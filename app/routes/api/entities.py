@@ -114,8 +114,8 @@ def create_route_handlers():
         return handler
 
     # Register routes for all entities
-    for entity_name in ENTITIES:
-        singular = entity_name[:-1] if entity_name.endswith('s') else entity_name
+    for entity_name, model in ENTITIES.items():
+        singular = model.get_display_name().lower().replace(' ', '_')
 
         # GET list
         api_entities_bp.add_url_rule(f'/{entity_name}', f'list_{entity_name}',

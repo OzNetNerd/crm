@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Dict, Any, List, Optional
 from . import db
-from .base import EntityModel
+from .base import BaseModel
 
 
 # Many-to-many table for stakeholder MEDDPICC roles
@@ -40,7 +40,7 @@ stakeholder_opportunities = db.Table(
 )
 
 
-class Stakeholder(EntityModel):
+class Stakeholder(BaseModel):
     """
     Stakeholder model representing customer-side contacts in the CRM system.
     
@@ -60,12 +60,8 @@ class Stakeholder(EntityModel):
     """
 
     __tablename__ = "stakeholders"
+    __display_name__ = "Stakeholder"
     
-    __entity_config__ = {
-        'description': 'Manage your stakeholder relationships',
-        'filter_fields': ['company_id', 'job_title'],
-        'join_map': {'company_name': ['Company']}
-    }
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(
@@ -272,8 +268,17 @@ class Stakeholder(EntityModel):
             ]
         }
         
-        # Start with base serialization
-        result = super().to_dict()
+        # Start with base serialization - convert model to dict
+        result = {}
+        # Serialize all columns
+        for column in self.__table__.columns:
+            column_name = column.name
+            value = getattr(self, column_name, None)
+            # Handle datetime/date serialization
+            if isinstance(value, (datetime, date)):
+                result[column_name] = value.isoformat() if value else None
+            else:
+                result[column_name] = value
 
         # Add custom properties and transforms
         for prop in include_properties:

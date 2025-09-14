@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app.models import db, Company, Stakeholder, Opportunity, Task, Note, User
-from services.crm.main import create_app
+from app.main import create_app
 
 # Enhanced sample data for comprehensive testing
 INDUSTRIES = [
