@@ -5,7 +5,7 @@ This package provides utilities organized by logical function:
 - core/: Core system utilities (model introspection, base handlers)
 - forms/: Form-related utilities (dynamic forms, configs)
 - entities/: Entity management (helpers, icons, configs)
-- ui/: UI-specific helpers (modals, templates, index helpers)
+- ui/: UI-specific helpers (modals, templates)
 - legacy/: Deprecated files (for backwards compatibility)
 
 Key imports available at package level for backwards compatibility:
@@ -51,7 +51,6 @@ from .ui import (
     get_groupable_fields,
     get_model_form_fields,
     get_model_config,
-    UniversalIndexHelper,
     PRIORITY_OPTIONS,
     SIZE_OPTIONS
 )
@@ -79,7 +78,6 @@ __all__ = [
     # UI
     # 'ModalService',  # Temporarily removed
     'register_template_filters',
-    'UniversalIndexHelper',
     
     # Utils
     'auto_serialize',

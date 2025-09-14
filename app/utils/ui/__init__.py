@@ -22,9 +22,7 @@ from .template_globals import (
     SIZE_OPTIONS
 )
 
-from .index_helpers import (
-    UniversalIndexHelper
-)
+# index_helpers removed - functionality replaced by simplified patterns
 
 __all__ = [
     # 'ModalService',  # Temporarily removed
@@ -36,7 +34,6 @@ __all__ = [
     'get_groupable_fields',
     'get_model_form_fields',
     'get_model_config',
-    'UniversalIndexHelper',
     'PRIORITY_OPTIONS',
     'SIZE_OPTIONS'
 ]
