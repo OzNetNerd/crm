@@ -11,17 +11,9 @@ from app.models import db
 from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
 from app.utils.ui.template_filters import register_template_filters
-from app.models import Company, Stakeholder, Task, Opportunity, User
-from app.utils.model_registry import register_model, get_model, get_display_names
-from app.utils.model_metadata import ModelMetadata
-
-# Ensure models are registered in the Flask app process
-for model_class in [Company, Stakeholder, Task, Opportunity, User]:
-    register_model(model_class)
+# Models are imported via app.models - no registration needed
 from app.utils.ui.template_globals import (
     get_field_options,
-    get_model_form_fields,
-    get_model_config,
     PRIORITY_OPTIONS,
     SIZE_OPTIONS,
 )
@@ -87,7 +79,6 @@ def create_app():
 
     # Register clean template functions - no more string hacks!
     app.jinja_env.globals["get_field_options"] = get_field_options
-    app.jinja_env.globals["get_model_form_fields"] = get_model_form_fields
     # Register global template functions
     app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
     app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
@@ -101,16 +92,6 @@ def create_app():
     # Dynamic card system
     app.jinja_env.globals["build_dynamic_card_config"] = CardConfigBuilder.build_card_config
 
-    # Create a wrapper function that provides ModelMetadata for templates
-    def get_model_metadata_wrapper(model_name):
-        """Get model metadata for templates - wrapper around new registry"""
-        try:
-            model_class = get_model(model_name)
-            return ModelMetadata(model_class)
-        except:
-            return {}
-
-    app.jinja_env.globals["get_model_metadata"] = get_model_metadata_wrapper
     app.jinja_env.globals["getattr"] = getattr
     app.jinja_env.globals["hasattr"] = hasattr
     

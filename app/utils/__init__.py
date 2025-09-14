@@ -36,8 +36,6 @@ from .ui import (
     get_field_options,
     get_sortable_fields,
     get_groupable_fields,
-    get_model_form_fields,
-    get_model_config,
     # UniversalIndexHelper removed - using DRY route helpers instead
     PRIORITY_OPTIONS,
     SIZE_OPTIONS

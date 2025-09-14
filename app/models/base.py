@@ -163,27 +163,6 @@ class EntityModel(BaseModel):
 
         return config
 
-    def __init_subclass__(cls, **kwargs):
-        """
-        Automatically register entity models with ModelRegistry on class creation.
-
-        This hook runs when any subclass of EntityModel is defined, ensuring
-        automatic registration without manual intervention. Uses the entity
-        config to determine registration names.
-
-        Args:
-            **kwargs: Additional arguments passed to parent __init_subclass__
-        """
-        super().__init_subclass__(**kwargs)
-
-        # Only register concrete classes (not abstract ones)
-        if not getattr(cls, '__abstract__', False) and hasattr(cls, 'get_entity_config'):
-            # Import here to avoid circular dependencies
-            from app.utils.model_registry import register_model
-
-            # Auto-register the model with the registry
-            register_model(cls)
-
     @classmethod
     def filter_and_sort(cls, filters=None, sort_by=None, sort_dir='asc', joins=None):
         """

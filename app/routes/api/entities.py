@@ -1,121 +1,146 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from app.models import db, Task, Stakeholder, Company, Opportunity
-from app.utils.core.base_handlers import GenericAPIHandler
 
 api_entities_bp = Blueprint("api_entities", __name__, url_prefix="/api")
 
-# Initialize handlers for each entity
-company_handler = GenericAPIHandler(Company, "company")
-stakeholder_handler = GenericAPIHandler(Stakeholder, "stakeholder")
-opportunity_handler = GenericAPIHandler(Opportunity, "opportunity")
+# Single source of truth - simple entity mapping
+ENTITIES = {
+    'companies': Company,
+    'stakeholders': Stakeholder,
+    'opportunities': Opportunity
+}
 
-# Company endpoints
-@api_entities_bp.route("/companies/<int:company_id>")
-def get_company_details(company_id):
-    """Get company details with notes"""
-    return company_handler.get_details(company_id)
+# Generic CRUD functions - DRY approach
+def get_entity_list(entity_name):
+    """Get list of entities"""
+    model = ENTITIES.get(entity_name)
+    if not model:
+        abort(404)
 
-@api_entities_bp.route("/companies")
-def get_companies():
-    """Get all companies for form dropdowns"""
-    def list_serializer(company):
-        return {
-            'id': company.id,
-            'name': company.name,
-            'industry': company.industry
-        }
-    return company_handler.get_list(field_serializer=list_serializer, order_by_field="name")
+    entities = model.query.order_by(getattr(model, 'name', model.id)).all()
+    return jsonify([entity.to_dict() for entity in entities])
 
-@api_entities_bp.route("/companies/<int:company_id>", methods=["PUT"])
-def update_company(company_id):
-    """Update company details"""
-    update_fields = ['name', 'industry', 'website', 'employee_count', 'notes', 'phone', 'email']
-    return company_handler.update_entity(company_id, update_fields)
+def get_entity_detail(entity_name, entity_id):
+    """Get single entity details"""
+    model = ENTITIES.get(entity_name)
+    if not model:
+        abort(404)
 
-@api_entities_bp.route("/companies", methods=["POST"])
-def create_company():
-    """Create new company"""
-    create_fields = ['name', 'industry', 'website', 'employee_count']
-    return company_handler.create_entity(create_fields)
+    entity = model.query.get_or_404(entity_id)
+    return jsonify(entity.to_dict())
 
-@api_entities_bp.route("/companies/<int:company_id>", methods=["DELETE"])
-def delete_company(company_id):
-    """Delete company"""
-    return company_handler.delete_entity(company_id)
+def create_entity(entity_name):
+    """Create new entity"""
+    model = ENTITIES.get(entity_name)
+    if not model:
+        abort(404)
 
-# Stakeholder endpoints
-@api_entities_bp.route("/stakeholders/<int:stakeholder_id>")
-def get_stakeholder_details(stakeholder_id):
-    """Get stakeholder details with notes"""
-    return stakeholder_handler.get_details(stakeholder_id)
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
 
-@api_entities_bp.route("/stakeholders")
-def get_stakeholders():
-    """Get all stakeholders for form dropdowns"""
-    def list_serializer(stakeholder):
-        return {
-            'id': stakeholder.id,
-            'name': stakeholder.name,
-            'job_title': stakeholder.job_title,
-            'company_name': getattr(stakeholder, 'company_name', None),
-            'meddpicc_roles': getattr(stakeholder, 'meddpicc_roles', [])
-        }
-    return stakeholder_handler.get_list(field_serializer=list_serializer, order_by_field="name")
+    try:
+        entity = model(**data)
+        db.session.add(entity)
+        db.session.commit()
+        return jsonify(entity.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
 
-@api_entities_bp.route("/stakeholders/<int:stakeholder_id>", methods=["PUT"])
-def update_stakeholder(stakeholder_id):
-    """Update stakeholder details"""
-    update_fields = ['name', 'job_title', 'email', 'phone', 'company_id', 'meddpicc_roles', 'notes']
-    return stakeholder_handler.update_entity(stakeholder_id, update_fields)
+def update_entity(entity_name, entity_id):
+    """Update existing entity"""
+    model = ENTITIES.get(entity_name)
+    if not model:
+        abort(404)
 
-@api_entities_bp.route("/stakeholders", methods=["POST"])
-def create_stakeholder():
-    """Create new stakeholder"""
-    create_fields = ['name', 'job_title', 'email', 'company_id']
-    return stakeholder_handler.create_entity(create_fields)
+    entity = model.query.get_or_404(entity_id)
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
 
-@api_entities_bp.route("/stakeholders/<int:stakeholder_id>", methods=["DELETE"])
-def delete_stakeholder(stakeholder_id):
-    """Delete stakeholder"""
-    return stakeholder_handler.delete_entity(stakeholder_id)
+    try:
+        for key, value in data.items():
+            if hasattr(entity, key):
+                setattr(entity, key, value)
+        db.session.commit()
+        return jsonify(entity.to_dict())
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
 
-# Opportunity endpoints
-@api_entities_bp.route("/opportunities/<int:opportunity_id>")
-def get_opportunity_details(opportunity_id):
-    """Get opportunity details with notes"""
-    return opportunity_handler.get_details(opportunity_id)
+def delete_entity(entity_name, entity_id):
+    """Delete entity"""
+    model = ENTITIES.get(entity_name)
+    if not model:
+        abort(404)
 
-@api_entities_bp.route("/opportunities")
-def get_opportunities():
-    """Get all opportunities for form dropdowns"""
-    def list_serializer(opportunity):
-        return {
-            'id': opportunity.id,
-            'name': getattr(opportunity, 'name', opportunity.description),
-            'stage': opportunity.stage,
-            'company_name': getattr(opportunity, 'company_name', None)
-        }
-    return opportunity_handler.get_list(field_serializer=list_serializer, order_by_field="name")
+    entity = model.query.get_or_404(entity_id)
+    try:
+        db.session.delete(entity)
+        db.session.commit()
+        return '', 204
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
 
-@api_entities_bp.route("/opportunities/<int:opportunity_id>", methods=["PUT"])
-def update_opportunity(opportunity_id):
-    """Update opportunity details"""
-    update_fields = ['description', 'value', 'stage', 'close_date', 'company_id', 'notes', 'priority']
-    return opportunity_handler.update_entity(opportunity_id, update_fields)
+# Auto-generate routes for all entities
+def create_route_handlers():
+    """Create route handlers to avoid lambda closure issues"""
 
-@api_entities_bp.route("/opportunities", methods=["POST"])
-def create_opportunity():
-    """Create new opportunity"""
-    create_fields = ['description', 'value', 'stage', 'close_date', 'company_id', 'priority']
-    return opportunity_handler.create_entity(create_fields)
+    def make_list_handler(entity_name):
+        def handler():
+            return get_entity_list(entity_name)
+        return handler
 
-@api_entities_bp.route("/opportunities/<int:opportunity_id>", methods=["DELETE"])
-def delete_opportunity(opportunity_id):
-    """Delete opportunity"""
-    return opportunity_handler.delete_entity(opportunity_id)
+    def make_detail_handler(entity_name):
+        def handler(entity_id):
+            return get_entity_detail(entity_name, entity_id)
+        return handler
 
+    def make_create_handler(entity_name):
+        def handler():
+            return create_entity(entity_name)
+        return handler
 
-# POST endpoints for entity creation
+    def make_update_handler(entity_name):
+        def handler(entity_id):
+            return update_entity(entity_name, entity_id)
+        return handler
+
+    def make_delete_handler(entity_name):
+        def handler(entity_id):
+            return delete_entity(entity_name, entity_id)
+        return handler
+
+    # Register routes for all entities
+    for entity_name in ENTITIES:
+        singular = entity_name[:-1] if entity_name.endswith('s') else entity_name
+
+        # GET list
+        api_entities_bp.add_url_rule(f'/{entity_name}', f'list_{entity_name}',
+                                    make_list_handler(entity_name))
+
+        # GET single
+        api_entities_bp.add_url_rule(f'/{entity_name}/<int:entity_id>', f'get_{singular}',
+                                    make_detail_handler(entity_name))
+
+        # POST create
+        api_entities_bp.add_url_rule(f'/{entity_name}', f'create_{singular}',
+                                    make_create_handler(entity_name), methods=['POST'])
+
+        # PUT update
+        api_entities_bp.add_url_rule(f'/{entity_name}/<int:entity_id>', f'update_{singular}',
+                                    make_update_handler(entity_name), methods=['PUT'])
+
+        # DELETE
+        api_entities_bp.add_url_rule(f'/{entity_name}/<int:entity_id>', f'delete_{singular}',
+                                    make_delete_handler(entity_name), methods=['DELETE'])
+
+# Call the function to register routes
+create_route_handlers()
+
+# Task endpoints - keep existing complex logic
 @api_entities_bp.route("/tasks", methods=["POST"])
 def create_task():
     """Create new task with support for linked entities"""
@@ -234,7 +259,6 @@ def create_task():
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
 
-
 # Validation endpoint for inline duplicate checking
 @api_entities_bp.route("/validate/<entity_type>/<field_name>", methods=["POST"])
 def validate_field(entity_type, field_name):
@@ -250,14 +274,14 @@ def validate_field(entity_type, field_name):
         if not field_value:
             return '', 200
 
-        # Map entity types to model classes
-        entity_map = {
-            'company': Company,
-            'stakeholder': Stakeholder,
-            'opportunity': Opportunity
-        }
+        # Use the same ENTITIES mapping for consistency
+        entity_singular = entity_type.lower()
+        if entity_singular.endswith('s'):
+            entity_plural = entity_singular
+        else:
+            entity_plural = f"{entity_singular}s"
 
-        model_class = entity_map.get(entity_type.lower())
+        model_class = ENTITIES.get(entity_plural)
         if not model_class:
             return '', 200  # Unknown entity, allow
 
@@ -292,5 +316,3 @@ def validate_field(entity_type, field_name):
     except Exception as e:
         # On error, don't block the user
         return '', 200
-
-
