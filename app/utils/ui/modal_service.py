@@ -10,10 +10,10 @@ import logging
 from flask import render_template, jsonify, request
 from app.models import db
 from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
-from app.forms.modals.company import CompanyModalForm
+from app.forms.entities.company import CompanyForm
+from app.forms.entities.stakeholder import StakeholderForm
+from app.forms.entities.opportunity import OpportunityForm
 from app.forms.modals.task import TaskModalForm
-from app.forms.modals.stakeholder import StakeholderModalForm
-from app.forms.modals.opportunity import OpportunityModalForm
 from app.forms.modals.user import UserModalForm
 from app.forms.base.base_forms import BaseForm
 # No icon functions needed - templates handle CSS class generation
@@ -37,14 +37,14 @@ class ModalService:
             Form class or None if not supported
         """
         form_classes = {
-            'Company': CompanyModalForm,
-            'company': CompanyModalForm,  # Support both cases
+            'Company': CompanyForm,
+            'company': CompanyForm,  # Support both cases
             'Task': TaskModalForm,
             'task': TaskModalForm,
-            'Stakeholder': StakeholderModalForm,
-            'stakeholder': StakeholderModalForm,
-            'Opportunity': OpportunityModalForm,
-            'opportunity': OpportunityModalForm,
+            'Stakeholder': StakeholderForm,
+            'stakeholder': StakeholderForm,
+            'Opportunity': OpportunityForm,
+            'opportunity': OpportunityForm,
             'User': UserModalForm,
             'user': UserModalForm,
         }
@@ -74,7 +74,11 @@ class ModalService:
             return render_template('components/modals/error_modal.html',
                                  error=f"No modal form available for {model_name}")
 
-        form = form_class()
+        # Create form with modal_mode=True for unified forms
+        if model_name.lower() in ['company', 'stakeholder', 'opportunity']:
+            form = form_class(modal_mode=True)
+        else:
+            form = form_class()
         
         template_vars = {
             'model_name': model_name,
@@ -115,7 +119,11 @@ class ModalService:
             return render_template('components/modals/error_modal.html',
                                  error=f"No modal form available for {model_name}")
 
-        form = form_class(obj=entity)
+        # Create form with modal_mode=True for unified forms
+        if model_name.lower() in ['company', 'stakeholder', 'opportunity']:
+            form = form_class(obj=entity, modal_mode=True)
+        else:
+            form = form_class(obj=entity)
         
         template_vars = {
             'model_name': model_name,
@@ -158,8 +166,11 @@ class ModalService:
             return render_template('components/modals/error_modal.html',
                                  error=f"No modal form available for {model_name}")
 
-        # Create form with entity data for viewing
-        form = form_class(obj=entity)
+        # Create form with entity data for viewing, use modal_mode for unified forms
+        if model_name.lower() in ['company', 'stakeholder', 'opportunity']:
+            form = form_class(obj=entity, modal_mode=True)
+        else:
+            form = form_class(obj=entity)
 
         template_vars = {
             'model_name': model_name,
@@ -217,7 +228,11 @@ class ModalService:
                                           error=f"No modal form available for {model_name}")
                 }
 
-            form = form_class(obj=entity)
+            # Create form with modal_mode for unified forms
+            if model_name.lower() in ['company', 'stakeholder', 'opportunity']:
+                form = form_class(obj=entity, modal_mode=True)
+            else:
+                form = form_class(obj=entity)
             
             
             # Validate form using WTForms
