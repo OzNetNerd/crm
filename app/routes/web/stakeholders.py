@@ -12,17 +12,11 @@ add_content_route(stakeholders_bp, Stakeholder)
 
 @stakeholders_bp.route("/")
 def index():
-    # Use DRY helpers instead of duplicated static strings
-    entity_config = Stakeholder.__entity_config__.copy()
-    entity_config['entity_buttons'] = build_entity_buttons(Stakeholder)
-
-    # Map model field names to template expected names for compatibility
-    entity_config['entity_endpoint'] = entity_config['endpoint_name']
-    entity_config['entity_name'] = entity_config['display_name']
-    entity_config['entity_name_singular'] = entity_config['display_name_singular']
-
     return render_template("base/entity_index.html",
-        entity_config=entity_config,
+        entity_config={
+            **Stakeholder.get_entity_config(),
+            'entity_buttons': build_entity_buttons(Stakeholder)
+        },
         dropdown_configs=build_dropdown_configs(Stakeholder),
         entity_stats=calculate_entity_stats(Stakeholder)
     )

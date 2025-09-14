@@ -16,9 +16,9 @@ from app.utils.model_registry import ModelRegistry
 
 # Ensure models are registered in the Flask app process
 for model_class in [Company, Stakeholder, Task, Opportunity, User]:
-    if hasattr(model_class, '__entity_config__'):
-        config = model_class.__entity_config__
-        endpoint_name = config['endpoint_name']
+    if hasattr(model_class, 'get_entity_config'):
+        config = model_class.get_entity_config()
+        endpoint_name = config['entity_endpoint']
 
         # Register with endpoint name from config
         ModelRegistry.register_model(model_class, endpoint_name)

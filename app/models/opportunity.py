@@ -29,12 +29,7 @@ class Opportunity(EntityModel):
     __tablename__ = "opportunities"
     
     __entity_config__ = {
-        'display_name': 'Opportunities',
-        'display_name_singular': 'Opportunity',
-        'description': 'Manage your sales opportunities',
-        'endpoint_name': 'opportunities', 
-        'modal_path': '/modals/Opportunity',
-        'show_dashboard_button': True
+        'description': 'Manage your sales opportunities'
     }
 
     id = db.Column(db.Integer, primary_key=True)

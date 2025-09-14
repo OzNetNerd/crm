@@ -725,7 +725,7 @@ def get_all_entity_models() -> List:
     # Filter to only models with entity configs
     entity_models = []
     for model in potential_models:
-        if hasattr(model, '__entity_config__'):
+        if hasattr(model, 'get_entity_config'):
             entity_models.append(model)
     
     return entity_models

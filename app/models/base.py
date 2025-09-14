@@ -88,6 +88,38 @@ class EntityModel(BaseModel):
 
     # Note: __entity_config__ is expected as a class attribute, not an abstract property
 
+    @classmethod
+    def get_entity_config(cls):
+        """
+        Get entity configuration with auto-generated defaults.
+
+        Merges any manually defined __entity_config__ with auto-generated
+        defaults based on class name and table name. This allows models to
+        only define what's different from the standard pattern.
+
+        Returns:
+            dict: Complete entity configuration with all required fields
+        """
+        # Get the manual config if defined
+        config = getattr(cls, '__entity_config__', {}).copy()
+
+        # Auto-generate missing fields - use template-ready names
+        defaults = {
+            'entity_type': cls.__name__.lower(),
+            'entity_name': cls.__tablename__.replace('_', ' ').title(),
+            'entity_name_singular': cls.__name__,
+            'entity_endpoint': cls.__tablename__,
+            'modal_path': f'/modals/{cls.__name__}',
+            'show_dashboard_button': True
+        }
+
+        # Merge defaults with config
+        for key, value in defaults.items():
+            if key not in config:
+                config[key] = value
+
+        return config
+
     def __init_subclass__(cls, **kwargs):
         """
         Automatically register entity models with ModelRegistry on class creation.
@@ -103,12 +135,12 @@ class EntityModel(BaseModel):
         super().__init_subclass__(**kwargs)
 
         # Only register concrete classes (not abstract ones)
-        if not getattr(cls, '__abstract__', False) and hasattr(cls, '__entity_config__'):
+        if not getattr(cls, '__abstract__', False) and hasattr(cls, 'get_entity_config'):
             # Import here to avoid circular dependencies
             from app.utils.model_registry import ModelRegistry
 
-            config = cls.__entity_config__
-            endpoint_name = config['endpoint_name']  # Use exact endpoint name from config
+            config = cls.get_entity_config()
+            endpoint_name = config['entity_endpoint']  # Use exact endpoint name from config
 
             # Register with the exact endpoint name from entity config
             ModelRegistry.register_model(cls, endpoint_name)
@@ -125,22 +157,6 @@ class EntityModel(BaseModel):
                 ModelRegistry._models[plural_name] = cls
 
     @classmethod
-    def get_entity_config(cls) -> Dict[str, Any]:
-        """
-        Get entity configuration dictionary for this model.
-
-        Provides standardized access to entity configuration across all
-        entity models. Returns empty dict if no config is defined.
-
-        Returns:
-            Entity configuration dictionary or empty dict if not defined.
-
-        Example:
-            >>> config = Task.get_entity_config()
-            >>> print(config['display_name'])
-            'Tasks'
-        """
-        return getattr(cls, '__entity_config__', {})
 
     @classmethod
     def get_recent(cls, limit: int = 5, exclude_status: Optional[str] = None) -> List:

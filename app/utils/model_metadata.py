@@ -104,14 +104,14 @@ class ModelMetadata:
     
     def __post_init__(self):
         # Extract from entity config first if available - USE THE PROVIDED VALUES
-        if hasattr(self.model_class, '__entity_config__'):
-            config = self.model_class.__entity_config__
+        if hasattr(self.model_class, 'get_entity_config'):
+            config = self.model_class.get_entity_config()
             if self.display_name is None:
-                self.display_name = config.get('display_name_singular', self.model_class.__name__)
+                self.display_name = config.get('entity_name_singular', self.model_class.__name__)
             if self.display_name_plural is None:
-                self.display_name_plural = config.get('display_name', self.display_name)
+                self.display_name_plural = config.get('entity_name', self.display_name)
             if self.api_endpoint is None:
-                self.api_endpoint = config.get('endpoint_name')
+                self.api_endpoint = config.get('entity_endpoint')
         else:
             # Fallback to defaults - only use what's available, no string manipulation
             if self.display_name is None:
@@ -140,8 +140,8 @@ class ModelMetadata:
     def _discover_fields(self):
         """Discover fields from model class using introspection"""
         # This integrates with existing __entity_config__ until full migration
-        if hasattr(self.model_class, '__entity_config__'):
-            config = self.model_class.__entity_config__
+        if hasattr(self.model_class, 'get_entity_config'):
+            config = self.model_class.get_entity_config()
             # Extract field information from existing config
             self._extract_from_entity_config(config)
         else:
