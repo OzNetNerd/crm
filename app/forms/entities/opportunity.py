@@ -11,20 +11,24 @@ from app.utils.core.model_introspection import ModelIntrospector
 
 
 class OpportunityForm(BaseForm):
-    """Form for creating and editing opportunities"""
+    """Unified form for creating and editing opportunities - supports both full and modal modes"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, modal_mode=False, **kwargs):
+        self.modal_mode = modal_mode
         super().__init__(*args, **kwargs)
         # Set choices from model metadata
         from app.models.opportunity import Opportunity
 
-        priority_choices = ModelIntrospector.get_field_choices(Opportunity, 'priority')
-        self.priority.choices = [('', 'Select priority')] + priority_choices
+        if not modal_mode:
+            # Only set priority choices for full forms
+            priority_choices = ModelIntrospector.get_field_choices(Opportunity, 'priority')
+            self.priority.choices = [('', 'Select priority')] + priority_choices
 
+        # Set stage choices (needed for both modal and full forms)
         stage_choices = ModelIntrospector.get_field_choices(Opportunity, 'stage')
         self.stage.choices = [('', 'Select stage')] + stage_choices
 
-        # Set company choices
+        # Set company choices (needed for both modal and full forms)
         from app.models.company import Company
         companies = Company.query.order_by(Company.name).all()
         self.company_id.choices = [('', 'Select company')] + [
@@ -75,3 +79,11 @@ class OpportunityForm(BaseForm):
         choices=[],  # Will be populated in __init__
         coerce=int
     )
+
+    def get_modal_fields(self):
+        """Return field names to display in modal mode"""
+        return ['name', 'company_id', 'value', 'stage']
+
+    def get_full_fields(self):
+        """Return field names to display in full form mode"""
+        return ['name', 'value', 'probability', 'priority', 'expected_close_date', 'stage', 'company_id']

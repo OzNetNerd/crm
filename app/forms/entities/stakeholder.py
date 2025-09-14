@@ -11,17 +11,20 @@ from app.utils.core.model_introspection import ModelIntrospector
 
 
 class StakeholderForm(BaseForm):
-    """Form for creating and editing stakeholders"""
+    """Unified form for creating and editing stakeholders - supports both full and modal modes"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, modal_mode=False, **kwargs):
+        self.modal_mode = modal_mode
         super().__init__(*args, **kwargs)
         # Set choices from model metadata
         from app.models.stakeholder import Stakeholder
 
-        meddpicc_choices = ModelIntrospector.get_field_choices(Stakeholder, 'meddpicc_role')
-        self.meddpicc_role.choices = [('', 'Select MEDDPICC role')] + meddpicc_choices
+        if not modal_mode:
+            # Only set MEDDPICC choices for full forms
+            meddpicc_choices = ModelIntrospector.get_field_choices(Stakeholder, 'meddpicc_role')
+            self.meddpicc_role.choices = [('', 'Select MEDDPICC role')] + meddpicc_choices
 
-        # Set company choices
+        # Set company choices (needed for both modal and full forms)
         from app.models.company import Company
         companies = Company.query.order_by(Company.name).all()
         self.company_id.choices = [('', 'Select company')] + [
@@ -64,3 +67,11 @@ class StakeholderForm(BaseForm):
         choices=[],  # Will be populated in __init__
         coerce=int
     )
+
+    def get_modal_fields(self):
+        """Return field names to display in modal mode"""
+        return ['name', 'email', 'company_id']
+
+    def get_full_fields(self):
+        """Return field names to display in full form mode"""
+        return ['name', 'job_title', 'email', 'phone', 'meddpicc_role', 'company_id']
