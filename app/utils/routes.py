@@ -131,9 +131,10 @@ def add_content_route(blueprint, model_class):
     config = model_class.__entity_config__
     entity_name = model_class.__name__.lower()
 
-    # Create managers
-    entity_manager = UniversalEntityManager(model_class, _get_entity_handler(model_class))
-    filter_manager = EntityFilterManager(model_class, entity_name)
+    # Create managers with shared handler for DRY consistency
+    entity_handler = _get_entity_handler(model_class)
+    entity_manager = UniversalEntityManager(model_class, entity_handler)
+    filter_manager = EntityFilterManager(model_class, entity_name, entity_handler)
 
     # Create wrapper functions
     def custom_filters(query, filters):

@@ -320,10 +320,23 @@ class MetadataDrivenHandler(EntityHandler):
                 )
 
                 if is_groupable:
-                    group_config = {
-                        'field': column.name,
-                        'default_value': 'Other'
-                    }
+                    # Handle relationship fields with metadata (DRY approach)
+                    if 'relationship_field' in info:
+                        # Use relationship name as field key (e.g., 'company' not 'company_id')
+                        field_key = info['relationship_field']
+                        relationship_display_field = info.get('relationship_display_field', 'name')
+
+                        group_config = {
+                            'field': f"{field_key}.{relationship_display_field}",
+                            'default_value': f"No {field_key.title()}"
+                        }
+                    else:
+                        # Regular direct field (e.g., 'job_title', 'status')
+                        field_key = column.name
+                        group_config = {
+                            'field': column.name,
+                            'default_value': 'Other'
+                        }
 
                     # Extract choices order if available
                     if 'choices' in info:
@@ -340,16 +353,7 @@ class MetadataDrivenHandler(EntityHandler):
                         group_config['value_ranges'] = ranges
                         group_config['order'] = [range_info[1] for range_info in ranges] + ['Other']
 
-                    self._group_mapping[column.name] = group_config
-
-            # Add intelligent relationship-based grouping
-            # Look for foreign key relationships
-            for relationship_name in ['company', 'stakeholder', 'user', 'opportunity']:
-                if hasattr(self.model_class, relationship_name):
-                    self._group_mapping[relationship_name] = {
-                        'field': f'{relationship_name}.name',
-                        'default_value': f'No {relationship_name.title()}'
-                    }
+                    self._group_mapping[field_key] = group_config
 
         return self._group_mapping
 
