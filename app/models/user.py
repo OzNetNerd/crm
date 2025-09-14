@@ -23,12 +23,10 @@ class User(EntityModel):
     __tablename__ = "users"
     
     __entity_config__ = {
-        'display_name': 'Teams',
-        'display_name_singular': 'Team Member',
+        'entity_name': 'Teams',
+        'entity_name_singular': 'Team Member',
         'description': 'Manage your team members',
-        'endpoint_name': 'teams',
-        'modal_path': '/modals/User',
-        'show_dashboard_button': True
+        'entity_endpoint': 'teams'
     }
 
     id = db.Column(db.Integer, primary_key=True)

@@ -54,7 +54,7 @@
 
     {# No results message - using DRY empty state component #}
     {% if grouped_entities|length == 0 %}
-        {{ empty_state(model_class.__entity_config__) }}
+        {{ empty_state(model_class.get_entity_config()) }}
     {% endif %}
 
 </div>

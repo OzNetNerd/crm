@@ -62,12 +62,7 @@ class Stakeholder(EntityModel):
     __tablename__ = "stakeholders"
     
     __entity_config__ = {
-        'display_name': 'Stakeholders',
-        'display_name_singular': 'Stakeholder',
-        'description': 'Manage your stakeholder relationships', 
-        'endpoint_name': 'stakeholders',
-        'modal_path': '/modals/Stakeholder',
-        'show_dashboard_button': True
+        'description': 'Manage your stakeholder relationships'
     }
 
     id = db.Column(db.Integer, primary_key=True)

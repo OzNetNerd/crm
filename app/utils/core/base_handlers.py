@@ -497,7 +497,7 @@ class EntityFilterManager:
         
         # Add universal template configuration
         # Use model config for plural names - NO string manipulation
-        entity_plural = self.model_class.__entity_config__.get('display_name', self.entity_name)
+        entity_plural = self.model_class.get_entity_config().get('entity_name', self.entity_name)
         
         context.update({
             'entity_type': self.entity_name,
@@ -541,7 +541,7 @@ class EntityGrouper:
             # Fallback: return all entities in one group
             return [{
                 "key": "all",
-                "label": f"All {self.model_class.__entity_config__.get('display_name', self.entity_name).title()}",
+                "label": f"All {self.model_class.get_entity_config().get('entity_name', self.entity_name).title()}",
                 "entities": entities,
                 "count": len(entities)
             }]

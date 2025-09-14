@@ -95,7 +95,7 @@ def build_entity_buttons(model_class) -> List[Dict[str, str]]:
     Returns:
         List of button dictionaries with title and url
     """
-    config = getattr(model_class, '__entity_config__', {})
+    config = model_class.get_entity_config() if hasattr(model_class, 'get_entity_config') else {}
     display_name_singular = config.get('display_name_singular', model_class.__name__)
     modal_path = config.get('modal_path', f'/modals/{model_class.__name__}')
 
@@ -125,7 +125,7 @@ def calculate_entity_stats(model_class) -> Dict[str, Any]:
     total_count = len(entities)
 
     # Get entity config for display names
-    config = getattr(model_class, '__entity_config__', {})
+    config = model_class.get_entity_config() if hasattr(model_class, 'get_entity_config') else {}
     display_name = config.get('display_name', f'{model_class.__name__}s')
 
     # Base stats - always include total count

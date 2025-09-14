@@ -35,8 +35,8 @@ class UniversalRouteFactory:
         Returns:
             Configured Flask Blueprint with standard routes
         """
-        config = model_class.__entity_config__
-        endpoint_name = config['endpoint_name']
+        config = model_class.get_entity_config()
+        endpoint_name = config['entity_endpoint']
         entity_name = model_class.__name__.lower()
 
         # Create blueprint
@@ -127,7 +127,7 @@ def add_content_route(blueprint, model_class):
         companies_bp = Blueprint("companies", __name__)
         add_content_route(companies_bp, Company)
     """
-    config = model_class.__entity_config__
+    config = model_class.get_entity_config()
     entity_name = model_class.__name__.lower()
 
     # Create managers with shared handler for DRY consistency

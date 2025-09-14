@@ -15,17 +15,11 @@ def index():
     """
     Opportunities index page with pipeline overview.
     """
-    # Use DRY helpers instead of duplicated static strings
-    entity_config = Opportunity.__entity_config__.copy()
-    entity_config['entity_buttons'] = build_entity_buttons(Opportunity)
-
-    # Map model field names to template expected names for compatibility
-    entity_config['entity_endpoint'] = entity_config['endpoint_name']
-    entity_config['entity_name'] = entity_config['display_name']
-    entity_config['entity_name_singular'] = entity_config['display_name_singular']
-
     return render_template("base/entity_index.html",
-        entity_config=entity_config,
+        entity_config={
+            **Opportunity.get_entity_config(),
+            'entity_buttons': build_entity_buttons(Opportunity)
+        },
         dropdown_configs=build_dropdown_configs(Opportunity),
         entity_stats=calculate_entity_stats(Opportunity)
     )

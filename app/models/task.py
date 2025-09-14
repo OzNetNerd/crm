@@ -55,12 +55,7 @@ class Task(EntityModel):
     __tablename__ = "tasks"
     
     __entity_config__ = {
-        'display_name': 'Tasks',
-        'display_name_singular': 'Task',
-        'description': 'Manage your tasks and projects',
-        'endpoint_name': 'tasks',
-        'modal_path': '/modals/Task',
-        'show_dashboard_button': True
+        'description': 'Manage your tasks and projects'
     }
 
     id = db.Column(db.Integer, primary_key=True)

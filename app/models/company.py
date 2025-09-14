@@ -27,12 +27,7 @@ class Company(EntityModel):
     __tablename__ = "companies"
     
     __entity_config__ = {
-        'display_name': 'Companies',
-        'display_name_singular': 'Company',  
-        'description': 'Manage your company relationships',
-        'endpoint_name': 'companies',
-        'modal_path': '/modals/Company',
-        'show_dashboard_button': True
+        'description': 'Manage your company relationships'
     }
 
     id = db.Column(db.Integer, primary_key=True)
