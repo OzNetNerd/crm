@@ -154,10 +154,6 @@ class Task(EntityModel):
         else:
             return f"Due: {formatted_date} ({days_diff} day{'s' if days_diff != 1 else ''} left)"
 
-    @property
-    def due_date_css_class(self) -> str:
-        """Return CSS class for due date styling."""
-        return "text-overdue" if self.is_overdue else ""
 
     @property
     def entity_name(self) -> Optional[str]:
@@ -420,15 +416,13 @@ class Task(EntityModel):
             - All database column values
             - Computed properties (is_overdue, completion_percentage, etc.)
             - Linked entity information
-            - UI helper fields (priority_css_class, status_css_class)
+            - UI helper fields
             
         Example:
             >>> task = Task(description="Follow up", priority="high")
             >>> data = task.to_dict()
             >>> print(data['description'])
             'Follow up'
-            >>> print(data['priority_css_class'])
-            'priority-high'
         """
         # Define properties to include beyond database columns
         include_properties = [
@@ -449,11 +443,7 @@ class Task(EntityModel):
         }
         
         result = auto_serialize(self, include_properties, field_transforms)
-        
-        # Add CSS classes for status and priority
-        result["priority_css_class"] = self.get_priority_css_class(self.priority)
-        result["status_css_class"] = self.get_status_css_class(self.status)
-        
+
         return result
 
     def to_display_dict(self) -> Dict[str, Any]:

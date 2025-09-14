@@ -182,13 +182,13 @@ async def get_chat_widget():
         <link rel="stylesheet" href="../app/static/css/components.css">
         <link rel="stylesheet" href="../app/static/css/chatbot.css">
     </head>
-    <body class="chatbot-test-body">
+    <body>
         <h2>Chatbot Test Interface</h2>
-        <div id="chat-container" class="chatbot-test-container">
-            <div id="messages" class="chatbot-test-messages"></div>
-            <div id="input-area" class="chatbot-test-input-area">
-                <input type="text" id="message-input" class="chatbot-test-message-input" placeholder="Type your message...">
-                <button id="send-button" class="chatbot-test-send-button">Send</button>
+        <div id="chat-container">
+            <div id="messages"></div>
+            <div id="input-area">
+                <input type="text" id="message-input" placeholder="Type your message...">
+                <button id="send-button">Send</button>
             </div>
         </div>
 
@@ -201,13 +201,13 @@ async def get_chat_widget():
 
             function addMessage(content, isUser = false, isTyping = false) {
                 const messageDiv = document.createElement('div');
-                messageDiv.className = `chatbot-test-message ${isUser ? 'chatbot-test-user-message' : 'chatbot-test-bot-message'}`;
+                messageDiv.dataset.messageType = isUser ? 'user' : 'bot';
                 
                 if (isTyping) {
                     messageDiv.innerHTML = `
-                        <div class="chatbot-test-typing-indicator">
+                        <div data-typing-indicator="true">
                             <span></span><span></span><span></span>
-                            <span class="chatbot-test-typing-text">Assistant is thinking...</span>
+                            <span>Assistant is thinking...</span>
                         </div>
                     `;
                     messageDiv.id = 'typing-message';

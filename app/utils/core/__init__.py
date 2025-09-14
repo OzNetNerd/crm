@@ -17,6 +17,12 @@ from .model_helpers import (
     DUE_DATE_GROUPINGS
 )
 
+from .model_introspection import (
+    ModelIntrospector,
+    get_model_by_name,
+    get_all_model_configs
+)
+
 __all__ = [
     'create_choice_field_info',
     'create_date_field_info',
@@ -29,5 +35,8 @@ __all__ = [
     'NEXT_STEP_TYPE_CHOICES',
     'TASK_TYPE_CHOICES',
     'DEPENDENCY_TYPE_CHOICES',
-    'DUE_DATE_GROUPINGS'
+    'DUE_DATE_GROUPINGS',
+    'ModelIntrospector',
+    'get_model_by_name',
+    'get_all_model_configs'
 ]

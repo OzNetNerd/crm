@@ -86,17 +86,6 @@ def create_model_choice_methods(field_names):
             
             choices_method_name = f"get_{field_name}_choices"
             setattr(cls, choices_method_name, make_choices_method(field_name))
-            
-            # Create get_FIELD_css_class method
-            def make_css_method(field):
-                @classmethod
-                def css_method(cls, field_value):
-                    from app.utils.core.model_introspection import ModelIntrospector
-                    return ModelIntrospector.get_field_css_class(cls, field, field_value)
-                return css_method
-            
-            css_method_name = f"get_{field_name}_css_class"
-            setattr(cls, css_method_name, make_css_method(field_name))
         
         return cls
     return decorator
