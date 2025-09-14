@@ -12,7 +12,7 @@
     <!-- Chat Toggle Button -->
     <button 
         @click="toggleChat()" 
-        class="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300"
+        class="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300"
         :class="{ 'scale-110': isOpen }"
         aria-label="Open chat assistant"
     >
@@ -21,14 +21,8 @@
     </button>
     
     <!-- Chat Panel -->
-    <div 
-        x-show="isOpen" 
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="transform translate-y-2 opacity-0 scale-95"
-        x-transition:enter-end="transform translate-y-0 opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="transform translate-y-0 opacity-100 scale-100"
-        x-transition:leave-end="transform translate-y-2 opacity-0 scale-95"
+    <div
+        x-show="isOpen"
         class="absolute bottom-20 right-0 w-80 h-96 bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col"
         style="display: none;"
         role="dialog"
@@ -96,9 +90,9 @@
             <div x-show="isTyping" class="flex justify-start" aria-label="Assistant is typing">
                 <div class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg text-sm">
                     <div class="flex space-x-1" aria-hidden="true">
-                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full ml-1"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full ml-1"></div>
                     </div>
                 </div>
             </div>
@@ -117,7 +111,7 @@
                 >
                 <button 
                     type="submit"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:bg-gray-300 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
                     :disabled="!currentMessage.trim() || connectionStatus !== 'connected'"
                     aria-label="Send message"
                 >

@@ -36,33 +36,41 @@ window.entityLinker = (config) => {
             this.updateHiddenField();
         },
         
-        // Search functionality
+        // Search functionality - DISABLED auto-suggestions
         async searchEntities(force = false) {
+            // Disabled: No longer show suggestions automatically
+            // Keep the function for potential manual search button usage
+            this.suggestions = [];
+            this.showDropdown = false;
+            return;
+
+            // Original search code commented out but preserved
+            /*
             // Always search if forced (on focus), otherwise need at least some text
             if (!force && this.search.length < 1) {
                 this.suggestions = [];
                 this.showDropdown = false;
                 return;
             }
-            
+
             this.isSearching = true;
             try {
                 const response = await fetch(`/api/search?q=${encodeURIComponent(this.search)}&limit=10`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+
                 const results = await response.json();
-                
+
                 // Filter by allowed entity types
                 const allowedTypes = entityTypes.split(',').map(t => t.trim());
-                this.suggestions = results.filter(item => 
-                    allowedTypes.includes(item.type) || 
+                this.suggestions = results.filter(item =>
+                    allowedTypes.includes(item.type) ||
                     allowedTypes.includes(item.entity_type)
                 );
-                
+
                 this.showDropdown = this.suggestions.length > 0;
-                
+
             } catch (error) {
                 console.error('Entity search error:', error);
                 this.suggestions = [];
@@ -70,6 +78,7 @@ window.entityLinker = (config) => {
             } finally {
                 this.isSearching = false;
             }
+            */
         },
         
         // Selection management
