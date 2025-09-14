@@ -46,3 +46,7 @@ def list_models():
         List of registered model names
     """
     return list(MODELS.keys())
+
+
+# Alias for backward compatibility
+get_model_by_name = get_model

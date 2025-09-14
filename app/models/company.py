@@ -207,8 +207,8 @@ class Company(EntityModel):
             >>> print(choices['technology'])
             {'label': 'Technology', 'description': 'Software and technology companies'}
         """
-        from app.utils.core.model_introspection import ModelIntrospector
-        return ModelIntrospector.get_field_choices(cls, 'industry')
+        # Get choices directly from column info
+        return cls.industry.info.get('choices', {})
     
     @classmethod
     def get_industry_css_class(cls, industry_value: Optional[str]) -> str:
@@ -231,8 +231,14 @@ class Company(EntityModel):
             >>> print(cls)
             'industry-technology'
         """
-        from app.utils.core.model_introspection import ModelIntrospector
-        return ModelIntrospector.get_field_css_class(cls, 'industry', industry_value)
+        # Get CSS class from column info or generate default
+        if not industry_value:
+            return ''
+        css_classes = cls.industry.info.get('css_classes', {})
+        if industry_value in css_classes:
+            return css_classes[industry_value]
+        # Default CSS class pattern
+        return f'industry-{industry_value.lower().replace(" ", "-")}' if industry_value else ''
     
     @property
     def size_category(self) -> str:

@@ -252,8 +252,8 @@ class Opportunity(EntityModel):
             >>> breakdown = Opportunity.get_pipeline_breakdown()
             >>> {'prospect': 150000, 'qualified': 250000, ...}
         """
-        from app.utils.core.model_introspection import ModelIntrospector
-        stages = ModelIntrospector.get_field_choices(cls, 'stage')
+        # Get stages directly from column info
+        stages = cls.stage.info.get('choices', [])
 
         breakdown = {}
         for stage_value, stage_label in stages:
@@ -309,8 +309,8 @@ class Opportunity(EntityModel):
             >>> print(choices['qualified'])
             {'label': 'Qualified', 'description': 'Meets our criteria'}
         """
-        from app.utils.core.model_introspection import ModelIntrospector
-        return ModelIntrospector.get_field_choices(cls, 'stage')
+        # Get choices directly from column info
+        return cls.stage.info.get('choices', {})
     
     @classmethod
     def get_stage_css_class(cls, stage_value: Optional[str]) -> str:
@@ -333,8 +333,14 @@ class Opportunity(EntityModel):
             >>> print(cls)
             'stage-qualified'
         """
-        from app.utils.core.model_introspection import ModelIntrospector
-        return ModelIntrospector.get_field_css_class(cls, 'stage', stage_value)
+        # Get CSS class from column info or generate default
+        if not stage_value:
+            return ''
+        css_classes = cls.stage.info.get('css_classes', {})
+        if stage_value in css_classes:
+            return css_classes[stage_value]
+        # Default CSS class pattern
+        return f'stage-{stage_value.lower().replace(" ", "-")}' if stage_value else ''
 
     def get_stakeholders(self) -> List[Dict[str, Any]]:
         """
