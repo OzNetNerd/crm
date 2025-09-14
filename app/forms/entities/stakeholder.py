@@ -69,4 +69,4 @@ class StakeholderForm(BaseForm):
 
     def get_fields(self):
         """Return field names to display in modal"""
-        return ['name', 'email', 'company_id']
+        return ['name', 'company_id']
