@@ -26,7 +26,7 @@
 {% block content %}
 {# Generate filter controls based on entity type using modern widget system #}
 {% set entity_filter_controls %}
-<form hx-get="{{ url_for(entity_config.endpoint_name + '.content') }}"
+<form hx-get="{{ url_for(entity_config.content_endpoint) }}"
       hx-target="#{{ entity_config.entity_type }}-content"
       hx-trigger="change, submit">
     {% from "macros/widgets/filters.html" import entity_filter_controls %}
@@ -57,7 +57,7 @@
 
 <!-- Dynamic Content Area -->
 <div id="{{ entity_config.entity_type }}-content"
-     hx-get="{{ url_for(entity_config.endpoint_name + '.content') }}?{{ request.query_string.decode('utf-8') }}"
+     hx-get="{{ url_for(entity_config.content_endpoint) }}?{{ request.query_string.decode('utf-8') }}"
      hx-trigger="load">
     <!-- Content will be loaded here via HTMX -->
     <div class="p-8 text-center text-gray-500">
