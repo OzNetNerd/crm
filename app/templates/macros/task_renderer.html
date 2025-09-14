@@ -1,6 +1,6 @@
 {# Task Rendering Components - Specialized task display logic #}
 
-{% from "macros/cards.html" import card %}
+{% from "macros/entity_card.html" import entity_card %}
 
 {#
   Task Entity Renderer - Handles complex parent/child task relationships
@@ -21,14 +21,14 @@
   {# Only render if this is not a child task (children are rendered by their parents) #}
   {% if entity.task_type != 'child' %}
     <div class="p-4">
-      {{ card(entity) }}
-      
+      {{ entity_card(entity, 'task') }}
+
       {# Render child tasks if this is a parent and children should be rendered #}
       {% if render_children and entity.task_type == 'parent' and entity.child_tasks %}
-        <div class="child-task-container">
+        <div class="child-task-container ml-8 mt-4 space-y-2 border-l-2 border-gray-200 pl-4">
           {% for child_task in entity.child_tasks %}
             <div class="child-task-item">
-              {{ card(child_task) }}
+              {{ entity_card(child_task, 'task') }}
             </div>
           {% endfor %}
         </div>
@@ -49,7 +49,7 @@
 #}
 {% macro render_simple_task(entity, container_classes='p-4') %}
   <div class="{{ container_classes }}">
-    {{ card(entity) }}
+    {{ entity_card(entity, 'task') }}
   </div>
 {% endmacro %}
 
@@ -69,7 +69,7 @@
     <div class="{{ container_classes }}">
       {% for child_task in child_tasks %}
         <div class="{{ item_classes }}">
-          {{ card(child_task) }}
+          {{ entity_card(child_task, 'task') }}
         </div>
       {% endfor %}
     </div>

@@ -11,7 +11,6 @@ from app.models import db
 from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
 # Models are imported via app.models - no registration needed
-from app.utils.cards.config_builder import CardConfigBuilder
 
 
 def get_database_path():
@@ -76,8 +75,7 @@ def create_app():
 
     app.jinja_env.globals["get_dashboard_action_buttons"] = get_dashboard_action_buttons
 
-    # Dynamic card system
-    app.jinja_env.globals["build_dynamic_card_config"] = CardConfigBuilder.build_card_config
+    # Helper functions for templates
     app.jinja_env.globals["getattr"] = getattr
     app.jinja_env.globals["hasattr"] = hasattr
 
