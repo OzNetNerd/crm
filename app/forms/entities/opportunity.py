@@ -7,8 +7,6 @@ Simple opportunity form using WTForms with model introspection.
 from wtforms import StringField, IntegerField, SelectField, DateField
 from wtforms.validators import DataRequired, Optional, NumberRange, Length
 from ..base.base_forms import BaseForm
-# ModelIntrospector removed - use model methods directly
-from app.utils.forms.helpers import safe_int_coerce
 
 
 class OpportunityForm(BaseForm):
@@ -26,13 +24,6 @@ class OpportunityForm(BaseForm):
         # Set stage choices
         stage_choices = Opportunity.get_field_choices('stage')
         self.stage.choices = [('', 'Select stage')] + stage_choices
-
-        # Set company choices
-        from app.models.company import Company
-        companies = Company.query.order_by(Company.name).all()
-        self.company_id.choices = [(None, 'Select company')] + [
-            (str(company.id), company.name) for company in companies
-        ]
 
     name = StringField(
         'Opportunity Name',
@@ -72,13 +63,8 @@ class OpportunityForm(BaseForm):
         default='prospect'
     )
 
-    company_id = SelectField(
-        'Company',
-        validators=[DataRequired()],
-        choices=[],  # Will be populated in __init__
-        coerce=safe_int_coerce
-    )
+    company = StringField('Company', validators=[DataRequired()])
 
     def get_fields(self):
         """Return field names to display in modal"""
-        return ['name', 'company_id', 'value', 'stage']
+        return ['name', 'company', 'value', 'stage']

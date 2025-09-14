@@ -7,8 +7,6 @@ Simple stakeholder form using WTForms with model introspection.
 from wtforms import StringField, SelectField
 from wtforms.validators import DataRequired, Optional, Email, Length
 from ..base.base_forms import BaseForm
-# ModelIntrospector removed - use model methods directly
-from app.utils.forms.helpers import safe_int_coerce
 
 
 class StakeholderForm(BaseForm):
@@ -22,13 +20,6 @@ class StakeholderForm(BaseForm):
         # Set MEDDPICC choices
         meddpicc_choices = Stakeholder.get_field_choices('meddpicc_role')
         self.meddpicc_role.choices = [('', 'Select MEDDPICC role')] + meddpicc_choices
-
-        # Set company choices
-        from app.models.company import Company
-        companies = Company.query.order_by(Company.name).all()
-        self.company_id.choices = [(None, 'Select company')] + [
-            (str(company.id), company.name) for company in companies
-        ]
 
     name = StringField(
         'Full Name',
@@ -60,13 +51,8 @@ class StakeholderForm(BaseForm):
         choices=[]  # Will be populated in __init__
     )
 
-    company_id = SelectField(
-        'Company',
-        validators=[DataRequired()],
-        choices=[],  # Will be populated in __init__
-        coerce=safe_int_coerce
-    )
+    company = StringField('Company', validators=[DataRequired()])
 
     def get_fields(self):
         """Return field names to display in modal"""
-        return ['name', 'company_id']
+        return ['name', 'company']
