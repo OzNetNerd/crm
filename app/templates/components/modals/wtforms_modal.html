@@ -32,7 +32,7 @@ Variables:
     <form method="POST"
           action="{{ action_url }}"
           hx-post="{{ action_url }}"
-          hx-target=".modal-overlay"
+          hx-target="closest .modal-overlay"
           hx-swap="outerHTML"
           class="modal-form"
           id="modal-form">
@@ -62,5 +62,4 @@ Variables:
   {% endif %}
 {% endcall %}
 
-<script type="module" src="{{ url_for('static', filename='js/features/modal-validation.js') }}"></script>
-<script type="module" src="{{ url_for('static', filename='js/features/duplicate-validation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/features/modal-validation.js') }}"></script>

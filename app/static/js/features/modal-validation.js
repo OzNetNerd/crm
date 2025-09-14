@@ -177,11 +177,3 @@ document.addEventListener('DOMContentLoaded', initializeModalFocus);
 
 // Handle HTMX swapped content
 document.addEventListener('htmx:afterSwap', handleModalAfterSwap);
-
-// Export functions for module usage
-export { initializeModalValidation, initializeModalFocus, handleModalAfterSwap };
-
-// Also attach to window for global access (needed for debugging and fallbacks)
-window.initializeModalValidation = initializeModalValidation;
-window.initializeModalFocus = initializeModalFocus;
-window.handleModalAfterSwap = handleModalAfterSwap;

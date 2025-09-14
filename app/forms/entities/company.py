@@ -4,7 +4,7 @@ Company Forms
 Simple company form using WTForms with model introspection.
 """
 
-from wtforms import StringField, TextAreaField, SelectField
+from wtforms import StringField, TextAreaField, SelectField, ValidationError
 from wtforms.validators import DataRequired, Optional, URL, Length
 from ..base.base_forms import BaseForm
 # ModelIntrospector removed - use model methods directly
@@ -23,6 +23,17 @@ class CompanyForm(BaseForm):
 
         size_choices = Company.get_field_choices('size')
         self.size.choices = [('', 'Select size')] + size_choices
+
+    def validate_name(self, field):
+        """Check for duplicate company names"""
+        from app.models.company import Company
+        existing = Company.query.filter(Company.name.ilike(field.data.strip())).first()
+        if existing:
+            # Allow editing same record
+            if hasattr(self, '_obj') and self._obj and self._obj.id == existing.id:
+                return
+            raise ValidationError('A company with this name already exists.')
+
 
     name = StringField(
         'Company Name',
