@@ -1,3 +1,4 @@
+{% from 'macros/base/icons.html' import icon %}
 {#
   Alpine.js Dynamic Modal Template
 
@@ -42,9 +43,7 @@
                 </div>
                 <button @click="closeModal()"
                         class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
+                    {{ icon('x-mark', 'lg') }}
                 </button>
             </div>
 
@@ -54,9 +53,7 @@
                 <!-- General Error with icon -->
                 <div x-show="errors.general"
                      class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4 flex items-start">
-                    <svg class="w-5 h-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+                    {{ icon('exclamation-circle', 'md', 'text-red-500 mr-2 mt-0.5 flex-shrink-0') }}
                     <span x-text="errors.general"></span>
                 </div>
 
@@ -172,10 +169,7 @@
                         class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                     <span x-show="!saving">Save</span>
                     <span x-show="saving" class="flex items-center">
-                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle>
-                            <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75"></path>
-                        </svg>
+                        {{ icon('spinner', 'sm', 'animate-spin -ml-1 mr-2 text-white') }}
                         Saving...
                     </span>
                 </button>
