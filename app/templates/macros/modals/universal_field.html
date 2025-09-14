@@ -1,0 +1,43 @@
+{% from 'macros/base/forms.html' import render_wtforms_field %}
+{#
+Universal Field Renderer for Modals
+Handles both view mode (read-only) and form mode (editable) field rendering
+#}
+
+{% macro render_universal_field(field, mode='form') %}
+  {% if field.name not in ['csrf_token', 'submit'] %}
+    <div class="space-y-2">
+      {% if mode == 'view' %}
+        {{ render_readonly_field(field) }}
+      {% else %}
+        {{ render_wtforms_field(field, fast_select=true) }}
+      {% endif %}
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro render_readonly_field(field) %}
+  <label class="block text-sm font-medium text-gray-700">{{ field.label.text }}</label>
+  <div class="p-2 bg-gray-50 rounded-md border border-gray-200 text-sm text-gray-900" style="min-height: 2rem;">
+    {% if field.type == 'SelectField' %}
+      {% for value, label in field.choices %}
+        {% if value == field.data %}
+          {{ label }}
+        {% endif %}
+      {% endfor %}
+      {% if not field.data or field.data == '' %}
+        <span class="text-gray-400">Not set</span>
+      {% endif %}
+    {% elif field.type == 'TextAreaField' %}
+      <div style="min-height: {{ (field.widget.rows | default(3)) * 1.5 }}rem;">
+        {{ field.data if field.data else '' }}
+      </div>
+    {% else %}
+      {% if field.data %}
+        {{ field.data }}
+      {% else %}
+        &nbsp;
+      {% endif %}
+    {% endif %}
+  </div>
+{% endmacro %}
