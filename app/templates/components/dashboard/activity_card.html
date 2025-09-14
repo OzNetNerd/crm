@@ -1,0 +1,59 @@
+{#
+  Dashboard Activity Card Component
+
+  Displays recent activity for a specific entity type.
+
+  Context variables:
+  - title: Card title
+  - items: List of activity items
+  - entity_type: Type of entity
+  - view_all_url: URL to view all items
+#}
+
+{% from 'macros/icons.html' import icon %}
+{% from 'macros/ui/date_formatting.html' import smart_date_display %}
+
+<div class="activity-card bg-white rounded-lg shadow-sm border border-gray-200">
+    {# Header #}
+    <div class="card-header px-4 py-3 border-b flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-gray-900">{{ title }}</h3>
+        {% if view_all_url %}
+        <a href="{{ view_all_url }}" class="text-xs text-blue-600 hover:text-blue-800">
+            View all
+        </a>
+        {% endif %}
+    </div>
+
+    {# Content #}
+    <div class="card-body">
+        {% if items %}
+            <ul class="divide-y divide-gray-100">
+                {% for item in items[:5] %}
+                <li class="px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">
+                                {{ item.name or item.title or item.subject }}
+                            </p>
+                            {% if item.description or item.company_name %}
+                            <p class="text-xs text-gray-500 truncate mt-1">
+                                {{ item.description or item.company_name }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% if item.created_at or item.due_date %}
+                        <span class="text-xs text-gray-400 ml-2">
+                            {{ smart_date_display(item.created_at or item.due_date) }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="px-4 py-8 text-center">
+                <p class="text-sm text-gray-500">No recent {{ entity_type }}s</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
