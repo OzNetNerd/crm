@@ -1,5 +1,5 @@
 {% from 'macros/modals/base.html' import htmx_modal_overlay, htmx_modal_header, htmx_modal_body, htmx_modal_footer %}
-{# Icons now use dynamic CSS classes: icon-{entity_name} #}
+{% from 'macros/base/icons.html' import icon %}
 {% from 'macros/base/forms.html' import render_wtforms_field %}
 {#
   Unified WTForms Modal Template
@@ -119,10 +119,7 @@
                     hx-indicator="#save-spinner">
                 <span class="save-text">Save</span>
                 <span id="save-spinner" class="htmx-indicator flex items-center">
-                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle>
-                        <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75"></path>
-                    </svg>
+                    {{ icon('spinner', 'sm', 'animate-spin -ml-1 mr-2 text-white') }}
                     Saving...
                 </span>
             </button>
@@ -174,9 +171,7 @@ document.addEventListener('htmx:responseError', function(event) {
                 const errorHtml = `
                     <div class="modal-error-message p-4 bg-red-50 border border-red-200 rounded-md mb-4">
                         <div class="flex items-start">
-                            <svg class="w-5 h-5 text-red-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                            </svg>
+                            {{ icon('exclamation-circle-solid', 'md', 'text-red-500 mr-2 mt-0.5') }}
                             <div class="text-red-800">
                                 <p class="font-medium">${response.error}</p>
                             </div>

@@ -1,4 +1,5 @@
-{# 
+{% from 'macros/base/icons.html' import icon %}
+{#
   Card State Template Macros - Clean separation of template rendering from Alpine.js state
   
   Uses the cardState.js Alpine component for state management.
@@ -89,12 +90,12 @@
 {% macro card_state_indicators(show_expansion=true, show_editing=true) %}
 {% if show_expansion %}
 <div class="flex-shrink-0">
-  <svg x-show="!expanded" class="w-5 h-5 text-gray-400 transition-transform" viewBox="0 0 20 20" fill="currentColor">
-    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-  </svg>
-  <svg x-show="expanded" class="w-5 h-5 text-gray-600 transition-transform rotate-90" viewBox="0 0 20 20" fill="currentColor">
-    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-  </svg>
+  <span x-show="!expanded" class="transition-transform inline-block">
+    {{ icon('chevron-right', 'md', 'text-gray-400') }}
+  </span>
+  <span x-show="expanded" class="transition-transform inline-block rotate-90">
+    {{ icon('chevron-right', 'md', 'text-gray-600') }}
+  </span>
 </div>
 {% endif %}
 
