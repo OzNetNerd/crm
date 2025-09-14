@@ -1,0 +1,21 @@
+{#
+Smart Field Filtering Logic for Modals
+Single source of truth for determining which fields to display
+#}
+
+{% macro render_filtered_fields(form, mode='form') %}
+  {# Direct field rendering without caller mechanism #}
+  {% from 'macros/modals/universal_field.html' import render_universal_field %}
+
+  {% if form.modal_mode and hasattr(form, 'get_modal_fields') %}
+    {% set allowed_fields = form.get_modal_fields() %}
+  {% else %}
+    {% set allowed_fields = form|selectattr('name', 'ne', 'csrf_token')|selectattr('name', 'ne', 'submit')|map(attribute='name')|list %}
+  {% endif %}
+
+  {% for field in form %}
+    {% if field.name in allowed_fields %}
+      {{ render_universal_field(field, mode) }}
+    {% endif %}
+  {% endfor %}
+{% endmacro %}

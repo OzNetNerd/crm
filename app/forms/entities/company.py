@@ -29,8 +29,7 @@ class CompanyForm(BaseForm):
 
     name = StringField(
         'Company Name',
-        validators=[DataRequired(), Length(max=255)],
-        render_kw={'placeholder': 'Enter company name...'}
+        validators=[DataRequired(), Length(max=255)]
     )
 
     industry = SelectField(
@@ -41,8 +40,7 @@ class CompanyForm(BaseForm):
 
     website = StringField(
         'Website',
-        validators=[Optional(), URL()],
-        render_kw={'placeholder': 'https://...'}
+        validators=[Optional(), URL()]
     )
 
     size = SelectField(
@@ -53,20 +51,19 @@ class CompanyForm(BaseForm):
 
     phone = StringField(
         'Phone',
-        validators=[Optional(), Length(max=50)],
-        render_kw={'placeholder': 'Enter phone number...'}
+        validators=[Optional(), Length(max=50)]
     )
 
     address = TextAreaField(
         'Address',
         validators=[Optional()],
-        render_kw={'rows': 2, 'placeholder': 'Enter company address...'}
+        render_kw={'rows': 2}
     )
 
     comments = TextAreaField(
         'Comments',
         validators=[Optional()],
-        render_kw={'rows': 3, 'placeholder': 'Additional notes...'}
+        render_kw={'rows': 3}
     )
 
     def get_modal_fields(self):
