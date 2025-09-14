@@ -42,6 +42,38 @@ class BaseModel(db.Model):
         return cls.__name__.lower()
 
     @classmethod
+    def get_field_choices(cls, field_name: str):
+        """
+        Get choices for a field from column info metadata.
+
+        Args:
+            field_name: Name of the field to get choices for
+
+        Returns:
+            List of (value, label) tuples for the field choices.
+            Returns empty list if field doesn't exist or has no choices.
+        """
+        if not hasattr(cls, field_name):
+            return []
+
+        column = getattr(cls, field_name)
+        if not hasattr(column, 'info') or 'choices' not in column.info:
+            return []
+
+        choices = column.info['choices']
+        return [(value, data.get('label', value)) for value, data in choices.items()]
+
+    @classmethod
+    def get_metadata(cls):
+        """Get entity metadata dict for template **kwargs."""
+        return {
+            'entity_type': cls.__name__.lower(),
+            'entity_name_singular': cls.get_display_name(),
+            'entity_name_plural': cls.get_display_name_plural(),
+            'entity_name': cls.get_display_name_plural()
+        }
+
+    @classmethod
     def search(cls, query, limit=20):
         """Search all text fields automatically."""
         if not query:
