@@ -165,9 +165,14 @@ class UniversalContextBuilder:
     def _build_dropdown_configs(entity_name: str, request_params: Dict) -> Dict[str, Dict[str, Any]]:
         """Build dropdown configurations using ModelIntrospector"""
         from app.utils.core.model_introspection import ModelIntrospector, get_model_by_name
+        import logging
 
-        model_class = get_model_by_name(entity_name)
+        # Handle plural to singular entity name mapping
+        entity_name_normalized = UniversalContextBuilder._normalize_entity_name(entity_name)
+
+        model_class = get_model_by_name(entity_name_normalized)
         if not model_class:
+            logging.warning(f"Model lookup failed for entity '{entity_name}' (normalized: '{entity_name_normalized}')")
             return {}
 
         dropdown_configs = {}
@@ -178,7 +183,7 @@ class UniversalContextBuilder:
             options = [{'value': field, 'label': label} for field, label in groupable_fields]
             dropdown_configs['group_by'] = {
                 'options': options,
-                'selected_values': [request_params.get('group_by', '')] if request_params.get('group_by') else [],
+                'current_value': request_params.get('group_by', ''),
                 'placeholder': 'Group by...'
             }
 
@@ -188,7 +193,7 @@ class UniversalContextBuilder:
             options = [{'value': field, 'label': label} for field, label in sortable_fields]
             dropdown_configs['sort_by'] = {
                 'options': options,
-                'selected_values': [request_params.get('sort_by', '')] if request_params.get('sort_by') else [],
+                'current_value': request_params.get('sort_by', ''),
                 'placeholder': 'Sort by...'
             }
 
@@ -198,12 +203,35 @@ class UniversalContextBuilder:
                 {'value': 'asc', 'label': 'Ascending'},
                 {'value': 'desc', 'label': 'Descending'}
             ],
-            'selected_values': [request_params.get('sort_direction', 'asc')],
+            'current_value': request_params.get('sort_direction', 'asc'),
             'placeholder': 'Order'
         }
 
         return dropdown_configs
-    
+
+    @staticmethod
+    def _normalize_entity_name(entity_name: str) -> str:
+        """
+        Normalize entity name from plural route names to singular model names.
+
+        Args:
+            entity_name: Entity name from route (e.g., 'stakeholders', 'companies')
+
+        Returns:
+            Normalized singular entity name for model lookup
+        """
+        # Common plural to singular mappings for existing entity routes
+        plural_to_singular = {
+            'stakeholders': 'stakeholder',
+            'companies': 'company',
+            'opportunities': 'opportunity',
+            'tasks': 'task',
+            'teams': 'user',  # teams route uses User model
+        }
+
+        # Return mapped singular name if exists, otherwise return as-is
+        return plural_to_singular.get(entity_name.lower(), entity_name.lower())
+
     @staticmethod
     def _build_relationship_labels() -> Dict[str, Dict[str, str]]:
         """
