@@ -504,7 +504,9 @@ def create_opportunities(companies, contacts):
         # Create 1-2 opportunities per company to simplify relationships
         num_opps = random.randint(1, 2)
 
-        company_contacts = [c for c in contacts if c.company_id == company.id]
+        # Pre-fetch company ID to avoid autoflush issues
+        company_id = company.id
+        company_contacts = [c for c in contacts if c.company_id == company_id]
 
         for i in range(num_opps):
             # Generate deal value in the specified range
@@ -530,10 +532,12 @@ def create_opportunities(companies, contacts):
                 created_at=datetime.now() - timedelta(days=random.randint(1, 120)),
             )
 
-            # Associate with 1 stakeholder from the company  
+            # Associate with 1 stakeholder from the company
             if company_contacts:
                 selected_contact = random.choice(company_contacts)
-                opportunity.stakeholders.append(selected_contact)
+                # Use no_autoflush to prevent premature constraint checks
+                with db.session.no_autoflush:
+                    opportunity.stakeholders.append(selected_contact)
 
             opportunities.append(opportunity)
             db.session.add(opportunity)
