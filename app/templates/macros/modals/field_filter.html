@@ -7,8 +7,8 @@ Single source of truth for determining which fields to display
   {# Direct field rendering without caller mechanism #}
   {% from 'macros/modals/universal_field.html' import render_universal_field %}
 
-  {% if form.modal_mode and hasattr(form, 'get_modal_fields') %}
-    {% set allowed_fields = form.get_modal_fields() %}
+  {% if hasattr(form, 'get_fields') %}
+    {% set allowed_fields = form.get_fields() %}
   {% else %}
     {% set allowed_fields = form|selectattr('name', 'ne', 'csrf_token')|selectattr('name', 'ne', 'submit')|map(attribute='name')|list %}
   {% endif %}
