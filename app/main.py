@@ -72,7 +72,7 @@ def create_app():
 
     # Dashboard button function
     def get_dashboard_action_buttons():
-        return ['companies', 'tasks', 'opportunities', 'stakeholders']
+        return ['companies', 'tasks', 'opportunities', 'stakeholders', 'teams']
 
     app.jinja_env.globals["get_dashboard_action_buttons"] = get_dashboard_action_buttons
 
