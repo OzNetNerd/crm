@@ -60,4 +60,4 @@ echo "📝 Claude Code: Use this URL to access the application"
 # sed -i "s/localhost:[0-9]\{4,5\}\/ws\/chat/localhost:$CHATBOT_PORT\/ws\/chat/g" app/templates/components/chat_widget.html
 
 # Start the Flask application (this will block)
-python3 services/crm/main.py --port "$CRM_PORT"
+python3 app/main.py --port "$CRM_PORT"

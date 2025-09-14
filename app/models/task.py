@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Dict, Any, List, Optional
 from . import db
-from .base import EntityModel
+from .base import BaseModel
 
 
 # Junction table for task-entity relationships
@@ -15,7 +15,7 @@ task_entities = db.Table(
 )
 
 
-class Task(EntityModel):
+class Task(BaseModel):
     """
     Task model representing work items and activities in the CRM system.
     
@@ -40,12 +40,7 @@ class Task(EntityModel):
         dependency_type: Execution dependency (sequential, parallel).
     """
     __tablename__ = "tasks"
-    
-    __entity_config__ = {
-        'description': 'Manage your tasks and projects',
-        'filter_fields': ['status', 'priority', 'task_type'],
-        'join_map': {}
-    }
+    __display_name__ = "Task"
 
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(
@@ -534,8 +529,17 @@ class Task(EntityModel):
             ]
         }
         
-        # Start with base serialization
-        result = super().to_dict()
+        # Start with base serialization - convert model to dict
+        result = {}
+        # Serialize all columns
+        for column in self.__table__.columns:
+            column_name = column.name
+            value = getattr(self, column_name, None)
+            # Handle datetime/date serialization
+            if isinstance(value, (datetime, date)):
+                result[column_name] = value.isoformat() if value else None
+            else:
+                result[column_name] = value
 
         # Add custom properties and transforms
         for prop in include_properties:

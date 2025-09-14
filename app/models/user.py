@@ -1,10 +1,10 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Dict, Any
 from . import db
-from .base import BaseModel, EntityModel
+from .base import BaseModel
 
 
-class User(EntityModel):
+class User(BaseModel):
     """
     User model representing team members in the CRM system.
     
@@ -21,15 +21,9 @@ class User(EntityModel):
     """
 
     __tablename__ = "users"
+    __display_name__ = "Team Member"
+    __display_name_plural__ = "Teams"
     
-    __entity_config__ = {
-        'entity_name': 'Teams',
-        'entity_name_singular': 'Team Member',
-        'description': 'Manage your team members',
-        'entity_endpoint': 'teams',
-        'filter_fields': ['job_title', 'department'],
-        'join_map': {}
-    }
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False, info={
@@ -80,7 +74,17 @@ class User(EntityModel):
 
     def to_dict(self):
         """Convert user to dictionary for JSON serialization"""
-        return super().to_dict()
+        result = {}
+        # Serialize all columns
+        for column in self.__table__.columns:
+            column_name = column.name
+            value = getattr(self, column_name, None)
+            # Handle datetime/date serialization
+            if isinstance(value, (datetime, date)):
+                result[column_name] = value.isoformat() if value else None
+            else:
+                result[column_name] = value
+        return result
 
     def get_company_assignments(self):
         """Get all companies this user is assigned to"""
@@ -120,7 +124,7 @@ class User(EntityModel):
         return f"<User {self.name} - {self.job_title}>"
 
 
-class CompanyAccountTeam(BaseModel):
+class CompanyAccountTeam(db.Model):
     """Pure assignment table - job_title comes from User model via JOIN"""
 
     __tablename__ = "company_account_teams"
@@ -139,9 +143,18 @@ class CompanyAccountTeam(BaseModel):
 
     def to_dict(self):
         """Convert to dictionary for JSON serialization"""
-        
-        result = super().to_dict()
-        
+
+        result = {}
+        # Serialize all columns
+        for column in self.__table__.columns:
+            column_name = column.name
+            value = getattr(self, column_name, None)
+            # Handle datetime/date serialization
+            if isinstance(value, (datetime, date)):
+                result[column_name] = value.isoformat() if value else None
+            else:
+                result[column_name] = value
+
         # Add computed relationship fields
         result["user_name"] = self.user.name if self.user else None
         result["user_job_title"] = self.user.job_title if self.user else None
@@ -154,7 +167,7 @@ class CompanyAccountTeam(BaseModel):
         return f"<CompanyAccountTeam {self.user.name if self.user else 'Unknown'} → {self.company.name if self.company else 'Unknown'}>"
 
 
-class OpportunityAccountTeam(BaseModel):
+class OpportunityAccountTeam(db.Model):
     """Pure assignment table - job_title comes from User model via JOIN"""
 
     __tablename__ = "opportunity_account_teams"
@@ -176,8 +189,17 @@ class OpportunityAccountTeam(BaseModel):
     def to_dict(self):
         """Convert to dictionary for JSON serialization"""
         
-        result = super().to_dict()
-        
+        result = {}
+        # Serialize all columns
+        for column in self.__table__.columns:
+            column_name = column.name
+            value = getattr(self, column_name, None)
+            # Handle datetime/date serialization
+            if isinstance(value, (datetime, date)):
+                result[column_name] = value.isoformat() if value else None
+            else:
+                result[column_name] = value
+
         # Add computed relationship fields
         result["user_name"] = self.user.name if self.user else None
         result["user_job_title"] = self.user.job_title if self.user else None

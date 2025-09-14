@@ -1,10 +1,10 @@
 from datetime import datetime, date, timedelta
 from typing import Dict, Any, List, Optional
 from . import db
-from .base import EntityModel
+from .base import BaseModel
 
 
-class Opportunity(EntityModel):
+class Opportunity(BaseModel):
     """
     Opportunity model representing sales opportunities in the CRM system.
     
@@ -26,12 +26,8 @@ class Opportunity(EntityModel):
         company: Related company entity.
     """
     __tablename__ = "opportunities"
+    __display_name__ = "Opportunity"
     
-    __entity_config__ = {
-        'description': 'Manage your sales opportunities',
-        'filter_fields': ['company_id', 'stage', 'priority'],
-        'join_map': {'company_name': ['Company']}
-    }
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(
@@ -461,8 +457,17 @@ class Opportunity(EntityModel):
             ]
         }
         
-        # Start with base serialization
-        result = super().to_dict()
+        # Start with base serialization - convert model to dict
+        result = {}
+        # Serialize all columns
+        for column in self.__table__.columns:
+            column_name = column.name
+            value = getattr(self, column_name, None)
+            # Handle datetime/date serialization
+            if isinstance(value, (datetime, date)):
+                result[column_name] = value.isoformat() if value else None
+            else:
+                result[column_name] = value
 
         # Add custom properties and transforms
         for prop in include_properties:

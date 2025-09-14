@@ -21,6 +21,7 @@ class Note(BaseModel):
         entity_id: ID of the entity this note is attached to.
     """
     __tablename__ = "notes"
+    __display_name__ = "Note"
 
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)

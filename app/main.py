@@ -6,7 +6,7 @@ from pathlib import Path
 from flask import Flask
 
 # Add project root to Python path so we can import app modules
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.models import db
 from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
@@ -46,7 +46,7 @@ def get_database_path():
 
 
 def create_app():
-    app = Flask(__name__, template_folder="../../app/templates", static_folder="../../app/static")
+    app = Flask(__name__, template_folder="templates", static_folder="static")
 
     # Global trailing slash handling - DRY solution for all routes
     app.url_map.strict_slashes = False
@@ -58,7 +58,7 @@ def create_app():
     # Basic logging setup
     if os.environ.get('WERKZEUG_RUN_MAIN'):
         app.logger.info('CRM Application startup')
-        
+
     # Enable Jinja2 do extension for template logic
     app.jinja_env.add_extension('jinja2.ext.do')
 
@@ -69,39 +69,19 @@ def create_app():
     register_web_blueprints(app)
 
     # Register context processors for global template data
-    
+
     # Dashboard button function
     def get_dashboard_action_buttons():
         return ['companies', 'tasks', 'opportunities', 'stakeholders']
 
-    # Model metadata function - DRY replacement for ModelRegistry
-    def get_model_metadata(model_name):
-        """Provide model metadata for templates"""
-        metadata = {
-            'company': {'display_name': 'Company', 'display_name_plural': 'Companies'},
-            'stakeholder': {'display_name': 'Stakeholder', 'display_name_plural': 'Stakeholders'},
-            'opportunity': {'display_name': 'Opportunity', 'display_name_plural': 'Opportunities'},
-            'task': {'display_name': 'Task', 'display_name_plural': 'Tasks'},
-            'user': {'display_name': 'User', 'display_name_plural': 'Users'},
-            'note': {'display_name': 'Note', 'display_name_plural': 'Notes'},
-        }
-
-        class ModelMetadata:
-            def __init__(self, data):
-                self.display_name = data.get('display_name', model_name.title())
-                self.display_name_plural = data.get('display_name_plural', model_name.title() + 's')
-
-        return ModelMetadata(metadata.get(model_name.lower(), {}))
-
     app.jinja_env.globals["get_dashboard_action_buttons"] = get_dashboard_action_buttons
-    
+
     # Dynamic card system
     app.jinja_env.globals["build_dynamic_card_config"] = CardConfigBuilder.build_card_config
-    app.jinja_env.globals["get_model_metadata"] = get_model_metadata
     app.jinja_env.globals["getattr"] = getattr
     app.jinja_env.globals["hasattr"] = hasattr
-    
-    
+
+
     with app.app_context():
         db.create_all()
 
