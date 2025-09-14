@@ -53,7 +53,7 @@
 
 {#
   Simple Card - Non-expandable card variant
-  
+
   Parameters:
   - entity (required): Entity data object
   - card_classes (optional): Additional CSS classes
@@ -62,4 +62,26 @@
 #}
 {% macro simple_card(entity, card_classes='', content=none, overrides={}) %}
 {{ card(entity, expansion_enabled=false, card_classes=card_classes, content=content, overrides=overrides) }}
+{% endmacro %}
+
+{#
+  Dashboard Card - Dashboard-style card with consistent styling
+
+  Uses the existing entity_card_item system for DRY implementation.
+  Automatically determines entity type and applies proper data hierarchy.
+
+  Parameters:
+  - entity (required): Entity data object
+  - card_classes (optional): Additional CSS classes
+
+  Examples:
+  {{ dashboard_card(company) }}
+  {{ dashboard_card(opportunity) }}
+  {{ dashboard_card(stakeholder) }}
+#}
+{% macro dashboard_card(entity, card_classes='') %}
+{% from "macros/ui/card_items.html" import entity_card_item %}
+{# Get entity type from class name #}
+{% set entity_type = entity.__class__.__name__.lower() %}
+{{ entity_card_item(entity, entity_type) }}
 {% endmacro %}
