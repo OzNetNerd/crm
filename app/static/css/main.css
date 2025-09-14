@@ -50,77 +50,27 @@
     --modal-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     --modal-radius: 1rem;
     --modal-backdrop: rgba(0, 0, 0, 0.6);
-    --modal-animation: 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --modal-max-height: 90vh;
 }
 
-/* Modal Animations */
-@keyframes modalFadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes modalFadeOut {
-    from {
-        opacity: 1;
-    }
-    to {
-        opacity: 0;
-    }
-}
-
-@keyframes modalSlideOut {
-    from {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-}
-
-/* Modal Overlay Styling */
+/* Modal Overlay Styling - No animations */
 .modal-overlay {
-    animation: modalFadeIn var(--modal-animation) forwards;
+    /* Instant visibility changes only */
 }
 
-.modal-overlay.modal-fade-out {
-    animation: modalFadeOut var(--modal-animation) forwards;
-}
-
-/* Modal Backdrop Styling */
+/* Modal Backdrop Styling - No animations */
 .modal-backdrop {
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
     background: var(--modal-backdrop);
-    transition: opacity var(--modal-animation);
+    /* Removed transition */
 }
 
-/* Modal Content Styling */
+/* Modal Content Styling - No animations */
 .modal-content {
-    animation: modalSlideIn var(--modal-animation) forwards;
     box-shadow: var(--modal-shadow);
     max-height: var(--modal-max-height);
-}
-
-.modal-fade-out .modal-content {
-    animation: modalSlideOut var(--modal-animation) forwards;
+    /* Removed animations */
 }
 
 /* Modal Header Styling */

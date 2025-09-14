@@ -1,18 +1,18 @@
 {% from 'macros/base/icons.html' import icon %}
 {% macro base_modal(modal_id, show_var="show", backdrop_click_close=true) %}
 <div id="{{ modal_id }}"
-     class="fixed inset-0 z-50 overflow-y-auto hidden transition-opacity duration-300 ease-in-out"
+     class="fixed inset-0 z-50 overflow-y-auto hidden"
      aria-labelledby="{{ modal_id }}-title"
      role="dialog"
      aria-modal="true">
 
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        <div class="fixed inset-0 bg-black bg-opacity-50"
              {% if not backdrop_click_close %}data-closable="false"{% endif %}></div>
 
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
 
-        <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6"
+        <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6"
              data-stop-propagation>
             {{ caller() }}
         </div>
@@ -26,7 +26,7 @@
     <h3 class="text-xl font-semibold text-gray-900" id="modal-title">
         {{ title }}
     </h3>
-    <button class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors duration-200">
+    <button class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2">
         {{ icon('x-mark', 'lg') }}
     </button>
 </div>
@@ -34,11 +34,11 @@
 
 {% macro modal_footer(show_var="show", save_action="", save_text="Save", save_loading_var="saving") %}
 <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 rounded-b-lg flex justify-end space-x-3">
-    <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 shadow-sm">
+    <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 shadow-sm">
         Cancel
     </button>
     {% if save_action %}
-    <button data-action="modal-save" data-save-handler="{{ save_action }}" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-sm">
+    <button data-action="modal-save" data-save-handler="{{ save_action }}" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700 shadow-sm">
         <span class="save-text">{{ save_text }}</span>
         <span class="save-loading hidden">
             {{ icon('spinner', 'sm', 'animate-spin -ml-1 mr-2 text-white') }}
