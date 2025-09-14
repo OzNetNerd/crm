@@ -196,7 +196,7 @@ window.formBuilder = (config) => {
                     formType: this.formType
                 });
             } else {
-                // Fallback: reload page
+                // Default: reload page
                 window.location.reload();
             }
 

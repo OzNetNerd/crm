@@ -7,7 +7,7 @@
      tabindex="-1"
      data-close-on-escape="true">
     <!-- Backdrop -->
-    <div class="modal-backdrop fixed inset-0" style="background-color: rgba(17, 24, 39, 0.6);"
+    <div class="modal-backdrop fixed inset-0 bg-gray-900/60"
          {% if backdrop_click_close %}data-close-on-click="true"{% endif %}></div>
 
     <!-- Modal Content -->
@@ -118,6 +118,6 @@
 
 {# Modal Close - trigger close via data attribute #}
 {% macro htmx_modal_close() %}
-<div data-trigger-modal-close="true" style="display: none;"></div>
+<div data-trigger-modal-close="true" class="hidden"></div>
 {% endmacro %}
 

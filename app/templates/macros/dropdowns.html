@@ -152,7 +152,7 @@
                 {% endfor %}
             </div>
         {% else %}
-            {# Fallback - no current_value or current_values provided #}
+            {# Default - no current_value or current_values provided #}
             {% for option in options %}
                 {%- set option_value = option.value if option is mapping else option -%}
                 {%- set option_label = option.label if option is mapping else option|string|title -%}
