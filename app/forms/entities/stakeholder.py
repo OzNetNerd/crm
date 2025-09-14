@@ -53,6 +53,6 @@ class StakeholderForm(BaseForm):
 
     company = StringField('Company', validators=[DataRequired()])
 
-    def get_fields(self):
-        """Return field names to display in modal"""
+    def get_display_fields(self):
+        """Return field names to display in modal, in this exact order"""
         return ['name', 'company']
