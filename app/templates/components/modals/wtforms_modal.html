@@ -17,8 +17,58 @@
 #}
 {% call htmx_modal_overlay(max_width="max-w-lg") %}
     {{ htmx_modal_header(modal_title, model_name) }}
-    
-    <!-- Form -->
+
+    {% if mode == 'view' or is_view %}
+    <!-- View Mode - Read Only -->
+    <div id="modal-content-area" class="p-6 space-y-4 bg-white">
+        {% for field in form %}
+            {% if field.name not in ['csrf_token', 'submit'] %}
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700">{{ field.label.text }}</label>
+                <div class="p-2 bg-gray-50 rounded-md border border-gray-200 text-sm text-gray-900" style="min-height: 2rem;">
+                    {% if field.type == 'SelectField' %}
+                        {% for value, label in field.choices %}
+                            {% if value == field.data %}
+                                {{ label }}
+                            {% endif %}
+                        {% endfor %}
+                        {% if not field.data or field.data == '' %}
+                            <span class="text-gray-400">Not set</span>
+                        {% endif %}
+                    {% elif field.type == 'TextAreaField' %}
+                        <div style="min-height: {{ (field.widget.rows | default(3)) * 1.5 }}rem;">
+                            {{ field.data if field.data else '' }}
+                        </div>
+                    {% else %}
+                        {% if field.data %}
+                            {{ field.data }}
+                        {% else %}
+                            &nbsp;
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    {% call htmx_modal_footer() %}
+        <button type="button"
+                onclick="this.closest('.modal-overlay').remove()"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-sm">
+            Close
+        </button>
+        <button type="button"
+                hx-get="{{ url_for('modals.edit_modal', model_name=model_name, entity_id=entity_id) }}"
+                hx-target=".modal-overlay"
+                hx-swap="outerHTML"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-sm">
+            Edit
+        </button>
+    {% endcall %}
+
+    {% else %}
+    <!-- Edit/Create Mode - Form -->
     <form method="POST"
           action="{{ action_url }}"
           hx-post="{{ action_url }}"
@@ -26,12 +76,12 @@
           hx-swap="outerHTML"
           class="modal-form"
           id="modal-form">
-        
+
         {{ form.hidden_tag() }}
-        
+
         <!-- Form Fields Container -->
         <div id="modal-content-area" class="p-6 space-y-4 bg-white">
-            
+
             <!-- Global form errors -->
             {% if form.errors %}
                 {% for field, errors in form.errors.items() %}
@@ -44,7 +94,7 @@
                     {% endif %}
                 {% endfor %}
             {% endif %}
-            
+
             <!-- Render each field -->
             {% for field in form %}
                 {% if field.name not in ['csrf_token', 'submit'] %}
@@ -53,12 +103,12 @@
                 </div>
                 {% endif %}
             {% endfor %}
-            
+
         </div>
-        
+
         {% call htmx_modal_footer() %}
-            <button type="button" 
-                    onclick="this.closest('.modal-overlay').remove()" 
+            <button type="button"
+                    onclick="this.closest('.modal-overlay').remove()"
                     class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-sm">
                 Cancel
             </button>
@@ -78,6 +128,7 @@
             </button>
         {% endcall %}
     </form>
+    {% endif %}
 {% endcall %}
 
 <script type="module" src="{{ url_for('static', filename='js/features/modal-validation.js') }}"></script>
