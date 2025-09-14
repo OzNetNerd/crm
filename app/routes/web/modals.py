@@ -93,6 +93,24 @@ def _handle_form_submission(model_name, model_class, form, entity=None):
                 form.populate_obj(entity)
                 action = "updated"
 
+            # Handle Task entity relationships (for the "Related To" field)
+            if model_name.lower() == 'task' and hasattr(form, 'entity'):
+                import json
+                try:
+                    # Parse the JSON array from the entity field
+                    entity_data = form.entity.data
+                    if entity_data:
+                        entities_list = json.loads(entity_data)
+                        # Flush to get the task ID if it's a new task
+                        if action == "created":
+                            db.session.flush()
+                        # Set linked entities using the Task model's method
+                        if hasattr(entity, 'set_linked_entities'):
+                            entity.set_linked_entities(entities_list)
+                except (json.JSONDecodeError, TypeError):
+                    # If it's not valid JSON, ignore it
+                    pass
+
             db.session.commit()
             return render_template('components/modals/form_success.html',
                                  message=f"{model_name} {action} successfully",
@@ -130,6 +148,16 @@ def edit_modal(model_name, entity_id):
 
     entity = model_class.query.get_or_404(entity_id)
     form = form_class(obj=entity)
+
+    # For tasks, populate the entity field with linked entities as JSON
+    if model_name.lower() == 'task' and hasattr(entity, 'linked_entities'):
+        import json
+        linked = entity.linked_entities
+        if linked:
+            # Convert to the format expected by the frontend
+            entities_data = [{'id': e['id'], 'name': e['name'], 'type': e['type']} for e in linked]
+            form.entity.data = json.dumps(entities_data)
+
     return _render_modal(model_name, model_class, form, mode='edit', entity=entity)
 
 
@@ -142,6 +170,15 @@ def view_modal(model_name, entity_id):
 
     entity = model_class.query.get_or_404(entity_id)
     form = form_class(obj=entity)
+
+    # For tasks, format the linked entities for display
+    if model_name.lower() == 'task' and hasattr(entity, 'linked_entities'):
+        linked = entity.linked_entities
+        if linked:
+            # Create a readable string of linked entities
+            entity_names = [f"{e['name']} ({e['type']})" for e in linked]
+            form.entity.data = ', '.join(entity_names)
+
     return _render_modal(model_name, model_class, form, mode='view', entity=entity)
 
 
