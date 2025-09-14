@@ -1,20 +1,10 @@
 """
 Entity management utilities and configurations.
+
+EntityManager has been removed - use MODEL_REGISTRY from app.models instead.
 """
 
-from .entity_manager import (
-    EntityManager,
-    StakeholderManager,
-    TeamManager,
-    TaskEntityManager
-)
+# All entity managers have been removed as they were unused
+# Use MODEL_REGISTRY from app.models for model name-to-class mapping
 
-# Entity icons now use dynamic CSS classes via Jinja: icon-{entity_name}
-
-
-__all__ = [
-    'EntityManager',
-    'StakeholderManager',
-    'TeamManager',
-    'TaskEntityManager'
-]
+__all__ = []

@@ -17,6 +17,15 @@ from .user import User, CompanyAccountTeam, OpportunityAccountTeam  # noqa: E402
 from .chat_history import ChatHistory as ChatHistory  # noqa: E402
 from .embedding import Embedding as Embedding  # noqa: E402
 
+# Single source of truth for model name-to-class mapping
+MODEL_REGISTRY = {
+    'company': Company,
+    'stakeholder': Stakeholder,
+    'opportunity': Opportunity,
+    'task': Task,
+    'user': User
+}
+
 __all__ = [
     "db",
     "BaseModel",
@@ -30,4 +39,5 @@ __all__ = [
     "OpportunityAccountTeam",
     "ChatHistory",
     "Embedding",
+    "MODEL_REGISTRY",
 ]

@@ -4,7 +4,7 @@ Handles companies, stakeholders, opportunities, teams with single codebase.
 """
 
 from flask import Blueprint
-from app.models import Company, Stakeholder, Opportunity, User
+from app.models import Company, Stakeholder, Opportunity, User, Task
 
 # Create blueprint for generic entity routes
 entities_web_bp = Blueprint("entities", __name__)
@@ -13,7 +13,7 @@ entities_web_bp = Blueprint("entities", __name__)
 def get_web_entities():
     """Build WEB_ENTITIES dynamically from model configurations"""
     entities = {}
-    models = [Company, Stakeholder, Opportunity, User]
+    models = [Company, Stakeholder, Opportunity, User, Task]
 
     for model in models:
         config = model.get_entity_config()

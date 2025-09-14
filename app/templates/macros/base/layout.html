@@ -137,8 +137,7 @@
   {{ nav_link('stakeholders.index', 'Stakeholders', 'stakeholders.') }}
 #}
 {% macro nav_link(endpoint, text, endpoint_prefix=None) %}
-    {% set prefix = endpoint_prefix or (endpoint.split('.')[0] + '.') %}
-    {% set is_active = request.endpoint and request.endpoint.startswith(prefix) %}
+    {% set is_active = request.endpoint == endpoint %}
     <a href="{{ url_for(endpoint) }}"
        class="nav-link{% if is_active %} active{% endif %}">{{ text }}</a>
 {% endmacro %}

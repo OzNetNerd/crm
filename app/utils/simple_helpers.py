@@ -3,6 +3,7 @@ Simple helper functions - no abstraction, just utilities.
 """
 
 from flask import request
+from app.models import Company, Stakeholder, Opportunity
 
 
 def get_dropdowns_from_columns(model_class):
@@ -68,3 +69,17 @@ def get_dropdowns_from_columns(model_class):
     }
 
     return dropdowns
+
+
+def get_entity_data_for_forms():
+    """
+    Get entities for form population (dropdowns, selects, etc).
+
+    Returns:
+        Dict with companies, contacts (stakeholders), and opportunities
+    """
+    return {
+        'companies': Company.query.order_by(Company.name).all(),
+        'contacts': Stakeholder.query.order_by(Stakeholder.name).all(),
+        'opportunities': Opportunity.query.order_by(Opportunity.name).all()
+    }

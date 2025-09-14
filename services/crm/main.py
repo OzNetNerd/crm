@@ -10,15 +10,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from app.models import db
 from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
-from app.utils.ui.template_filters import register_template_filters
 # Models are imported via app.models - no registration needed
-from app.utils.ui.template_globals import (
-    get_field_options,
-    PRIORITY_OPTIONS,
-    SIZE_OPTIONS,
-)
 from app.utils.cards.config_builder import CardConfigBuilder
-from app.utils.logging.config import setup_structured_logging
 
 
 def get_database_path():
@@ -62,10 +55,9 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = get_database_path()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # ADR-012: Configure structured logging (only in reloader process, not initial)
+    # Basic logging setup
     if os.environ.get('WERKZEUG_RUN_MAIN'):
-        setup_structured_logging(app, "crm-service")
-        app.logger.info('CRM Application startup with structured logging')
+        app.logger.info('CRM Application startup')
         
     # Enable Jinja2 do extension for template logic
     app.jinja_env.add_extension('jinja2.ext.do')
@@ -76,16 +68,7 @@ def create_app():
     register_api_blueprints(app)
     register_web_blueprints(app)
 
-    # Register custom template filters
-    register_template_filters(app)
-    
     # Register context processors for global template data
-
-    # Register clean template functions - no more string hacks!
-    app.jinja_env.globals["get_field_options"] = get_field_options
-    # Register global template functions
-    app.jinja_env.globals["PRIORITY_OPTIONS"] = PRIORITY_OPTIONS
-    app.jinja_env.globals["SIZE_OPTIONS"] = SIZE_OPTIONS
     
     # Dashboard button function
     def get_dashboard_action_buttons():

@@ -2,7 +2,6 @@ from .core import api_core_bp
 from .entities import api_entities_bp
 from .notes import api_notes_bp
 from .tasks import tasks_api_bp
-from .logs import logs_bp
 from .forms import forms_api
 
 def register_api_blueprints(app):
@@ -12,5 +11,3 @@ def register_api_blueprints(app):
     app.register_blueprint(api_notes_bp)
     app.register_blueprint(tasks_api_bp)
     app.register_blueprint(forms_api)
-    # ADR-012: Frontend logging API
-    app.register_blueprint(logs_bp, url_prefix='/api')

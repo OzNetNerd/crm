@@ -42,7 +42,9 @@ class Task(EntityModel):
     __tablename__ = "tasks"
     
     __entity_config__ = {
-        'description': 'Manage your tasks and projects'
+        'description': 'Manage your tasks and projects',
+        'filter_fields': ['status', 'priority', 'task_type'],
+        'join_map': {}
     }
 
     id = db.Column(db.Integer, primary_key=True)

@@ -1,9 +1,8 @@
-from datetime import datetime, date, timedelta
-import logging
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
-from app.models import db, Task, Company, Stakeholder, Opportunity
+from datetime import datetime
+from flask import Blueprint, request, jsonify, redirect, url_for, flash, render_template
+from app.models import db, Task
 from app.forms import MultiTaskForm
-from collections import defaultdict
+from app.utils.simple_helpers import get_entity_data_for_forms
 
 # Create blueprint
 tasks_bp = Blueprint("tasks", __name__)
@@ -13,140 +12,8 @@ tasks_bp = Blueprint("tasks", __name__)
 
 
 
-@tasks_bp.route("/content")
-def content():
-    """HTMX endpoint for filtered task content"""
-    return Task.render_content(
-        filter_fields=['status', 'priority', 'task_type'],
-        join_map={}  # No joins needed for task sorting
-    )
-
-
-@tasks_bp.route("/")
-def index():
-    # Get all tasks
-    all_tasks = Task.query.order_by(Task.created_at.desc()).all()
-
-    # Convert tasks to dictionaries for JSON serialization (for Alpine.js compatibility)
-    tasks = []
-    for i, task in enumerate(all_tasks):
-        try:
-            task_dict = task.to_dict()
-            tasks.append(task_dict)
-        except Exception as e:
-            logging.error(f"Task {i} (ID: {task.id}) failed to serialize: {e}")
-
-    # Test final JSON serialization
-    try:
-        import json
-        json_str = json.dumps(tasks)
-    except Exception as e:
-        logging.error(f"Final JSON serialization failed: {e}")
-        tasks = []
-
-    # Simple entity stats
-    entity_stats = {
-        'title': 'Task Summary',
-        'stats': [
-            {
-                'value': len([t for t in all_tasks if t.status == 'todo']),
-                'label': 'To Do'
-            },
-            {
-                'value': len([t for t in all_tasks if t.status == 'in-progress']),
-                'label': 'In Progress'
-            },
-            {
-                'value': len([t for t in all_tasks if t.status == 'complete']),
-                'label': 'Complete'
-            },
-            {
-                'value': len([t for t in all_tasks if hasattr(t, 'is_overdue') and t.is_overdue]),
-                'label': 'Overdue'
-            }
-        ]
-    }
-
-    # Simple context building - no over-engineered helpers
-    base_context = {
-        'entity_config': {
-            'entity_name': 'Tasks',
-            'entity_name_singular': 'Task',
-            'entity_description': 'Manage your tasks',
-            'entity_type': 'task',
-            'endpoint_name': 'tasks',
-            'content_endpoint': 'tasks.content',
-            'entity_buttons': ['tasks']
-        },
-        'entity_stats': entity_stats,
-        'tasks': tasks,
-        'tasks_objects': all_tasks,
-        'dropdown_configs': {
-            'group_by': {
-                'options': [
-                    {'value': 'status', 'label': 'Status'},
-                    {'value': 'priority', 'label': 'Priority'},
-                    {'value': 'due_date', 'label': 'Due Date'}
-                ],
-                'current_value': request.args.get('group_by', 'status'),
-                'placeholder': 'Group by...'
-            },
-            'sort_by': {
-                'options': [
-                    {'value': 'due_date', 'label': 'Due Date'},
-                    {'value': 'priority', 'label': 'Priority'},
-                    {'value': 'created_at', 'label': 'Created Date'},
-                    {'value': 'status', 'label': 'Status'}
-                ],
-                'current_value': request.args.get('sort_by', 'due_date'),
-                'placeholder': 'Sort by...'
-            }
-        }
-    }
-    
-    # Add custom filter dropdowns for tasks
-    ENTITY_TYPES = [
-        {'value': 'company', 'label': Company.__name__},
-        {'value': 'opportunity', 'label': Opportunity.__name__}
-    ]
-    base_context['dropdown_configs']['entity_filter'] = {
-        'button_text': 'All Entities',
-        'options': ENTITY_TYPES,
-        'current_values': request.args.getlist('entity_filter'),
-        'name': 'entity_filter'
-    }
-
-    # Add status filter
-    STATUS_OPTIONS = [
-        {'value': 'todo', 'label': 'To Do'},
-        {'value': 'in-progress', 'label': 'In Progress'},
-        {'value': 'complete', 'label': 'Complete'}
-    ]
-    base_context['dropdown_configs']['primary_filter'] = {
-        'button_text': 'All Status',
-        'options': STATUS_OPTIONS,
-        'current_values': request.args.getlist('primary_filter'),
-        'name': 'primary_filter'
-    }
-
-    # Add priority filter
-    PRIORITY_OPTIONS = [
-        {'value': 'high', 'label': 'High'},
-        {'value': 'medium', 'label': 'Medium'},
-        {'value': 'low', 'label': 'Low'}
-    ]
-    base_context['dropdown_configs']['secondary_filter'] = {
-        'button_text': 'All Priority',
-        'options': PRIORITY_OPTIONS,
-        'current_values': request.args.getlist('secondary_filter'),
-        'name': 'secondary_filter'
-    }
-
-    return render_template("base/entity_index.html", **base_context)
-
-
-
-
+# Note: Task index and content routes are now handled by the DRY entity system in entities.py
+# Task.render_index() and Task.render_content() are provided by EntityModel base class
 
 
 @tasks_bp.route("/multi/create", methods=["GET", "POST"])
@@ -207,7 +74,7 @@ def create_multi():
 
             db.session.commit()
             flash("Multi Task created successfully!", "success")
-            return redirect(url_for("tasks.index"))
+            return redirect(url_for("entities.tasks_index"))
 
         except Exception as e:
             db.session.rollback()

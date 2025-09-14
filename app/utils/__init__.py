@@ -16,27 +16,10 @@ Key imports available at package level for backwards compatibility:
 # Form utilities have been moved to app.forms module
 # Import directly from app.forms for new code
 
-# Entity utilities
-from .entities import (
-    EntityManager,
-    StakeholderManager,
-    TeamManager,
-    TaskEntityManager
-)
+# Entity utilities - EntityManager removed, use MODEL_REGISTRY from app.models instead
 
 # UI utilities
-from .ui import (
-    # ModalService,  # Temporarily removed to avoid circular import
-    style_task_description,
-    safe_tojson,
-    register_template_filters,
-    get_field_options,
-    get_sortable_fields,
-    get_groupable_fields,
-    # UniversalIndexHelper removed - using DRY route helpers instead
-    PRIORITY_OPTIONS,
-    SIZE_OPTIONS
-)
+# All UI template functions have been removed - models now handle their own choices
 
 # Auto serialize moved to BaseModel - no longer needed here
 
@@ -47,12 +30,10 @@ __all__ = [
     # Forms (moved to app.forms module)
     # Import from app.forms for new code
 
-    # Entities
-    'EntityManager',
+    # Entities - removed, use MODEL_REGISTRY from app.models
 
     # UI
     # 'ModalService',  # Temporarily removed
-    'register_template_filters',
     # 'UniversalIndexHelper', # removed - using DRY route helpers instead
 
     # Utils
