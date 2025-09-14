@@ -16,8 +16,162 @@ class ModelIntrospector:
     """
     Universal model introspection system that extracts configuration
     from SQLAlchemy column.info metadata.
+
+    Default Behavior:
+    - filterable: True (unless internal or system field)
+    - groupable: True (unless internal or system field)
+    - sortable: True (unless internal or system field)
+    - searchable: True (unless internal or system field)
+    - internal: False (user-facing by default)
+
+    System fields auto-detected: id, created_at, updated_at, deleted_at, _sa_*
     """
-    
+
+    # System field defaults - only specify when different from global defaults (True)
+    SYSTEM_FIELD_DEFAULTS = {
+        'id': {
+            'filterable': False,
+            'groupable': False,
+            'sortable': True,  # Can sort by ID
+        },
+        'created_at': {
+            # All default to True - dates are useful for filtering/grouping/sorting
+        },
+        'updated_at': {
+            # All default to True
+        },
+        'deleted_at': {
+            'filterable': False,
+            'groupable': False,
+            'sortable': False,
+            'internal': True,  # Hide soft delete fields
+        },
+        '_sa_instance_state': {
+            'filterable': False,
+            'groupable': False,
+            'sortable': False,
+            'internal': True,
+        }
+    }
+
+    @staticmethod
+    def get_field_info(model_class, field_name: str) -> Dict[str, Any]:
+        """
+        Safely get field info dict, empty dict if not found.
+
+        Args:
+            model_class: SQLAlchemy model class
+            field_name: Name of the field
+
+        Returns:
+            Field info dict or empty dict if not found
+        """
+        try:
+            column = getattr(model_class, field_name, None)
+            if column and hasattr(column, 'property') and hasattr(column.property, 'columns'):
+                if len(column.property.columns) > 0:
+                    return column.property.columns[0].info or {}
+        except (AttributeError, TypeError):
+            pass
+        return {}
+
+    @staticmethod
+    def get_system_field_defaults(field_name: str) -> Dict[str, Any]:
+        """
+        Get system field defaults if it's a system field.
+
+        Args:
+            field_name: Name of the field
+
+        Returns:
+            System field defaults or empty dict
+        """
+        return ModelIntrospector.SYSTEM_FIELD_DEFAULTS.get(field_name, {})
+
+    @staticmethod
+    def is_field_filterable(model_class, field_name: str) -> bool:
+        """
+        Check if field is filterable - TRUE by default.
+
+        Args:
+            model_class: SQLAlchemy model class
+            field_name: Name of the field
+
+        Returns:
+            True if field should be filterable
+        """
+        # Check system field defaults first
+        system_defaults = ModelIntrospector.get_system_field_defaults(field_name)
+
+        # Get field info from model
+        info = ModelIntrospector.get_field_info(model_class, field_name)
+
+        # Merge: field info overrides system defaults
+        effective_info = {**system_defaults, **info}
+
+        # If marked as internal, not filterable
+        if effective_info.get('internal', False):
+            return False
+
+        # Check filterable flag, default TRUE
+        return effective_info.get('filterable', True)
+
+    @staticmethod
+    def is_field_groupable(model_class, field_name: str) -> bool:
+        """
+        Check if field is groupable - TRUE by default.
+
+        Args:
+            model_class: SQLAlchemy model class
+            field_name: Name of the field
+
+        Returns:
+            True if field should be groupable
+        """
+        # Check system field defaults first
+        system_defaults = ModelIntrospector.get_system_field_defaults(field_name)
+
+        # Get field info from model
+        info = ModelIntrospector.get_field_info(model_class, field_name)
+
+        # Merge: field info overrides system defaults
+        effective_info = {**system_defaults, **info}
+
+        # If marked as internal, not groupable
+        if effective_info.get('internal', False):
+            return False
+
+        # Check groupable flag, default TRUE
+        return effective_info.get('groupable', True)
+
+    @staticmethod
+    def is_field_sortable(model_class, field_name: str) -> bool:
+        """
+        Check if field is sortable - TRUE by default.
+
+        Args:
+            model_class: SQLAlchemy model class
+            field_name: Name of the field
+
+        Returns:
+            True if field should be sortable
+        """
+        # Check system field defaults first
+        system_defaults = ModelIntrospector.get_system_field_defaults(field_name)
+
+        # Get field info from model
+        info = ModelIntrospector.get_field_info(model_class, field_name)
+
+        # Merge: field info overrides system defaults
+        effective_info = {**system_defaults, **info}
+
+        # If marked as internal, check if explicitly sortable
+        if effective_info.get('internal', False):
+            return effective_info.get('sortable', False)
+
+        # Check sortable flag, default TRUE
+        return effective_info.get('sortable', True)
+
     @staticmethod
     def get_field_choices(model_class, field_name: str) -> List[Tuple[str, str]]:
         """
@@ -111,45 +265,28 @@ class ModelIntrospector:
     def get_groupable_fields(model_class) -> List[Tuple[str, str]]:
         """
         Get all fields that can be grouped by.
-        
+
         Args:
             model_class: SQLAlchemy model class
-            
+
         Returns:
             List of (field_name, display_label) tuples
         """
         groupable_fields = []
         seen_fields = set()  # Track fields to avoid duplicates
-        
+
         for attr_name in dir(model_class):
             # Skip private/system attributes
             if attr_name.startswith('_') or attr_name in ['metadata', 'registry', 'query', 'query_class']:
                 continue
-                
+
             try:
                 attr = getattr(model_class, attr_name)
                 if hasattr(attr, 'property') and hasattr(attr.property, 'columns') and len(attr.property.columns) > 0:
-                    column = attr.property.columns[0]
-                    info = column.info
-                    
-                    is_groupable = False
-                    
-                    # Intelligent groupable detection - consistent with UniversalEntityManager:
-                    # 1. Explicitly marked as groupable
-                    # 2. Has choices (categorical data is inherently groupable)
-                    # 3. Has date_groupings (date fields with grouping config)
-                    # 4. Has priority_ranges (value-based grouping)
-                    # 5. Common groupable field names
-                    is_groupable = (
-                        info.get('groupable', False) or
-                        'choices' in info or
-                        'date_groupings' in info or
-                        'priority_ranges' in info or
-                        attr_name in ['stage', 'status', 'priority', 'industry', 'job_title', 'size_category']
-                    )
-                    
-                    # Add field only once if it's groupable and not already added
-                    if is_groupable and attr_name not in seen_fields:
+                    # Use new runtime check
+                    if ModelIntrospector.is_field_groupable(model_class, attr_name) and attr_name not in seen_fields:
+                        info = ModelIntrospector.get_field_info(model_class, attr_name)
+
                         # Handle relationship fields - use relationship name instead of foreign key name
                         if info.get('relationship_field'):
                             # Use relationship field name (e.g., 'company' instead of 'company_id')
@@ -159,59 +296,80 @@ class ModelIntrospector:
                             # Regular field
                             field_name = attr_name
                             label = info.get('display_label', attr_name.replace('_', ' ').title())
-                        
+
                         groupable_fields.append((field_name, label))
                         seen_fields.add(field_name)
             except (AttributeError, TypeError):
                 continue
-        
+
         return sorted(groupable_fields, key=lambda x: x[1])
     
     @staticmethod
     def get_sortable_fields(model_class) -> List[Tuple[str, str]]:
         """
         Get all fields that can be sorted by.
-        
+
         Args:
             model_class: SQLAlchemy model class
-            
+
         Returns:
             List of (field_name, display_label) tuples
         """
         sortable_fields = []
         seen_fields = set()  # Track fields to avoid duplicates
-        
+
         for attr_name in dir(model_class):
             # Skip private/system attributes
             if attr_name.startswith('_') or attr_name in ['metadata', 'registry', 'query', 'query_class']:
                 continue
-                
+
             try:
                 attr = getattr(model_class, attr_name)
                 if hasattr(attr, 'property') and hasattr(attr.property, 'columns') and len(attr.property.columns) > 0:
-                    column = attr.property.columns[0]
-                    info = column.info
-                    
-                    is_sortable = False
-                    
-                    # Intelligent sortable detection:
-                    # Most fields are sortable by default, except certain types
-                    # Exclude fields that don't make sense to sort by
-                    exclude_from_sorting = ['id', 'created_at', 'updated_at'] if attr_name in ['id', 'created_at', 'updated_at'] and not info.get('sortable', True) else []
-
-                    # Default to sortable unless explicitly marked as non-sortable
-                    is_sortable = info.get('sortable', True) and attr_name not in exclude_from_sorting
-                    
-                    # Add field only once if it's sortable and not already added
-                    if is_sortable and attr_name not in seen_fields:
+                    # Use new runtime check
+                    if ModelIntrospector.is_field_sortable(model_class, attr_name) and attr_name not in seen_fields:
+                        info = ModelIntrospector.get_field_info(model_class, attr_name)
                         label = info.get('display_label', attr_name.replace('_', ' ').title())
                         sortable_fields.append((attr_name, label))
                         seen_fields.add(attr_name)
             except (AttributeError, TypeError):
                 continue
-        
+
         return sorted(sortable_fields, key=lambda x: x[1])
-    
+
+    @staticmethod
+    def get_filterable_fields(model_class) -> List[Tuple[str, str]]:
+        """
+        Get all fields that can be filtered by.
+
+        Args:
+            model_class: SQLAlchemy model class
+
+        Returns:
+            List of (field_name, display_label) tuples
+        """
+        filterable_fields = []
+        seen_fields = set()  # Track fields to avoid duplicates
+
+        for attr_name in dir(model_class):
+            # Skip private/system attributes
+            if attr_name.startswith('_') or attr_name in ['metadata', 'registry', 'query', 'query_class']:
+                continue
+
+            try:
+                attr = getattr(model_class, attr_name)
+                if hasattr(attr, 'property') and hasattr(attr.property, 'columns') and len(attr.property.columns) > 0:
+                    # Use new runtime check
+                    if ModelIntrospector.is_field_filterable(model_class, attr_name) and attr_name not in seen_fields:
+                        info = ModelIntrospector.get_field_info(model_class, attr_name)
+                        label = info.get('display_label', attr_name.replace('_', ' ').title())
+                        filterable_fields.append((attr_name, label))
+                        seen_fields.add(attr_name)
+            except (AttributeError, TypeError):
+                continue
+
+        return sorted(filterable_fields, key=lambda x: x[1])
+
     @staticmethod
     def get_ordered_choices(model_class, field_name: str) -> List[Tuple[str, Dict[str, Any]]]:
         """
