@@ -41,6 +41,10 @@ class Task(BaseModel):
     """
     __tablename__ = "tasks"
     __display_name__ = "Task"
+    __search_config__ = {
+        'title_field': 'description',  # Tasks use description as title
+        'subtitle_fields': ['due_date', 'priority', 'status']
+    }
 
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(

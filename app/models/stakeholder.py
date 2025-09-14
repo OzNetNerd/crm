@@ -61,6 +61,10 @@ class Stakeholder(BaseModel):
 
     __tablename__ = "stakeholders"
     __display_name__ = "Stakeholder"
+    __search_config__ = {
+        'subtitle_fields': ['job_title', 'email'],
+        'relationships': [('company', 'name')]
+    }
     
 
     id = db.Column(db.Integer, primary_key=True)
