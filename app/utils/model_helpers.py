@@ -1,41 +1,8 @@
 """
 Simple model utility functions extracted from the overengineered base.py
 """
-from typing import List, Dict, Any
+from typing import Dict, Any
 from datetime import datetime, date
-
-
-def get_field_choices(model_class, field_name: str) -> List[tuple]:
-    """
-    Get choices for a field from column info metadata.
-
-    Args:
-        model_class: SQLAlchemy model class
-        field_name: Name of the field to get choices for
-
-    Returns:
-        List of (value, label) tuples for the field choices.
-        Returns empty list if field doesn't exist or has no choices.
-
-    Example:
-        >>> get_field_choices(Task, 'priority')
-        [('high', 'High'), ('medium', 'Medium'), ('low', 'Low')]
-    """
-    if not hasattr(model_class, field_name):
-        return []
-
-    column = getattr(model_class, field_name)
-    if not hasattr(column, 'info') or 'choices' not in column.info:
-        return []
-
-    choices = column.info['choices']
-    choice_list = []
-
-    for choice_value, choice_data in choices.items():
-        choice_label = choice_data.get('label', choice_value)
-        choice_list.append((choice_value, choice_label))
-
-    return choice_list
 
 
 def model_to_dict(model_instance) -> Dict[str, Any]:
