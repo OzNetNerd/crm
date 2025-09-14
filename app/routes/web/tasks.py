@@ -3,11 +3,7 @@ import logging
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from app.models import db, Task, Company, Stakeholder, Opportunity
 from app.forms import MultiTaskForm
-from app.utils.core.base_handlers import (
-    BaseRouteHandler,
-    parse_int_field,
-    get_entity_data_for_forms,
-)
+# Removed base_handlers - use direct operations
 from app.utils.routes import add_content_route
 from collections import defaultdict
 

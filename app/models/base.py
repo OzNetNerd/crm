@@ -408,33 +408,3 @@ class EntityModel(BaseModel):
 
         return query.limit(limit).all()
 
-    @classmethod
-    def calculate_sum(cls, field: str, filter_by: Optional[Dict] = None) -> float:
-        """
-        Calculate sum of a numeric field with optional filtering.
-
-        Generic aggregation method for summing numeric fields across
-        entities, with support for filtering by field values.
-
-        Args:
-            field: Name of the numeric field to sum
-            filter_by: Optional dict of field:value pairs to filter by
-
-        Returns:
-            Sum of the specified field values
-
-        Example:
-            >>> total_value = Opportunity.calculate_sum('value')
-            >>> pipeline_value = Opportunity.calculate_sum('value', {'stage': 'proposal'})
-        """
-        if not hasattr(cls, field):
-            return 0
-
-        query = cls.query
-        if filter_by:
-            for key, value in filter_by.items():
-                if hasattr(cls, key):
-                    query = query.filter(getattr(cls, key) == value)
-
-        items = query.all()
-        return sum(getattr(item, field) or 0 for item in items)

@@ -249,31 +249,20 @@ class ModalService:
             
             # Validate form using WTForms
             if form.validate_on_submit():
-                # For create operations, use GenericAPIHandler for duplicate checking
+                # For create operations, create entity directly
                 if not entity_id:
-                    from app.utils.core.base_handlers import GenericAPIHandler
-
                     # Get form data as dict
                     form_data = {}
                     for field in form:
                         if field.name != 'csrf_token':
                             form_data[field.name] = field.data
 
-                    # Determine allowed fields based on model
-                    allowed_fields_map = {
-                        'Company': ['name', 'industry', 'website', 'employee_count'],
-                        'Stakeholder': ['name', 'job_title', 'email', 'company_id'],
-                        'Opportunity': ['description', 'value', 'stage', 'close_date', 'company_id', 'priority'],
-                        'Task': ['description', 'due_date', 'priority', 'status', 'next_step_type', 'task_type']
-                    }
-                    allowed_fields = allowed_fields_map.get(model_name, [])
+                    try:
+                        # Create entity directly using model
+                        entity = model_class(**form_data)
+                        db.session.add(entity)
+                        db.session.commit()
 
-                    # Use GenericAPIHandler for creation with duplicate checking
-                    handler = GenericAPIHandler(model_class, model_name.lower())
-                    result = handler.create_entity_from_data(form_data, allowed_fields)
-
-                    if result['success']:
-                        entity = result['entity']
                         return {
                             'success': True,
                             'message': f"{model_name} {operation} successfully",
@@ -282,15 +271,25 @@ class ModalService:
                                                   message=f"{model_name} {operation} successfully",
                                                   entity=entity)
                         }
-                    else:
-                        # Handle duplicate error by adding to form errors
-                        if result.get('type') == 'duplicate' and result.get('field'):
-                            field = getattr(form, result['field'], None)
-                            if field:
-                                field.errors.append(result['error'])
+                    except Exception as e:
+                        db.session.rollback()
+                        # Handle database errors (like duplicates)
+                        error_msg = str(e)
+                        if 'UNIQUE constraint failed' in error_msg or 'duplicate' in error_msg.lower():
+                            # Try to determine which field caused the duplicate
+                            if 'name' in error_msg:
+                                field = getattr(form, 'name', None)
+                                if field:
+                                    field.errors.append("A record with this name already exists")
+                            elif 'email' in error_msg:
+                                field = getattr(form, 'email', None)
+                                if field:
+                                    field.errors.append("A record with this email already exists")
                         else:
                             # General error - add to form
-                            form.errors['general'] = [result.get('error', 'Unknown error')]
+                            if not hasattr(form, 'errors'):
+                                form.errors = {}
+                            form.errors['general'] = [str(e)]
 
                         # Re-render form with errors
                         action_url = f'/modals/{model_name}/create'

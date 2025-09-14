@@ -232,9 +232,11 @@ class Opportunity(EntityModel):
             >>> total = Opportunity.calculate_pipeline_value()
             >>> proposal_value = Opportunity.calculate_pipeline_value('proposal')
         """
+        query = cls.query
         if stage:
-            return cls.calculate_sum('value', {'stage': stage})
-        return cls.calculate_sum('value')
+            query = query.filter(cls.stage == stage)
+        opportunities = query.all()
+        return sum(opp.value or 0 for opp in opportunities)
 
     @classmethod
     def get_pipeline_breakdown(cls) -> Dict[str, float]:
