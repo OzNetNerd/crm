@@ -1331,6 +1331,12 @@
     color: #9a3412; /* orange-800 */
 }
 
+/* Field badge container styling */
+.field-badge {
+    display: inline-block;
+    margin: 0.25rem 0;
+}
+
 /* ========================================
  * TAILWIND UTILITY CLASSES
  * Essential utility classes for modal overlays and other components

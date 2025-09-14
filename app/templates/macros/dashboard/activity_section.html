@@ -18,7 +18,7 @@
 
     <div class="space-y-3">
         {% for task in overdue_tasks %}
-        {{ task_card_item(task, 'red') }}
+        {{ task_card_item(task, 'red', with_priority_badge=true) }}
         {% endfor %}
     </div>
 </div>
