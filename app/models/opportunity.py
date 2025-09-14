@@ -499,40 +499,48 @@ class Opportunity(EntityModel):
     def to_display_dict(self) -> Dict[str, Any]:
         """
         Convert opportunity to dictionary with pre-formatted display fields.
-        
+
         Extends the basic dictionary representation with formatted
         fields optimized for display in user interfaces. This includes
         formatted currency values, percentages, and other UI-specific formatting.
-        
+
         Returns:
             Dictionary with all standard fields plus display-formatted versions
             of fields that benefit from special formatting:
             - value_formatted: Currency formatted deal value
             - probability_formatted: Percentage formatted probability
             - deal_age_formatted: Human-readable deal age
-            
+            - stage_display: Human-readable stage (e.g., "Closed Won" instead of "closed-won")
+            - priority_display: Human-readable priority
+
         Example:
-            >>> opp = Opportunity(value=50000, probability=75)
+            >>> opp = Opportunity(value=50000, probability=75, stage="closed-won")
             >>> display_data = opp.to_display_dict()
             >>> print(display_data['value_formatted'])
             '$50,000'
             >>> print(display_data['probability_formatted'])
             '75%'
+            >>> print(display_data['stage_display'])
+            'Closed Won'
         """
         from app.utils.ui.formatters import create_display_dict, DisplayFormatter
-        
+
         # Get base dictionary
         result = self.to_dict()
-        
+
         # Add formatted display fields at source
         display_fields = create_display_dict(self)
         result.update(display_fields)
-        
+
         # Add opportunity-specific formatted fields
         result['value_formatted'] = DisplayFormatter.format_currency(self.value)
         result['probability_formatted'] = DisplayFormatter.format_percentage(self.probability / 100.0 if self.probability else 0)
         result['deal_age_formatted'] = f"{self.deal_age} days old"
-        
+
+        # Add display-friendly versions of choice fields
+        result['stage_display'] = self.stage.replace('-', ' ').replace('_', ' ').title() if self.stage else ''
+        result['priority_display'] = self.priority.replace('-', ' ').replace('_', ' ').title() if self.priority else ''
+
         return result
 
     def __repr__(self) -> str:
