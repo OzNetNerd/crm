@@ -464,36 +464,50 @@ class Task(EntityModel):
     def to_display_dict(self) -> Dict[str, Any]:
         """
         Convert task to dictionary with pre-formatted display fields.
-        
+
         Extends the basic dictionary representation with formatted
         fields optimized for display in user interfaces. This includes
         formatted currency values for linked opportunities and other
         UI-specific formatting.
-        
+
         Returns:
             Dictionary with all standard fields plus display-formatted versions
-            of fields that benefit from special formatting.
-            
+            of fields that benefit from special formatting:
+            - status_display: Human-readable status (e.g., "In Progress" instead of "in-progress")
+            - priority_display: Human-readable priority
+            - next_step_type_display: Human-readable next step type
+            - task_type_display: Human-readable task type
+            - dependency_type_display: Human-readable dependency type
+
         Example:
-            >>> task = Task(description="Big deal follow-up")
+            >>> task = Task(description="Big deal follow-up", status="in-progress")
             >>> display_data = task.to_display_dict()
             >>> print(display_data.get('opportunity_value_formatted'))
             '$50,000'
+            >>> print(display_data['status_display'])
+            'In Progress'
         """
         from app.utils.ui.formatters import create_display_dict
-        
+
         # Get base dictionary
         result = self.to_dict()
-        
+
         # Add formatted display fields at source
         display_fields = create_display_dict(self)
         result.update(display_fields)
-        
+
         # Add task-specific formatted fields
         if self.opportunity_value:
             from app.utils.ui.formatters import DisplayFormatter
             result['opportunity_value_formatted'] = DisplayFormatter.format_currency(self.opportunity_value)
-        
+
+        # Add display-friendly versions of choice fields
+        result['status_display'] = self.status.replace('-', ' ').replace('_', ' ').title() if self.status else ''
+        result['priority_display'] = self.priority.replace('-', ' ').replace('_', ' ').title() if self.priority else ''
+        result['next_step_type_display'] = self.next_step_type.replace('-', ' ').replace('_', ' ').title() if self.next_step_type else ''
+        result['task_type_display'] = self.task_type.replace('-', ' ').replace('_', ' ').title() if self.task_type else ''
+        result['dependency_type_display'] = self.dependency_type.replace('-', ' ').replace('_', ' ').title() if self.dependency_type else ''
+
         return result
 
     def __repr__(self) -> str:
