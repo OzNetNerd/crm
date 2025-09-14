@@ -269,11 +269,16 @@ def validate_field(entity_type, field_name):
     Validate a single field for duplicate values without creating the entity.
     Used for inline validation in forms.
     """
+    import sys
+    print("BASIC PRINT: Function called")
+    sys.stderr.write(f"DEBUG: validate_field called with entity_type={entity_type}, field_name={field_name}\n")
+    sys.stderr.flush()
+
     try:
         data = request.get_json()
         field_value = data.get('value', '').strip()
 
-        # Skip validation for empty values
+        # Allow empty values - they're handled by required validation
         if not field_value:
             return '', 200
 
@@ -298,24 +303,39 @@ def validate_field(entity_type, field_name):
         model_name = model_class.__name__
         allowed_fields = unique_fields.get(model_name, {})
 
+        sys.stderr.write(f"DEBUG: model_name={model_name}, allowed_fields={allowed_fields}, field_name={field_name}\n")
+        sys.stderr.flush()
+
         # Only validate if this field should be unique
         if field_name not in allowed_fields:
+            sys.stderr.write(f"DEBUG: field_name {field_name} not in allowed_fields {allowed_fields}, skipping validation\n")
+            sys.stderr.flush()
             return '', 200
 
-        # Check if value already exists (case-insensitive)
+        # Always check database for duplicates (case-insensitive)
+        field_attribute = getattr(model_class, field_name)
+        sys.stderr.write(f"DEBUG: Checking field {field_name}={field_value} for {model_name}\n")
+        sys.stderr.flush()
+
         existing = model_class.query.filter(
-            getattr(model_class, field_name).ilike(field_value)
+            field_attribute.ilike(field_value)
         ).first()
+
+        sys.stderr.write(f"DEBUG: Found existing: {existing}\n")
+        sys.stderr.flush()
 
         if existing:
             field_label = field_name.replace('_', ' ').title()
-            # Return HTML for the validation message
             error_html = f'<p data-validation-error="true">A {entity_type} with this {field_label.lower()} already exists.</p>'
+            sys.stderr.write(f"DEBUG: Returning error: {error_html}\n")
+            sys.stderr.flush()
             return error_html, 200
 
-        # Return empty string for valid input
-        return '', 200
+        # No duplicates found - field is valid
+        return 'TEST_WORKING', 200
 
     except Exception as e:
-        # On error, don't block the user
+        # On error, don't block the user - but log for debugging
+        sys.stderr.write(f"Validation error: {str(e)}\n")
+        sys.stderr.flush()
         return '', 200
