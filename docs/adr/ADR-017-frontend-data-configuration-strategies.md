@@ -2,11 +2,18 @@
 
 ## ADR-017: Universal Frontend Data Passing and Configuration Object Strategies
 
-**Status:** Accepted  
-**Date:** 13-09-25-14h-30m-00s  
-**Session:** 57ad43d3-ad12-46e8-8f3e-abd7c0ebc32c.jsonl  
-**Todo:** Frontend data passing and configuration patterns  
+**Status:** Accepted
+**Date:** 13-09-25-14h-30m-00s
+**Updated:** 14-09-25-12h-10m-00s
+**Session:** 57ad43d3-ad12-46e8-8f3e-abd7c0ebc32c.jsonl
+**Todo:** Frontend data passing and configuration patterns
 **Deciders:** Will Robinson, Development Team
+
+**Current Implementation**: Frontend data configuration uses:
+- `__entity_config__` patterns in models for metadata
+- `ModelRegistry` for dynamic model access
+- Direct template context passing from route handlers
+- Tailwind CSS for styling with minimal Alpine.js components
 
 ### Context
 
