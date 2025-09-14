@@ -21,9 +21,13 @@
     {% for result in results %}
     <div class="border-b border-gray-100 last:border-b-0" data-search-result="{{ result.type }}">
         <a href="#"
+           {% if mode == 'select' %}
+           onclick="selectEntity('{{ field_id }}', '{{ result.id }}', '{{ result.title }}', '{{ result.type }}'); return false;"
+           {% else %}
            hx-get="{{ url_for('modals.view_modal', model_name=result.model_type, entity_id=result.id) }}"
            hx-target="body"
            hx-swap="beforeend"
+           {% endif %}
            class="flex items-center space-x-3 px-4 py-3 block hover:bg-blue-50 transition-colors duration-150"
            data-entity-type="{{ result.model_type }}"
            data-entity-id="{{ result.id }}">
@@ -73,4 +77,22 @@
         Start typing to search companies, contacts, opportunities, and tasks
     </div>
     {% endif %}
+{% endif %}
+
+{% if mode == 'select' %}
+<script>
+function selectEntity(fieldId, entityId, entityName, entityType) {
+    const field = document.getElementById(fieldId);
+    if (field) {
+        field.value = entityName;
+        field.dataset.entityId = entityId;
+        field.dataset.entityType = entityType;
+
+        const resultsDiv = document.getElementById(fieldId + '-results');
+        if (resultsDiv) {
+            resultsDiv.classList.add('hidden');
+        }
+    }
+}
+</script>
 {% endif %}

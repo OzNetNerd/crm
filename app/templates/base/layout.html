@@ -1,5 +1,6 @@
 {% from 'macros/base/icons.html' import icon %}
 {% from 'macros/base/layout.html' import nav_link %}
+{% from 'macros/widgets/search.html' import global_search_dropdown %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,36 +32,7 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="search-container">
-                        <div class="relative">
-                            <input type="text"
-                                   id="global-search"
-                                   name="q"
-                                   placeholder="Search companies, contacts, opportunities..."
-                                   class="search-input"
-                                   autocomplete="off"
-                                   autocorrect="off"
-                                   autocapitalize="off"
-                                   spellcheck="false"
-                                   hx-get="{{ url_for('search.htmx_search') }}"
-                                   hx-trigger="input changed delay:300ms, focus"
-                                   hx-target="#search-results"
-                                   hx-indicator="#search-spinner">
-                            <button id="advanced-search-btn"
-                                    class="search-button"
-                                    title="Advanced Search">
-                                {{ icon('funnel', 'sm', 'text-gray-400 hover:text-gray-600') }}
-                            </button>
-                            <!-- Search spinner -->
-                            <div id="search-spinner" class="htmx-indicator absolute right-8 top-2.5">
-                                {{ icon('spinner', 'xs', 'animate-spin text-gray-400') }}
-                            </div>
-                        </div>
-
-                        <!-- Search results dropdown -->
-                        <div id="search-results" class="search-results hidden">
-                        </div>
-                    </div>
+                    {{ global_search_dropdown() }}
                 </div>
             </div>
         </div>
