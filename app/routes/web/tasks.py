@@ -75,6 +75,7 @@ def index():
             'entity_description': 'Manage your tasks',
             'entity_type': 'task',
             'endpoint_name': 'tasks',
+            'content_endpoint': 'tasks.content',
             'entity_buttons': ['tasks']
         },
         'entity_stats': entity_stats,
