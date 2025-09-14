@@ -70,16 +70,7 @@ def generate_sprite_macro(icons, output_path):
     """Generate Jinja macro for using sprites"""
     macro_content = '''{% macro sprite_icon(name, size='lg', additional_class='') %}
 {# Modern SVG Sprite Icon System - Optimized for Performance #}
-{% set size_classes = {
-  'xs': 'w-3 h-3',
-  'sm': 'w-4 h-4', 
-  'md': 'w-5 h-5',
-  'lg': 'w-6 h-6',
-  'xl': 'w-8 h-8',
-  '2xl': 'w-10 h-10'
-} %}
-{% set size_class = size_classes.get(size, size if 'w-' in size else size_classes.lg) %}
-<svg class="{{ size_class }} {{ additional_class }}" aria-hidden="true">
+<svg data-icon-size="{{ size }}" class="{{ additional_class }}" aria-hidden="true">
   <use href="#icon-{{ name }}"></use>
 </svg>
 {% endmacro %}

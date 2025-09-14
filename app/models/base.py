@@ -126,8 +126,7 @@ class EntityModel(BaseModel):
 
         This hook runs when any subclass of EntityModel is defined, ensuring
         automatic registration without manual intervention. Uses the entity
-        config to determine registration names and handles both singular and
-        plural forms.
+        config to determine registration names.
 
         Args:
             **kwargs: Additional arguments passed to parent __init_subclass__
@@ -143,6 +142,191 @@ class EntityModel(BaseModel):
             register_model(cls)
 
     @classmethod
+    def filter_and_sort(cls, filters=None, sort_by=None, sort_dir='asc', joins=None):
+        """
+        Universal filtering and sorting for entities.
+
+        Args:
+            filters: Dict of field:value pairs to filter by
+            sort_by: Field name to sort by
+            sort_dir: Sort direction ('asc' or 'desc')
+            joins: Optional list of models to join
+
+        Returns:
+            Query result with filters and sorting applied
+        """
+        query = cls.query
+
+        # Apply joins if needed
+        if joins:
+            for join_model in joins:
+                query = query.join(join_model)
+
+        # Apply filters from request args
+        for key, value in (filters or {}).items():
+            if value and hasattr(cls, key):
+                query = query.filter(getattr(cls, key) == value)
+
+        # Apply sorting
+        if sort_by and hasattr(cls, sort_by):
+            field = getattr(cls, sort_by)
+            query = query.order_by(field.desc() if sort_dir == 'desc' else field.asc())
+        else:
+            # Default sort by id desc (newest first)
+            query = query.order_by(cls.id.desc())
+
+        return query
+
+    @classmethod
+    def group_by_field(cls, entities, field_name):
+        """
+        Group entities by a field value.
+
+        Args:
+            entities: List of entity instances
+            field_name: Field to group by
+
+        Returns:
+            Dict with field values as keys and entity lists as values
+        """
+        from collections import defaultdict
+        grouped = defaultdict(list)
+
+        for entity in entities:
+            key = getattr(entity, field_name, 'Other')
+            # Handle None values
+            if key is None:
+                key = 'Uncategorized'
+            grouped[key].append(entity)
+
+        return dict(grouped)
+
+    @classmethod
+    def get_stats(cls):
+        """
+        Get basic statistics for the entity.
+
+        Returns:
+            Dict with title and stats array
+        """
+        entities = cls.query.all()
+        config = cls.get_entity_config()
+
+        stats = [{
+            'value': len(entities),
+            'label': f'Total {config["entity_name"]}'
+        }]
+
+        # Add status breakdown if entity has status field
+        if hasattr(cls, 'status'):
+            from collections import Counter
+            status_counts = Counter(getattr(e, 'status', 'unknown') for e in entities)
+            for status, count in status_counts.items():
+                if status:  # Skip None/empty
+                    stats.append({
+                        'value': count,
+                        'label': status.replace('-', ' ').replace('_', ' ').title()
+                    })
+
+        return {
+            'title': f'{config["entity_name"]} Overview',
+            'stats': stats
+        }
+
+    @classmethod
+    def render_content(cls, filter_fields=None, join_map=None):
+        """
+        Handle ALL content filtering/sorting/grouping for any entity.
+
+        Args:
+            filter_fields: List of fields this entity filters by (e.g., ['stage', 'priority'])
+            join_map: Dict mapping sort fields to join models (e.g., {'company_name': [Company]})
+
+        Returns:
+            Rendered template with filtered/sorted/grouped entities
+        """
+        from flask import request, render_template
+
+        # Get parameters
+        filters = {}
+        group_by = request.args.get('group_by', '')
+        sort_by = request.args.get('sort_by', 'name')
+        sort_direction = request.args.get('sort_direction', 'asc')
+
+        # Build filters from request args
+        for field in (filter_fields or []):
+            if value := request.args.get(field):
+                filters[field] = value
+
+        # Apply filtering and sorting
+        joins = (join_map or {}).get(sort_by, [])
+        query = cls.filter_and_sort(
+            filters=filters,
+            sort_by=sort_by,
+            sort_dir=sort_direction,
+            joins=joins
+        )
+        entities = query.all()
+
+        # Get entity config for template
+        config = cls.get_entity_config()
+
+        # ALWAYS provide grouped_entities - even if not grouping
+        if group_by:
+            grouped_dict = cls.group_by_field(entities, group_by)
+            grouped_entities = [
+                {
+                    'key': group_name,
+                    'label': group_name,
+                    'count': len(group_items),
+                    'entities': group_items
+                }
+                for group_name, group_items in grouped_dict.items()
+            ]
+        else:
+            # Single group with all entities when not grouping
+            grouped_entities = [{
+                'key': 'all',
+                'label': 'All Results',
+                'count': len(entities),
+                'entities': entities
+            }]
+
+        # Render with consistent structure
+        return render_template("shared/entity_content.html",
+            grouped_entities=grouped_entities,
+            group_by=group_by,
+            entity_config=config,
+            entity_type=cls.__name__.lower(),
+            entity_name=config['entity_name'],
+            entity_name_singular=config['entity_name_singular'],
+            entity_name_plural=config['entity_name'],
+            total_count=len(entities)
+        )
+
+    @classmethod
+    def render_index(cls):
+        """
+        Render index page for any entity - ZERO duplication.
+
+        Returns:
+            Rendered template with entity config, dropdowns, and stats
+        """
+        from flask import render_template
+        from app.utils.simple_helpers import get_dropdowns_from_columns
+
+        config = cls.get_entity_config()
+        # Add button inline - no need for separate function
+        config['entity_buttons'] = [{
+            'title': f'New {config["entity_name_singular"]}',
+            'url': f'{config["modal_path"]}/create'
+        }]
+
+        return render_template("base/entity_index.html",
+            entity_config=config,
+            dropdown_configs=get_dropdowns_from_columns(cls),
+            entity_stats=cls.get_stats()
+        )
 
     @classmethod
     def get_recent(cls, limit: int = 5, exclude_status: Optional[str] = None) -> List:
