@@ -1,8 +1,7 @@
 from datetime import datetime
 from flask import Blueprint, request, jsonify, redirect, url_for, flash, render_template
-from app.models import db, Task
+from app.models import db, Task, Company, Stakeholder, Opportunity
 from app.forms import MultiTaskForm
-from app.utils.simple_helpers import get_entity_data_for_forms
 
 # Create blueprint
 tasks_bp = Blueprint("tasks", __name__)
@@ -22,7 +21,12 @@ def create_multi():
     form = MultiTaskForm()
 
     # Get entity data for form population
-    entity_data = get_entity_data_for_forms()
+    # Get entities for form dropdowns
+    entity_data = {
+        'companies': Company.query.order_by(Company.name).all(),
+        'contacts': Stakeholder.query.order_by(Stakeholder.name).all(),
+        'opportunities': Opportunity.query.order_by(Opportunity.name).all()
+    }
 
     if form.validate_on_submit():
         try:

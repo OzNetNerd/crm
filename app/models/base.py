@@ -110,14 +110,13 @@ class BaseModel(db.Model):
 
     def _get_search_title(self):
         """Get title for search results."""
+        # Use configured title field or common fields
         config = self.__search_config__
-
-        # Check explicit title field in config
         if title_field := config.get('title_field'):
             if hasattr(self, title_field):
                 return str(getattr(self, title_field, ''))[:100]
 
-        # Auto-detect from common title fields
+        # Try common title fields
         for field in ['name', 'title', 'description', 'email']:
             if hasattr(self, field) and (value := getattr(self, field)):
                 return str(value)[:100]
@@ -129,84 +128,17 @@ class BaseModel(db.Model):
         parts = []
         config = self.__search_config__
 
-        # Get configured subtitle fields or auto-detect
+        # Use configured subtitle fields
         subtitle_fields = config.get('subtitle_fields', [])
 
-        if not subtitle_fields:
-            # Auto-detect interesting fields for subtitle
-            subtitle_fields = self._auto_detect_subtitle_fields()
-
-        # Format each field value
         for field_name in subtitle_fields:
-            if not hasattr(self, field_name):
-                continue
+            if hasattr(self, field_name) and (value := getattr(self, field_name)):
+                # Simple formatting for common field types
+                if isinstance(value, (date, datetime)):
+                    parts.append(value.strftime('%d/%m/%y'))
+                elif field_name in {'status', 'stage', 'priority'}:
+                    parts.append(str(value).replace('_', ' ').title())
+                else:
+                    parts.append(str(value))
 
-            value = getattr(self, field_name)
-            if not value:
-                continue
-
-            # Format the field value appropriately
-            formatted = self._format_search_field(field_name, value)
-            if formatted:
-                parts.append(formatted)
-
-        # Add relationship data if configured
-        for rel_name, field_name in config.get('relationships', []):
-            if rel := getattr(self, rel_name, None):
-                if rel_value := getattr(rel, field_name, None):
-                    parts.append(str(rel_value))
-
-        return " • ".join(parts[:3])  # Limit to 3 parts
-
-    def _auto_detect_subtitle_fields(self):
-        """Auto-detect fields for subtitle."""
-        fields = []
-        skip = {'id', 'name', 'title', 'description', 'created_at', 'updated_at',
-                'password', 'hash', 'token', 'comments', 'content'}
-
-        for col in self.__table__.columns:
-            if col.name in skip:
-                continue
-
-            # Include fields with display_label or common important fields
-            if col.info.get('display_label') or col.name in {
-                'industry', 'job_title', 'email', 'status',
-                'priority', 'stage', 'due_date', 'value', 'size'
-            }:
-                fields.append(col.name)
-
-        return fields[:3]
-
-    def _format_search_field(self, field_name, value):
-        """Format a field value for search display."""
-        if not value:
-            return None
-
-        # Get column for type checking
-        column = self.__table__.columns.get(field_name)
-        if column is None:
-            return str(value)
-
-        # Date fields
-        if isinstance(column.type, Date) or isinstance(value, (date, datetime)):
-            if isinstance(value, datetime):
-                value = value.date()
-            formatted = value.strftime('%d/%m/%y')
-            if field_name == 'due_date':
-                return f"Due: {formatted}"
-            return formatted
-
-        # Currency fields
-        if isinstance(column.type, Numeric) or field_name in {'value', 'price', 'amount'}:
-            return f"${value:,.0f}"
-
-        # Status/priority/stage fields - title case
-        if field_name in {'status', 'stage', 'priority'}:
-            return str(value).replace('_', ' ').replace('-', ' ').title()
-
-        # Percentage
-        if field_name == 'probability':
-            return f"{value}%"
-
-        # Default - just string
-        return str(value)
+        return " • ".join(parts[:3])

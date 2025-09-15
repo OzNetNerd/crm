@@ -17,9 +17,11 @@ from app.models import (
     Note,
     Opportunity,
     Task,
-    ChatHistory,
-    Embedding,
 )
+
+# Import local chatbot-specific models
+from .chat_history import ChatHistory
+from .embedding import Embedding
 
 # Re-export for chatbot use
 __all__ = [

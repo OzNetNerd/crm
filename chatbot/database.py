@@ -3,10 +3,7 @@ from pathlib import Path
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-# Add the parent directory to the path to import shared config
-sys.path.append(str(Path(__file__).parent.parent))
-
-from shared.database_config import ASYNC_DATABASE_URI
+from .database_config import ASYNC_DATABASE_URI
 
 # Async engine for FastAPI
 async_engine = create_async_engine(
