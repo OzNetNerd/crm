@@ -61,20 +61,20 @@
     </span>
 {% endmacro %}
 
-{% macro priority_badge(priority) %}
-    {% if priority %}
-        <span class="badge badge-priority-{{ priority|lower }}">
-            {{ priority|capitalize }}
+{% macro typed_badge(value, type) %}
+    {% if value %}
+        <span class="badge badge-{{ type }}-{{ value|lower|replace(' ', '-') }}">
+            {{ value|capitalize }}
         </span>
     {% endif %}
 {% endmacro %}
 
+{% macro priority_badge(priority) %}
+    {{ typed_badge(priority, 'priority') }}
+{% endmacro %}
+
 {% macro status_badge(status) %}
-    {% if status %}
-        <span class="badge badge-status-{{ status|lower|replace(' ', '-') }}">
-            {{ status|capitalize }}
-        </span>
-    {% endif %}
+    {{ typed_badge(status, 'status') }}
 {% endmacro %}
 
 {# ============================================
