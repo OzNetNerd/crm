@@ -71,17 +71,10 @@
     {% endfor %}
 </div>
 {% else %}
-    {% if query %}
     <div class="px-4 py-6 text-sm text-gray-500 text-center">
         <div class="text-gray-400 text-2xl mb-2">🔍</div>
-        No results found for "{{ query }}"
+        No results found{% if query %} for "{{ query }}"{% endif %}
     </div>
-    {% else %}
-    <div class="px-4 py-6 text-sm text-gray-500 text-center">
-        <div class="text-gray-400 text-2xl mb-2">💡</div>
-        Start typing to search companies, contacts, opportunities, and tasks
-    </div>
-    {% endif %}
 {% endif %}
 
 {# JavaScript functions moved to search-widget.js for DRY implementation #}

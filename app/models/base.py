@@ -76,7 +76,8 @@ class BaseModel(db.Model):
     def search(cls, query, limit=20):
         """Search all text fields automatically."""
         if not query:
-            return cls.query.limit(limit).all()
+            # Return most recent items when no query
+            return cls.query.order_by(cls.id.desc()).limit(limit).all()
 
         from sqlalchemy import or_
 

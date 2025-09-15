@@ -117,14 +117,6 @@ def htmx_search():
     # Collect results
     results = []
 
-    # If no query, return empty results (don't show everything)
-    if not query:
-        return render_template('components/search/results.html',
-                             results=[],
-                             query=query,
-                             mode=mode,
-                             field_id=field_id)
-
     # Distribute results across entity types for better diversity
     items_per_type = max(1, limit // len(models_to_search)) if models_to_search else limit
 
