@@ -61,5 +61,10 @@
     <script type="module" src="{{ url_for('static', filename='js/features/modal_handlers.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/features/controls.js') }}"></script>
     {% block scripts %}{% endblock %}
+
+    <!-- Disable autocomplete on all form fields -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('.form-input, .form-textarea, .form-select, input[type="text"], input[type="email"], input[type="tel"], textarea').forEach(el => el.autocomplete = 'off'));
+    </script>
 </body>
 </html>
