@@ -29,8 +29,8 @@ cleanup() {
 # Set up cleanup trap
 trap cleanup SIGINT SIGTERM
 
-# Get free ports
-CRM_PORT=$(find_free_port 5050)
+# Get free ports (checking 30 ports from 5050-5079)
+CRM_PORT=$(find_free_port 5050 30)
 # CHATBOT_PORT=$(find_free_port 8020 50)
 
 echo "🚀 Starting CRM application on http://127.0.0.1:$CRM_PORT"

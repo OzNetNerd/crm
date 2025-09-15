@@ -59,7 +59,7 @@
 
 {# Error Modal - Consolidated error display #}
 {% macro htmx_error_modal(error_message="An unexpected error occurred. Please try again.") %}
-{% call htmx_modal_overlay(max_width="max-w-md") %}
+{% call modal_overlay(max_width="max-w-md") %}
     {{ htmx_modal_header("Error") }}
     
     {% call htmx_modal_body() %}
@@ -81,10 +81,6 @@
 {% endcall %}
 {% endmacro %}
 
-{# Backward compatibility aliases #}
-{% macro htmx_modal_overlay(backdrop_click_close=true, max_width="max-w-2xl") %}
-{{ modal_overlay(backdrop_click_close, max_width) }}
-{% endmacro %}
 
 {# Form Error Message - Inline error display for HTMX forms #}
 {% macro htmx_form_error_message(error=None, errors=None) %}
