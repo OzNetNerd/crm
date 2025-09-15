@@ -1,4 +1,4 @@
-{# Navigation Bar #}
+{# Navigation Bar - Using Tailwind Classes per ADR-003 #}
 {% from 'macros/components.html' import search_widget %}
 
 {% set nav_items = [
@@ -9,23 +9,25 @@
     {'endpoint': 'entities.users_index', 'label': 'Account Teams'}
 ] %}
 
-<nav class="navbar">
-    <div class="navbar-inner">
-        <div class="navbar-brand">
-            <a href="{{ url_for('dashboard.index') }}">CRM</a>
-        </div>
+<nav class="bg-white shadow-md border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-wrap justify-between items-center py-3">
+            <div class="flex items-center">
+                <a href="{{ url_for('dashboard.index') }}" class="text-xl font-bold text-gray-900 hover:text-blue-600 mr-8">CRM</a>
 
-        <div class="navbar-menu">
-            {% for item in nav_items %}
-            <a href="{{ url_for(item.endpoint) }}"
-               class="navbar-item {{ 'active' if request.endpoint == item.endpoint }}">
-                {{ item.label }}
-            </a>
-            {% endfor %}
-        </div>
+                <div class="flex flex-wrap gap-2 sm:gap-4">
+                    {% for item in nav_items %}
+                    <a href="{{ url_for(item.endpoint) }}"
+                       class="text-gray-600 hover:text-gray-900 px-2 sm:px-3 py-1 sm:py-2 text-sm font-medium {{ 'text-blue-600 border-b-2 border-blue-600' if request.endpoint == item.endpoint else '' }}">
+                        {{ item.label }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
 
-        <div class="navbar-search">
-            {{ search_widget(placeholder='Search...', id='global-search') }}
+            <div class="mt-2 sm:mt-0">
+                {{ search_widget(placeholder='Search...', id='global-search') }}
+            </div>
         </div>
     </div>
 </nav>

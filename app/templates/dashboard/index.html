@@ -5,30 +5,52 @@
 {% block title %}Dashboard - CRM{% endblock %}
 
 {% block content %}
-<div class="page-container">
-    <div class="page-header">
-        <h1 class="page-title">Dashboard</h1>
-        <p class="page-subtitle">Overview of your CRM performance and activity</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p class="text-gray-600 mt-2">Overview of your CRM performance and activity</p>
     </div>
 
-    {% set sections = [
-        {'title': 'Overdue Tasks', 'data': overdue_tasks, 'template': 'components/dashboard/activity_card.html', 'empty': 'No overdue tasks'},
-        {'title': 'Recent Notes', 'data': recent_notes, 'template': 'components/notes/notes_display.html', 'empty': 'No recent notes'},
-        {'title': 'Recent Tasks', 'data': recent_tasks, 'template': 'components/dashboard/activity_card.html', 'empty': 'No recent tasks'},
-        {'title': 'Recent Opportunities', 'data': recent_opportunities, 'template': 'components/dashboard/activity_card.html', 'empty': 'No recent opportunities'}
-    ] %}
-
-    <div class="dashboard-grid">
-        {% for section in sections %}
-        <div class="dashboard-section">
-            <h2 class="section-title">{{ section.title }}</h2>
-            {% if section.data %}
-                {% include section.template with context %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {# Overdue Tasks Section #}
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Overdue Tasks</h2>
+            {% if overdue_tasks %}
+                {% include 'components/dashboard/activity_card.html' with context %}
             {% else %}
-                <p class="text-muted">{{ section.empty }}</p>
+                <p class="text-gray-500">No overdue tasks</p>
             {% endif %}
         </div>
-        {% endfor %}
+
+        {# Recent Notes Section #}
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Recent Notes</h2>
+            {% if recent_notes %}
+                {% include 'components/notes/notes_display.html' with context %}
+            {% else %}
+                <p class="text-gray-500">No notes yet</p>
+            {% endif %}
+        </div>
+
+        {# Recent Tasks Section #}
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Recent Tasks</h2>
+            {% if recent_tasks %}
+                {% include 'components/dashboard/activity_card.html' with context %}
+            {% else %}
+                <p class="text-gray-500">No recent tasks</p>
+            {% endif %}
+        </div>
+
+        {# Recent Opportunities Section #}
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Recent Opportunities</h2>
+            {% if recent_opportunities %}
+                {% include 'components/dashboard/activity_card.html' with context %}
+            {% else %}
+                <p class="text-gray-500">No recent opportunities</p>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}
