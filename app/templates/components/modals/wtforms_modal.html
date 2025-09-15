@@ -1,4 +1,4 @@
-{% from 'macros/modals/base.html' import htmx_modal_overlay, htmx_modal_header %}
+{% from 'macros/modals/base.html' import modal_overlay, htmx_modal_header %}
 {% from 'macros/modals/field_filter.html' import render_filtered_fields %}
 {% from 'macros/modals/footers.html' import render_view_footer, render_form_footer %}
 {#
@@ -17,7 +17,7 @@ Variables:
 - mode: 'view', 'create', or 'edit'
 #}
 
-{% call htmx_modal_overlay(max_width="max-w-lg") %}
+{% call modal_overlay(max_width="max-w-lg") %}
   {{ htmx_modal_header(modal_title, model_name) }}
 
   {% if mode == 'view' or is_view %}
