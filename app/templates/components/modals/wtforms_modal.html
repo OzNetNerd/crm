@@ -33,7 +33,7 @@ Direct modal rendering without wrapper nonsense
             {% if mode == 'view' %}
                 <!-- View Mode -->
                 <div class="form-fields">
-                    {{ render_filtered_fields(form, mode='view', model_name=model_name) }}
+                    {{ render_filtered_fields(form, mode='view') }}
                 </div>
             {% else %}
                 <!-- Form Mode -->
@@ -55,7 +55,7 @@ Direct modal rendering without wrapper nonsense
                     </div>
                     {% endif %}
 
-                    {{ render_filtered_fields(form, mode='form', model_name=model_name) }}
+                    {{ render_filtered_fields(form, mode='form') }}
                 </form>
             {% endif %}
         </div>

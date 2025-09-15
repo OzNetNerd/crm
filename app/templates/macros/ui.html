@@ -62,26 +62,19 @@
 {% endmacro %}
 
 {% macro priority_badge(priority) %}
-    {% set priority_map = {
-        'high': 'danger',
-        'medium': 'warning',
-        'low': 'success'
-    } %}
-    {% set variant = priority_map.get(priority|lower, 'default') %}
-    {% set text = priority|capitalize if priority|lower in priority_map else priority %}
-    {{ badge(text, variant=variant) }}
+    {% if priority %}
+        <span class="badge badge-priority-{{ priority|lower }}">
+            {{ priority|capitalize }}
+        </span>
+    {% endif %}
 {% endmacro %}
 
 {% macro status_badge(status) %}
-    {% set status_map = {
-        'active': 'success',
-        'inactive': 'danger',
-        'pending': 'warning',
-        'completed': 'info'
-    } %}
-    {% set variant = status_map.get(status|lower, 'default') %}
-    {% set text = status|capitalize %}
-    {{ badge(text, variant=variant) }}
+    {% if status %}
+        <span class="badge badge-status-{{ status|lower|replace(' ', '-') }}">
+            {{ status|capitalize }}
+        </span>
+    {% endif %}
 {% endmacro %}
 
 {# ============================================
