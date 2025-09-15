@@ -3,7 +3,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{% block title %}CRM{% endblock %}</title>
 
-{# CSS #}
+{# Tailwind CSS for utility classes #}
+<script src="https://cdn.tailwindcss.com"></script>
+
+{# Custom CSS #}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
@@ -16,5 +19,5 @@
 <script src="https://unpkg.com/htmx.org@2.0.3/dist/htmx.min.js"></script>
 <script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
 
-{# Application JavaScript - Consolidated #}
-<script src="{{ url_for('static', filename='js/app.bundle.js') }}" defer></script>
+{# Application JavaScript #}
+<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>

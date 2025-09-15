@@ -1,0 +1,64 @@
+/**
+ * Card Component Styles
+ * Following ADR pattern - CSS classes for dynamic Jinja generation
+ */
+
+/* Base card styles */
+.card {
+    background: white;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Card sections */
+.card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+/* Entity-specific card variants - inherit from entities.css */
+/* These are already defined in entities.css as card-company, card-task, etc. */
+
+/* Card group for entity listings */
+.card-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Compact card variant */
+.card-compact .card-header {
+    padding: 0.75rem 1rem;
+}
+
+.card-compact .card-body {
+    padding: 1rem;
+}
+
+.card-compact .card-footer {
+    padding: 0.75rem 1rem;
+}

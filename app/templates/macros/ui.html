@@ -23,22 +23,11 @@
     class='',
     attrs={}
 ) %}
-    {% set variant_classes = {
-        'primary': 'btn-primary',
-        'secondary': 'btn-secondary',
-        'danger': 'btn-danger',
-        'success': 'btn-success',
-        'ghost': 'btn-ghost'
-    } %}
-
-    {% set size_classes = {
-        'sm': 'btn-sm',
-        'md': 'btn-md',
-        'lg': 'btn-lg'
-    } %}
+    {# Dynamic class generation following ADR pattern #}
+    {% set btn_class = "btn btn-" + variant + " btn-" + size %}
 
     <button type="{{ type }}"
-            class="btn {{ variant_classes[variant] }} {{ size_classes[size] }} {{ class }}"
+            class="{{ btn_class }} {{ class }}"
             {% for key, value in attrs.items() %}{{ key }}="{{ value }}"{% endfor %}>
         {% if icon_name and icon_position == 'left' %}
             {{ icon(icon_name) }}
@@ -54,39 +43,35 @@
    BADGES
    ============================================ #}
 {% macro badge(text, variant='default', size='md') %}
-    {% set variant_classes = {
-        'default': 'badge-default',
-        'primary': 'badge-primary',
-        'success': 'badge-success',
-        'warning': 'badge-warning',
-        'danger': 'badge-danger',
-        'info': 'badge-info'
-    } %}
+    {# Dynamic class generation following ADR pattern #}
+    {% set badge_class = "badge badge-" + variant + " badge-" + size %}
 
-    <span class="badge {{ variant_classes[variant] }} badge-{{ size }}">
+    <span class="{{ badge_class }}">
         {{ text }}
     </span>
 {% endmacro %}
 
 {% macro priority_badge(priority) %}
-    {% set priority_config = {
-        'high': {'class': 'badge-danger', 'text': 'High'},
-        'medium': {'class': 'badge-warning', 'text': 'Medium'},
-        'low': {'class': 'badge-success', 'text': 'Low'}
+    {% set priority_map = {
+        'high': 'danger',
+        'medium': 'warning',
+        'low': 'success'
     } %}
-    {% set config = priority_config.get(priority|lower, {'class': 'badge-default', 'text': priority}) %}
-    <span class="badge {{ config.class }}">{{ config.text }}</span>
+    {% set variant = priority_map.get(priority|lower, 'default') %}
+    {% set text = priority|capitalize if priority|lower in priority_map else priority %}
+    {{ badge(text, variant=variant) }}
 {% endmacro %}
 
 {% macro status_badge(status) %}
-    {% set status_config = {
-        'active': {'class': 'badge-success', 'text': 'Active'},
-        'inactive': {'class': 'badge-danger', 'text': 'Inactive'},
-        'pending': {'class': 'badge-warning', 'text': 'Pending'},
-        'completed': {'class': 'badge-info', 'text': 'Completed'}
+    {% set status_map = {
+        'active': 'success',
+        'inactive': 'danger',
+        'pending': 'warning',
+        'completed': 'info'
     } %}
-    {% set config = status_config.get(status|lower, {'class': 'badge-default', 'text': status}) %}
-    <span class="badge {{ config.class }}">{{ config.text }}</span>
+    {% set variant = status_map.get(status|lower, 'default') %}
+    {% set text = status|capitalize %}
+    {{ badge(text, variant=variant) }}
 {% endmacro %}
 
 {# ============================================
