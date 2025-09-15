@@ -1,0 +1,86 @@
+/**
+ * Icon Component Styles
+ * Sizes and animations for icons
+ */
+
+/* ========================================
+ * ICON SIZES
+ * ======================================== */
+
+.icon-xs {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+.icon-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+.icon-md {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.icon-lg {
+    width: 2rem;
+    height: 2rem;
+}
+
+.icon-xl {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+/* ========================================
+ * SPINNER ANIMATIONS
+ * ======================================== */
+
+.spinner-animated {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+.spinner-md {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.spinner-lg {
+    width: 2rem;
+    height: 2rem;
+}
+
+.spinner-animated svg {
+    animation: spin 1s linear infinite;
+    color: var(--color-primary);
+}
+
+/* ========================================
+ * LOADING STATES
+ * ======================================== */
+
+.loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.loading-text {
+    font-size: 0.875rem;
+    color: var(--color-gray-600);
+}

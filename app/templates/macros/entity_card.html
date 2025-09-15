@@ -3,9 +3,11 @@
 {% from "macros/base/forms.html" import bulk_selection_checkbox %}
 
 {% macro entity_card(entity, entity_type) %}
-<div class="card-{{ entity_type }} flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
-  <div class="flex items-center space-x-3 flex-1 cursor-pointer"
-       onclick="if (!event.target.closest('button') && !event.target.closest('input')) { window.dispatchEvent(new CustomEvent('open-detail-{{ entity_type }}-modal', { detail: { id: {{ entity.id }}, readOnly: true } })) }">
+<div class="card-{{ entity_type }} entity-card"
+     data-entity-card
+     data-entity-type="{{ entity_type }}"
+     data-entity-id="{{ entity.id }}">
+  <div class="entity-card-content">
     {{ bulk_selection_checkbox(entity.id) }}
 
     {# Entity content - name, status, etc. #}
@@ -44,22 +46,28 @@
   </div>
 
   {# Action buttons - always on the right #}
-  <div class="flex items-center space-x-2">
+  <div class="entity-card-actions">
     {# Complete button for tasks only - now on the right #}
     {% if entity_type == 'task' and entity.status != 'complete' %}
-      <button onclick="event.stopPropagation(); confirmAction('complete', '{{ entity_type }}', {{ entity.id }}, 'Complete Task', 'Are you sure you want to mark this task as complete?', 'Complete', 'bg-green-600 hover:bg-green-700')"
-              class="text-green-600 hover:text-green-800 transition-colors"
+      <button data-action="complete"
+              data-entity-type="{{ entity_type }}"
+              data-entity-id="{{ entity.id }}"
+              class="btn-icon btn-complete"
               title="Mark complete">
         {{ icon('check-circle', 'sm') }}
       </button>
     {% endif %}
-    <button onclick="event.stopPropagation(); window.dispatchEvent(new CustomEvent('open-detail-{{ entity_type }}-modal', { detail: { id: {{ entity.id }} } }))"
-            class="text-blue-600 hover:text-blue-800 transition-colors"
+    <button data-action="edit"
+            data-entity-type="{{ entity_type }}"
+            data-entity-id="{{ entity.id }}"
+            class="btn-icon btn-edit"
             title="Edit">
       {{ icon('pencil', 'sm') }}
     </button>
-    <button onclick="event.stopPropagation(); confirmAction('delete', '{{ entity_type }}', {{ entity.id }}, 'Delete {{ entity_type|title }}', 'Are you sure you want to delete this {{ entity_type }}?', 'Delete', 'bg-red-600 hover:bg-red-700')"
-            class="text-red-600 hover:text-red-800 transition-colors"
+    <button data-action="delete"
+            data-entity-type="{{ entity_type }}"
+            data-entity-id="{{ entity.id }}"
+            class="btn-icon btn-delete"
             title="Delete">
       {{ icon('trash', 'sm') }}
     </button>

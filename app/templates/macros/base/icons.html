@@ -229,10 +229,9 @@
 } %}
 
 {# Base SVG Macro - DRY foundation for all icons #}
-{% macro base_svg(icon_data, size='lg', additional_class='') %}
+{% macro base_svg(icon_data, size='lg') %}
 {% set size_class = size_registry.get(size, size if 'w-' in size else size_registry.lg) %}
-{% set combined_class = size_class + (' ' + additional_class if additional_class else '') %}
-<svg class="{{ combined_class }}" 
+<svg class="{{ size_class }}" 
      {% if icon_data.type == 'fill' %}fill="currentColor" viewBox="0 0 24 24"{% else %}fill="none" stroke="currentColor" viewBox="0 0 24 24"{% endif %}>
   {% if icon_data.get('fill_rule') %}
   <path fill-rule="{{ icon_data.fill_rule }}" 
@@ -246,10 +245,10 @@
 {% endmacro %}
 
 {# Unified Icon Macro - Single interface for all icons with validation #}
-{% macro icon(name, size='lg', additional_class='') %}
+{% macro icon(name, size='lg') %}
 {% set icon_data = icon_registry.get(name) %}
 {% if icon_data %}
-{{ base_svg(icon_data, size, additional_class) }}
+{{ base_svg(icon_data, size) }}
 {% else %}
 {# Developer warning for unknown icons - only show in development #}
 {% if config and config.get('ENV') == 'development' %}

@@ -523,6 +523,38 @@
 /* Dropdown styles moved to components/dropdown.css */
 
 /* ========================================
+ * ENTITY CARD COMPONENT
+ * ======================================== */
+
+.entity-card {
+    @apply flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer;
+}
+
+.entity-card-content {
+    @apply flex items-center space-x-3 flex-1;
+}
+
+.entity-card-actions {
+    @apply flex items-center space-x-2;
+}
+
+.btn-icon {
+    @apply p-2 rounded-lg transition-colors;
+}
+
+.btn-complete {
+    @apply text-green-600 hover:text-green-800;
+}
+
+.btn-edit {
+    @apply text-blue-600 hover:text-blue-800;
+}
+
+.btn-delete {
+    @apply text-red-600 hover:text-red-800;
+}
+
+/* ========================================
  * FORM COMPONENTS
  * Usage: class="text-form-label", class="field-readonly"
  * ======================================== */

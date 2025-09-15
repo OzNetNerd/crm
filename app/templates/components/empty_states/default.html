@@ -40,9 +40,9 @@
 
     {# Action Button #}
     {% if show_action %}
-    <button onclick="window.dispatchEvent(new CustomEvent('open-create-{{ entity_type }}-modal'))"
+    <button data-create-entity="{{ entity_type }}"
             class="mt-4 btn-primary btn-sm">
-        {{ icon('plus', 'w-4 h-4', 'mr-1') }}
+        {{ icon('plus', 'sm') }}
         Create {{ entity_type|title }}
     </button>
     {% endif %}

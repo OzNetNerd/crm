@@ -166,11 +166,12 @@
   {{ loading_spinner('md', 'Loading companies...') }}
 #}
 {% macro loading_spinner(size='md', text='') %}
-{%- set size_classes = {'sm': 'h-4 w-4', 'md': 'h-6 w-6', 'lg': 'h-8 w-8'} -%}
-<div class="flex items-center justify-center space-x-2">
-    {{ icon('spinner', size or 'md', 'animate-spin text-blue-600') }}
+<div class="loading-container">
+    <span class="spinner-{{ size or 'md' }} spinner-animated">
+        {{ icon('spinner', size or 'md') }}
+    </span>
     {% if text %}
-    <span class="text-sm text-gray-600">{{ text }}</span>
+    <span class="loading-text">{{ text }}</span>
     {% endif %}
 </div>
 {% endmacro %}
@@ -231,7 +232,7 @@
                 class="bg-white border border-gray-300 rounded-md px-4 py-2 text-left w-48 flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 peer"
                 tabindex="0">
             <span>{{ button_text }}</span>
-            {{ icon('chevron-down', 'sm', 'ml-2 transition-[transform,translate,scale,rotate] group-focus-within:rotate-180') }}
+            {{ icon('chevron-down', 'sm') }}
         </button>
         
         <div class="absolute mt-1 w-48 bg-white border border-gray-300 rounded-md shadow-lg z-50 opacity-0 scale-95 pointer-events-none transition-all duration-200 peer-focus:opacity-100 peer-focus:scale-100 peer-focus:pointer-events-auto group-focus-within:opacity-100 group-focus-within:scale-100 group-focus-within:pointer-events-auto">
@@ -288,7 +289,7 @@
                 class="bg-white border border-gray-300 rounded-md px-4 py-2 text-left w-48 flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 peer"
                 tabindex="0">
             <span>{{ button_text }}{{ direction_indicator if current_sort }}</span>
-            {{ icon('chevron-down', 'sm', 'ml-2 transition-[transform,translate,scale,rotate] group-focus-within:rotate-180') }}
+            {{ icon('chevron-down', 'sm') }}
         </button>
         
         <div class="absolute mt-1 w-48 bg-white border border-gray-300 rounded-md shadow-lg z-50 opacity-0 scale-95 pointer-events-none transition-all duration-200 peer-focus:opacity-100 peer-focus:scale-100 peer-focus:pointer-events-auto group-focus-within:opacity-100 group-focus-within:scale-100 group-focus-within:pointer-events-auto">
