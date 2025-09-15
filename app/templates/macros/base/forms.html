@@ -1,203 +1,30 @@
-{% macro text_input(name, label, model_var, placeholder="", required=false, type="text", class="") %}
-<div class="form-field {% if class %}{{ class }}{% endif %}">
-    <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
-    <input type="{{ type }}" 
-           x-model="{{ model_var }}" 
-           placeholder="{{ placeholder }}"
-           class="form-input"
-           {% if required %}required{% endif %}>
-</div>
-{% endmacro %}
+{# Base Form Components - Only used macros #}
 
-{% macro textarea_input(name, label, model_var, placeholder="", rows=2, required=false) %}
-<div class="form-field">
-    <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
-    <textarea x-model="{{ model_var }}" 
-              placeholder="{{ placeholder }}"
-              class="form-textarea"
-              rows="{{ rows }}"
-              {% if required %}required{% endif %}></textarea>
-</div>
-{% endmacro %}
-
-{% macro select_input(name, label, model_var, options, required=false, empty_option="", class="", fast_select=false) %}
-<div class="form-field {% if class %}{{ class }}{% endif %}">
-    <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
-
-    {% if fast_select %}
-        {# Fast native select for performance-critical contexts #}
-        <select x-model="{{ model_var }}"
-                class="form-select"
-                {% if required %}required{% endif %}>
-            {% if empty_option %}
-            <option value="">{{ empty_option }}</option>
-            {% endif %}
-            {% for option in options %}
-                {% if option is mapping %}
-                    <option value="{{ option.value }}">{{ option.label }}</option>
-                {% else %}
-                    <option value="{{ option }}">{{ option|title }}</option>
-                {% endif %}
-            {% endfor %}
-        </select>
-    {% else %}
-        {# Styled dropdown for non-critical contexts #}
-        {% from 'macros/dropdowns.html' import form_select_dropdown %}
-
-        {# Convert options to include empty option if provided #}
-        {% set all_options = [] %}
-        {% if empty_option %}
-            {% set _ = all_options.append({'value': '', 'label': empty_option}) %}
-        {% endif %}
-        {% for option in options %}
-            {% if option is mapping %}
-                {% set _ = all_options.append({'value': option.value, 'label': option.label}) %}
-            {% else %}
-                {% set _ = all_options.append({'value': option, 'label': option|title}) %}
-            {% endif %}
-        {% endfor %}
-
-        <div x-data="{ value: {{ model_var }} }"
-             x-init="$watch('value', val => {{ model_var }} = val)">
-            {{ form_select_dropdown(name, all_options, current_value='', placeholder=empty_option or 'Select option', required=required) }}
-        </div>
-    {% endif %}
-</div>
-{% endmacro %}
-
-{% macro date_input(name, label, model_var, required=false, class="") %}
-<div class="form-field {% if class %}{{ class }}{% endif %}">
-    <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
-    <input type="date" 
-           x-model="{{ model_var }}" 
-           class="form-input"
-           {% if required %}required{% endif %}>
-</div>
-{% endmacro %}
-
-{% macro searchable_input(name, label, placeholder="", required=false, class="") %}
-{% set entity_type = label.lower().replace(' ', '') %}
-{# Map singular forms to plural forms expected by API #}
-{% if entity_type == 'company' %}{% set entity_type = 'companies' %}{% endif %}
-{% if entity_type == 'contact' %}{% set entity_type = 'contacts' %}{% endif %}
-{% if entity_type == 'opportunity' %}{% set entity_type = 'opportunities' %}{% endif %}
-{% if entity_type == 'task' %}{% set entity_type = 'tasks' %}{% endif %}
-<div class="form-field {% if class %}{{ class }}{% endif %}">
-    <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
-    <input type="text" 
-           name="{{ name }}"
-           placeholder="{{ placeholder if placeholder else 'Search ' + label.lower() + '...' }}"
-           class="form-input"
-           data-searchable="{{ entity_type }}"
-           autocomplete="off"
-           {% if required %}required{% endif %}>
-</div>
-{% endmacro %}
-
-{% macro email_input(name, label, model_var, placeholder="email@example.com", required=false) %}
-{{ text_input(name, label, model_var, placeholder, required, "email") }}
-{% endmacro %}
-
-{% macro tel_input(name, label, model_var, placeholder="Phone number", required=false) %}
-{{ text_input(name, label, model_var, placeholder, required, "tel") }}
-{% endmacro %}
-
-{% macro url_input(name, label, model_var, placeholder="https://example.com", required=false) %}
-{{ text_input(name, label, model_var, placeholder, required, "url") }}
-{% endmacro %}
-
-
-{% macro radio_group(name, label, model_var, options, required=false) %}
-<div class="form-field">
-    <label class="form-label{% if required %} form-label-required{% endif %}">{{ label }}</label>
-    <div class="modal-radio-group">
-        {% for option in options %}
-        <label class="modal-radio-label">
-            <input type="radio" x-model="{{ model_var }}" value="{{ option.value if option is mapping else option }}" 
-                   class="form-radio"
-                   {% if required %}required{% endif %}>
-            <span class="modal-radio-text">{{ option.label if option is mapping else option|title }}</span>
-        </label>
-        {% endfor %}
-    </div>
-</div>
-{% endmacro %}
-
-{# Enhanced form components for selection and search #}
-{% from 'macros/base/icons.html' import icon %}
-
-{#
-  Bulk Selection Checkbox - Checkbox with consistent selection styling
-  
-  Parameters:
-  - item_id (required): Unique identifier for the item
-  - model (optional): Alpine.js model name (default: 'selectedItems')
-  - additional_classes (optional): Extra CSS classes
-  
-  Usage:
-  {{ bulk_selection_checkbox(company.id) }}
-  {{ bulk_selection_checkbox(contact.id, 'selectedStakeholders') }}
-#}
 {% macro bulk_selection_checkbox(item_id, model='selected_items', additional_classes='') %}
 <input type="checkbox"
-       name="{{ model }}"
-       value="{{ item_id }}"
-       class="form-checkbox {{ additional_classes }}"
-       onclick="event.stopPropagation()">
+       :checked="{{ model }}.includes('{{ item_id }}')"
+       @change="{{ model }}.includes('{{ item_id }}') ? {{ model }} = {{ model }}.filter(id => id !== '{{ item_id }}') : {{ model }}.push('{{ item_id }}')"
+       class="form-checkbox {{ additional_classes }}">
 {% endmacro %}
 
-{#
-  Select All Checkbox - Master checkbox for bulk selection
-  
-  Parameters:
-  - total_items (required): Total number of items that can be selected
-  - model (optional): Alpine.js model name (default: 'selectedItems')
-  - label (optional): Label text for the checkbox
-  
-  Usage:
-  {{ select_all_checkbox(companies|length) }}
-  {{ select_all_checkbox(contacts|length, 'selectedStakeholders', 'Select all contacts') }}
-#}
-{% macro select_all_checkbox(total_items, model='selectedItems', label='Select all') %}
-<label class="flex items-center space-x-2">
+{% macro select_all_checkbox(items, model='selectedItems', label='Select all') %}
+<label class="flex items-center">
     <input type="checkbox"
-           :checked="{{ model }}.length === {{ total_items }} && {{ total_items }} > 0"
-           :indeterminate="{{ model }}.length > 0 && {{ model }}.length < {{ total_items }}"
-           @change="{{ model }} = $event.target.checked ? allItemIds : []"
+           :checked="{{ model }}.length === {{ items|length }}"
+           @change="{{ model }} = $event.target.checked ? {{ items|tojson|safe }}.map(item => item.id) : []"
            class="form-checkbox">
-    <span class="text-sm text-gray-700">{{ label }}</span>
+    <span class="ml-2 text-sm text-gray-700">{{ label }}</span>
 </label>
 {% endmacro %}
 
-{#
-  Search Input - Consistent search input with icon
-  
-  Parameters:
-  - placeholder (optional): Placeholder text
-  - model (optional): Alpine.js model binding
-  - additional_classes (optional): Extra CSS classes
-  
-  Usage:
-  {{ search_input('Search companies...', 'searchTerm') }}
-#}
 {% macro search_input(placeholder='Search...', model='searchTerm', additional_classes='') %}
-<div class="relative">
-    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        {{ icon('magnifying-glass', 'md', 'text-gray-400') }}
-    </div>
-    <input type="text"
-           x-model="{{ model }}"
-           class="form-input pl-10 pr-3 {{ additional_classes }}"
-           placeholder="{{ placeholder }}">
-    <div x-show="{{ model }}.length > 0" class="absolute inset-y-0 right-0 pr-3 flex items-center">
-        <button @click="{{ model }} = ''" class="text-gray-400 hover:text-gray-600">
-            {{ icon('x-mark', 'sm') }}
-        </button>
-    </div>
-</div>
+<input type="text"
+       x-model="{{ model }}"
+       placeholder="{{ placeholder }}"
+       class="form-input {{ additional_classes }}">
 {% endmacro %}
 
-{# WTForms Field Rendering Macro - Reusable across templates #}
+{# WTForms Field Rendering Macro #}
 {% macro render_wtforms_field(field, fast_select=false, model_name=None) %}
     <div class="field-container">
         <!-- Label -->
@@ -207,222 +34,48 @@
             <span class="text-red-500">*</span>
             {% endif %}
         </label>
-        
+
         <!-- Field Rendering based on field type -->
         {% set error_class = " error" if field.errors else "" %}
-        {% set base_class = "form-field-base" %}
-        
+
         {% if field.widget.__class__.__name__ == 'Select' %}
-            {% if fast_select %}
-                {# Fast native select for performance-critical contexts #}
-                {{ field(class="form-select" + error_class) }}
-            {% else %}
-                {# Styled dropdown for non-critical contexts #}
-                {% from 'macros/dropdowns.html' import form_select_dropdown %}
+            {{ field(class="form-select" + error_class) }}
 
-                {# Convert WTForms field choices to dropdown options #}
-                {% set dropdown_options = [] %}
-                {% for value, label in field.choices %}
-                    {% set _ = dropdown_options.append({'value': value, 'label': label}) %}
-                {% endfor %}
-
-                <div class="{% if field.errors %}error{% endif %}">
-                    {{ form_select_dropdown(
-                        field.name,
-                        dropdown_options,
-                        current_value=field.data or '',
-                        placeholder='Select option',
-                        required=field.flags.required
-                    ) }}
-                </div>
-            {% endif %}
-            
         {% elif field.widget.__class__.__name__ == 'TextArea' %}
             {{ field(class="form-textarea" + error_class, rows=field.render_kw.get('rows', 3) if field.render_kw else 3) }}
-            
+
         {% elif field.widget.__class__.__name__ == 'CheckboxInput' %}
             <div class="flex items-center">
                 {{ field(class="form-checkbox") }}
                 <span class="ml-2 text-sm text-gray-700">{{ field.description or field.label.text }}</span>
             </div>
-            
+
         {% elif field.widget.__class__.__name__ == 'DateInput' %}
-            {{ field(class="form-input" + error_class) }}
-            
-        {% elif field.widget.__class__.__name__ == 'NumberInput' %}
-            {{ field(class="form-input" + error_class) }}
-            
-        {% elif field.widget.__class__.__name__ == 'SelectMultipleField' %}
-            <div class="border border-gray-300 rounded-md p-2 max-h-32 overflow-y-auto">
-                {% for choice in field.choices %}
-                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                    <input type="checkbox"
-                           name="{{ field.name }}"
-                           value="{{ choice[0] }}"
-                           {% if choice[0] in (field.data or []) %}checked{% endif %}
-                           class="form-checkbox">
-                    <span class="text-sm">{{ choice[1] }}</span>
-                </label>
-                {% endfor %}
+            {{ field(class="form-input" + error_class, type="date") }}
+
+        {% elif field.widget.__class__.__name__ == 'DateTimeInput' %}
+            {{ field(class="form-input" + error_class, type="datetime-local") }}
+
+        {% elif field.type == 'SearchField' or field.render_kw.get('data-searchable') %}
+            <div class="searchable-field-wrapper relative">
+                {{ field(class="form-input searchable-input" + error_class,
+                        **{'data-searchable': field.render_kw.get('data-searchable', model_name),
+                           'autocomplete': 'off'}) }}
+                <div class="search-results absolute top-full left-0 right-0 z-50 hidden"></div>
             </div>
-            
+
         {% else %}
-            <!-- Default to text input with proper type handling -->
-            {% set input_type = "text" %}
-            {% if "email" in field.name.lower() %}
-                {% set input_type = "email" %}
-            {% elif "phone" in field.name.lower() or "tel" in field.name.lower() %}
-                {% set input_type = "tel" %}
-            {% elif "website" in field.name.lower() or "url" in field.name.lower() %}
-                {% set input_type = "url" %}
-            {% endif %}
-
-            <!-- Add HTMX validation for unique fields -->
-            {% set needs_validation = false %}
-            {% set entity_type = "" %}
-            {% if model_name == 'company' and field.name == 'name' %}
-                {% set needs_validation = true %}
-                {% set entity_type = "company" %}
-            {% elif model_name == 'stakeholder' and field.name == 'email' %}
-                {% set needs_validation = true %}
-                {% set entity_type = "stakeholder" %}
-            {% endif %}
-
-            {% if needs_validation %}
-                <input type="{{ input_type }}"
-                       id="{{ field.id }}"
-                       name="{{ field.name }}"
-                       class="form-input{{ error_class }}"
-                       value="{{ field.data or '' }}"
-                       {% if field.flags.required %}required{% endif %}
-                       hx-post="/api/validate/{{ entity_type }}/{{ field.name }}"
-                       hx-trigger="blur, keyup changed delay:500ms"
-                       hx-target="#{{ field.id }}-validation-message"
-                       hx-swap="innerHTML"
-                       hx-vals='js:{"value": document.getElementById("{{ field.id }}").value}'>
-            {% else %}
-                {{ field(class="form-input" + error_class, type=input_type) }}
-            {% endif %}
+            {# Default text input for StringField, IntegerField, etc. #}
+            {{ field(class="form-input" + error_class) }}
         {% endif %}
 
-        <!-- Field Errors -->
+        <!-- Error Messages -->
         {% if field.errors %}
+        <div class="field-errors mt-1">
             {% for error in field.errors %}
-            <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+            <p class="text-sm text-red-600">{{ error }}</p>
             {% endfor %}
-        {% endif %}
-
-        <!-- Inline Validation Message Container -->
-        <div id="{{ field.id }}-validation-message"></div>
-        
-        <!-- Field Description/Help Text -->
-        {% if field.description %}
-        <p class="mt-1 text-sm text-gray-500">{{ field.description }}</p>
+        </div>
         {% endif %}
     </div>
-{% endmacro %}
-
-{#
-  Child Task Form - Truly DRY WTForms-based component using render_wtforms_field
-  
-  Parameters:
-  - child_form (required): WTForms ChildTaskForm instance
-  - task_number (required): Display number (1-based) for user interface
-  - visible_class (optional): CSS class for visibility control (default: '')
-  
-  Usage:
-  {{ child_task_form(form.child_tasks[0], 1) }}
-  {{ child_task_form(form.child_tasks[2], 3, 'hidden') }}
-#}
-{% macro child_task_form(child_form, task_number, visible_class='') %}
-<div class="child-task border border-gray-200 rounded-lg p-4 bg-gray-50 {{ visible_class }}">
-    <div class="flex justify-between items-start mb-3">
-        <h4 class="text-md font-medium text-gray-900">Child Task {{ task_number }}</h4>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="md:col-span-2">
-            {{ render_wtforms_field(child_form.description) }}
-        </div>
-        <div>
-            {{ render_wtforms_field(child_form.priority) }}
-        </div>
-        <div>
-            {{ render_wtforms_field(child_form.due_date) }}
-        </div>
-        <div>
-            {{ render_wtforms_field(child_form.next_step_type) }}
-        </div>
-    </div>
-</div>
-{% endmacro %}
-
-{# ========== FORM LAYOUT MACROS ========== #}
-{# Consolidated from app/forms/templates/macros/layouts.html #}
-
-{# Form Section - Groups content under an optional title with proper spacing #}
-{% macro form_section(title, content) %}
-{% if title %}
-<div class="space-y-5">
-    <h4 class="text-md font-semibold text-gray-900 pb-2 border-b border-gray-100">{{ title }}</h4>
-    {{ content }}
-</div>
-{% else %}
-<div class="space-y-5">
-    {{ content }}
-</div>
-{% endif %}
-{% endmacro %}
-
-{# Grid Layout Macros - Responsive grid systems #}
-{% macro grid_2_columns(left_content, right_content) %}
-<div class="grid grid-cols-2 gap-4">
-    <div>{{ left_content }}</div>
-    <div>{{ right_content }}</div>
-</div>
-{% endmacro %}
-
-{% macro grid_3_columns(col1_content, col2_content, col3_content) %}
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div>{{ col1_content }}</div>
-    <div>{{ col2_content }}</div>
-    <div>{{ col3_content }}</div>
-</div>
-{% endmacro %}
-
-{# Quick Notes Form - HTMX-powered notes component #}
-{% macro quick_notes_form(entity_type, entity_id, placeholder='Add a note...') %}
-<form hx-post="/api/{{ entity_type }}s/{{ entity_id }}/notes" 
-      hx-target="#notes-{{ entity_id }}" 
-      hx-swap="afterbegin"
-      hx-on::after-request="this.reset()"
-      class="notes-form mt-4">
-    
-    <div class="button-container">
-        <input type="text"
-               name="content"
-               placeholder="{{ placeholder }}"
-               required
-               class="form-input flex-1">
-        
-        <input type="hidden" name="is_internal" value="true">
-        
-        <button type="submit" 
-                class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            Add
-        </button>
-    </div>
-</form>
-{% endmacro %}
-
-{# Form Field Group - Groups related form fields with optional title and layout #}
-{% macro form_field_group(title='', layout='vertical') %}
-<div class="form-field-group">
-    {% if title %}
-    <h5 class="text-sm font-medium text-gray-700 mb-3">{{ title }}</h5>
-    {% endif %}
-    
-    <div class="{% if layout == 'grid' %}grid grid-cols-1 md:grid-cols-2 gap-4{% else %}space-y-4{% endif %}">
-        {{ caller() }}
-    </div>
-</div>
 {% endmacro %}

@@ -1,6 +1,5 @@
 {% extends "base/layout.html" %}
 {% from "macros/base/layout.html" import page_layout %}
-{% from "macros/imports.html" import modal_container %}
 {% from "macros/dashboard/activity_section.html" import dashboard_overdue_section, dashboard_notes_section, dashboard_tasks_section, dashboard_opportunities_section %}
 
 
@@ -42,7 +41,12 @@
 {% endblock %}
 
 {% block modals %}
-{{ modal_container() }}
+<div id="modal-container"
+     hx-target="this"
+     hx-swap="innerHTML"
+     role="dialog"
+     aria-live="polite"
+     aria-label="Modal dialogs"></div>
 {% endblock %}
 
 {% block scripts %}
