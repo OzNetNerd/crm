@@ -19,10 +19,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeSearchWidgets() {
-    // Find all search inputs (both global and entity search)
-    const searchInputs = document.querySelectorAll(
-        '#global-search, .search-widget-input'
-    );
+    // Find all search inputs - now unified with .search-input class
+    const searchInputs = document.querySelectorAll('.search-input');
 
     searchInputs.forEach(input => {
         // Skip if already initialized
@@ -62,16 +60,10 @@ function initializeSearchWidgets() {
     document.addEventListener('click', function(event) {
         // Close all search dropdowns when clicking outside
         document.querySelectorAll('.search-results').forEach(resultsDiv => {
-            const widget = resultsDiv.closest('.entity-search-widget');
-            const globalSearch = document.getElementById('global-search');
+            const container = resultsDiv.closest('.search-container');
 
-            // Check if click is outside this widget
-            if (widget && !widget.contains(event.target)) {
-                resultsDiv.classList.add('hidden');
-            }
-            // Check if click is outside global search
-            else if (globalSearch && !globalSearch.contains(event.target) &&
-                     !resultsDiv.contains(event.target)) {
+            // Check if click is outside the search container
+            if (container && !container.contains(event.target)) {
                 resultsDiv.classList.add('hidden');
             }
         });
@@ -83,13 +75,10 @@ function initializeSearchWidgets() {
             document.querySelectorAll('.search-results:not(.hidden)').forEach(resultsDiv => {
                 resultsDiv.classList.add('hidden');
                 // Blur the associated input
-                const widget = resultsDiv.closest('.entity-search-widget');
-                if (widget) {
-                    const input = widget.querySelector('.search-widget-input');
+                const container = resultsDiv.closest('.search-container');
+                if (container) {
+                    const input = container.querySelector('.search-input');
                     if (input) input.blur();
-                } else {
-                    const globalSearch = document.getElementById('global-search');
-                    if (globalSearch) globalSearch.blur();
                 }
             });
         }
@@ -135,7 +124,11 @@ window.selectEntity = function(fieldId, entityId, entityName, entityType) {
     createEntityBadge(fieldId, entityId, entityName, entityType);
 
     // Clear search and hide results
-    if (searchField) searchField.value = '';
+    if (searchField) {
+        searchField.value = '';
+        // Trigger input event to ensure HTMX clears results
+        searchField.dispatchEvent(new Event('input', { bubbles: true }));
+    }
     if (resultsDiv) resultsDiv.classList.add('hidden');
 };
 
@@ -199,9 +192,9 @@ window.removeEntityBadge = function(fieldId, entityId, entityType) {
 
 // Initialize any existing entity data on page load
 document.addEventListener('DOMContentLoaded', function() {
-    const widgets = document.querySelectorAll('.entity-search-widget');
-    widgets.forEach(widget => {
-        const fieldId = widget.dataset.fieldId;
+    const searchContainers = document.querySelectorAll('.search-container[data-field-id]');
+    searchContainers.forEach(container => {
+        const fieldId = container.dataset.fieldId;
         const dataField = document.getElementById(fieldId + '-data');
         const badgesDiv = document.getElementById(fieldId + '-badges');
 
@@ -218,5 +211,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Export for module usage if needed
-export { initializeSearchWidgets };
+// Function is available globally via window object
