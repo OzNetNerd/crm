@@ -26,11 +26,11 @@
         {# Recent Notes Section #}
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Recent Notes</h2>
-            {% if recent_notes %}
-                {% include 'components/notes/notes_display.html' with context %}
+            {% for note in recent_notes %}
+                {{ entity_card(note, 'note') }}
             {% else %}
                 <p class="text-gray-500">No notes yet</p>
-            {% endif %}
+            {% endfor %}
         </div>
 
         {# Recent Tasks Section #}
