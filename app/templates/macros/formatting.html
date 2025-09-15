@@ -1,89 +1,9 @@
-{# Formatting Helper Macros - Reusable formatting functions #}
+{# Formatting Helpers - Only used macros #}
 
-{#
-  Currency Formatting
-  Formats numbers as currency with proper comma separators
-  
-  Parameters:
-  - amount (required): Numeric value to format
-  - symbol (optional): Currency symbol (default: '$')
-  - show_zero (optional): Whether to show $0 for zero values (default: true)
-  
-  Returns: Formatted currency string (e.g., "$1,234" or "$0")
-#}
-{% macro format_currency(amount, symbol='$', show_zero=true) %}
-{%- if amount is none or (amount == 0 and not show_zero) -%}
-{%- else -%}
-{{ symbol }}{{ "{:,.0f}".format(amount or 0) }}
-{%- endif -%}
-{% endmacro %}
-
-{#
-  Percentage Formatting
-  Formats numbers as percentages
-  
-  Parameters:
-  - value (required): Numeric value (0.25 = 25%)
-  - decimals (optional): Number of decimal places (default: 1)
-  
-  Returns: Formatted percentage string (e.g., "25.0%")
-#}
-{% macro format_percentage(value, decimals=1) %}
-{%- if value is none -%}0%
-{%- else -%}
-{{ "{:.{}f}%".format((value * 100), decimals) }}
-{%- endif -%}
-{% endmacro %}
-
-{#
-  Date Formatting
-  Formats dates in a consistent way
-  
-  Parameters:
-  - date (required): Date object to format
-  - format_string (optional): strftime format (default: '%d/%m/%y')
-  
-  Returns: Formatted date string
-#}
-{% macro format_date(date, format_string='%d/%m/%y') %}
-{%- if date -%}
-{{ date.strftime(format_string) }}
-{%- else -%}
-No date
-{%- endif -%}
-{% endmacro %}
-
-{#
-  Date with Time Formatting
-  Formats date and time in a consistent way
-  
-  Parameters:
-  - datetime (required): Datetime object to format
-  - format_string (optional): strftime format (default: '%m/%d %H:%M')
-  
-  Returns: Formatted datetime string
-#}
 {% macro format_datetime(datetime, format_string='%m/%d %H:%M') %}
-{%- if datetime -%}
-{{ datetime.strftime(format_string) }}
-{%- else -%}
-No date
-{%- endif -%}
-{% endmacro %}
-
-{#
-  Number Formatting
-  Formats large numbers with comma separators
-  
-  Parameters:
-  - number (required): Numeric value to format
-  - decimals (optional): Number of decimal places (default: 0)
-  
-  Returns: Formatted number string (e.g., "1,234" or "1,234.56")
-#}
-{% macro format_number(number, decimals=0) %}
-{%- if number is none -%}0
-{%- else -%}
-{{ "{:,.{}f}".format(number, decimals) }}
-{%- endif -%}
+    {%- if datetime -%}
+        {{ datetime.strftime(format_string) }}
+    {%- else -%}
+        --
+    {%- endif -%}
 {% endmacro %}

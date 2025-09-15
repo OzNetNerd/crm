@@ -1,8 +1,8 @@
 {% from 'macros/base/icons.html' import icon %}
 {# Modal Base Components - Core modal functionality and structure #}
 
-{# Modern HTMX-compatible modal overlay #}
-{% macro htmx_modal_overlay(backdrop_click_close=true, max_width="max-w-2xl") %}
+{# Modal overlay - HTMX-compatible #}
+{% macro modal_overlay(backdrop_click_close=true, max_width="max-w-2xl") %}
 <div class="modal-overlay fixed inset-0 z-50 flex items-center justify-center"
      tabindex="-1"
      data-close-on-escape="true">
@@ -79,6 +79,11 @@
         </button>
     {% endcall %}
 {% endcall %}
+{% endmacro %}
+
+{# Backward compatibility aliases #}
+{% macro htmx_modal_overlay(backdrop_click_close=true, max_width="max-w-2xl") %}
+{{ modal_overlay(backdrop_click_close, max_width) }}
 {% endmacro %}
 
 {# Form Error Message - Inline error display for HTMX forms #}

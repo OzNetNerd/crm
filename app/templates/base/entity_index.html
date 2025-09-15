@@ -19,17 +19,17 @@
 {# Import core components #}
 {% from "macros/base/layout.html" import page_layout %}
 {% from "macros/modals/confirmation.html" import confirmation_modal %}
+{% from "macros/widgets/filters.html" import entity_filter_controls %}
 
 {# Set page title based on entity context #}
 {% block title %}{{ entity_config.entity_name or "Entity" }} - CRM{% endblock %}
 
 {% block content %}
 {# Generate filter controls based on entity type using modern widget system #}
-{% set entity_filter_controls %}
+{% set entity_filter_content %}
 <form hx-get="{{ url_for(entity_config.content_endpoint) }}"
       hx-target="#{{ entity_config.entity_type }}-content"
       hx-trigger="change, submit">
-    {% from "macros/widgets/filters.html" import entity_filter_controls %}
     {{ entity_filter_controls(
         entity_type=entity_config.entity_type,
         group_options=dropdown_configs.group_by.options if dropdown_configs.group_by else [],
@@ -48,10 +48,10 @@
 
 {% call page_layout(
     entity_config.entity_name or "Entity", 
-    entity_description or "Manage entities", 
-    buttons=entity_buttons or [], 
+    entity_description or "Manage entities",
+    buttons=entity_buttons or [],
     summary_data=entity_stats or {},
-    filter_content=entity_filter_controls,
+    filter_content=entity_filter_content,
     entity_name=entity_config.entity_name
 ) %}
 

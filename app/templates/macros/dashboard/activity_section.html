@@ -1,6 +1,41 @@
-{% from "macros/ui/list_section.html" import list_section, simple_list_item, alert_list_item, note_list_item %}
-{% from "macros/ui/card_items.html" import card_item, task_card_item, note_card_item, entity_card_item %}
 {% from "macros/base/icons.html" import icon %}
+
+{# Simple card item macros for dashboard #}
+{% macro task_card_item(task, color='gray', with_priority_badge=false) %}
+<div class="p-3 bg-{{ color }}-50 rounded-md border border-{{ color }}-200">
+    <div class="flex items-start justify-between">
+        <div class="flex-1">
+            <h4 class="font-medium text-gray-900">{{ task.title }}</h4>
+            {% if task.description %}
+            <p class="text-sm text-gray-600 mt-1">{{ task.description|truncate(100) }}</p>
+            {% endif %}
+            <p class="text-xs text-{{ color }}-600 mt-2">Due: {{ task.due_date|default('No date', true) }}</p>
+        </div>
+        {% if with_priority_badge and task.priority %}
+        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-{{ color }}-100 text-{{ color }}-800">
+            {{ task.priority|upper }}
+        </span>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro note_card_item(note) %}
+<div class="p-3 bg-gray-50 rounded-md border border-gray-200">
+    <p class="text-sm text-gray-700">{{ note.content|truncate(150) }}</p>
+    <p class="text-xs text-gray-500 mt-2">{{ note.created_at|default('Recently', true) }}</p>
+</div>
+{% endmacro %}
+
+{% macro entity_card_item(entity, entity_type) %}
+<div class="p-3 bg-white rounded-md border border-gray-200 hover:border-blue-300 transition-colors">
+    <h4 class="font-medium text-gray-900">{{ entity.name|default(entity.title, true) }}</h4>
+    {% if entity.value %}
+    <p class="text-sm text-green-600 mt-1">${{ "{:,.2f}".format(entity.value) }}</p>
+    {% endif %}
+    <p class="text-xs text-gray-500 mt-2">{{ entity_type|capitalize }}</p>
+</div>
+{% endmacro %}
 
 {% macro dashboard_overdue_section(overdue_tasks) %}
 {# Professional Overdue Tasks Section #}
