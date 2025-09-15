@@ -17,9 +17,7 @@
 #}
 
 {# Import core components #}
-{% from "macros/base/layout.html" import page_layout %}
-{% from "macros/modals/confirmation.html" import confirmation_modal %}
-{% from "macros/widgets/filters.html" import entity_filter_controls %}
+{% from "macros/components.html" import confirmation_modal, filter_controls %}
 
 {# Set page title based on entity context #}
 {% block title %}{{ entity_config.entity_name or "Entity" }} - CRM{% endblock %}

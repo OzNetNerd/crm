@@ -18,20 +18,21 @@ Handles field filtering, view/form modes, and special field types (entity search
 
   {% for field in form %}
     {% if field.name in allowed_fields %}
-      <div class="space-y-2">
+      <div class="form-field-group">
         {% if mode == 'view' %}
           {# View Mode - Read Only #}
-          <label class="block text-sm font-medium text-gray-700">{{ field.label.text }}</label>
-          <div class="p-2 bg-gray-50 rounded-md border border-gray-200 text-sm text-gray-900 min-h-[2rem]">
+          <label class="form-label">{{ field.label.text }}</label>
+          <div class="form-field-view">
             {% if field.type == 'SelectField' %}
               {% for value, label in field.choices %}
                 {% if value == field.data %}{{ label }}{% endif %}
               {% endfor %}
               {% if not field.data or field.data == '' %}
-                <span class="text-gray-400">Not set</span>
+                <span class="form-field-view-empty">Not set</span>
               {% endif %}
             {% elif field.type == 'TextAreaField' %}
-              <div class="{% if (field.widget.rows | default(3)) == 3 %}min-h-[4.5rem]{% elif field.widget.rows == 4 %}min-h-[6rem]{% elif field.widget.rows == 5 %}min-h-[7.5rem]{% else %}min-h-[3rem]{% endif %}">
+              {% set rows = field.widget.rows | default(3) %}
+              <div class="{% if rows == 3 %}form-field-view-textarea-sm{% elif rows == 4 %}form-field-view-textarea-md{% elif rows == 5 %}form-field-view-textarea-lg{% endif %}">
                 {{ field.data if field.data else '' }}
               </div>
             {% else %}
@@ -40,15 +41,15 @@ Handles field filtering, view/form modes, and special field types (entity search
           </div>
         {% elif field.name in entity_types %}
           {# Field name matches an entity type - it's an entity search field! #}
-          <label class="block text-sm font-medium text-gray-700">{{ field.label.text }}</label>
+          <label class="form-label">{{ field.label.text }}</label>
           {{ search_widget(field, entity_type=field.name) }}
         {% elif field.name == 'entity' %}
           {# General entity search field - searches all entity types #}
-          <label class="block text-sm font-medium text-gray-700">{{ field.label.text }}</label>
+          <label class="form-label">{{ field.label.text }}</label>
           {{ search_widget(field, entity_type='all') }}
         {% elif field.render_kw and 'Search' in field.render_kw.get('placeholder', '') %}
           {# Search field - use search widget (entity, company, etc.) #}
-          <label class="block text-sm font-medium text-gray-700">{{ field.label.text }}</label>
+          <label class="form-label">{{ field.label.text }}</label>
           {{ search_widget(field, entity_type=field.name) }}
         {% else %}
           {# Regular form field #}

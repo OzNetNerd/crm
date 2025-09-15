@@ -1,4 +1,4 @@
-{% from 'macros/base/icons.html' import icon %}
+{% from 'macros/ui.html' import icon %}
 {#
   Alpine.js Dynamic Modal Template
 
@@ -9,56 +9,45 @@
      x-show="isOpen"
      x-cloak
      @open-modal.window="openModal($event.detail.type, $event.detail.id)"
-     class="fixed inset-0 z-50 flex items-center justify-center">
+     class="modal">
 
     <!-- Modal Backdrop -->
     <div x-show="isOpen"
          @click="closeModal()"
-         class="fixed inset-0 bg-gray-900/60"></div>
+         class="modal-backdrop"></div>
 
     <!-- Modal Content -->
     <div x-show="isOpen"
          @click.stop
-         class="relative bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-hidden border border-gray-200">
+         class="modal-content modal-content-md">
 
         <!-- Enhanced Loading State -->
-        <div x-show="loading" class="p-8 text-center">
-            <div class="inline-flex items-center justify-center w-12 h-12 mb-4 bg-blue-100 rounded-full">
-                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-            </div>
-            <p class="text-gray-600 font-medium">Loading form...</p>
-            <p class="text-sm text-gray-500 mt-1">Please wait</p>
+        <div x-show="loading" class="modal-loading">
+            <div class="modal-spinner"></div>
         </div>
 
         <!-- Form Content -->
-        <div x-show="!loading && formConfig" class="flex flex-col max-h-[90vh]">
+        <div x-show="!loading && formConfig">
 
             <!-- Modal Header -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
-                <div class="flex items-center">
-                    <div class="text-2xl mr-3">
-                        <i :class="`icon-${modelName}`" class="text-blue-600"></i>
-                    </div>
-                    <h3 x-text="title" class="text-lg font-semibold text-gray-900"></h3>
-                </div>
-                <button @click="closeModal()"
-                        class="text-gray-400 hover:text-gray-600">
+            <div class="modal-header">
+                <h3 x-text="title" class="modal-title"></h3>
+                <button @click="closeModal()" class="modal-close">
                     {{ icon('x-mark', 'lg') }}
                 </button>
             </div>
 
             <!-- Form Body -->
-            <div class="flex-1 overflow-y-auto p-6">
+            <div class="modal-body">
 
                 <!-- General Error with icon -->
-                <div x-show="errors.general"
-                     class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4 flex items-start">
-                    {{ icon('exclamation-circle', 'md', 'text-red-500 mr-2 mt-0.5 flex-shrink-0') }}
+                <div x-show="errors.general" class="form-error-message">
+                    {{ icon('exclamation-circle', 'md') }}
                     <span x-text="errors.general"></span>
                 </div>
 
                 <!-- Dynamic Form Fields -->
-                <div class="space-y-4">
+                <div>
                     <template x-for="field in fields" :key="field.name || field.type">
 
                         <!-- Text Input Fields -->
@@ -158,18 +147,18 @@
             </div>
 
             <!-- Modal Footer -->
-            <div class="flex justify-end space-x-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div class="modal-footer">
                 <button @click="closeModal()"
                         :disabled="saving"
-                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 shadow-sm">
+                        class="modal-btn modal-btn-cancel">
                     Cancel
                 </button>
                 <button @click="submitForm()"
                         :disabled="saving || Object.keys(errors).length > 0"
-                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                        class="modal-btn modal-btn-primary">
                     <span x-show="!saving">Save</span>
-                    <span x-show="saving" class="flex items-center">
-                        {{ icon('spinner', 'sm', 'animate-spin -ml-1 mr-2 text-white') }}
+                    <span x-show="saving" class="modal-btn-loading">
+                        {{ icon('spinner', 'sm') }}
                         Saving...
                     </span>
                 </button>

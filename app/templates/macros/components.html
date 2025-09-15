@@ -1,0 +1,134 @@
+{#
+    Component Macros - Modals, Dropdowns, Search
+#}
+
+{% from 'macros_new/ui.html' import icon %}
+
+{# ============================================
+   MODAL
+   ============================================ #}
+{% macro modal(id='modal', title='', size='md', closable=true) %}
+    <div id="{{ id }}" class="modal" style="display: none;">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content modal-content-{{ size }}">
+            <div class="modal-header">
+                <h3 class="modal-title">{{ title }}</h3>
+                {% if closable %}
+                    <button class="modal-close" onclick="closeModal('{{ id }}')">
+                        {{ icon('x-mark', 'lg') }}
+                    </button>
+                {% endif %}
+            </div>
+            <div class="modal-body">
+                {{ caller() }}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{# ============================================
+   CONFIRMATION MODAL
+   ============================================ #}
+{% macro confirmation_modal(id='confirm-modal', title='Confirm Action', type='warning') %}
+    <div id="{{ id }}" class="modal" style="display: none;">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content modal-confirmation">
+            <div class="modal-confirmation-content">
+                <div class="modal-confirmation-icon modal-confirmation-icon-{{ type }}">
+                    {% if type == 'warning' %}
+                        {{ icon('exclamation-triangle', 'lg') }}
+                    {% elif type == 'error' %}
+                        {{ icon('x-mark', 'lg') }}
+                    {% elif type == 'success' %}
+                        {{ icon('check', 'lg') }}
+                    {% else %}
+                        {{ icon('information-circle', 'lg') }}
+                    {% endif %}
+                </div>
+                <div class="modal-confirmation-text">
+                    <h3 class="modal-confirmation-title">{{ title }}</h3>
+                    <p class="modal-confirmation-message">{{ caller() }}</p>
+                </div>
+            </div>
+            <div class="modal-confirmation-footer">
+                <button class="btn btn-secondary" onclick="closeModal('{{ id }}')">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmAction('{{ id }}')">Confirm</button>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{# ============================================
+   DROPDOWN
+   ============================================ #}
+{% macro dropdown(id, trigger_text='Options', items=[], align='left') %}
+    <div class="dropdown" data-dropdown-id="{{ id }}">
+        <button class="dropdown-trigger" onclick="toggleDropdown('{{ id }}')">
+            {{ trigger_text }}
+            {{ icon('chevron-down', 'sm') }}
+        </button>
+        <div id="{{ id }}" class="dropdown-menu dropdown-menu-{{ align }}">
+            {% for item in items %}
+                {% if item.divider %}
+                    <div class="dropdown-divider"></div>
+                {% else %}
+                    <a href="{{ item.url or '#' }}"
+                       class="dropdown-item{% if item.danger %} dropdown-item-danger{% endif %}"
+                       {% if item.onclick %}onclick="{{ item.onclick }}"{% endif %}>
+                        {% if item.icon %}{{ icon(item.icon, 'sm') }}{% endif %}
+                        {{ item.text }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endmacro %}
+
+{# ============================================
+   SEARCH WIDGET
+   ============================================ #}
+{% macro search_widget(placeholder='Search...', id='search', url=None) %}
+    <div class="search-widget">
+        <input type="text"
+               id="{{ id }}"
+               class="form-input search-input"
+               placeholder="{{ placeholder }}"
+               {% if url %}data-search-url="{{ url }}"{% endif %}>
+        <button class="search-button">
+            {{ icon('magnifying-glass', 'sm') }}
+        </button>
+        <div id="{{ id }}-results" class="search-results"></div>
+    </div>
+{% endmacro %}
+
+{# ============================================
+   FILTERS
+   ============================================ #}
+{% macro filter_controls(filters=[]) %}
+    <div class="filter-controls">
+        {% for filter in filters %}
+            <div class="filter-item">
+                <label class="filter-label">{{ filter.label }}</label>
+                {% if filter.type == 'select' %}
+                    <select class="form-select filter-select" name="{{ filter.name }}">
+                        <option value="">All</option>
+                        {% for option in filter.options %}
+                            <option value="{{ option.value }}">{{ option.text }}</option>
+                        {% endfor %}
+                    </select>
+                {% elif filter.type == 'checkbox' %}
+                    <label class="form-checkbox">
+                        <input type="checkbox" name="{{ filter.name }}" value="{{ filter.value }}">
+                        <span>{{ filter.text }}</span>
+                    </label>
+                {% elif filter.type == 'date' %}
+                    <input type="date" class="form-input" name="{{ filter.name }}">
+                {% else %}
+                    <input type="text" class="form-input" name="{{ filter.name }}" placeholder="{{ filter.placeholder }}">
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button class="btn btn-primary">Apply Filters</button>
+        <button class="btn btn-secondary">Clear</button>
+    </div>
+{% endmacro %}
