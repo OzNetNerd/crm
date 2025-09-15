@@ -28,8 +28,8 @@
            data-entity-type="{{ result.type }}"
            {% else %}
            hx-get="{{ url_for('modals.view_modal', model_name=result.type, entity_id=result.id) }}"
-           hx-target="body"
-           hx-swap="beforeend"
+           hx-target="#modal-container"
+           hx-swap="innerHTML"
            {% endif %}
            class="flex items-center space-x-3 px-4 py-3 block hover:bg-blue-50 transition-colors duration-150"
            data-entity-type="{{ result.model_type }}"
@@ -38,21 +38,23 @@
             <div class="flex-shrink-0">
                 <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm
                     {% if result.type == 'company' %}bg-blue-100 text-blue-600
-                    {% elif result.type == 'contact' %}bg-green-100 text-green-600
+                    {% elif result.type == 'stakeholder' %}bg-green-100 text-green-600
                     {% elif result.type == 'opportunity' %}bg-purple-100 text-purple-600
                     {% elif result.type == 'task' %}bg-orange-100 text-orange-600
+                    {% elif result.type == 'user' %}bg-indigo-100 text-indigo-600
+                    {% elif result.type == 'note' %}bg-yellow-100 text-yellow-600
                     {% else %}bg-gray-100 text-gray-600{% endif %}">
-{{ result.icon if result.icon else '📄' }}
+                    {{ result.icon if result.icon else '📄' }}
                 </span>
             </div>
 
             <!-- Content -->
             <div class="min-w-0 flex-1">
-                <div class="text-sm font-semibold text-gray-900 truncate hover:text-blue-700 transition-colors">
+                <div class="text-sm font-semibold text-gray-900 break-words hover:text-blue-700 transition-colors">
                     {{ result.title }}
                 </div>
                 {% if result.subtitle %}
-                <div class="text-xs text-gray-500 truncate mt-1">
+                <div class="text-xs text-gray-500 break-words mt-1">
                     {{ result.subtitle }}
                 </div>
                 {% endif %}
@@ -60,26 +62,17 @@
 
             <!-- Type label -->
             <div class="flex-shrink-0">
-                <span class="badge badge-entity-{{ result.type }} capitalize">
-                    {{ result.type }}
-                </span>
+                {{ entity_badge(result.type) }}
             </div>
         </a>
     </div>
     {% endfor %}
 </div>
 {% else %}
-    {% if query %}
     <div class="px-4 py-6 text-sm text-gray-500 text-center">
         <div class="text-gray-400 text-2xl mb-2">🔍</div>
-        No results found for "{{ query }}"
+        No results found{% if query %} for "{{ query }}"{% endif %}
     </div>
-    {% else %}
-    <div class="px-4 py-6 text-sm text-gray-500 text-center">
-        <div class="text-gray-400 text-2xl mb-2">💡</div>
-        Start typing to search companies, contacts, opportunities, and tasks
-    </div>
-    {% endif %}
 {% endif %}
 
 {# JavaScript functions moved to search-widget.js for DRY implementation #}

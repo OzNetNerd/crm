@@ -6,7 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('global-search');
-    const searchResults = document.getElementById('search-results');
+    const searchResults = document.getElementById('global-search-results');
 
     if (!searchInput || !searchResults) return;
 
@@ -35,11 +35,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Show results when focusing input (always show, even if empty)
+    // Show results when focusing input (HTMX will populate with help text)
     searchInput.addEventListener('focus', function() {
-        if (searchResults.children.length > 0) {
-            searchResults.classList.remove('hidden');
-        }
+        // HTMX focus trigger will fetch content, then afterSwap will show it
+        // No need to check children.length since HTMX handles the content
     });
 
     // Hide results on escape key
@@ -59,6 +58,3 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-
-// Export for module usage
-export { };

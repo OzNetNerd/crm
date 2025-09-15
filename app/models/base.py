@@ -76,7 +76,8 @@ class BaseModel(db.Model):
     def search(cls, query, limit=20):
         """Search all text fields automatically."""
         if not query:
-            return cls.query.limit(limit).all()
+            # Return most recent items when no query
+            return cls.query.order_by(cls.id.desc()).limit(limit).all()
 
         from sqlalchemy import or_
 
@@ -100,12 +101,25 @@ class BaseModel(db.Model):
 
     def to_search_result(self):
         """Convert to search result for API responses."""
+        # Icon mapping for each entity type
+        icon_map = {
+            'company': '🏢',
+            'stakeholder': '👤',
+            'opportunity': '💼',
+            'task': '📋',
+            'user': '👥',
+            'note': '📝'
+        }
+
+        entity_type = self.get_entity_type()
+
         return {
             "id": self.id,
-            "type": self.get_entity_type(),
+            "type": entity_type,
             "title": self._get_search_title(),
             "subtitle": self._build_search_subtitle(),
-            "url": f"/modals/{self.get_entity_type()}/{self.id}/view"
+            "url": f"/modals/{entity_type}/{self.id}/view",
+            "icon": icon_map.get(entity_type, '📄')
         }
 
     def _get_search_title(self):

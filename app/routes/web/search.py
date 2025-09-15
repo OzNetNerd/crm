@@ -116,11 +116,13 @@ def htmx_search():
 
     # Collect results
     results = []
+
+    # Distribute results across entity types for better diversity
+    items_per_type = max(1, limit // len(models_to_search)) if models_to_search else limit
+
     for model in models_to_search:
         try:
-            # Use empty string for initial results when no query
-            search_query = query if query else ""
-            entities = model.search(search_query, limit)
+            entities = model.search(query, items_per_type)
             results.extend([e.to_search_result() for e in entities])
         except Exception:
             continue
@@ -130,7 +132,7 @@ def htmx_search():
     results.sort(key=lambda x: (type_order.get(x["type"], 99), x.get("title", "").lower()))
     results = results[:limit]
 
-    return render_template('components/search_results.html',
+    return render_template('components/search/results.html',
                          results=results,
                          query=query,
                          mode=mode,

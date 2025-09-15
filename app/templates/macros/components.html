@@ -126,17 +126,23 @@
 {# ============================================
    SEARCH WIDGET
    ============================================ #}
-{% macro search_widget(placeholder='Search...', id='search', url=None) %}
+{% macro search_widget(placeholder='Search...', id='search', mode='modal') %}
     <div class="relative">
         <input type="text"
                id="{{ id }}"
-               class="w-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               name="q"
+               class="search-input w-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                placeholder="{{ placeholder }}"
-               {% if url %}data-search-url="{{ url }}"{% endif %}>
+               autocomplete="off"
+               hx-get="{{ url_for('search.htmx_search') }}"
+               hx-trigger="input changed delay:300ms, focus"
+               hx-target="#{{ id }}-results"
+               hx-include="this"
+               hx-vals='{"mode": "{{ mode }}"}'>
         <button class="absolute right-2 top-2 text-gray-400 hover:text-gray-600">
             {{ icon('magnifying-glass') }}
         </button>
-        <div id="{{ id }}-results" class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg hidden"></div>
+        <div id="{{ id }}-results" class="absolute top-full mt-1 w-[32rem] max-w-2xl bg-white border border-gray-200 rounded-md shadow-lg hidden z-50"></div>
     </div>
 {% endmacro %}
 
