@@ -24,9 +24,7 @@ Direct modal rendering without wrapper nonsense
                     hx-get="/modals/close"
                     hx-swap="outerHTML"
                     hx-target="#{{ model_name }}-modal">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
+                <i class="icon icon-x-mark"></i>
             </button>
         </div>
 
@@ -34,7 +32,7 @@ Direct modal rendering without wrapper nonsense
         <div class="modal-body">
             {% if mode == 'view' %}
                 <!-- View Mode -->
-                <div class="space-y-4">
+                <div class="form-fields">
                     {{ render_filtered_fields(form, mode='view', model_name=model_name) }}
                 </div>
             {% else %}
