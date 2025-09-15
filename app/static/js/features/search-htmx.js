@@ -6,7 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('global-search');
-    const searchResults = document.getElementById('search-results');
+    const searchResults = document.getElementById('global-search-results');
 
     if (!searchInput || !searchResults) return;
 
@@ -59,6 +59,3 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-
-// Export for module usage
-export { };

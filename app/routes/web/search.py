@@ -130,7 +130,7 @@ def htmx_search():
     results.sort(key=lambda x: (type_order.get(x["type"], 99), x.get("title", "").lower()))
     results = results[:limit]
 
-    return render_template('components/search_results.html',
+    return render_template('components/search/results.html',
                          results=results,
                          query=query,
                          mode=mode,
