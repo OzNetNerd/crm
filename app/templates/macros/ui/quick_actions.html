@@ -1,48 +1,25 @@
-{% from "macros/core/entity_helpers.html" import entity_icon, entity_display_name %}
 {% from "macros/base/icons.html" import icon %}
 
+{#
+Quick Actions - Entity Buttons
+Flask should pass proper entity metadata, not make template do pluralization
+#}
 
-{% macro entity_buttons(entity_names) %}
+{% macro entity_button(entity_name, entity_icon='document') %}
+<button hx-get="/modals/{{ entity_name }}/create"
+        hx-target="body"
+        hx-swap="beforeend"
+        class="btn-{{ entity_name.lower() }}">
+    {{ icon(entity_icon, 'sm') }}
+    New {{ entity_name }}
+</button>
+{% endmacro %}
+
+{% macro entity_buttons(entities) %}
 <div class="button-container">
-    {% for entity in entity_names %}
-    {# Proper pluralization mapping #}
-    {% set singular_map = {
-        'companies': 'company',
-        'tasks': 'task',
-        'opportunities': 'opportunity',
-        'stakeholders': 'stakeholder',
-        'teams': 'team_member'
-    } %}
-    {# Direct icon mapping #}
-    {% set icon_map = {
-        'company': 'building-office-alt',
-        'task': 'clipboard-list',
-        'opportunity': 'currency-dollar-circle',
-        'stakeholder': 'user',
-        'team_member': 'users'
-    } %}
-    {% set singular = singular_map.get(entity, entity.rstrip('s')) %}
-    {% set singular_title = singular.title() %}
-    {% set modal_title = 'User' if singular == 'team_member' else singular_title %}
-    {% set icon_name = icon_map.get(singular, 'document') %}
-    <button hx-get="/modals/{{ modal_title }}/create"
-            hx-target="body"
-            hx-swap="beforeend"
-            class="flex items-center gap-2 btn-{{ singular }}">
-        {{ icon(icon_name, 'sm') }}
-        New {{ singular.replace('_', ' ').title() }}
-    </button>
+    {% for entity in entities %}
+        {# Flask should pass: {'name': 'Company', 'icon': 'building-office-alt'} #}
+        {{ entity_button(entity.name, entity.icon) }}
     {% endfor %}
 </div>
 {% endmacro %}
-
-{% macro default_dashboard_actions() %}
-{# Default dashboard buttons - Generated from model configurations #}
-{{ entity_buttons(get_dashboard_action_buttons()) }}
-{% endmacro %}
-
-{# 
-  Page-specific action button macros removed - now handled by EntityConfigGenerator
-  in form_configs.py for true DRY implementation. All entity pages use the 
-  entity_buttons context variable generated automatically from model __entity_config__.
-#}

@@ -1,12 +1,15 @@
 {#
-  Enhanced Date Formatting - DRY date display with relative time and colors
-
-  Provides consistent date formatting across cards with contextual colors:
-  - Increment dates (time ago): subtle blue-gray
-  - Decrement dates (time left): green
-  - Overdue dates: red
-  - Neutral dates: gray
+  Date Formatting - All date display functions
+  Consolidated from formatting.html and date_formatting.html
 #}
+
+{% macro format_datetime(datetime, format_string='%m/%d %H:%M') %}
+    {%- if datetime -%}
+        {{ datetime.strftime(format_string) }}
+    {%- else -%}
+        --
+    {%- endif -%}
+{% endmacro %}
 
 {% macro enhanced_date_with_status(date_value, context="due", label=none, today=none) %}
     {% if date_value %}

@@ -13,7 +13,7 @@
            :checked="{{ model }}.length === {{ items|length }}"
            @change="{{ model }} = $event.target.checked ? {{ items|tojson|safe }}.map(item => item.id) : []"
            class="form-checkbox">
-    <span class="ml-2 text-sm text-gray-700">{{ label }}</span>
+    <span class="select-all-label">{{ label }}</span>
 </label>
 {% endmacro %}
 
@@ -38,30 +38,30 @@
         <!-- Field Rendering based on field type -->
         {% set error_class = " error" if field.errors else "" %}
 
-        {% if field.widget.__class__.__name__ == 'Select' %}
+        {% if field.type == 'SelectField' %}
             {{ field(class="form-select" + error_class) }}
 
-        {% elif field.widget.__class__.__name__ == 'TextArea' %}
+        {% elif field.type == 'TextAreaField' %}
             {{ field(class="form-textarea" + error_class, rows=field.render_kw.get('rows', 3) if field.render_kw else 3) }}
 
-        {% elif field.widget.__class__.__name__ == 'CheckboxInput' %}
-            <div class="flex items-center">
+        {% elif field.type == 'BooleanField' %}
+            <div class="form-checkbox-wrapper">
                 {{ field(class="form-checkbox") }}
-                <span class="ml-2 text-sm text-gray-700">{{ field.description or field.label.text }}</span>
+                <span class="form-checkbox-label">{{ field.description or field.label.text }}</span>
             </div>
 
-        {% elif field.widget.__class__.__name__ == 'DateInput' %}
+        {% elif field.type == 'DateField' %}
             {{ field(class="form-input" + error_class, type="date") }}
 
-        {% elif field.widget.__class__.__name__ == 'DateTimeInput' %}
+        {% elif field.type == 'DateTimeField' %}
             {{ field(class="form-input" + error_class, type="datetime-local") }}
 
-        {% elif field.type == 'SearchField' or field.render_kw.get('data-searchable') %}
-            <div class="searchable-field-wrapper relative">
+        {% elif field.type == 'SearchField' or (field.render_kw and field.render_kw.get('data-searchable')) %}
+            <div class="searchable-field-wrapper">
                 {{ field(class="form-input searchable-input" + error_class,
                         **{'data-searchable': field.render_kw.get('data-searchable', model_name),
                            'autocomplete': 'off'}) }}
-                <div class="search-results absolute top-full left-0 right-0 z-50 hidden"></div>
+                <div class="search-results"></div>
             </div>
 
         {% else %}
