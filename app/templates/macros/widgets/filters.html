@@ -23,7 +23,7 @@
 #}
 {% macro entity_filter_controls(entity_type, group_options, sort_options, current_group_by='', current_sort_by='', primary_filter_options=[], current_primary_filter=[], primary_filter_name='Filter', filter_options=None, show_completed_toggle=false, show_view_toggle=false, expand_collapse_target='expandedSections') %}
 {% from "macros/controls.html" import expand_collapse_controls %}
-{% from "macros/dropdowns.html" import css_dropdown %}
+{% from "macros/components/dropdown.html" import dropdown, htmx_dropdown %}
 
 <div class="filter-section-enhanced">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:gap-6">
@@ -40,7 +40,7 @@
             {% if entity_type == 'task' %}{% set route_entity_type = 'tasks' %}{% endif %}
             {% if entity_type == 'team_member' %}{% set route_entity_type = 'teams' %}{% endif %}
 
-            {{ css_dropdown('Group by', group_options, name='group_by', current_value=current_group_by, hx_target='#' + entity_type + '-content', hx_get='/' + route_entity_type + '/content') }}
+            {{ htmx_dropdown('group_by', group_options, '#' + entity_type + '-content', '/' + route_entity_type + '/content', selected=current_group_by) }}
             
             {% if show_completed_toggle %}
             <label class="flex items-center">
@@ -79,17 +79,17 @@
             <label class="text-label-dark-bold">Sort by:</label>
             
             <!-- Sort By Dropdown -->
-            {{ css_dropdown('Sort by', sort_options, name='sort_by', current_value=current_sort_by, hx_target='#' + entity_type + '-content', hx_get='/' + route_entity_type + '/content') }}
+            {{ htmx_dropdown('sort_by', sort_options, '#' + entity_type + '-content', '/' + route_entity_type + '/content', selected=current_sort_by) }}
             
             <!-- Primary Filter Dropdown (multi-select) -->
             {% if primary_filter_options %}
-            {{ css_dropdown(primary_filter_name, primary_filter_options, name='primary_filter', current_values=current_primary_filter, hx_target='#' + entity_type + '-content', hx_get='/' + route_entity_type + '/content') }}
+            {{ htmx_dropdown('primary_filter', primary_filter_options, '#' + entity_type + '-content', '/' + route_entity_type + '/content', selected=current_primary_filter, multi=true) }}
             {% endif %}
             
             {% if filter_options %}
             {% for filter_key, filter_opts in filter_options.items() %}
             <!-- {{ filter_key|title }} Filter -->
-            {{ css_dropdown('Filter by ' + filter_key|title, filter_opts, name=filter_key + '_filter', hx_target='#' + entity_type + '-content', hx_get='/' + route_entity_type + '/content') }}
+            {{ htmx_dropdown(filter_key + '_filter', filter_opts, '#' + entity_type + '-content', '/' + route_entity_type + '/content') }}
             {% endfor %}
             {% endif %}
         </div>

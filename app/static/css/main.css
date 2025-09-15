@@ -27,6 +27,14 @@
 @import url('variables.css');
 
 /* ========================================
+ * COMPONENT LAYER
+ * Reusable UI components with semantic classes
+ * ======================================== */
+
+@import url('components/dropdown.css');
+@import url('components/modal.css');
+
+/* ========================================
  * ENTITIES LAYER
  * Entity-specific styling with dynamic class support
  * ======================================== */
