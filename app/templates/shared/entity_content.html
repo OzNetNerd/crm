@@ -1,7 +1,6 @@
 {# Universal HTMX Content Partial - Works for ALL entities using simple entity card #}
-{% from "macros/entity_card.html" import entity_card %}
-{% from "macros/empty_state.html" import empty_state, group_empty_state %}
-{% from 'macros/base/icons.html' import icon %}
+{% from "macros/entities.html" import entity_card %}
+{% from 'macros/ui.html' import icon, empty_state, badge %}
 
 {# Pure CSS/HTML version - no Alpine.js needed #}
 <div class="space-y-4" x-data="{ selected_items: [] }">
@@ -13,17 +12,17 @@
         </div>
     {% endif %}
 
-    {# Render grouped entities using CSS details/summary #}
+    {# Render grouped entities using card macro and details/summary #}
     {% for group in grouped_entities %}
-        <details class="bg-white rounded-lg shadow-sm border border-gray-200" data-group="{{ group.key }}" open>
-            <summary class="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg cursor-pointer list-none">
+        <details class="card" data-group="{{ group.key }}" open>
+            <summary class="card-header cursor-pointer list-none">
                 <div class="flex items-center justify-between">
                     <h3 class="font-medium text-gray-900 flex items-center">
-                        <span class="mr-2 text-gray-400 hover:text-gray-600 transition-[transform,translate,scale,rotate] duration-200 details-chevron">
-                            {{ icon('chevron-right', 'md') }}
+                        <span class="mr-2 text-gray-400 hover:text-gray-600 transition-transform duration-200 details-chevron">
+                            {{ icon('chevron-right') }}
                         </span>
                         {{ group.label }}
-                        <span class="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                        <span class="badge badge-info badge-sm ml-2">
                             {{ group.count }}
                         </span>
                     </h3>

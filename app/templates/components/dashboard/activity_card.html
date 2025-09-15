@@ -10,8 +10,7 @@
   - view_all_url: URL to view all items
 #}
 
-{% from 'macros/base/icons.html' import icon %}
-{% from 'macros/ui/date_formatting.html' import smart_date_display %}
+{% from 'macros/ui.html' import icon, format_date %}
 
 <div class="activity-card bg-white rounded-lg shadow-sm border border-gray-200">
     {# Header #}
@@ -43,7 +42,7 @@
                         </div>
                         {% if item.created_at or item.due_date %}
                         <span class="text-xs text-gray-400 ml-2">
-                            {{ smart_date_display(item.created_at or item.due_date) }}
+                            {{ format_date(item.created_at or item.due_date, 'relative') }}
                         </span>
                         {% endif %}
                     </div>

@@ -8,7 +8,7 @@
   - results: List of search result objects with id, type, title, subtitle, url
   - query: The search query string
 #}
-{% from 'macros/base/buttons.html' import entity_link %}
+{% from 'macros/ui.html' import icon %}
 
 {% if results %}
 <div class="py-1">
@@ -22,7 +22,10 @@
     <div class="border-b border-gray-100 last:border-b-0" data-search-result="{{ result.type }}">
         <a href="#"
            {% if mode == 'select' %}
-           onclick="selectEntity('{{ field_id }}', '{{ result.id }}', '{{ result.title }}', '{{ result.type }}'); return false;"
+           data-entity-select="{{ field_id }}"
+           data-entity-id="{{ result.id }}"
+           data-entity-title="{{ result.title }}"
+           data-entity-type="{{ result.type }}"
            {% else %}
            hx-get="{{ url_for('modals.view_modal', model_name=result.type, entity_id=result.id) }}"
            hx-target="body"

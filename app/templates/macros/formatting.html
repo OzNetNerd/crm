@@ -1,9 +1,0 @@
-{# Formatting Helpers - Only used macros #}
-
-{% macro format_datetime(datetime, format_string='%m/%d %H:%M') %}
-    {%- if datetime -%}
-        {{ datetime.strftime(format_string) }}
-    {%- else -%}
-        --
-    {%- endif -%}
-{% endmacro %}

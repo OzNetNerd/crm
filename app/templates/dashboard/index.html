@@ -1,43 +1,36 @@
 {% extends "base/layout.html" %}
-{% from "macros/base/layout.html" import page_layout %}
-{% from "macros/dashboard/activity_section.html" import dashboard_overdue_section, dashboard_notes_section, dashboard_tasks_section, dashboard_opportunities_section %}
+{% from 'macros/components.html' import card %}
 
 
 {% block title %}Dashboard - CRM{% endblock %}
 
 {% block content %}
-{% call page_layout(
-    'Dashboard',
-    'Overview of your CRM performance and activity',
-    buttons=entity_types,
-    summary_data=dashboard_stats
-) %}
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Top Row -->
-    <div class="space-y-6">
-        <!-- Top-left: Overdue Tasks -->
-        {{ dashboard_overdue_section(overdue_tasks) }}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Overview of your CRM performance and activity</p>
     </div>
 
-    <div class="space-y-6">
-        <!-- Top-right: Recent Notes -->
-        {{ dashboard_notes_section(recent_notes) }}
-    </div>
+    {% set sections = [
+        {'title': 'Overdue Tasks', 'data': overdue_tasks, 'template': 'components/dashboard/activity_card.html', 'empty': 'No overdue tasks'},
+        {'title': 'Recent Notes', 'data': recent_notes, 'template': 'components/notes/notes_display.html', 'empty': 'No recent notes'},
+        {'title': 'Recent Tasks', 'data': recent_tasks, 'template': 'components/dashboard/activity_card.html', 'empty': 'No recent tasks'},
+        {'title': 'Recent Opportunities', 'data': recent_opportunities, 'template': 'components/dashboard/activity_card.html', 'empty': 'No recent opportunities'}
+    ] %}
 
-    <!-- Bottom Row -->
-    <div class="space-y-6">
-        <!-- Bottom-left: Recent Tasks -->
-        {{ dashboard_tasks_section(recent_tasks) }}
-    </div>
-
-    <div class="space-y-6">
-        <!-- Bottom-right: Recent Opportunities -->
-        {{ dashboard_opportunities_section(recent_opportunities) }}
+    <div class="dashboard-grid">
+        {% for section in sections %}
+        <div class="dashboard-section">
+            <h2 class="section-title">{{ section.title }}</h2>
+            {% if section.data %}
+                {% include section.template with context %}
+            {% else %}
+                <p class="text-muted">{{ section.empty }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
     </div>
 </div>
-
-{% endcall %}
 {% endblock %}
 
 {% block modals %}

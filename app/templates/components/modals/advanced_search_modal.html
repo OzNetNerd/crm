@@ -1,32 +1,38 @@
-{% from 'macros/modals/base/modal_base.html' import base_modal, modal_header %}
+{% from 'macros/ui.html' import icon %}
 
-{% call base_modal('advanced-search-modal') %}
-    {{ modal_header('Advanced Search') }}
-    
-    <div class="modal-body">
-        <div class="space-y-4">
+<div id="advanced-search-modal" class="modal" style="display: none;">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-content-lg">
+        <div class="modal-header">
+            <h3 class="modal-title">Advanced Search</h3>
+            <button class="modal-close" data-modal-id="advanced-search-modal">
+                {{ icon('x-mark') }}
+            </button>
+        </div>
+
+        <div class="modal-body">
             <!-- Entity Type Filters - Now above search query -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3">
+            <div class="form-field-group">
+                <label class="form-label">
                     Search In
                 </label>
-                <div id="entity-type-filters" class="flex flex-wrap gap-4">
+                <div id="entity-type-filters" class="entity-type-filters">
                     <!-- Entity type checkboxes will be populated dynamically in horizontal layout -->
                 </div>
             </div>
-            
+
             <!-- Search Query -->
-            <div>
-                <label for="advanced-search-query" class="block text-sm font-medium text-gray-700 mb-2">
+            <div class="form-field-group">
+                <label for="advanced-search-query" class="form-label">
                     Search Query
                 </label>
-                <input type="text" 
+                <input type="text"
                        id="advanced-search-query"
-                       placeholder="Enter your search terms..." 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                       placeholder="Enter your search terms..."
+                       class="form-input">
             </div>
-            
+
             <!-- Search results will be injected here by JavaScript -->
         </div>
     </div>
-{% endcall %}
+</div>

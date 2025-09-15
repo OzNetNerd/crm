@@ -27,6 +27,18 @@
 @import url('variables.css');
 
 /* ========================================
+ * COMPONENT LAYER
+ * Reusable UI components with semantic classes
+ * ======================================== */
+
+@import url('components/buttons.css');
+@import url('components/badges.css');
+@import url('components/cards.css');
+@import url('components/dropdown.css');
+@import url('components/modal.css');
+@import url('components/icons.css');
+
+/* ========================================
  * ENTITIES LAYER
  * Entity-specific styling with dynamic class support
  * ======================================== */

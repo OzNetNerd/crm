@@ -1,0 +1,118 @@
+{#
+    Entity Macros - Entity cards, lists, and displays
+#}
+
+{% from 'macros/ui.html' import icon, badge, priority_badge, status_badge, format_date %}
+
+{# ============================================
+   ENTITY CARD
+   ============================================ #}
+{% macro entity_card(entity, entity_type, show_actions=true) %}
+    <div class="entity-card" data-entity-id="{{ entity.id }}" data-entity-type="{{ entity_type }}">
+        <div class="entity-card-header">
+            <h3 class="entity-card-title">
+                <a href="{{ url_for(entity_type + '.view', id=entity.id) }}">
+                    {{ entity.name or entity.title or 'Unnamed' }}
+                </a>
+            </h3>
+            {% if show_actions %}
+                <div class="entity-card-actions">
+                    <a href="{{ url_for(entity_type + '.edit', id=entity.id) }}" class="btn btn-sm btn-ghost">
+                        {{ icon('pencil') }}
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="entity-card-body">
+            {% if entity_type == 'contact' %}
+                {% if entity.email %}
+                    <div class="entity-card-field">
+                        {{ icon('envelope') }}
+                        <span>{{ entity.email }}</span>
+                    </div>
+                {% endif %}
+                {% if entity.phone %}
+                    <div class="entity-card-field">
+                        {{ icon('phone') }}
+                        <span>{{ entity.phone }}</span>
+                    </div>
+                {% endif %}
+            {% elif entity_type == 'task' %}
+                <div class="entity-card-field">
+                    {{ priority_badge(entity.priority) }}
+                    {{ status_badge(entity.status) }}
+                </div>
+                {% if entity.due_date %}
+                    <div class="entity-card-field">
+                        {{ icon('calendar') }}
+                        <span>Due: {{ format_date(entity.due_date, 'short') }}</span>
+                    </div>
+                {% endif %}
+            {% elif entity_type == 'opportunity' %}
+                <div class="entity-card-field">
+                    {{ status_badge(entity.status) }}
+                    {% if entity.value %}
+                        <span class="entity-card-value">${{ "{:,.0f}".format(entity.value) }}</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% if entity.description %}
+                <p class="entity-card-description">
+                    {{ entity.description[:150] }}{% if entity.description|length > 150 %}...{% endif %}
+                </p>
+            {% endif %}
+        </div>
+
+        <div class="entity-card-footer">
+            <span class="entity-card-meta">
+                Created {{ format_date(entity.created_at, 'relative') }}
+            </span>
+        </div>
+    </div>
+{% endmacro %}
+
+{# ============================================
+   ENTITY LIST
+   ============================================ #}
+{% macro entity_list(entities, entity_type, show_actions=true, empty_message=None) %}
+    {% if entities %}
+        <div class="entity-list">
+            {% for entity in entities %}
+                {{ entity_card(entity, entity_type, show_actions) }}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">{{ icon('inbox') }}</div>
+            <p class="empty-state-message">
+                {{ empty_message or 'No ' + entity_type + 's found' }}
+            </p>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{# ============================================
+   ENTITY QUICK INFO
+   ============================================ #}
+{% macro entity_quick_info(entity, entity_type) %}
+    <div class="entity-quick-info">
+        <div class="entity-quick-info-header">
+            {{ icon(entity_type) }}
+            <span>{{ entity.name or entity.title }}</span>
+        </div>
+        {% if entity_type == 'contact' and entity.company %}
+            <div class="entity-quick-info-field">
+                <span class="label">Company:</span>
+                <span>{{ entity.company.name }}</span>
+            </div>
+        {% endif %}
+        {% if entity.created_at %}
+            <div class="entity-quick-info-field">
+                <span class="label">Created:</span>
+                <span>{{ format_date(entity.created_at, 'short') }}</span>
+            </div>
+        {% endif %}
+    </div>
+{% endmacro %}

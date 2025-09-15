@@ -1,0 +1,141 @@
+{#
+    UI Macros - Consolidated UI components
+    Combines: icons, buttons, badges, utilities, date formatting
+#}
+
+{# ============================================
+   ICONS
+   ============================================ #}
+{% macro icon(name) %}
+    <i class="icon icon-{{ name }}"></i>
+{% endmacro %}
+
+{# ============================================
+   BUTTONS
+   ============================================ #}
+{% macro button(
+    text='',
+    type='button',
+    variant='primary',
+    size='md',
+    icon_name=None,
+    icon_position='left',
+    class='',
+    attrs={}
+) %}
+    {# Dynamic class generation following ADR pattern #}
+    {% set btn_class = "btn btn-" + variant + " btn-" + size %}
+
+    <button type="{{ type }}"
+            class="{{ btn_class }} {{ class }}"
+            {% for key, value in attrs.items() %}{{ key }}="{{ value }}"{% endfor %}>
+        {% if icon_name and icon_position == 'left' %}
+            {{ icon(icon_name) }}
+        {% endif %}
+        {{ text }}
+        {% if icon_name and icon_position == 'right' %}
+            {{ icon(icon_name) }}
+        {% endif %}
+    </button>
+{% endmacro %}
+
+{# ============================================
+   BADGES
+   ============================================ #}
+{% macro badge(text, variant='default', size='md') %}
+    {# Dynamic class generation following ADR pattern #}
+    {% set badge_class = "badge badge-" + variant + " badge-" + size %}
+
+    <span class="{{ badge_class }}">
+        {{ text }}
+    </span>
+{% endmacro %}
+
+{% macro priority_badge(priority) %}
+    {% set priority_map = {
+        'high': 'danger',
+        'medium': 'warning',
+        'low': 'success'
+    } %}
+    {% set variant = priority_map.get(priority|lower, 'default') %}
+    {% set text = priority|capitalize if priority|lower in priority_map else priority %}
+    {{ badge(text, variant=variant) }}
+{% endmacro %}
+
+{% macro status_badge(status) %}
+    {% set status_map = {
+        'active': 'success',
+        'inactive': 'danger',
+        'pending': 'warning',
+        'completed': 'info'
+    } %}
+    {% set variant = status_map.get(status|lower, 'default') %}
+    {% set text = status|capitalize %}
+    {{ badge(text, variant=variant) }}
+{% endmacro %}
+
+{# ============================================
+   DATE FORMATTING
+   ============================================ #}
+{% macro format_date(date, format='medium') %}
+    {% if date %}
+        {% if format == 'short' %}
+            {{ date.strftime('%d/%m/%Y') }}
+        {% elif format == 'long' %}
+            {{ date.strftime('%B %d, %Y at %I:%M %p') }}
+        {% elif format == 'relative' %}
+            <span class="relative-date" data-date="{{ date.isoformat() }}">
+                {{ date.strftime('%B %d, %Y') }}
+            </span>
+        {% else %}
+            {{ date.strftime('%B %d, %Y') }}
+        {% endif %}
+    {% else %}
+        <span class="text-muted">N/A</span>
+    {% endif %}
+{% endmacro %}
+
+{% macro time_ago(date) %}
+    {% if date %}
+        <span class="time-ago" data-date="{{ date.isoformat() }}">
+            {{ date.strftime('%B %d, %Y') }}
+        </span>
+    {% else %}
+        <span class="text-muted">Never</span>
+    {% endif %}
+{% endmacro %}
+
+{# ============================================
+   UTILITIES
+   ============================================ #}
+{% macro loading_spinner(size='md', text='') %}
+    <div class="loading-spinner loading-spinner-{{ size }}">
+        <div class="spinner"></div>
+        {% if text %}
+            <span class="loading-text">{{ text }}</span>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro empty_state(title, message='', icon_name='inbox', action_text='', action_url='') %}
+    <div class="empty-state">
+        <div class="empty-state-icon">{{ icon(icon_name) }}</div>
+        <h3 class="empty-state-title">{{ title }}</h3>
+        {% if message %}
+            <p class="empty-state-message">{{ message }}</p>
+        {% endif %}
+        {% if action_text and action_url %}
+            <a href="{{ action_url }}" class="btn btn-primary">
+                {{ action_text }}
+            </a>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro truncate_text(text, length=100, suffix='...') %}
+    {% if text and text|length > length %}
+        {{ text[:length] }}{{ suffix }}
+    {% else %}
+        {{ text }}
+    {% endif %}
+{% endmacro %}

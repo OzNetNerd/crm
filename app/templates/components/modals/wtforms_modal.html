@@ -1,66 +1,82 @@
-{% from 'macros/modals/base.html' import modal_overlay, htmx_modal_header %}
-{% from 'macros/modals/field_filter.html' import render_filtered_fields %}
-{% from 'macros/modals/footers.html' import render_view_footer, render_form_footer %}
+{% from 'macros/forms.html' import render_filtered_fields %}
 {#
-Unified WTForms Modal Template - DRY Refactored Version
-
-This template renders create/edit/view forms using WTForms with HTMX.
-Works with ModalService for consistent form handling.
-
-Variables:
-- form: WTForms form instance
-- modal_title: Title for the modal
-- action_url: URL to submit the form to
-- model_name: Name of the model being created/edited
-- is_edit: Boolean indicating if this is an edit operation
-- entity: Entity object (for edit operations)
-- mode: 'view', 'create', or 'edit'
+WTForms Modal Template - Clean DRY Version
+Direct modal rendering without wrapper nonsense
 #}
 
-{% call modal_overlay(max_width="max-w-lg") %}
-  {{ htmx_modal_header(modal_title, model_name) }}
+<div class="modal"
+     x-data="modal({
+         id: '{{ model_name }}-modal',
+         title: '{{ modal_title }}',
+         closable: true
+     })"
+     x-show="true"
+     id="{{ model_name }}-modal">
 
-  {% if mode == 'view' or is_view %}
-    {# View Mode - Read Only #}
-    <div id="modal-content-area" class="p-6 space-y-4 bg-white">
-      {{ render_filtered_fields(form, mode='view', model_name=model_name) }}
-    </div>
-    {{ render_view_footer(model_name, entity_id) }}
+    <div class="modal-backdrop" @click="handleBackdropClick($event)"></div>
 
-  {% else %}
-    {# Form Mode - Create/Edit #}
-    <form method="POST"
-          action="{{ action_url }}"
-          hx-post="{{ action_url }}"
-          hx-target="closest .modal-overlay"
-          hx-swap="outerHTML"
-          class="modal-form"
-          id="modal-form">
+    <div class="modal-content modal-content-md">
+        <!-- Header -->
+        <div class="modal-header">
+            <h3 class="modal-title">{{ modal_title }}</h3>
+            <button type="button"
+                    class="modal-close"
+                    hx-get="/modals/close"
+                    hx-swap="outerHTML"
+                    hx-target="#{{ model_name }}-modal">
+                <i class="icon icon-x-mark"></i>
+            </button>
+        </div>
 
-      {{ form.hidden_tag() }}
-
-      <div id="modal-content-area" class="p-6 space-y-4 bg-white">
-        {# Global form errors #}
-        {% if form.errors %}
-          {% for field, errors in form.errors.items() %}
-            {% if field == 'csrf_token' or field == '__all__' %}
-              {% for error in errors %}
-                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-                  {{ error }}
+        <!-- Body -->
+        <div class="modal-body">
+            {% if mode == 'view' %}
+                <!-- View Mode -->
+                <div class="form-fields">
+                    {{ render_filtered_fields(form, mode='view', model_name=model_name) }}
                 </div>
-              {% endfor %}
+            {% else %}
+                <!-- Form Mode -->
+                <form id="{{ model_name }}-form"
+                      hx-post="{{ action_url }}"
+                      hx-target="#{{ model_name }}-modal"
+                      hx-swap="outerHTML"
+                      class="space-y-4">
+
+                    {{ form.csrf_token }}
+
+                    {% if form.errors %}
+                    <div class="modal-message modal-message-error">
+                        {% for field, errors in form.errors.items() %}
+                            {% for error in errors %}
+                                <p>{{ field }}: {{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {{ render_filtered_fields(form, mode='form', model_name=model_name) }}
+                </form>
             {% endif %}
-          {% endfor %}
-        {% endif %}
+        </div>
 
-        {# Render filtered fields #}
-        {{ render_filtered_fields(form, mode='form', model_name=model_name) }}
-      </div>
+        <!-- Footer -->
+        <div class="modal-footer">
+            <button type="button"
+                    class="modal-btn modal-btn-secondary"
+                    hx-get="/modals/close"
+                    hx-swap="outerHTML"
+                    hx-target="#{{ model_name }}-modal">
+                Cancel
+            </button>
 
-      {{ render_form_footer() }}
-    </form>
-  {% endif %}
-{% endcall %}
-
-<script src="{{ url_for('static', filename='js/features/modal-validation.js') }}"></script>
-<script src="{{ url_for('static', filename='js/features/search-widget.js') }}"></script>
+            {% if mode != 'view' %}
+            <button type="submit"
+                    form="{{ model_name }}-form"
+                    class="modal-btn modal-btn-primary">
+                {{ 'Update' if is_edit else 'Create' }}
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>

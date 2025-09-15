@@ -1,0 +1,31 @@
+{# Navigation Bar #}
+{% from 'macros/components.html' import search_widget %}
+
+{% set nav_items = [
+    {'endpoint': 'entities.companies_index', 'label': 'Companies'},
+    {'endpoint': 'entities.stakeholders_index', 'label': 'Stakeholders'},
+    {'endpoint': 'entities.opportunities_index', 'label': 'Opportunities'},
+    {'endpoint': 'entities.tasks_index', 'label': 'Tasks'},
+    {'endpoint': 'entities.users_index', 'label': 'Account Teams'}
+] %}
+
+<nav class="navbar">
+    <div class="navbar-inner">
+        <div class="navbar-brand">
+            <a href="{{ url_for('dashboard.index') }}">CRM</a>
+        </div>
+
+        <div class="navbar-menu">
+            {% for item in nav_items %}
+            <a href="{{ url_for(item.endpoint) }}"
+               class="navbar-item {{ 'active' if request.endpoint == item.endpoint }}">
+                {{ item.label }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <div class="navbar-search">
+            {{ search_widget(placeholder='Search...', id='global-search') }}
+        </div>
+    </div>
+</nav>
