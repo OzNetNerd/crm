@@ -118,7 +118,9 @@ def htmx_search():
     results = []
     for model in models_to_search:
         try:
-            entities = model.search(query, limit)
+            # Use empty string for initial results when no query
+            search_query = query if query else ""
+            entities = model.search(search_query, limit)
             results.extend([e.to_search_result() for e in entities])
         except Exception:
             continue

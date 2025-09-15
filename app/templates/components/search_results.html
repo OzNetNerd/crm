@@ -24,7 +24,7 @@
            {% if mode == 'select' %}
            onclick="selectEntity('{{ field_id }}', '{{ result.id }}', '{{ result.title }}', '{{ result.type }}'); return false;"
            {% else %}
-           hx-get="{{ url_for('modals.view_modal', model_name=result.model_type, entity_id=result.id) }}"
+           hx-get="{{ url_for('modals.view_modal', model_name=result.type, entity_id=result.id) }}"
            hx-target="body"
            hx-swap="beforeend"
            {% endif %}
