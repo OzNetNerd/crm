@@ -85,6 +85,38 @@
     color: #374151;
 }
 
+/* Entity badges - dynamically generated as badge-entity-{type} */
+.badge-entity-company {
+    background-color: #dbeafe; /* blue-100 */
+    color: #1e40af; /* blue-800 */
+}
+
+.badge-entity-contact,
+.badge-entity-stakeholder {
+    background-color: #d1fae5; /* green-100 */
+    color: #065f46; /* green-800 */
+}
+
+.badge-entity-opportunity {
+    background-color: #ede9fe; /* purple-100 */
+    color: #5b21b6; /* purple-800 */
+}
+
+.badge-entity-task {
+    background-color: #fed7aa; /* orange-100 */
+    color: #9a3412; /* orange-800 */
+}
+
+.badge-entity-user {
+    background-color: #e0e7ff; /* indigo-100 */
+    color: #3730a3; /* indigo-800 */
+}
+
+.badge-entity-note {
+    background-color: #fef3c7; /* yellow-100 */
+    color: #92400e; /* yellow-800 */
+}
+
 /* Badge sizes - dynamically generated as badge-{size} */
 .badge-sm {
     padding: 0.125rem 0.5rem;

@@ -21,16 +21,7 @@ window.entityLinker = (config) => {
         
         // Selection state
         selectedEntities: [...selectedEntities],
-        
-        // Entity type configuration
-        entityTypeConfig: {
-            company: { icon: '🏢', badgeClass: 'bg-blue-100 text-blue-800' },
-            contact: { icon: '👤', badgeClass: 'bg-green-100 text-green-800' },
-            stakeholder: { icon: '👤', badgeClass: 'bg-green-100 text-green-800' },
-            opportunity: { icon: '💼', badgeClass: 'bg-purple-100 text-purple-800' },
-            task: { icon: '📋', badgeClass: 'bg-yellow-100 text-yellow-800' }
-        },
-        
+
         // Initialize component
         init() {
             this.updateHiddenField();
@@ -127,11 +118,21 @@ window.entityLinker = (config) => {
         
         // Utility functions
         getEntityTypeIcon(type) {
-            return this.entityTypeConfig[type]?.icon || '📄';
+            // Use emoji icons for entity types
+            const icons = {
+                company: '🏢',
+                contact: '👤',
+                stakeholder: '👤',
+                opportunity: '💼',
+                task: '📋',
+                user: '👥',
+                note: '📝'
+            };
+            return icons[type] || '📄';
         },
         
         getEntityTypeBadgeClass(type) {
-            return this.entityTypeConfig[type]?.badgeClass || 'bg-gray-100 text-gray-800';
+            return `badge badge-entity-${type}`;
         },
         
         getEntityTypeLabel(type) {

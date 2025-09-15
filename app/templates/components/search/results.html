@@ -44,17 +44,17 @@
                     {% elif result.type == 'user' %}bg-indigo-100 text-indigo-600
                     {% elif result.type == 'note' %}bg-yellow-100 text-yellow-600
                     {% else %}bg-gray-100 text-gray-600{% endif %}">
-{{ result.icon if result.icon else '📄' }}
+                    {{ result.icon if result.icon else '📄' }}
                 </span>
             </div>
 
             <!-- Content -->
             <div class="min-w-0 flex-1">
-                <div class="text-sm font-semibold text-gray-900 truncate hover:text-blue-700 transition-colors">
+                <div class="text-sm font-semibold text-gray-900 break-words hover:text-blue-700 transition-colors">
                     {{ result.title }}
                 </div>
                 {% if result.subtitle %}
-                <div class="text-xs text-gray-500 truncate mt-1">
+                <div class="text-xs text-gray-500 break-words mt-1">
                     {{ result.subtitle }}
                 </div>
                 {% endif %}
@@ -62,9 +62,7 @@
 
             <!-- Type label -->
             <div class="flex-shrink-0">
-                <span class="badge badge-entity-{{ result.type }} capitalize">
-                    {{ result.type }}
-                </span>
+                {{ entity_badge(result.type) }}
             </div>
         </a>
     </div>
