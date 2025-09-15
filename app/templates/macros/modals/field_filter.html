@@ -7,8 +7,8 @@ Handles field filtering, view/form modes, and special field types (entity search
   {% from 'macros/base/forms.html' import render_wtforms_field %}
   {% from 'macros/widgets/search.html' import search_widget %}
 
-  {% if hasattr(form, 'get_fields') %}
-    {% set allowed_fields = form.get_fields() %}
+  {% if hasattr(form, 'get_display_fields') %}
+    {% set allowed_fields = form.get_display_fields() %}
   {% else %}
     {% set allowed_fields = form|selectattr('name', 'ne', 'csrf_token')|selectattr('name', 'ne', 'submit')|map(attribute='name')|list %}
   {% endif %}
@@ -40,6 +40,10 @@ Handles field filtering, view/form modes, and special field types (entity search
           </div>
         {% elif field.name in entity_types %}
           {# Field name matches an entity type - it's an entity search field! #}
+          <label class="block text-sm font-medium text-gray-700">{{ field.label.text }}</label>
+          {{ search_widget(field, entity_type=field.name) }}
+        {% elif field.render_kw and 'Search' in field.render_kw.get('placeholder', '') %}
+          {# Search field - use search widget (entity, company, etc.) #}
           <label class="block text-sm font-medium text-gray-700">{{ field.label.text }}</label>
           {{ search_widget(field, entity_type=field.name) }}
         {% elif field.name == 'entity' %}

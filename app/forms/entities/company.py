@@ -80,6 +80,6 @@ class CompanyForm(BaseForm):
         render_kw={'rows': 3}
     )
 
-    def get_fields(self):
-        """Return field names to display in modal"""
+    def get_display_fields(self):
+        """Return field names to display in modal, in this exact order"""
         return ['name', 'industry', 'comments']

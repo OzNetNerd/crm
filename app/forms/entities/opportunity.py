@@ -7,22 +7,32 @@ Simple opportunity form using WTForms with model introspection.
 from wtforms import StringField, IntegerField, SelectField, DateField
 from wtforms.validators import DataRequired, Optional, NumberRange, Length
 from ..base.base_forms import BaseForm
+from app.models.opportunity import Opportunity
+from app.models.company import Company
 
 
 class OpportunityForm(BaseForm):
     """Form for creating and editing opportunities in modals"""
 
+    model = Opportunity  # Primary model for metadata/validation
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Set choices from model metadata
-        from app.models.opportunity import Opportunity
 
-        # Set priority choices
-        priority_choices = Opportunity.get_field_choices('priority')
+        # Process fields that use model classes as labels
+        if hasattr(self.company.label, 'text') and hasattr(self.company.label.text, '__tablename__'):
+            model_class = self.company.label.text
+            self.company.label.text = model_class.get_display_name()
+            if not self.company.render_kw:
+                self.company.render_kw = {}
+            self.company.render_kw['placeholder'] = f"Search {model_class.get_display_name_plural().lower()}..."
+
+        # Set priority choices from model metadata
+        priority_choices = self.model.get_field_choices('priority')
         self.priority.choices = [('', 'Select priority')] + priority_choices
 
-        # Set stage choices
-        stage_choices = Opportunity.get_field_choices('stage')
+        # Set stage choices from model metadata
+        stage_choices = self.model.get_field_choices('stage')
         self.stage.choices = [('', 'Select stage')] + stage_choices
 
     name = StringField(
@@ -63,8 +73,9 @@ class OpportunityForm(BaseForm):
         default='prospect'
     )
 
-    company = StringField('Company', validators=[DataRequired()])
+    # Field from Company model - uses search instead of dropdown
+    company = StringField(Company, validators=[DataRequired()])
 
-    def get_fields(self):
-        """Return field names to display in modal"""
-        return ['name', 'company', 'value', 'stage']
+    def get_display_fields(self):
+        """Return field names to display in modal, in this exact order"""
+        return ['company', 'name', 'value', 'stage']
