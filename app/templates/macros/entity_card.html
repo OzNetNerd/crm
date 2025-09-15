@@ -4,12 +4,13 @@
 
 {% macro entity_card(entity, entity_type) %}
 <div class="card-{{ entity_type }} flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
-  <div class="flex items-center space-x-3">
+  <div class="flex items-center space-x-3 flex-1 cursor-pointer"
+       onclick="if (!event.target.closest('button') && !event.target.closest('input')) { window.dispatchEvent(new CustomEvent('open-detail-{{ entity_type }}-modal', { detail: { id: {{ entity.id }}, readOnly: true } })) }">
     {{ bulk_selection_checkbox(entity.id) }}
 
     {# Complete button for tasks only - goes on the left #}
     {% if entity_type == 'task' and entity.status != 'complete' %}
-      <button onclick="completeTask({{ entity.id }})"
+      <button onclick="event.stopPropagation(); completeTask({{ entity.id }})"
               class="text-green-600 hover:text-green-800 transition-colors"
               title="Mark complete">
         {{ icon('check-circle', 'sm') }}
@@ -53,17 +54,12 @@
 
   {# Action buttons - always on the right #}
   <div class="flex items-center space-x-2">
-    <button onclick="window.dispatchEvent(new CustomEvent('open-detail-{{ entity_type }}-modal', { detail: { id: {{ entity.id }}, readOnly: true } }))"
-            class="text-gray-600 hover:text-gray-800 transition-colors"
-            title="View">
-      {{ icon('eye', 'sm') }}
-    </button>
-    <button onclick="window.dispatchEvent(new CustomEvent('open-detail-{{ entity_type }}-modal', { detail: { id: {{ entity.id }} } }))"
+    <button onclick="event.stopPropagation(); window.dispatchEvent(new CustomEvent('open-detail-{{ entity_type }}-modal', { detail: { id: {{ entity.id }} } }))"
             class="text-blue-600 hover:text-blue-800 transition-colors"
             title="Edit">
       {{ icon('pencil', 'sm') }}
     </button>
-    <button onclick="if(confirm('Are you sure you want to delete this {{ entity_type }}?')) { deleteEntity('{{ entity_type }}', {{ entity.id }}) }"
+    <button onclick="event.stopPropagation(); if(confirm('Are you sure you want to delete this {{ entity_type }}?')) { deleteEntity('{{ entity_type }}', {{ entity.id }}) }"
             class="text-red-600 hover:text-red-800 transition-colors"
             title="Delete">
       {{ icon('trash', 'sm') }}
