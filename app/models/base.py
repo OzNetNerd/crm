@@ -142,3 +142,13 @@ class BaseModel(db.Model):
                     parts.append(str(value))
 
         return " • ".join(parts[:3])
+
+    def get_view_url(self):
+        """Get the view URL for this entity"""
+        from flask import url_for
+        return url_for('modals.view_modal', model_name=self.get_entity_type(), entity_id=self.id)
+
+    def get_edit_url(self):
+        """Get the edit URL for this entity"""
+        from flask import url_for
+        return url_for('modals.edit_modal', model_name=self.get_entity_type(), entity_id=self.id)

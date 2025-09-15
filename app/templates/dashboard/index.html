@@ -1,5 +1,6 @@
 {% extends "base/layout.html" %}
 {% from 'macros/components.html' import card %}
+{% from 'macros/entities.html' import entity_card %}
 
 
 {% block title %}Dashboard - CRM{% endblock %}
@@ -15,11 +16,11 @@
         {# Overdue Tasks Section #}
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Overdue Tasks</h2>
-            {% if overdue_tasks %}
-                {% include 'components/dashboard/activity_card.html' with context %}
+            {% for task in overdue_tasks %}
+                {{ entity_card(task, 'task') }}
             {% else %}
                 <p class="text-gray-500">No overdue tasks</p>
-            {% endif %}
+            {% endfor %}
         </div>
 
         {# Recent Notes Section #}
@@ -35,21 +36,21 @@
         {# Recent Tasks Section #}
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Recent Tasks</h2>
-            {% if recent_tasks %}
-                {% include 'components/dashboard/activity_card.html' with context %}
+            {% for task in recent_tasks %}
+                {{ entity_card(task, 'task') }}
             {% else %}
                 <p class="text-gray-500">No recent tasks</p>
-            {% endif %}
+            {% endfor %}
         </div>
 
         {# Recent Opportunities Section #}
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Recent Opportunities</h2>
-            {% if recent_opportunities %}
-                {% include 'components/dashboard/activity_card.html' with context %}
+            {% for opportunity in recent_opportunities %}
+                {{ entity_card(opportunity, 'opportunity') }}
             {% else %}
                 <p class="text-gray-500">No recent opportunities</p>
-            {% endif %}
+            {% endfor %}
         </div>
     </div>
 </div>
