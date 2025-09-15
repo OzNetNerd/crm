@@ -318,26 +318,6 @@ class Company(BaseModel):
 
         return result
 
-    def to_display_dict(self) -> Dict[str, Any]:
-        """
-        Convert company to dictionary with pre-formatted display fields.
-
-        Extends the basic dictionary representation with formatted
-        fields optimized for display in user interfaces. This includes
-        formatted dates, currency values, and other UI-specific formatting.
-
-        Returns:
-            Dictionary with all standard fields plus display-formatted versions
-            of fields that benefit from special formatting.
-
-        Example:
-            >>> company = Company(name="Acme Corp")
-            >>> display_data = company.to_display_dict()
-            >>> # Contains formatted fields for UI display
-        """
-        # For now, just return the base dictionary
-        # Templates will handle formatting using Jinja2 macros
-        return self.to_dict()
 
     def __repr__(self) -> str:
         """Return string representation of the company."""

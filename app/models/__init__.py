@@ -10,10 +10,6 @@ from .opportunity import Opportunity as Opportunity  # noqa: E402
 from .task import Task as Task  # noqa: E402
 from .user import User, CompanyAccountTeam, OpportunityAccountTeam  # noqa: E402
 
-# LLM-related models
-from .chat_history import ChatHistory as ChatHistory  # noqa: E402
-from .embedding import Embedding as Embedding  # noqa: E402
-
 # Single source of truth for model name-to-class mapping
 MODEL_REGISTRY = {
     'company': Company,
@@ -33,7 +29,5 @@ __all__ = [
     "User",
     "CompanyAccountTeam",
     "OpportunityAccountTeam",
-    "ChatHistory",
-    "Embedding",
     "MODEL_REGISTRY",
 ]

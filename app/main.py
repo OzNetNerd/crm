@@ -14,8 +14,14 @@ from app.routes.web import register_web_blueprints
 
 
 def get_database_path():
-    """Find the git root directory and return database path."""
+    """Get database path from environment or default location."""
+    # Allow environment variable override
+    if db_url := os.environ.get('DATABASE_URL'):
+        return db_url
+
+    # Default to local SQLite database in instance folder
     current = Path.cwd()
+    # Look for existing instance directory or create in current dir
     while current != current.parent:
         git_path = current / ".git"
         if git_path.exists():
@@ -24,24 +30,17 @@ def get_database_path():
                 gitdir_content = git_path.read_text().strip()
                 if gitdir_content.startswith("gitdir: "):
                     gitdir = gitdir_content[8:]  # Remove "gitdir: " prefix
-                    # Get main repo root from worktree gitdir
                     # gitdir points to /path/to/repo/.git/worktrees/branch
                     # we need /path/to/repo
-                    git_dir = Path(gitdir)  # /home/will/code/crm/.git/worktrees/text
-                    main_repo_root = git_dir.parent.parent.parent  # /home/will/code/crm
-                    db_path = f"sqlite:///{main_repo_root}/instance/crm.db"
-                    return db_path
-            else:
-                # Regular git repo
-                db_path = f"sqlite:///{current}/instance/crm.db"
-                return db_path
+                    git_dir = Path(gitdir)
+                    main_repo_root = git_dir.parent.parent.parent
+                    return f"sqlite:///{main_repo_root}/instance/crm.db"
+            # Found regular git root
+            return f"sqlite:///{current}/instance/crm.db"
         current = current.parent
 
-    # No git repository found - this is a configuration error
-    raise RuntimeError(
-        "No git repository found. The application must be run from within a git repository. "
-        "This ensures proper database path detection and prevents configuration issues."
-    )
+    # Fallback to current directory
+    return f"sqlite:///{Path.cwd()}/instance/crm.db"
 
 
 def create_app():
