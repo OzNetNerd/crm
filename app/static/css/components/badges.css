@@ -45,6 +45,46 @@
     color: #3730a3;
 }
 
+/* Priority badges - dynamically generated as badge-{priority} */
+.badge-high {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-medium {
+    background-color: #fed7aa;
+    color: #92400e;
+}
+
+.badge-low {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+/* Status badges - dynamically generated as badge-{status} */
+.badge-complete,
+.badge-completed,
+.badge-done {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.badge-in-progress,
+.badge-active {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-pending {
+    background-color: #fed7aa;
+    color: #92400e;
+}
+
+.badge-cancelled {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
 /* Badge sizes - dynamically generated as badge-{size} */
 .badge-sm {
     padding: 0.125rem 0.5rem;

@@ -5,68 +5,88 @@
 {% from 'macros/ui.html' import icon, badge, priority_badge, status_badge, format_date %}
 
 {# ============================================
-   ENTITY CARD
+   ENTITY CARD - DRY implementation with inline Tailwind
    ============================================ #}
+{# Dynamic badge macro - converts any value to badge-{value} CSS class #}
+{% macro badge(value) %}
+<span class="badge badge-{{ value|lower|replace('_', '-') }}">
+    {{ value|capitalize }}
+</span>
+{% endmacro %}
+
 {% macro entity_card(entity, entity_type, show_actions=true) %}
-    <div class="entity-card" data-entity-id="{{ entity.id }}" data-entity-type="{{ entity_type }}">
-        <div class="entity-card-header">
-            <h3 class="entity-card-title">
-                <a href="{{ entity.get_view_url() }}">
+    {# Ultimate DRY - Dynamic CSS class generation using badge macro #}
+
+    {% set contact_fields = [
+        {'field': 'email', 'icon': 'envelope'},
+        {'field': 'phone', 'icon': 'phone'}
+    ] %}
+
+    <div class="bg-white p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+         data-entity="{{ entity_type }}"
+         data-entity-id="{{ entity.id }}">
+        <div class="flex items-start justify-between mb-2">
+            <h3 class="text-sm font-semibold text-gray-900">
+                <a href="{{ entity.get_view_url() }}" class="hover:text-primary-600 transition-colors">
                     {{ entity.get_display_title() }}
                 </a>
             </h3>
             {% if show_actions %}
-                <div class="entity-card-actions">
-                    <a href="{{ entity.get_edit_url() }}" class="btn btn-sm btn-ghost">
-                        {{ icon('pencil') }}
+                <div class="flex items-center gap-1">
+                    <a href="{{ entity.get_edit_url() }}" class="p-1 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700">
+                        {{ icon('pencil', size='4') }}
                     </a>
                 </div>
             {% endif %}
         </div>
 
-        <div class="entity-card-body">
+        <div class="space-y-2">
             {% if entity_type == 'contact' %}
-                {% if entity.email %}
-                    <div class="entity-card-field">
-                        {{ icon('envelope') }}
-                        <span>{{ entity.email }}</span>
-                    </div>
-                {% endif %}
-                {% if entity.phone %}
-                    <div class="entity-card-field">
-                        {{ icon('phone') }}
-                        <span>{{ entity.phone }}</span>
-                    </div>
-                {% endif %}
+                {# Loop through contact fields #}
+                {% for field in contact_fields %}
+                    {% if entity[field.field] %}
+                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                            {{ icon(field.icon, size='4', class='text-gray-400') }}
+                            <span>{{ entity[field.field] }}</span>
+                        </div>
+                    {% endif %}
+                {% endfor %}
             {% elif entity_type == 'task' %}
-                <div class="entity-card-field">
-                    {{ priority_badge(entity.priority) }}
-                    {{ status_badge(entity.status) }}
+                <div class="flex items-center gap-2">
+                    {# Priority badge using macro #}
+                    {% if entity.priority %}
+                        {{ badge(entity.priority) }}
+                    {% endif %}
+
+                    {# Status badge using macro #}
+                    {% if entity.status %}
+                        {{ badge(entity.status) }}
+                    {% endif %}
                 </div>
                 {% if entity.due_date %}
-                    <div class="entity-card-field">
-                        {{ icon('calendar') }}
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        {{ icon('calendar', size='4', class='text-gray-400') }}
                         <span>Due: {{ format_date(entity.due_date, 'short') }}</span>
                     </div>
                 {% endif %}
             {% elif entity_type == 'opportunity' %}
-                <div class="entity-card-field">
-                    {{ status_badge(entity.status) }}
+                <div class="flex items-center gap-2">
+                    {{ badge(entity.status) }}
                     {% if entity.value %}
-                        <span class="entity-card-value">${{ "{:,.0f}".format(entity.value) }}</span>
+                        <span class="font-semibold text-green-600">${{ "{:,.0f}".format(entity.value) }}</span>
                     {% endif %}
                 </div>
             {% endif %}
 
             {% if entity.description %}
-                <p class="entity-card-description">
+                <p class="text-sm text-gray-600 line-clamp-2">
                     {{ entity.description[:150] }}{% if entity.description|length > 150 %}...{% endif %}
                 </p>
             {% endif %}
         </div>
 
-        <div class="entity-card-footer">
-            <span class="entity-card-meta">
+        <div class="mt-3 pt-3 border-t border-gray-100">
+            <span class="text-xs text-gray-500">
                 Created {{ format_date(entity.created_at, 'relative') }}
             </span>
         </div>

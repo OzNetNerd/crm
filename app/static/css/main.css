@@ -1,55 +1,15 @@
 /**
- * Main CSS Import File - ADR-011 Compliant
- * Simple CSS Architecture with Flat Organization
- * 
- * Replaces ITCSS architecture with simple, maintainable structure.
- * Supports dynamic CSS class generation for entity-specific styling.
- * 
- * Import order follows logical dependency structure:
- * 1. Variables - Design system foundation
- * 2. Base - Reset and base HTML elements
- * 3. Layout - Grid, flexbox, positioning utilities
- * 4. Components - Reusable UI components  
- * 5. Entities - Entity-specific styling with dynamic classes
- * 6. Utilities - Helper classes and overrides
- * 
- * Dynamic Class Pattern Support:
- * - {{entity_name}}-card → company-card, task-card, etc.
- * - {{entity_name}}-{{status}} → company-active, task-completed, etc.
- * - btn-{{entity_name}}-primary → btn-company-primary, etc.
+ * Main CSS Import File - Ultra DRY
+ * Only essential styles that can't be done with Tailwind CDN
  */
 
-/* ========================================
- * FOUNDATION LAYER
- * Variables and design system tokens
- * ======================================== */
-
+/* Design tokens and variables */
 @import url('variables.css');
 
-/* ========================================
- * COMPONENT LAYER
- * Reusable UI components with semantic classes
- * ======================================== */
-
-@import url('components/buttons.css');
-@import url('components/badges.css');
-@import url('components/cards.css');
-@import url('components/dropdown.css');
+/* Modal overlay utilities (minimal custom) */
 @import url('components/modal.css');
-@import url('components/icons.css');
 
-/* ========================================
- * ENTITIES LAYER
- * Entity-specific styling with dynamic class support
- * ======================================== */
-
-@import url('entities.css');
-
-/* ========================================
- * LEGACY COMPATIBILITY
- * Keep chatbot styles during transition
- * ======================================== */
-
+/* Legacy chatbot styles (to be refactored) */
 @import url('chatbot.css');
 
 /* ========================================
