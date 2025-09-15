@@ -7,7 +7,17 @@
    ICONS
    ============================================ #}
 {% macro icon(name) %}
-    <i class="icon icon-{{ name }}"></i>
+    {%- set icons = {
+        'pencil': '✏️',
+        'envelope': '✉️',
+        'phone': '📞',
+        'calendar': '📅',
+        'chevron-right': '▶',
+        'inbox': '📥',
+        'plus': '➕',
+        'trash': '🗑️'
+    } -%}
+    {{- icons.get(name, '•') -}}
 {% endmacro %}
 
 {# ============================================

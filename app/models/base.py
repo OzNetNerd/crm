@@ -152,3 +152,11 @@ class BaseModel(db.Model):
         """Get the edit URL for this entity"""
         from flask import url_for
         return url_for('modals.edit_modal', model_name=self.get_entity_type(), entity_id=self.id)
+
+    def get_display_title(self):
+        """Get display title using model's configured display field."""
+        # Use the field specified by the model
+        field_name = getattr(self, '__display_field__', 'name')
+        if hasattr(self, field_name):
+            return getattr(self, field_name) or f'Empty {self.get_display_name()}'
+        return f'{self.get_display_name()} #{self.id}'

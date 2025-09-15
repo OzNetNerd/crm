@@ -12,7 +12,7 @@
         <div class="entity-card-header">
             <h3 class="entity-card-title">
                 <a href="{{ entity.get_view_url() }}">
-                    {{ entity.name or entity.title or 'Unnamed' }}
+                    {{ entity.get_display_title() }}
                 </a>
             </h3>
             {% if show_actions %}

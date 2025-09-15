@@ -18,13 +18,13 @@ task_entities = db.Table(
 class Task(BaseModel):
     """
     Task model representing work items and activities in the CRM system.
-    
+
     This model provides comprehensive task management functionality including
     parent-child task hierarchies, entity linking, dependency management,
     and progress tracking. Tasks can be linked to multiple entities (companies,
     opportunities, stakeholders) and support both single tasks and multi-task
     projects with sequential or parallel execution.
-    
+
     Attributes:
         id: Primary key identifier.
         description: Task description/title (required).
@@ -41,6 +41,7 @@ class Task(BaseModel):
     """
     __tablename__ = "tasks"
     __display_name__ = "Task"
+    __display_field__ = 'description'
     __search_config__ = {
         'title_field': 'description',  # Tasks use description as title
         'subtitle_fields': ['due_date', 'priority', 'status']
