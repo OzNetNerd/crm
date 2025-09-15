@@ -1,6 +1,14 @@
 {# Navigation Bar #}
 {% from 'macros/components.html' import search_widget %}
 
+{% set nav_items = [
+    {'endpoint': 'entities.companies_index', 'label': 'Companies'},
+    {'endpoint': 'entities.stakeholders_index', 'label': 'Stakeholders'},
+    {'endpoint': 'entities.opportunities_index', 'label': 'Opportunities'},
+    {'endpoint': 'entities.tasks_index', 'label': 'Tasks'},
+    {'endpoint': 'entities.users_index', 'label': 'Account Teams'}
+] %}
+
 <nav class="navbar">
     <div class="navbar-inner">
         <div class="navbar-brand">
@@ -8,21 +16,12 @@
         </div>
 
         <div class="navbar-menu">
-            <a href="{{ url_for('entities.companies_index') }}" class="navbar-item {{ 'active' if request.endpoint == 'entities.companies_index' }}">
-                Companies
+            {% for item in nav_items %}
+            <a href="{{ url_for(item.endpoint) }}"
+               class="navbar-item {{ 'active' if request.endpoint == item.endpoint }}">
+                {{ item.label }}
             </a>
-            <a href="{{ url_for('entities.stakeholders_index') }}" class="navbar-item {{ 'active' if request.endpoint == 'entities.stakeholders_index' }}">
-                Stakeholders
-            </a>
-            <a href="{{ url_for('entities.opportunities_index') }}" class="navbar-item {{ 'active' if request.endpoint == 'entities.opportunities_index' }}">
-                Opportunities
-            </a>
-            <a href="{{ url_for('entities.tasks_index') }}" class="navbar-item {{ 'active' if request.endpoint == 'entities.tasks_index' }}">
-                Tasks
-            </a>
-            <a href="{{ url_for('entities.users_index') }}" class="navbar-item {{ 'active' if request.endpoint == 'entities.users_index' }}">
-                Account Teams
-            </a>
+            {% endfor %}
         </div>
 
         <div class="navbar-search">
