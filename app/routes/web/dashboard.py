@@ -2,7 +2,7 @@ from datetime import datetime, date, timedelta
 import logging
 from flask import Blueprint, render_template, request, jsonify
 from app.models import db, Task
-from app.utils.services.dashboard_service import DashboardService
+from .dashboard_service import DashboardService
 
 dashboard_bp = Blueprint("dashboard", __name__)
 

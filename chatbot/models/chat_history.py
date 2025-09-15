@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 # Add parent directory to path to import CRM models
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))
+sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from app.models import db
 from app.models.base import BaseModel
