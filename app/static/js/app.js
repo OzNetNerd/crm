@@ -151,6 +151,25 @@ function confirmAction(modalId) {
     }
 }
 
+// Entity selection function
+function selectEntity(fieldId, entityId, entityName, entityType) {
+    const field = document.getElementById(fieldId);
+    if (field) {
+        field.value = entityName || '';
+        field.dataset.entityId = entityId || '';
+        field.dataset.entityType = entityType || '';
+
+        // Close any open search results
+        const searchWidget = field.closest('.search-widget');
+        if (searchWidget) {
+            const results = searchWidget.querySelector('.search-results');
+            if (results) {
+                results.innerHTML = '';
+            }
+        }
+    }
+}
+
 // Export functions for global use
 window.openModal = openModal;
 window.closeModal = closeModal;

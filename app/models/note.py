@@ -7,11 +7,11 @@ from .base import BaseModel
 class Note(BaseModel):
     """
     Note model for attaching text notes to any entity in the CRM system.
-    
+
     This model provides a flexible note-taking system that can be attached
     to any entity (companies, stakeholders, opportunities, tasks) using
     polymorphic relationships. Notes can be marked as internal or external-facing.
-    
+
     Attributes:
         id: Primary key identifier.
         content: Note text content (required).
@@ -22,6 +22,7 @@ class Note(BaseModel):
     """
     __tablename__ = "notes"
     __display_name__ = "Note"
+    __display_field__ = 'content'
 
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)

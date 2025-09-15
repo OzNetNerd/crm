@@ -4,14 +4,22 @@
 find_free_port() {
     local start_port=$1
     local max_attempts=${2:-10}
-    
+
+    # Define unsafe ports to skip (SIP protocol ports)
+    local unsafe_ports="5060 5061"
+
     for ((port=start_port; port<start_port+max_attempts; port++)); do
+        # Skip unsafe ports
+        if [[ " $unsafe_ports " =~ " $port " ]]; then
+            continue
+        fi
+
         if ! timeout 1 nc -z localhost $port 2>/dev/null; then
             echo $port
             return 0
         fi
     done
-    
+
     echo "Error: No free port found in range $start_port-$((start_port+max_attempts-1))" >&2
     exit 1
 }

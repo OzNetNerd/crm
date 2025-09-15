@@ -6,6 +6,9 @@
 {# Tailwind CSS for utility classes #}
 <script src="https://cdn.tailwindcss.com"></script>
 
+{# Dynamic Tailwind classes for production #}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind-dynamic.css') }}">
+
 {# Custom CSS #}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
@@ -17,7 +20,10 @@
 
 {# Core JavaScript Libraries #}
 <script src="https://unpkg.com/htmx.org@2.0.3/dist/htmx.min.js"></script>
-<script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
 
-{# Application JavaScript #}
-<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+{# Application JavaScript - Load before Alpine #}
+<script src="{{ url_for('static', filename='js/alpine/chatWidget.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+{# Alpine.js - Load last to pick up all components #}
+<script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>

@@ -11,13 +11,13 @@
     <div class="entity-card" data-entity-id="{{ entity.id }}" data-entity-type="{{ entity_type }}">
         <div class="entity-card-header">
             <h3 class="entity-card-title">
-                <a href="{{ url_for(entity_type + '.view', id=entity.id) }}">
-                    {{ entity.name or entity.title or 'Unnamed' }}
+                <a href="{{ entity.get_view_url() }}">
+                    {{ entity.get_display_title() }}
                 </a>
             </h3>
             {% if show_actions %}
                 <div class="entity-card-actions">
-                    <a href="{{ url_for(entity_type + '.edit', id=entity.id) }}" class="btn btn-sm btn-ghost">
+                    <a href="{{ entity.get_edit_url() }}" class="btn btn-sm btn-ghost">
                         {{ icon('pencil') }}
                     </a>
                 </div>
