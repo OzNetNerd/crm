@@ -1,51 +1,64 @@
 {#
-  Unified Import System - Single source for all macro imports
+  Consolidated Import System - Single source for all macro imports
 
-  Import this file in templates to access all macros:
+  Usage in templates:
   {% from "macros/imports.html" import * %}
-
-  Components are now templates in /components/ directory.
-  Use {% include %} for single-use components.
 #}
 
-{# === CORE COMPONENTS === #}
-{% from "macros/icons.html" import icon %}
-{% from "macros/base/buttons.html" import button, action_button_set, entity_link %}
-{% from "macros/forms.html" import text_input, textarea_input, select_input, date_input, email_input, searchable_input, checkbox_input, radio_group %}
-{% from "macros/base/layout.html" import page_layout %}
+{# === CORE FOUNDATION === #}
+{% from "macros/base/icons.html" import icon %}
+{% from "macros/base/buttons.html" import action_button, enhanced_button, entity_link %}
+{% from "macros/base/forms.html" import bulk_selection_checkbox, search_input, select_all_checkbox, render_wtforms_field %}
+{% from "macros/base/layout.html" import page_layout, nav_link %}
 
-{# === MODAL SYSTEM === #}
-{% from "macros/modal.html" import modal, modal_header, modal_body, modal_footer, confirmation_modal, modal_container %}
+{# === ENTITY HELPERS === #}
+{% from "macros/core/entity_helpers.html" import entity_icon, entity_label, entity_display_name %}
 
 {# === CARD SYSTEM === #}
 {% from "macros/entity_card.html" import entity_card %}
 
 {# === UI COMPONENTS === #}
-{% from "macros/ui/badges.html" import status_badge, priority_badge, contact_info_badge %}
+{% from "macros/ui/badges.html" import status_badge, contact_info_badge %}
 {% from "macros/ui/sections.html" import section_group_header, dynamic_entity_section %}
+{% from "macros/ui/utilities.html" import loading_spinner, bulk_actions_bar, entity_link_button %}
 {% from "macros/ui/progress.html" import progress_bar %}
-{% from "macros/ui/date_formatting.html" import smart_date_display, enhanced_date_with_status %}
 {% from "macros/ui/metadata_display.html" import metadata_row, metadata_section %}
+{% from "macros/ui/date_formatting.html" import smart_date_display, enhanced_date_with_status %}
 
-{# === CONTROLS & WIDGETS === #}
+{# === CONTROLS === #}
 {% from "macros/controls.html" import expand_collapse_controls, view_mode_toggle %}
-{% from "macros/dropdowns.html" import css_dropdown, form_select_dropdown %}
+{% from "macros/dropdowns.html" import css_dropdown %}
 
-{# === ENTITY HELPERS === #}
-{% from "macros/core/entity_helpers.html" import entity_icon, entity_label, entity_display_name %}
+{# === WIDGETS === #}
+{% from "macros/widgets/filters.html" import entity_filter_controls %}
+{% from "macros/widgets/search.html" import global_search_dropdown %}
 
-{#
-  === COMPONENTS (Now Templates) ===
+{# === MODAL SYSTEM (HTMX-Compatible) === #}
+{% from "macros/modals/base.html" import
+    htmx_modal_overlay,
+    htmx_modal_header,
+    htmx_modal_body,
+    htmx_modal_footer
+%}
+{% from "macros/modals/confirmation.html" import confirmation_modal %}
+{% from "macros/modals/field_filter.html" import render_filtered_fields %}
+{% from "macros/modals/footers.html" import render_view_footer, render_form_footer %}
 
-  These are now template files, not macros. Use {% include %} to include them:
+{# === FORMATTING === #}
+{% from "macros/formatting.html" import format_datetime %}
 
-  Empty States:
-  {% include "components/empty_states/default.html" %}
+{# === EMPTY STATES === #}
+{% from "macros/empty_state.html" import empty_state, group_empty_state, inline_empty_state %}
 
-  Dashboard Cards:
-  {% include "components/dashboard/activity_card.html" %}
+{# === DASHBOARD === #}
+{% from "macros/dashboard/activity_section.html" import dashboard_overdue_section, dashboard_notes_section, dashboard_tasks_section, dashboard_opportunities_section %}
 
-  Widgets:
-  - Filters: Use components/widgets/filters.html
-  - Linker: Use components/widgets/linker.html
-#}
+{# Modal Container - For HTMX modal loading #}
+{% macro modal_container() %}
+<div id="modal-container"
+     hx-target="this"
+     hx-swap="innerHTML"
+     role="dialog"
+     aria-live="polite"
+     aria-label="Modal dialogs"></div>
+{% endmacro %}
