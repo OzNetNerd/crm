@@ -1,4 +1,5 @@
 {% from "macros/base/icons.html" import icon %}
+{% from "macros/ui/badges.html" import priority_badge %}
 
 {# Simple card item macros for dashboard #}
 {% macro task_card_item(task, color='gray', with_priority_badge=false) %}
@@ -12,9 +13,7 @@
             <p class="text-xs text-{{ color }}-600 mt-2">Due: {{ task.due_date|default('No date', true) }}</p>
         </div>
         {% if with_priority_badge and task.priority %}
-        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-{{ color }}-100 text-{{ color }}-800">
-            {{ task.priority|upper }}
-        </span>
+        {{ priority_badge(task.priority) }}
         {% endif %}
     </div>
 </div>
