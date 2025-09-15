@@ -16,7 +16,8 @@ MODEL_REGISTRY = {
     'stakeholder': Stakeholder,
     'opportunity': Opportunity,
     'task': Task,
-    'user': User
+    'user': User,
+    'note': Note
 }
 
 __all__ = [

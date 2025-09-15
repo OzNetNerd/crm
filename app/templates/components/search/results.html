@@ -28,8 +28,8 @@
            data-entity-type="{{ result.type }}"
            {% else %}
            hx-get="{{ url_for('modals.view_modal', model_name=result.type, entity_id=result.id) }}"
-           hx-target="body"
-           hx-swap="beforeend"
+           hx-target="#modal-container"
+           hx-swap="innerHTML"
            {% endif %}
            class="flex items-center space-x-3 px-4 py-3 block hover:bg-blue-50 transition-colors duration-150"
            data-entity-type="{{ result.model_type }}"

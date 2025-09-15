@@ -9,6 +9,7 @@ from app.models import db, MODEL_REGISTRY
 from app.forms.entities.company import CompanyForm
 from app.forms.entities.stakeholder import StakeholderForm
 from app.forms.entities.opportunity import OpportunityForm
+from app.forms.entities.notes import NoteForm
 from app.forms.modals.task import TaskModalForm
 from app.forms.modals.user import UserModalForm
 
@@ -20,7 +21,8 @@ FORM_REGISTRY = {
     'stakeholder': StakeholderForm,
     'opportunity': OpportunityForm,
     'task': TaskModalForm,
-    'user': UserModalForm
+    'user': UserModalForm,
+    'note': NoteForm
 }
 
 
