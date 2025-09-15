@@ -39,9 +39,9 @@
                hx-trigger="input changed delay:300ms, focus"
                hx-target="#{{ field.id }}-results"
                hx-vals='{"mode": "select", "field_id": "{{ field.id }}", "type": "{{ entity_type }}"}'>
-    </div>
 
-    <div id="{{ field.id }}-results" class="search-results hidden">
+        <div id="{{ field.id }}-results" class="search-results hidden">
+        </div>
     </div>
 </div>
 {% endmacro %}

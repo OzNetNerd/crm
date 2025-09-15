@@ -42,14 +42,14 @@ Handles field filtering, view/form modes, and special field types (entity search
           {# Field name matches an entity type - it's an entity search field! #}
           <label class="block text-sm font-medium text-gray-700">{{ field.label.text }}</label>
           {{ search_widget(field, entity_type=field.name) }}
-        {% elif field.render_kw and 'Search' in field.render_kw.get('placeholder', '') %}
-          {# Search field - use search widget (entity, company, etc.) #}
-          <label class="block text-sm font-medium text-gray-700">{{ field.label.text }}</label>
-          {{ search_widget(field, entity_type=field.name) }}
         {% elif field.name == 'entity' %}
           {# General entity search field - searches all entity types #}
           <label class="block text-sm font-medium text-gray-700">{{ field.label.text }}</label>
           {{ search_widget(field, entity_type='all') }}
+        {% elif field.render_kw and 'Search' in field.render_kw.get('placeholder', '') %}
+          {# Search field - use search widget (entity, company, etc.) #}
+          <label class="block text-sm font-medium text-gray-700">{{ field.label.text }}</label>
+          {{ search_widget(field, entity_type=field.name) }}
         {% else %}
           {# Regular form field #}
           {{ render_wtforms_field(field, fast_select=true, model_name=model_name) }}
