@@ -43,6 +43,11 @@
 /* Entity-specific card variants - inherit from entities.css */
 /* These are already defined in entities.css as card-company, card-task, etc. */
 
+/* Entity card container - provides consistent padding */
+.entity-card-container {
+    padding: 1rem;
+}
+
 /* Card group for entity listings */
 .card-group {
     display: flex;

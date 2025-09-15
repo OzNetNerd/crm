@@ -35,9 +35,7 @@
                 {% for entity in group.entities %}
                     {# Render all entities with the simple entity card #}
                     {% if entity.task_type is not defined or entity.task_type != 'child' %}
-                        <div class="p-4">
-                            {{ entity_card(entity, entity_type) }}
-                        </div>
+                        {{ entity_card(entity, entity_type) }}
                     {% endif %}
                 {% endfor %}
                 
