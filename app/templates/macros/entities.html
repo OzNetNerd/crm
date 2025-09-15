@@ -7,9 +7,20 @@
 {# ============================================
    ENTITY CARD - DRY implementation with inline Tailwind
    ============================================ #}
+{# Dynamic badge macro - converts any value to badge-{value} CSS class #}
+{% macro badge(value) %}
+<span class="badge badge-{{ value|lower|replace('_', '-') }}">
+    {{ value|capitalize }}
+</span>
+{% endmacro %}
+
 {% macro entity_card(entity, entity_type, show_actions=true) %}
-    {# DRY badge base classes #}
-    {% set badge_base = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" %}
+    {# Ultimate DRY - Dynamic CSS class generation using badge macro #}
+
+    {% set contact_fields = [
+        {'field': 'email', 'icon': 'envelope'},
+        {'field': 'phone', 'icon': 'phone'}
+    ] %}
 
     <div class="bg-white p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
          data-entity="{{ entity_type }}"
@@ -31,48 +42,25 @@
 
         <div class="space-y-2">
             {% if entity_type == 'contact' %}
-                {% if entity.email %}
-                    <div class="flex items-center gap-2 text-sm text-gray-600">
-                        {{ icon('envelope', size='4', class='text-gray-400') }}
-                        <span>{{ entity.email }}</span>
-                    </div>
-                {% endif %}
-                {% if entity.phone %}
-                    <div class="flex items-center gap-2 text-sm text-gray-600">
-                        {{ icon('phone', size='4', class='text-gray-400') }}
-                        <span>{{ entity.phone }}</span>
-                    </div>
-                {% endif %}
+                {# Loop through contact fields #}
+                {% for field in contact_fields %}
+                    {% if entity[field.field] %}
+                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                            {{ icon(field.icon, size='4', class='text-gray-400') }}
+                            <span>{{ entity[field.field] }}</span>
+                        </div>
+                    {% endif %}
+                {% endfor %}
             {% elif entity_type == 'task' %}
                 <div class="flex items-center gap-2">
-                    {# Priority badge with colors #}
-                    {% if entity.priority|lower == 'high' %}
-                        <span class="{{ badge_base }} bg-red-100 text-red-800">
-                            {{ entity.priority|capitalize }}
-                        </span>
-                    {% elif entity.priority|lower == 'medium' %}
-                        <span class="{{ badge_base }} bg-yellow-100 text-yellow-800">
-                            {{ entity.priority|capitalize }}
-                        </span>
-                    {% elif entity.priority|lower == 'low' %}
-                        <span class="{{ badge_base }} bg-blue-100 text-blue-800">
-                            {{ entity.priority|capitalize }}
-                        </span>
+                    {# Priority badge using macro #}
+                    {% if entity.priority %}
+                        {{ badge(entity.priority) }}
                     {% endif %}
 
-                    {# Status badge #}
-                    {% if entity.status|lower in ['complete', 'completed', 'done'] %}
-                        <span class="{{ badge_base }} bg-green-100 text-green-800">
-                            {{ entity.status|capitalize }}
-                        </span>
-                    {% elif entity.status|lower in ['in-progress', 'in_progress', 'active'] %}
-                        <span class="{{ badge_base }} bg-blue-100 text-blue-800">
-                            {{ entity.status|capitalize }}
-                        </span>
-                    {% else %}
-                        <span class="{{ badge_base }} bg-gray-100 text-gray-800">
-                            {{ entity.status|capitalize }}
-                        </span>
+                    {# Status badge using macro #}
+                    {% if entity.status %}
+                        {{ badge(entity.status) }}
                     {% endif %}
                 </div>
                 {% if entity.due_date %}
@@ -83,9 +71,7 @@
                 {% endif %}
             {% elif entity_type == 'opportunity' %}
                 <div class="flex items-center gap-2">
-                    <span class="{{ badge_base }} bg-purple-100 text-purple-800">
-                        {{ entity.status|capitalize }}
-                    </span>
+                    {{ badge(entity.status) }}
                     {% if entity.value %}
                         <span class="font-semibold text-green-600">${{ "{:,.0f}".format(entity.value) }}</span>
                     {% endif %}
