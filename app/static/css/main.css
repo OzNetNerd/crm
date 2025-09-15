@@ -1,13 +1,10 @@
 /**
- * Main CSS Import File - DRY Architecture
- * Minimal CSS with Tailwind utilities
+ * Main CSS Import File - Ultra DRY
+ * Only essential styles that can't be done with Tailwind CDN
  */
 
 /* Design tokens and variables */
 @import url('variables.css');
-
-/* DRY Tailwind components */
-@import url('tailwind-components.css');
 
 /* Modal overlay utilities (minimal custom) */
 @import url('components/modal.css');

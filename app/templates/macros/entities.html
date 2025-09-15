@@ -8,6 +8,9 @@
    ENTITY CARD - DRY implementation with inline Tailwind
    ============================================ #}
 {% macro entity_card(entity, entity_type, show_actions=true) %}
+    {# DRY badge base classes #}
+    {% set badge_base = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" %}
+
     <div class="bg-white p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
          data-entity="{{ entity_type }}"
          data-entity-id="{{ entity.id }}">
@@ -44,30 +47,30 @@
                 <div class="flex items-center gap-2">
                     {# Priority badge with colors #}
                     {% if entity.priority|lower == 'high' %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        <span class="{{ badge_base }} bg-red-100 text-red-800">
                             {{ entity.priority|capitalize }}
                         </span>
                     {% elif entity.priority|lower == 'medium' %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        <span class="{{ badge_base }} bg-yellow-100 text-yellow-800">
                             {{ entity.priority|capitalize }}
                         </span>
                     {% elif entity.priority|lower == 'low' %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span class="{{ badge_base }} bg-blue-100 text-blue-800">
                             {{ entity.priority|capitalize }}
                         </span>
                     {% endif %}
 
                     {# Status badge #}
                     {% if entity.status|lower in ['complete', 'completed', 'done'] %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span class="{{ badge_base }} bg-green-100 text-green-800">
                             {{ entity.status|capitalize }}
                         </span>
                     {% elif entity.status|lower in ['in-progress', 'in_progress', 'active'] %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span class="{{ badge_base }} bg-blue-100 text-blue-800">
                             {{ entity.status|capitalize }}
                         </span>
                     {% else %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <span class="{{ badge_base }} bg-gray-100 text-gray-800">
                             {{ entity.status|capitalize }}
                         </span>
                     {% endif %}
@@ -80,7 +83,7 @@
                 {% endif %}
             {% elif entity_type == 'opportunity' %}
                 <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    <span class="{{ badge_base }} bg-purple-100 text-purple-800">
                         {{ entity.status|capitalize }}
                     </span>
                     {% if entity.value %}

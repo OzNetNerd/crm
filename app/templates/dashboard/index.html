@@ -1,5 +1,5 @@
 {% extends "base/layout.html" %}
-{% from 'macros/components.html' import card %}
+{% from 'macros/components.html' import section_card %}
 {% from 'macros/entities.html' import entity_card %}
 
 
@@ -14,60 +14,40 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {# Overdue Tasks Section #}
-        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <h2 class="text-xl font-semibold text-gray-900">Overdue Tasks</h2>
-            </div>
-            <div class="p-6 space-y-3">
-                {% for task in overdue_tasks %}
-                    {{ entity_card(task, 'task') }}
-                {% else %}
-                    <p class="text-gray-500 text-sm">No overdue tasks</p>
-                {% endfor %}
-            </div>
-        </div>
+        {% call section_card(title='Overdue Tasks') %}
+            {% for task in overdue_tasks %}
+                {{ entity_card(task, 'task') }}
+            {% else %}
+                <p class="text-gray-500 text-sm">No overdue tasks</p>
+            {% endfor %}
+        {% endcall %}
 
         {# Recent Notes Section #}
-        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <h2 class="text-xl font-semibold text-gray-900">Recent Notes</h2>
-            </div>
-            <div class="p-6 space-y-3">
-                {% for note in recent_notes %}
-                    {{ entity_card(note, 'note') }}
-                {% else %}
-                    <p class="text-gray-500 text-sm">No notes yet</p>
-                {% endfor %}
-            </div>
-        </div>
+        {% call section_card(title='Recent Notes') %}
+            {% for note in recent_notes %}
+                {{ entity_card(note, 'note') }}
+            {% else %}
+                <p class="text-gray-500 text-sm">No notes yet</p>
+            {% endfor %}
+        {% endcall %}
 
         {# Recent Tasks Section #}
-        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <h2 class="text-xl font-semibold text-gray-900">Recent Tasks</h2>
-            </div>
-            <div class="p-6 space-y-3">
-                {% for task in recent_tasks %}
-                    {{ entity_card(task, 'task') }}
-                {% else %}
-                    <p class="text-gray-500 text-sm">No recent tasks</p>
-                {% endfor %}
-            </div>
-        </div>
+        {% call section_card(title='Recent Tasks') %}
+            {% for task in recent_tasks %}
+                {{ entity_card(task, 'task') }}
+            {% else %}
+                <p class="text-gray-500 text-sm">No recent tasks</p>
+            {% endfor %}
+        {% endcall %}
 
         {# Recent Opportunities Section #}
-        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <h2 class="text-xl font-semibold text-gray-900">Recent Opportunities</h2>
-            </div>
-            <div class="p-6 space-y-3">
-                {% for opportunity in recent_opportunities %}
-                    {{ entity_card(opportunity, 'opportunity') }}
-                {% else %}
-                    <p class="text-gray-500 text-sm">No recent opportunities</p>
-                {% endfor %}
-            </div>
-        </div>
+        {% call section_card(title='Recent Opportunities') %}
+            {% for opportunity in recent_opportunities %}
+                {{ entity_card(opportunity, 'opportunity') }}
+            {% else %}
+                <p class="text-gray-500 text-sm">No recent opportunities</p>
+            {% endfor %}
+        {% endcall %}
     </div>
 </div>
 {% endblock %}
