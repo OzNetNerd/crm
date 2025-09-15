@@ -20,26 +20,28 @@
     {% set placeholder = 'Search for ' + entity_type + '...' %}
 {% endif %}
 
-<div class="relative entity-search-widget" data-field-id="{{ field.id }}" data-entity-type="{{ entity_type }}">
+<div class="search-container relative" data-field-id="{{ field.id }}" data-entity-type="{{ entity_type }}">
     {# Badge display area for selected entities #}
     <div id="{{ field.id }}-badges" class="mb-2 flex flex-wrap gap-2"></div>
 
     {# Hidden field to store JSON array of selected entities #}
     <input type="hidden" id="{{ field.id }}-data" name="{{ field.name }}" value="{{ field.data or '[]' }}">
 
-    {# Search input with dynamically generated placeholder #}
-    <input type="text"
-           id="{{ field.id }}"
-           name="q"
-           placeholder="{{ placeholder }}"
-           class="form-input search-widget-input"
-           autocomplete="off"
-           hx-get="{{ url_for('search.htmx_search') }}"
-           hx-trigger="input changed delay:300ms, focus"
-           hx-target="#{{ field.id }}-results"
-           hx-vals='{"mode": "select", "field_id": "{{ field.id }}", "type": "{{ entity_type }}"}'>
+    <div class="relative">
+        {# Search input with dynamically generated placeholder - using same structure as global search #}
+        <input type="text"
+               id="{{ field.id }}"
+               name="q"
+               placeholder="{{ placeholder }}"
+               class="search-input"
+               autocomplete="off"
+               hx-get="{{ url_for('search.htmx_search') }}"
+               hx-trigger="input changed delay:300ms, focus"
+               hx-target="#{{ field.id }}-results"
+               hx-vals='{"mode": "select", "field_id": "{{ field.id }}", "type": "{{ entity_type }}"}'>
+    </div>
 
-    <div id="{{ field.id }}-results" class="search-results hidden absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-auto">
+    <div id="{{ field.id }}-results" class="search-results hidden">
     </div>
 </div>
 {% endmacro %}
