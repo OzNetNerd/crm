@@ -16,15 +16,15 @@
     {# Icon #}
     <div class="empty-state-icon mb-4 text-gray-400">
         {% if entity_type == 'task' %}
-            {{ icon('clipboard-list', 'w-12 h-12') }}
+            {{ icon('clipboard-list') }}
         {% elif entity_type == 'company' %}
-            {{ icon('building-office', 'w-12 h-12') }}
+            {{ icon('building-office') }}
         {% elif entity_type == 'contact' %}
-            {{ icon('users', 'w-12 h-12') }}
+            {{ icon('users') }}
         {% elif entity_type == 'opportunity' %}
-            {{ icon('currency-dollar', 'w-12 h-12') }}
+            {{ icon('currency-dollar') }}
         {% else %}
-            {{ icon('document', 'w-12 h-12') }}
+            {{ icon('document') }}
         {% endif %}
     </div>
 
@@ -42,7 +42,7 @@
     {% if show_action %}
     <button data-create-entity="{{ entity_type }}"
             class="mt-4 btn-primary btn-sm">
-        {{ icon('plus', 'sm') }}
+        {{ icon('plus') }}
         Create {{ entity_type|title }}
     </button>
     {% endif %}

@@ -18,7 +18,7 @@
             {% if show_actions %}
                 <div class="entity-card-actions">
                     <a href="{{ url_for(entity_type + '.edit', id=entity.id) }}" class="btn btn-sm btn-ghost">
-                        {{ icon('pencil', 'sm') }}
+                        {{ icon('pencil') }}
                     </a>
                 </div>
             {% endif %}
@@ -28,13 +28,13 @@
             {% if entity_type == 'contact' %}
                 {% if entity.email %}
                     <div class="entity-card-field">
-                        {{ icon('envelope', 'sm') }}
+                        {{ icon('envelope') }}
                         <span>{{ entity.email }}</span>
                     </div>
                 {% endif %}
                 {% if entity.phone %}
                     <div class="entity-card-field">
-                        {{ icon('phone', 'sm') }}
+                        {{ icon('phone') }}
                         <span>{{ entity.phone }}</span>
                     </div>
                 {% endif %}
@@ -45,7 +45,7 @@
                 </div>
                 {% if entity.due_date %}
                     <div class="entity-card-field">
-                        {{ icon('calendar', 'sm') }}
+                        {{ icon('calendar') }}
                         <span>Due: {{ format_date(entity.due_date, 'short') }}</span>
                     </div>
                 {% endif %}
@@ -85,7 +85,7 @@
         </div>
     {% else %}
         <div class="empty-state">
-            {{ icon('inbox', 'xl', 'empty-state-icon') }}
+            <div class="empty-state-icon">{{ icon('inbox') }}</div>
             <p class="empty-state-message">
                 {{ empty_message or 'No ' + entity_type + 's found' }}
             </p>
@@ -99,7 +99,7 @@
 {% macro entity_quick_info(entity, entity_type) %}
     <div class="entity-quick-info">
         <div class="entity-quick-info-header">
-            {{ icon(entity_type, 'md') }}
+            {{ icon(entity_type) }}
             <span>{{ entity.name or entity.title }}</span>
         </div>
         {% if entity_type == 'contact' and entity.company %}

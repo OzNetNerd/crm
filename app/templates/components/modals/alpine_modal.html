@@ -33,7 +33,7 @@
             <div class="modal-header">
                 <h3 x-text="title" class="modal-title"></h3>
                 <button @click="closeModal()" class="modal-close">
-                    {{ icon('x-mark', 'lg') }}
+                    {{ icon('x-mark') }}
                 </button>
             </div>
 
@@ -42,7 +42,7 @@
 
                 <!-- General Error with icon -->
                 <div x-show="errors.general" class="form-error-message">
-                    {{ icon('exclamation-circle', 'md') }}
+                    {{ icon('exclamation-circle') }}
                     <span x-text="errors.general"></span>
                 </div>
 
@@ -158,7 +158,7 @@
                         class="modal-btn modal-btn-primary">
                     <span x-show="!saving">Save</span>
                     <span x-show="saving" class="modal-btn-loading">
-                        {{ icon('spinner', 'sm') }}
+                        {{ icon('spinner') }}
                         Saving...
                     </span>
                 </button>

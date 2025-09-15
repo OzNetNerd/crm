@@ -1,69 +1,60 @@
 {% extends "base/layout.html" %}
-
-{# 
-  Single Universal Entity Index Template - Pure Context-Driven
-  
-  NO template inheritance needed - all customization via backend context.
-  All entity routes render this same template with different context data.
-  
-  Required context variables:
-  - entity_name: Display name (e.g. "Tasks", "Companies")
-  - entity_description: Page description
-  - entity_type: Type identifier (e.g. "task", "company") 
-  - endpoint_name: Blueprint name (e.g. "tasks", "companies")
-  - entity_stats: Stats data for summary cards
-  - entity_buttons: Action buttons for header
-  - dropdown_configs: Filter dropdown configurations
-#}
-
-{# Import core components #}
 {% from "macros/components.html" import confirmation_modal, filter_controls %}
 
-{# Set page title based on entity context #}
-{% block title %}{{ entity_config.entity_name or "Entity" }} - CRM{% endblock %}
+{% block title %}{{ entity_config.entity_name }} - CRM{% endblock %}
 
 {% block content %}
-{# Generate filter controls based on entity type using modern widget system #}
-{% set entity_filter_content %}
-<form hx-get="{{ url_for(entity_config.content_endpoint) }}"
-      hx-target="#{{ entity_config.entity_type }}-content"
-      hx-trigger="change, submit">
-    {{ entity_filter_controls(
-        entity_type=entity_config.entity_type,
-        group_options=dropdown_configs.group_by.options if dropdown_configs.group_by else [],
-        sort_options=dropdown_configs.sort_by.options if dropdown_configs.sort_by else [],
-        current_group_by=request.args.get('group_by', dropdown_configs.group_by.current_value if dropdown_configs.group_by else ''),
-        current_sort_by=request.args.get('sort_by', dropdown_configs.sort_by.current_value if dropdown_configs.sort_by else ''),
-        primary_filter_options=dropdown_configs.primary_filter.options if dropdown_configs.primary_filter else [],
-        current_primary_filter=request.args.getlist('primary_filter'),
-        primary_filter_name=dropdown_configs.primary_filter.button_text if dropdown_configs.primary_filter else 'Filter',
-        filter_options={'priority': dropdown_configs.secondary_filter.options} if dropdown_configs.secondary_filter else None,
-        show_view_toggle=true,
-        expand_collapse_target=entity_config.entity_type + 'Sections'
-    ) }}
-</form>
-{% endset %}
+<div class="page-container">
+    {# Page Header #}
+    <div class="page-header">
+        <h1 class="page-title">{{ entity_config.entity_name }}</h1>
+        <p class="page-subtitle">{{ entity_config.entity_description }}</p>
 
-{% call page_layout(
-    entity_config.entity_name or "Entity", 
-    entity_description or "Manage entities",
-    buttons=entity_buttons or [],
-    summary_data=entity_stats or {},
-    filter_content=entity_filter_content,
-    entity_name=entity_config.entity_name
-) %}
+        {# Action Buttons #}
+        {% if entity_buttons %}
+        <div class="page-actions">
+            {% for button in entity_buttons %}
+                <a href="{{ button.url }}" class="btn btn-{{ button.variant|default('primary') }}">
+                    {{ button.text }}
+                </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
 
-<!-- Dynamic Content Area -->
-<div id="{{ entity_config.entity_type }}-content"
-     hx-get="{{ url_for(entity_config.content_endpoint) }}?{{ request.query_string.decode('utf-8') }}"
-     hx-trigger="load">
-    <!-- Content will be loaded here via HTMX -->
-    <div class="p-8 text-center text-gray-500">
-        Loading {{ entity_config.entity_name|lower }}...
+    {# Stats Cards #}
+    {% if entity_stats %}
+    <div class="stats-grid">
+        {% for stat in entity_stats %}
+        <div class="stat-card">
+            <div class="stat-value">{{ stat.value }}</div>
+            <div class="stat-label">{{ stat.label }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# Filters #}
+    <div class="filter-section">
+        <form hx-get="{{ url_for(entity_config.content_endpoint) }}"
+              hx-target="#entity-content"
+              hx-trigger="change">
+
+            {# Simple filter controls #}
+            {{ filter_controls(filters=dropdown_configs) if dropdown_configs else '' }}
+        </form>
+    </div>
+
+    {# Content Area #}
+    <div id="entity-content"
+         hx-get="{{ url_for(entity_config.content_endpoint) }}"
+         hx-trigger="load"
+         class="content-area">
+        <div class="loading">
+            Loading {{ entity_config.entity_name|lower }}...
+        </div>
     </div>
 </div>
-
-{% endcall %}
 {% endblock %}
 
 {% block modals %}

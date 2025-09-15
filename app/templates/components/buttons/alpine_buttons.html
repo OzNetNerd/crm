@@ -59,7 +59,7 @@
     <button @click="viewEntity('{{ entity_type }}', {{ entity_id }})"
             class="text-gray-600 hover:text-gray-800 transition-colors"
             title="View {{ entity_type }}">
-        {{ icon('eye', 'sm') }}
+        {{ icon('eye') }}
     </button>
     {% endif %}
 
@@ -67,7 +67,7 @@
     <button @click="editEntity('{{ entity_type }}', {{ entity_id }})"
             class="text-blue-600 hover:text-blue-800 transition-colors"
             title="Edit {{ entity_type }}">
-        {{ icon('pencil', 'sm') }}
+        {{ icon('pencil') }}
     </button>
     {% endif %}
 </div>

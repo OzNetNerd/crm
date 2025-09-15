@@ -1,76 +1,25 @@
-{% from 'macros/ui.html' import icon %}
-{% from 'macros/components.html' import search_widget %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}CRM{% endblock %}</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <!-- Alpine.js components - load before Alpine.js core -->
-    <script src="{{ url_for('static', filename='js/alpine/cardState.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/alpine/chatWidget.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/alpine/entityLinker.js') }}"></script>
-    <!-- New Alpine plugins for DRY component architecture -->
-    <script src="{{ url_for('static', filename='js/alpine-plugins/dropdown.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/alpine-plugins/modal.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/components-init.js') }}"></script>
-    <!-- Component JavaScript -->
-    <script src="{{ url_for('static', filename='js/components/entity-card.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/features/entity-actions.js') }}"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {% include 'base/includes/head.html' %}
 </head>
-<body class="bg-gray-50">
-    <nav class="nav-container">
-        <div class="nav-inner">
-            <div class="nav-content">
-                <div class="flex items-center space-x-8">
-                    <a href="{{ url_for('dashboard.index') }}" class="nav-brand">CRM</a>
-                    <div class="nav-links">
-                        {{ nav_link('entities.companies_index', 'Companies') }}
-                        {{ nav_link('entities.stakeholders_index', 'Stakeholders') }}
-                        {{ nav_link('entities.opportunities_index', 'Opportunities') }}
-                        {{ nav_link('entities.tasks_index', 'Tasks') }}
-                        {{ nav_link('entities.users_index', 'Account Teams') }}
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    {{ global_search_dropdown() }}
-                </div>
-            </div>
-        </div>
-    </nav>
+<body>
+    {% include 'base/includes/navbar.html' %}
 
     <main class="main-container">
         {% block content %}{% endblock %}
     </main>
 
     {% block modals %}{% endblock %}
-    
-    <!-- Advanced Search Modal -->
+
+    {# Global Modals #}
     {% include 'components/modals/advanced_search_modal.html' %}
-    
-    <!-- Chat Widget -->
-    {% include 'components/chat_widget.html' %}
-    
-    <!-- Data container for clean server-to-client data passing -->
-    <div id="app-data" class="hidden"
-         {% block data_attributes %}{% endblock %}>
-    </div>
 
-    <!-- Core JavaScript - Reduced to essential functionality only -->
-    <script src="{{ url_for('static', filename='js/core/modal-utils.js') }}"></script>
-    <script type="module" src="{{ url_for('static', filename='js/features/search-htmx.js') }}"></script>
-    <script type="module" src="{{ url_for('static', filename='js/features/modal_handlers.js') }}"></script>
-    <script type="module" src="{{ url_for('static', filename='js/features/controls.js') }}"></script>
+    {# Chat Widget #}
+    {% include 'components/chat/widget.html' %}
+
+    {# Application JavaScript #}
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block scripts %}{% endblock %}
-
-    <!-- Disable autocomplete on all form fields -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('.form-input, .form-textarea, .form-select, input[type="text"], input[type="email"], input[type="tel"], textarea').forEach(el => el.autocomplete = 'off'));
-    </script>
 </body>
 </html>
