@@ -43,6 +43,15 @@
 /* Entity-specific card variants - inherit from entities.css */
 /* These are already defined in entities.css as card-company, card-task, etc. */
 
+/* Entity card container - provides consistent padding and styling */
+.entity-card-container {
+    padding: var(--entity-card-container-padding);
+    border: var(--entity-card-container-border);
+    border-radius: var(--entity-card-container-border-radius);
+    background: var(--entity-card-container-background);
+    margin-bottom: var(--entity-card-container-gap);
+}
+
 /* Card group for entity listings */
 .card-group {
     display: flex;
