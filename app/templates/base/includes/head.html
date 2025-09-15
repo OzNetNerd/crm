@@ -3,20 +3,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{% block title %}CRM{% endblock %}</title>
 
-{# Tailwind CSS for utility classes #}
+{# Inter Font for sharp, professional text #}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+{# Tailwind CSS CDN with custom configuration #}
 <script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        },
+        fontSize: {
+          'xs': ['0.75rem', { lineHeight: '1rem' }],
+          'sm': ['0.875rem', { lineHeight: '1.25rem' }],
+          'base': ['1rem', { lineHeight: '1.5rem' }],
+        },
+        colors: {
+          primary: {
+            50: '#eff6ff',
+            100: '#dbeafe',
+            200: '#bfdbfe',
+            300: '#93c5fd',
+            400: '#60a5fa',
+            500: '#3b82f6',
+            600: '#2563eb',
+            700: '#1d4ed8',
+          },
+        },
+      },
+    },
+  }
+</script>
 
-{# Dynamic Tailwind classes for production #}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind-dynamic.css') }}">
+{# Minimal custom CSS - DRY approach #}
+<style>
+  /* Sharp text rendering */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 0.875rem;
+  }
 
-{# Custom CSS #}
+  /* DRY entity card styling with data attributes */
+  [data-entity="task"] { border-left: 4px solid #ea580c; }
+  [data-entity="company"] { border-left: 4px solid #2563eb; }
+  [data-entity="opportunity"] { border-left: 4px solid #059669; }
+  [data-entity="stakeholder"] { border-left: 4px solid #7c3aed; }
+  [data-entity="note"] { border-left: 4px solid #6b7280; }
+</style>
+
 <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/entities.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/components/modal.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/components/dropdown.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/components/icons.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
 
 {# Core JavaScript Libraries #}
 <script src="https://unpkg.com/htmx.org@2.0.3/dist/htmx.min.js"></script>
