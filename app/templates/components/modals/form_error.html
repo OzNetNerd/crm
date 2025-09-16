@@ -1,0 +1,69 @@
+{% from 'macros/ui.html' import icon %}
+{#
+Form Error Modal Template - Validation errors from form submission
+Shows field-specific errors or general error message
+#}
+
+<div class="modal"
+     x-data="modal({
+         id: 'form-error-modal',
+         title: 'Form Error',
+         closable: true
+     })"
+     x-show="true"
+     id="form-error-modal">
+
+    <div class="modal-backdrop" @click="handleBackdropClick($event)"></div>
+
+    <div class="modal-content modal-content-md">
+        <!-- Header -->
+        <div class="modal-header modal-header-error">
+            <h3 class="modal-title">
+                {{ icon('exclamation-circle', size='5', class='inline-block mr-2 text-red-500') }}
+                Form Validation Error
+            </h3>
+            <button type="button"
+                    class="modal-close"
+                    hx-get="/modals/close"
+                    hx-swap="outerHTML"
+                    hx-target="#form-error-modal">
+                {{ icon('x-mark') }}
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+            <div class="modal-message modal-message-error">
+                {% if error %}
+                    <p class="mb-3">{{ error|safe }}</p>
+                {% endif %}
+
+                {% if errors %}
+                    <div class="space-y-2">
+                        <p class="font-semibold">Please correct the following errors:</p>
+                        <ul class="list-disc list-inside space-y-1">
+                            {% for field, field_errors in errors.items() %}
+                                {% for err in field_errors %}
+                                    <li class="text-sm">
+                                        <span class="font-medium">{{ field }}:</span> {{ err }}
+                                    </li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+            <button type="button"
+                    class="modal-btn modal-btn-primary"
+                    hx-get="/modals/close"
+                    hx-swap="outerHTML"
+                    hx-target="#form-error-modal">
+                OK
+            </button>
+        </div>
+    </div>
+</div>
