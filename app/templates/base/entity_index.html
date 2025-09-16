@@ -6,13 +6,11 @@
 {% block content %}
 <div class="page-container">
     {# Page Header #}
-    <div class="page-header flex justify-between items-center">
-        <div class="page-title-container">
-            <h1 class="page-title">{{ entity_config.entity_name }}</h1>
-            {% if entity_config.entity_description %}
-                <p class="page-subtitle">{{ entity_config.entity_description }}</p>
-            {% endif %}
-        </div>
+    <div class="page-header">
+        <h1 class="page-title">{{ entity_config.entity_name }}</h1>
+        {% if entity_config.entity_description %}
+            <p class="page-subtitle">{{ entity_config.entity_description }}</p>
+        {% endif %}
 
         {# Action Buttons #}
         {% if entity_config.entity_buttons %}
