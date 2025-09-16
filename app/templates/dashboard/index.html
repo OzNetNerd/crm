@@ -34,7 +34,7 @@
         {% for section in dashboard_sections %}
             {% call card(title=section.title) %}
                 {% for entity in section.entities %}
-                    {{ entity_card(entity, section.entity_type, config=section.display_config) }}
+                    {{ entity_card(entity, section.entity_type) }}
                 {% endfor %}
             {% endcall %}
         {% endfor %}

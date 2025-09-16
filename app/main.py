@@ -92,6 +92,19 @@ def create_app():
     app.jinja_env.globals["getattr"] = getattr
     app.jinja_env.globals["hasattr"] = hasattr
 
+    # URL helper function for entities
+    def entity_url(entity, entity_type, action='view'):
+        """Generate modal URLs for entities."""
+        urls = {
+            'view': f'/modals/{entity_type}/view/{entity.id}',
+            'edit': f'/modals/{entity_type}/{entity.id}/edit',
+            'delete': f'/modals/{entity_type}/{entity.id}/delete',
+            'create': f'/modals/{entity_type}/create'
+        }
+        return urls.get(action, '#')
+
+    app.jinja_env.globals["entity_url"] = entity_url
+
     # Register custom Jinja2 filters
     app.jinja_env.filters["badge_class"] = badge_class
 
