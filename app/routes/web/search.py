@@ -4,7 +4,7 @@ DRY Search Routes - Using model search methods
 Clean, maintainable search using BaseModel search capabilities.
 """
 
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, make_response
 from app.models import MODEL_REGISTRY
 
 search_bp = Blueprint("search", __name__)
@@ -92,6 +92,41 @@ def autocomplete():
         suggestions.append(result)
 
     return jsonify(suggestions)
+
+
+@search_bp.route("/htmx/dropdown/<dropdown_type>")
+def htmx_dropdown_select(dropdown_type):
+    """Handle dropdown selection and update the page."""
+    value = request.args.get(dropdown_type, '')
+
+    # Get the current URL parameters to preserve state
+    params = dict(request.args)
+
+    # Update the parameter
+    if value:
+        params[dropdown_type] = value
+    elif dropdown_type in params:
+        del params[dropdown_type]
+
+    # Build redirect URL - get the referrer path
+    referer = request.headers.get('HX-Current-URL', '/')
+    if referer:
+        # Extract just the path from the full URL
+        from urllib.parse import urlparse
+        parsed = urlparse(referer)
+        base_path = parsed.path
+    else:
+        base_path = '/'
+
+    # Build query string
+    from urllib.parse import urlencode
+    query_string = urlencode(params)
+    redirect_url = f"{base_path}?{query_string}" if query_string else base_path
+
+    # Return HX-Redirect header to reload page with new params
+    response = make_response()
+    response.headers['HX-Redirect'] = redirect_url
+    return response
 
 
 @search_bp.route("/htmx/search")
