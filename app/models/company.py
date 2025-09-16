@@ -179,6 +179,8 @@ class Company(BaseModel):
         }
     )
 
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
     # Relationships
     stakeholders = db.relationship("Stakeholder", back_populates="company", lazy=True)
     opportunities = db.relationship("Opportunity", backref="company", lazy=True)

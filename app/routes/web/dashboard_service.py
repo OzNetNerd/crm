@@ -118,33 +118,18 @@ class DashboardService:
         """
         from app.models import MODEL_REGISTRY
 
-        # Build dashboard sections dynamically from MODEL_REGISTRY
-        dashboard_sections = []
-
-        # Define which entities to show and in what order
-        section_configs = [
-            ('task', 'Overdue Tasks', 'get_overdue', 5),
-            ('note', 'Recent Notes', 'get_recent', 3),
-            ('task', 'Recent Tasks', 'get_recent', 5),
-            ('opportunity', 'Recent Opportunities', 'get_recent', 3)
+        dashboard_sections = [
+            {
+                'title': f'{prefix} {model_class.get_display_name_plural()}',
+                'entities': entities,
+                'entity_type': entity_type,
+                'display_config': model_class.get_display_config()
+            }
+            for entity_type, model_class in sorted(MODEL_REGISTRY.items())
+            for method_name, prefix in [('get_overdue', 'Overdue'), ('get_recent', 'Recent')]
+            if hasattr(model_class, method_name)
+            if (entities := getattr(model_class, method_name)(3 if entity_type in {'note', 'opportunity'} else 5))
         ]
-
-        # Iterate and call the same interface on all models
-        for entity_type, title, method_name, limit in section_configs:
-            if entity_type in MODEL_REGISTRY:
-                model_class = MODEL_REGISTRY[entity_type]
-                method = getattr(model_class, method_name, None)
-
-                if method:
-                    entities = method(limit)
-                    # Only add sections with content
-                    if entities:
-                        dashboard_sections.append({
-                            'title': title,
-                            'entities': entities,
-                            'entity_type': entity_type,
-                            'display_config': model_class.get_display_config()
-                        })
 
         # Combine all dashboard data
         data = {
