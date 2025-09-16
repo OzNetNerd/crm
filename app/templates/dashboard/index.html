@@ -1,5 +1,5 @@
 {% extends "base/layout.html" %}
-{% from 'macros/components.html' import section_card %}
+{% from 'macros/components.html' import card %}
 {% from 'macros/entities.html' import entity_card %}
 
 
@@ -14,7 +14,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {# Overdue Tasks Section #}
-        {% call section_card(title='Overdue Tasks') %}
+        {% call card(title='Overdue Tasks') %}
             {% for task in overdue_tasks %}
                 {{ entity_card(task, 'task') }}
             {% else %}
@@ -23,7 +23,7 @@
         {% endcall %}
 
         {# Recent Notes Section #}
-        {% call section_card(title='Recent Notes') %}
+        {% call card(title='Recent Notes') %}
             {% for note in recent_notes %}
                 {{ entity_card(note, 'note') }}
             {% else %}
@@ -32,7 +32,7 @@
         {% endcall %}
 
         {# Recent Tasks Section #}
-        {% call section_card(title='Recent Tasks') %}
+        {% call card(title='Recent Tasks') %}
             {% for task in recent_tasks %}
                 {{ entity_card(task, 'task') }}
             {% else %}
@@ -41,7 +41,7 @@
         {% endcall %}
 
         {# Recent Opportunities Section #}
-        {% call section_card(title='Recent Opportunities') %}
+        {% call card(title='Recent Opportunities') %}
             {% for opportunity in recent_opportunities %}
                 {{ entity_card(opportunity, 'opportunity') }}
             {% else %}
