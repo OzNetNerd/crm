@@ -206,17 +206,6 @@
     --scale-hover: scale(1.02);
     --scale-active: scale(0.98);
     --translate-hover: translateY(-1px);
-
-    /* ========================================
-     * ENTITY CARD CONTAINER
-     * Consistent styling for all entity cards
-     * ======================================== */
-
-    --entity-card-container-padding: 1rem;
-    --entity-card-container-border: 1px solid #e5e7eb;
-    --entity-card-container-border-radius: 0.5rem;
-    --entity-card-container-background: white;
-    --entity-card-container-gap: 1rem;
 }
 
 /* ========================================

@@ -157,6 +157,15 @@ class BaseModel(db.Model):
 
         return " • ".join(parts[:3])
 
+    def get_meta_data(self):
+        """Return structured meta data for entity cards."""
+        meta = {}
+        if hasattr(self, 'created_at') and self.created_at:
+            meta['created'] = self.created_at.strftime('%d/%m/%y')
+        if hasattr(self, 'due_date') and self.due_date:
+            meta['due'] = self.due_date.strftime('%d/%m/%y')
+        return meta
+
     def get_view_url(self):
         """Get the view URL for this entity"""
         from flask import url_for
