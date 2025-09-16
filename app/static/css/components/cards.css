@@ -61,7 +61,7 @@
 /* Entity card header - title and actions section */
 .entity-card-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     margin-bottom: 0.5rem;
 }
@@ -84,11 +84,17 @@
     text-decoration: none;
 }
 
-/* Entity card action button - edit/delete buttons */
+/* Entity card actions container - groups icons with tight spacing */
+.entity-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem; /* Small gap between icons */
+}
+
+/* Entity card action button - individual icon buttons */
 .entity-card-action {
     display: flex;
     align-items: center;
-    gap: 0.25rem; /* gap-1 */
     padding: 0.25rem; /* p-1 */
     border-radius: 0.25rem; /* rounded */
     color: #6b7280; /* text-gray-500 */

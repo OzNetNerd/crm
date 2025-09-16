@@ -25,13 +25,29 @@
                 </a>
             </h3>
             {% if show_actions %}
-                <a href="{{ entity.get_edit_url() }}"
-                   hx-get="{{ entity.get_edit_url() }}"
-                   hx-target="#modal-container"
-                   hx-swap="innerHTML"
-                   class="entity-card-action">
-                    {{ icon('pencil', size='4') }}
-                </a>
+                <div class="entity-card-actions">
+                    <a href="{{ entity.get_view_url() }}"
+                       hx-get="{{ entity.get_view_url() }}"
+                       hx-target="#modal-container"
+                       hx-swap="innerHTML"
+                       class="entity-card-action">
+                        {{ icon('eye', size='4') }}
+                    </a>
+                    <a href="{{ entity.get_edit_url() }}"
+                       hx-get="{{ entity.get_edit_url() }}"
+                       hx-target="#modal-container"
+                       hx-swap="innerHTML"
+                       class="entity-card-action">
+                        {{ icon('pencil', size='4') }}
+                    </a>
+                    <a href="{{ entity.get_delete_url() }}"
+                       hx-get="{{ entity.get_delete_url() }}"
+                       hx-target="#modal-container"
+                       hx-swap="innerHTML"
+                       class="entity-card-action">
+                        {{ icon('trash', size='4') }}
+                    </a>
+                </div>
             {% endif %}
         </div>
 
