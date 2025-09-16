@@ -1,0 +1,52 @@
+{% from 'macros/ui.html' import icon %}
+{#
+Error Modal Template - Generic error display
+Used when modal operations fail
+#}
+
+<div class="modal"
+     x-data="modal({
+         id: 'error-modal',
+         title: 'Error',
+         closable: true
+     })"
+     x-show="true"
+     id="error-modal">
+
+    <div class="modal-backdrop" @click="handleBackdropClick($event)"></div>
+
+    <div class="modal-content modal-content-sm">
+        <!-- Header -->
+        <div class="modal-header modal-header-error">
+            <h3 class="modal-title">
+                {{ icon('exclamation-triangle', size='5', class='inline-block mr-2 text-red-500') }}
+                Error
+            </h3>
+            <button type="button"
+                    class="modal-close"
+                    hx-get="/modals/close"
+                    hx-swap="outerHTML"
+                    hx-target="#error-modal">
+                {{ icon('x-mark') }}
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+            <div class="modal-message modal-message-error">
+                <p>{{ error|safe }}</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+            <button type="button"
+                    class="modal-btn modal-btn-primary"
+                    hx-get="/modals/close"
+                    hx-swap="outerHTML"
+                    hx-target="#error-modal">
+                OK
+            </button>
+        </div>
+    </div>
+</div>

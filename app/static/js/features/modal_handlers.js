@@ -11,8 +11,8 @@ class ModalHandlers {
     
     bindGlobalModalEvents() {
         // Handle all entity modal open events from global search
-        const entityTypes = ['company', 'contact', 'stakeholder', 'opportunity', 'task'];
-        
+        const entityTypes = ['company', 'contact', 'stakeholder', 'opportunity', 'task', 'note', 'user'];
+
         entityTypes.forEach(entityType => {
             window.addEventListener(`open-detail-${entityType}-modal`, (event) => {
                 this.handleEntityModalOpen(entityType, event.detail);

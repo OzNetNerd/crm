@@ -19,6 +19,10 @@ class BaseModel(db.Model):
     __include_properties__: List[str] = []  # Additional properties to include
     __relationship_transforms__: Dict[str, Callable] = {}  # Custom relationship serializers
 
+    # Modal configuration - override in models as needed
+    __modal_size__ = 'md'  # sm, md, lg, xl
+    __modal_icon__ = None   # Override to use custom icon
+
     @classmethod
     def get_display_name(cls):
         """Get singular display name."""
@@ -75,6 +79,15 @@ class BaseModel(db.Model):
             'entity_name_singular': cls.get_display_name(),
             'entity_name_plural': cls.get_display_name_plural(),
             'entity_name': cls.get_display_name_plural()
+        }
+
+    @classmethod
+    def get_modal_config(cls):
+        """Get modal configuration for this entity."""
+        return {
+            'size': cls.__modal_size__,
+            'icon': cls.__modal_icon__ or cls.get_entity_type(),
+            'title': cls.get_display_name()
         }
 
     @classmethod

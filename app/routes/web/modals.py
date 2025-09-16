@@ -6,27 +6,28 @@ Clean, maintainable modal handling with zero duplication.
 
 from flask import Blueprint, request, render_template
 from app.models import db, MODEL_REGISTRY
-from app.forms.entities.company import CompanyForm
-from app.forms.entities.stakeholder import StakeholderForm
-from app.forms.entities.opportunity import OpportunityForm
-from app.forms.entities.notes import NoteForm
-from app.forms.modals.task import TaskModalForm
-from app.forms.modals.user import UserModalForm
 
 modals_bp = Blueprint('modals', __name__, url_prefix='/modals')
 
-# Form registry - maps model names to form classes
-FORM_REGISTRY = {
-    'company': CompanyForm,
-    'stakeholder': StakeholderForm,
-    'opportunity': OpportunityForm,
-    'task': TaskModalForm,
-    'user': UserModalForm,
-    'note': NoteForm
-}
-
 
 # ============= HELPER FUNCTIONS =============
+
+def _get_form_class(model_name):
+    """Dynamically import and return form class for model."""
+    # Standard form class name pattern: {ModelName}Form
+    form_class_name = f'{model_name.title()}Form'
+
+    # Try both singular and plural module names
+    for module_name in [model_name, f'{model_name}s']:
+        try:
+            module = __import__(f'app.forms.entities.{module_name}', fromlist=[form_class_name])
+            return getattr(module, form_class_name)
+        except (ImportError, AttributeError):
+            continue
+
+    # If we get here, let it fail loudly
+    module = __import__(f'app.forms.entities.{model_name}', fromlist=[form_class_name])
+    return getattr(module, form_class_name)
 
 def _validate_model_and_form(model_name):
     """Validate model and form exist, return components or error."""
@@ -35,7 +36,7 @@ def _validate_model_and_form(model_name):
         return None, None, render_template('components/modals/error_modal.html',
                                           error=f"Unknown model: {model_name}")
 
-    form_class = FORM_REGISTRY.get(model_name.lower())
+    form_class = _get_form_class(model_name.lower())
     if not form_class:
         return None, None, render_template('components/modals/error_modal.html',
                                           error=f"No form available for {model_name}")

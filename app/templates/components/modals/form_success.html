@@ -1,0 +1,63 @@
+{% from 'macros/ui.html' import icon %}
+{#
+Form Success Modal Template - Success message after form submission
+Shows success and auto-closes or allows manual close
+#}
+
+<div class="modal"
+     x-data="modal({
+         id: 'success-modal',
+         title: 'Success',
+         closable: true
+     })"
+     x-show="true"
+     x-init="setTimeout(() => { close() }, 2000)"
+     id="success-modal">
+
+    <div class="modal-backdrop" @click="handleBackdropClick($event)"></div>
+
+    <div class="modal-content modal-content-sm">
+        <!-- Header -->
+        <div class="modal-header modal-header-success">
+            <h3 class="modal-title">
+                {{ icon('check-circle', size='5', class='inline-block mr-2 text-green-500') }}
+                Success
+            </h3>
+            <button type="button"
+                    class="modal-close"
+                    hx-get="/modals/close"
+                    hx-swap="outerHTML"
+                    hx-target="#success-modal">
+                {{ icon('x-mark') }}
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+            <div class="modal-message modal-message-success">
+                <p>{{ message|safe }}</p>
+                {% if entity %}
+                <div class="mt-4 p-3 bg-gray-50 rounded-md">
+                    <p class="text-sm text-gray-600">
+                        ID: {{ entity.id }}<br>
+                        {% if entity.name %}Name: {{ entity.name }}{% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+            <button type="button"
+                    class="modal-btn modal-btn-primary"
+                    hx-get="/modals/close"
+                    hx-swap="outerHTML"
+                    hx-target="#success-modal"
+                    hx-trigger="click"
+                    hx-on::after-request="window.location.reload()">
+                OK
+            </button>
+        </div>
+    </div>
+</div>
