@@ -1,5 +1,5 @@
 {% extends "base/layout.html" %}
-{% from 'macros/components.html' import section_card %}
+{% from 'macros/components.html' import card %}
 {% from 'macros/entities.html' import entity_card %}
 
 
@@ -15,11 +15,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {# DRY: Iterate over dashboard sections from backend #}
         {% for section in dashboard_sections %}
-            {% call section_card(title=section.title) %}
+            {% call card(title=section.title) %}
                 {% for entity in section.entities %}
                     {{ entity_card(entity, section.entity_type, config=section.display_config) }}
-                {% else %}
-                    <p class="text-gray-500 text-sm">{{ section.empty_message }}</p>
                 {% endfor %}
             {% endcall %}
         {% endfor %}

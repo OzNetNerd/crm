@@ -137,13 +137,14 @@ class DashboardService:
 
                 if method:
                     entities = method(limit)
-                    dashboard_sections.append({
-                        'title': title,
-                        'entities': entities,
-                        'entity_type': entity_type,
-                        'empty_message': f'No {model_class.get_display_name_plural().lower()}',
-                        'display_config': model_class.get_display_config()
-                    })
+                    # Only add sections with content
+                    if entities:
+                        dashboard_sections.append({
+                            'title': title,
+                            'entities': entities,
+                            'entity_type': entity_type,
+                            'display_config': model_class.get_display_config()
+                        })
 
         # Combine all dashboard data
         data = {
