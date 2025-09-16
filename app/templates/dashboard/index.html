@@ -16,7 +16,7 @@
         {# Overdue Tasks Section #}
         {% call section_card(title='Overdue Tasks') %}
             {% for task in overdue_tasks %}
-                {{ entity_card(task, 'task') }}
+                {{ entity_card(task, 'task', meta_text=task.get_meta_text()) }}
             {% else %}
                 <p class="text-gray-500 text-sm">No overdue tasks</p>
             {% endfor %}
@@ -25,7 +25,7 @@
         {# Recent Notes Section #}
         {% call section_card(title='Recent Notes') %}
             {% for note in recent_notes %}
-                {{ entity_card(note, 'note') }}
+                {{ entity_card(note, 'note', meta_text=note.get_meta_text()) }}
             {% else %}
                 <p class="text-gray-500 text-sm">No notes yet</p>
             {% endfor %}
@@ -34,7 +34,7 @@
         {# Recent Tasks Section #}
         {% call section_card(title='Recent Tasks') %}
             {% for task in recent_tasks %}
-                {{ entity_card(task, 'task') }}
+                {{ entity_card(task, 'task', meta_text=task.get_meta_text()) }}
             {% else %}
                 <p class="text-gray-500 text-sm">No recent tasks</p>
             {% endfor %}
@@ -43,7 +43,7 @@
         {# Recent Opportunities Section #}
         {% call section_card(title='Recent Opportunities') %}
             {% for opportunity in recent_opportunities %}
-                {{ entity_card(opportunity, 'opportunity') }}
+                {{ entity_card(opportunity, 'opportunity', meta_text=opportunity.get_meta_text()) }}
             {% else %}
                 <p class="text-gray-500 text-sm">No recent opportunities</p>
             {% endfor %}
