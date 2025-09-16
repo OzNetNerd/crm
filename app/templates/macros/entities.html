@@ -26,6 +26,13 @@
             </h3>
             {% if show_actions %}
                 <div class="entity-card-actions">
+                    <a href="/modals/{{ entity_type }}/create"
+                       hx-get="/modals/{{ entity_type }}/create"
+                       hx-target="#modal-container"
+                       hx-swap="innerHTML"
+                       class="entity-card-action">
+                        {{ icon('plus', size='4') }}
+                    </a>
                     <a href="{{ entity.get_view_url() }}"
                        hx-get="{{ entity.get_view_url() }}"
                        hx-target="#modal-container"
