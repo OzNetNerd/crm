@@ -177,11 +177,29 @@ class BaseModel(db.Model):
 
     def get_meta_data(self):
         """Return structured meta data for entity cards."""
+        from app.utils import format_date_with_relative, get_next_step_icon
+
         meta = {}
+
+        # Created date with relative time
         if hasattr(self, 'created_at') and self.created_at:
-            meta['created'] = self.created_at.strftime('%d/%m/%y')
+            created_date = self.created_at.date() if isinstance(self.created_at, datetime) else self.created_at
+            meta['created'] = format_date_with_relative(created_date)
+
+        # Due date with relative time
         if hasattr(self, 'due_date') and self.due_date:
-            meta['due'] = self.due_date.strftime('%d/%m/%y')
+            meta['due'] = format_date_with_relative(self.due_date)
+
+        # Next step for tasks
+        if (hasattr(self, 'next_step_type') and self.next_step_type and
+            hasattr(self, 'due_date') and self.due_date):
+            meta['next_step'] = {
+                'type': self.next_step_type,
+                'icon': get_next_step_icon(self.next_step_type),
+                'date': format_date_with_relative(self.due_date),
+                'type_display': self.next_step_type.replace('_', ' ').title()
+            }
+
         return meta
 
     def get_view_url(self):

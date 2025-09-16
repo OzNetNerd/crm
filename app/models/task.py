@@ -247,18 +247,9 @@ class Task(BaseModel):
         if not self.due_date:
             return "No due date"
 
-        from datetime import date
-        today = date.today()
-        days_diff = (self.due_date - today).days
-        formatted_date = self.due_date.strftime('%d/%m/%y')
-
-        if days_diff < 0:
-            days_ago = abs(days_diff)
-            return f"Due: {formatted_date} ({days_ago} day{'s' if days_ago != 1 else ''} ago)"
-        elif days_diff == 0:
-            return f"Due: {formatted_date} (Today)"
-        else:
-            return f"Due: {formatted_date} ({days_diff} day{'s' if days_diff != 1 else ''} left)"
+        from app.utils import format_date_with_relative
+        formatted_date = format_date_with_relative(self.due_date)
+        return f"Due: {formatted_date}"
 
 
 
