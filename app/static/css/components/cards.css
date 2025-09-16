@@ -49,6 +49,7 @@
     padding: 1rem;
     padding-left: 2rem; /* Add more left padding */
     margin-bottom: 1rem; /* Gap between cards */
+    border: 1px solid #e5e7eb; /* gray-200 outline */
     border-radius: 0.5rem;
     transition: box-shadow 0.2s ease;
 }
@@ -146,6 +147,19 @@
     border-top: 1px solid #f3f4f6; /* border-gray-100 */
     font-size: 0.75rem; /* text-xs */
     color: #6b7280; /* text-gray-500 */
+}
+
+/* Meta date icons using CSS pseudo-elements */
+.entity-card-meta-created::before {
+    content: "📅 ";
+}
+
+.entity-card-meta-due::before {
+    content: "⏰ ";
+}
+
+.entity-card-meta-separator {
+    margin: 0 0.5rem;
 }
 
 /* Card group for entity listings */

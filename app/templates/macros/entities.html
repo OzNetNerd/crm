@@ -8,7 +8,7 @@
    ENTITY CARD - DRY implementation with inline Tailwind
    ============================================ #}
 
-{% macro entity_card(entity, entity_type, show_actions=true, meta_text=None) %}
+{% macro entity_card(entity, entity_type, show_actions=true, meta_data=None) %}
     {# Ultimate DRY - Dynamic CSS class generation using badge macro #}
 
     {% set contact_fields = [
@@ -71,8 +71,16 @@
             {% endif %}
         </div>
 
-        {% if meta_text %}
-            <div class="entity-card-meta">{{ meta_text }}</div>
+        {% if meta_data %}
+            <div class="entity-card-meta">
+                {% if meta_data.created %}
+                    <span class="entity-card-meta-created">Created: {{ meta_data.created }}</span>
+                {% endif %}
+                {% if meta_data.due %}
+                    {% if meta_data.created %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    <span class="entity-card-meta-due">Due: {{ meta_data.due }}</span>
+                {% endif %}
+            </div>
         {% endif %}
     </div>
 {% endmacro %}
@@ -84,7 +92,7 @@
     {% if entities %}
         <div class="entity-list">
             {% for entity in entities %}
-                {{ entity_card(entity, entity_type, show_actions, meta_text=entity.get_meta_text()) }}
+                {{ entity_card(entity, entity_type, show_actions, meta_data=entity.get_meta_data()) }}
             {% endfor %}
         </div>
     {% else %}
