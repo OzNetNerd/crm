@@ -147,6 +147,7 @@ class Stakeholder(BaseModel):
         info={
             'display_label': 'Email Address',
             'contact_field': True,
+            'icon': 'envelope',
             'form_include': True,
             'required': True
         }
@@ -155,7 +156,8 @@ class Stakeholder(BaseModel):
         db.String(50),
         info={
             'display_label': 'Phone Number',
-            'contact_field': True
+            'contact_field': True,
+            'icon': 'phone'
         }
     )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

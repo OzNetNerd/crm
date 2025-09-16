@@ -13,41 +13,16 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {# Overdue Tasks Section #}
-        {% call section_card(title='Overdue Tasks') %}
-            {% for task in overdue_tasks %}
-                {{ entity_card(task, 'task', meta_data=task.get_meta_data()) }}
-            {% else %}
-                <p class="text-gray-500 text-sm">No overdue tasks</p>
-            {% endfor %}
-        {% endcall %}
-
-        {# Recent Notes Section #}
-        {% call section_card(title='Recent Notes') %}
-            {% for note in recent_notes %}
-                {{ entity_card(note, 'note', meta_data=note.get_meta_data()) }}
-            {% else %}
-                <p class="text-gray-500 text-sm">No notes yet</p>
-            {% endfor %}
-        {% endcall %}
-
-        {# Recent Tasks Section #}
-        {% call section_card(title='Recent Tasks') %}
-            {% for task in recent_tasks %}
-                {{ entity_card(task, 'task', meta_data=task.get_meta_data()) }}
-            {% else %}
-                <p class="text-gray-500 text-sm">No recent tasks</p>
-            {% endfor %}
-        {% endcall %}
-
-        {# Recent Opportunities Section #}
-        {% call section_card(title='Recent Opportunities') %}
-            {% for opportunity in recent_opportunities %}
-                {{ entity_card(opportunity, 'opportunity', meta_data=opportunity.get_meta_data()) }}
-            {% else %}
-                <p class="text-gray-500 text-sm">No recent opportunities</p>
-            {% endfor %}
-        {% endcall %}
+        {# DRY: Iterate over dashboard sections from backend #}
+        {% for section in dashboard_sections %}
+            {% call section_card(title=section.title) %}
+                {% for entity in section.entities %}
+                    {{ entity_card(entity, section.entity_type, config=section.display_config) }}
+                {% else %}
+                    <p class="text-gray-500 text-sm">{{ section.empty_message }}</p>
+                {% endfor %}
+            {% endcall %}
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
