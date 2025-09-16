@@ -4,7 +4,9 @@
  * Replaces duplicate css_dropdown and form_select_dropdown macros
  */
 
-document.addEventListener('alpine:init', () => {
+// Ensure Alpine is loaded before registering components
+function registerDropdown() {
+    console.log('Registering dropdown plugin...');
     Alpine.data('dropdown', (config = {}) => ({
         // Core state
         open: false,
@@ -167,4 +169,11 @@ document.addEventListener('alpine:init', () => {
     document.addEventListener('click', (event) => {
         Alpine.findComponent(event.target, 'dropdown')?.clickOutside(event);
     });
-});
+}
+
+// Register when Alpine is ready
+if (typeof Alpine !== 'undefined') {
+    registerDropdown();
+} else {
+    document.addEventListener('alpine:init', registerDropdown);
+}

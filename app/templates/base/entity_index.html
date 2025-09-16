@@ -1,5 +1,5 @@
 {% extends "base/layout.html" %}
-{% from "macros/components.html" import confirmation_modal, filter_controls %}
+{% from "macros/components.html" import confirmation_modal, entity_dropdown_controls %}
 
 {% block title %}{{ entity_config.entity_name }} - CRM{% endblock %}
 
@@ -43,7 +43,7 @@
               hx-target="#entity-content"
               hx-trigger="change"
               class="flex flex-wrap gap-3">
-            {{ filter_controls(filters=dropdown_configs) }}
+            {{ entity_dropdown_controls(dropdowns=dropdown_configs) }}
         </form>
     </div>
     {% endif %}
