@@ -47,6 +47,20 @@ class Task(BaseModel):
         'subtitle_fields': ['due_date', 'priority', 'status']
     }
 
+    # Serialization configuration
+    __include_properties__ = [
+        "is_overdue", "opportunity_value", "company_name",
+        "opportunity_name", "opportunity_stage", "stakeholder_opportunity_name",
+        "stakeholder_opportunity_value", "task_type_badge", "can_start",
+        "completion_percentage"
+    ]
+    __relationship_transforms__ = {
+        "linked_entities": lambda self: [
+            {"type": entity["type"], "id": entity["id"], "name": entity["name"]}
+            for entity in self.linked_entities
+        ]
+    }
+
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(
         db.Text,
@@ -477,67 +491,8 @@ class Task(BaseModel):
 
 
     def to_dict(self) -> Dict[str, Any]:
-        """
-        Convert task to dictionary for JSON serialization.
-        
-        Creates a comprehensive dictionary representation including
-        all database fields, computed properties, linked entities,
-        and UI helper fields like CSS classes.
-        
-        Returns:
-            Dictionary containing:
-            - All database column values
-            - Computed properties (is_overdue, completion_percentage, etc.)
-            - Linked entity information
-            - UI helper fields
-            
-        Example:
-            >>> task = Task(description="Follow up", priority="high")
-            >>> data = task.to_dict()
-            >>> print(data['description'])
-            'Follow up'
-        """
-        # Define properties to include beyond database columns
-        include_properties = [
-            "is_overdue", "opportunity_value", "company_name",
-            "opportunity_name", "opportunity_stage", "stakeholder_opportunity_name",
-            "stakeholder_opportunity_value", "task_type_badge", "can_start",
-            "completion_percentage"
-        ]
-        
-        # Define custom transforms for specific fields
-        field_transforms = {
-            "priority": lambda val: val,  # Keep as-is but add CSS class separately
-            "status": lambda val: val,    # Keep as-is but add CSS class separately
-            "linked_entities": lambda _: [
-                {"type": entity["type"], "id": entity["id"], "name": entity["name"]}
-                for entity in self.linked_entities
-            ]
-        }
-        
-        # Start with base serialization - convert model to dict
-        result = {}
-        # Serialize all columns
-        for column in self.__table__.columns:
-            column_name = column.name
-            value = getattr(self, column_name, None)
-            # Handle datetime/date serialization
-            if isinstance(value, (datetime, date)):
-                result[column_name] = value.isoformat() if value else None
-            else:
-                result[column_name] = value
-
-        # Add custom properties and transforms
-        for prop in include_properties:
-            if hasattr(self, prop):
-                result[prop] = getattr(self, prop)
-
-        # Apply field transforms
-        for field, transform in field_transforms.items():
-            if field in result:
-                result[field] = transform(result[field])
-
-        return result
+        """Convert task to dictionary for JSON serialization."""
+        return super().to_dict()
 
     def to_display_dict(self) -> Dict[str, Any]:
         """

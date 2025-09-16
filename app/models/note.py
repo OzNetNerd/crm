@@ -120,16 +120,6 @@ class Note(BaseModel):
         else:
             return formatted_date  # Just show date/time for older notes
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert note to dictionary."""
-        return {
-            'id': self.id,
-            'content': self.content,
-            'is_internal': self.is_internal,
-            'created_at': self.created_at,
-            'entity_type': self.entity_type,
-            'entity_id': self.entity_id
-        }
 
     def to_display_dict(self) -> Dict[str, Any]:
         """
@@ -146,7 +136,7 @@ class Note(BaseModel):
             'Long content here...'
         """
         # Get base dictionary
-        result = self.to_dict()
+        result = super().to_dict()
 
         # Add note-specific computed fields
         result['entity_name'] = self.entity_name

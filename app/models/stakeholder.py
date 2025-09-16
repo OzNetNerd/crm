@@ -65,6 +65,23 @@ class Stakeholder(BaseModel):
         'subtitle_fields': ['job_title', 'email'],
         'relationships': [('company', 'name')]
     }
+
+    # Serialization configuration
+    __include_properties__ = [
+        "contact_info_status", "meddpicc_roles", "relationship_owners"
+    ]
+    __relationship_transforms__ = {
+        "meddpicc_roles": lambda self: self.get_meddpicc_role_names(),
+        "relationship_owners": lambda self: self.get_relationship_owners(),
+        "opportunities": lambda self: [
+            {
+                "id": opp.id,
+                "name": opp.name,
+                "stage": opp.stage,
+            }
+            for opp in self.opportunities
+        ]
+    }
     
 
     id = db.Column(db.Integer, primary_key=True)
@@ -254,51 +271,11 @@ class Stakeholder(BaseModel):
 
     def to_dict(self):
         """Convert stakeholder to dictionary for JSON serialization"""
-        
-        # Define properties to include beyond database columns
-        include_properties = [
-            "contact_info_status", "meddpicc_roles", "relationship_owners"
-        ]
-        
-        # Define custom transforms for computed fields and relationships
-        field_transforms = {
-            "meddpicc_roles": lambda _: self.get_meddpicc_role_names(),
-            "relationship_owners": lambda _: self.get_relationship_owners(),
-            "opportunities": lambda _: [
-                {
-                    "id": opp.id,
-                    "name": opp.name,
-                    "stage": opp.stage,
-                }
-                for opp in self.opportunities
-            ]
-        }
-        
-        # Start with base serialization - convert model to dict
-        result = {}
-        # Serialize all columns
-        for column in self.__table__.columns:
-            column_name = column.name
-            value = getattr(self, column_name, None)
-            # Handle datetime/date serialization
-            if isinstance(value, (datetime, date)):
-                result[column_name] = value.isoformat() if value else None
-            else:
-                result[column_name] = value
+        result = super().to_dict()
 
-        # Add custom properties and transforms
-        for prop in include_properties:
-            if hasattr(self, prop):
-                result[prop] = getattr(self, prop)
-
-        # Apply field transforms
-        for field, transform in field_transforms.items():
-            if field in result:
-                result[field] = transform(result[field])
-        
         # Add computed company name
         result["company_name"] = self.company.name if self.company else None
-        
+
         return result
 
     def to_display_dict(self):
