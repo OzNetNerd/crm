@@ -16,12 +16,20 @@
          data-entity-id="{{ entity.id }}">
         <div class="entity-card-header">
             <h3 class="entity-card-title">
-                <a href="{{ entity.get_view_url() }}" class="entity-card-link">
+                <a href="{{ entity.get_view_url() }}"
+                   hx-get="{{ entity.get_view_url() }}"
+                   hx-target="#modal-container"
+                   hx-swap="innerHTML"
+                   class="entity-card-link">
                     {{ entity.get_display_title() }}
                 </a>
             </h3>
             {% if show_actions %}
-                <a href="{{ entity.get_edit_url() }}" class="entity-card-action">
+                <a href="{{ entity.get_edit_url() }}"
+                   hx-get="{{ entity.get_edit_url() }}"
+                   hx-target="#modal-container"
+                   hx-swap="innerHTML"
+                   class="entity-card-action">
                     {{ icon('pencil', size='4') }}
                 </a>
             {% endif %}
