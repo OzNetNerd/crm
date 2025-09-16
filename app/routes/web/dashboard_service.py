@@ -116,20 +116,44 @@ class DashboardService:
         Returns:
             Complete dashboard context dictionary
         """
+        from app.models import MODEL_REGISTRY
+
+        # Build dashboard sections dynamically from MODEL_REGISTRY
+        dashboard_sections = []
+
+        # Define which entities to show and in what order
+        section_configs = [
+            ('task', 'Overdue Tasks', 'get_overdue', 5),
+            ('note', 'Recent Notes', 'get_recent', 3),
+            ('task', 'Recent Tasks', 'get_recent', 5),
+            ('opportunity', 'Recent Opportunities', 'get_recent', 3)
+        ]
+
+        # Iterate and call the same interface on all models
+        for entity_type, title, method_name, limit in section_configs:
+            if entity_type in MODEL_REGISTRY:
+                model_class = MODEL_REGISTRY[entity_type]
+                method = getattr(model_class, method_name, None)
+
+                if method:
+                    entities = method(limit)
+                    dashboard_sections.append({
+                        'title': title,
+                        'entities': entities,
+                        'entity_type': entity_type,
+                        'empty_message': f'No {model_class.get_display_name_plural().lower()}',
+                        'display_config': model_class.get_display_config()
+                    })
+
         # Combine all dashboard data
         data = {
+            'dashboard_sections': dashboard_sections,
             'dashboard_stats': DashboardService.get_pipeline_stats(),
             'entity_types': DashboardService.get_entity_buttons(),
             'today': date.today()
         }
 
-        # Add recent activity
-        data.update(DashboardService.get_recent_activity())
-
-        # Add critical alerts
-        data.update(DashboardService.get_critical_alerts())
-
-        # Add pipeline stats
+        # Add pipeline stats for compatibility
         breakdown = Opportunity.get_pipeline_breakdown()
         data['pipeline_stats'] = {
             'prospect': breakdown.get('prospect', 0),

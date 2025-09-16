@@ -8,13 +8,8 @@
    ENTITY CARD - DRY implementation with inline Tailwind
    ============================================ #}
 
-{% macro entity_card(entity, entity_type, show_actions=true, meta_data=None) %}
-    {# Ultimate DRY - Dynamic CSS class generation using badge macro #}
-
-    {% set contact_fields = [
-        {'field': 'email', 'icon': 'envelope'},
-        {'field': 'phone', 'icon': 'phone'}
-    ] %}
+{% macro entity_card(entity, entity_type, show_actions=true, config=None) %}
+    {# DRY: Use display config from backend, no hardcoded entity types #}
 
     <div class="entity-card-container"
          data-entity="{{ entity_type }}"
@@ -33,52 +28,67 @@
         </div>
 
         <div class="entity-card-content">
-            {% if entity_type == 'contact' %}
-                {# Loop through contact fields #}
-                {% for field in contact_fields %}
-                    {% if entity[field.field] %}
+            {# Contact fields from config #}
+            {% if config and config.contact_fields %}
+                {% for field in config.contact_fields %}
+                    {% if entity[field.name] %}
                         <div class="entity-card-field-row">
                             {{ icon(field.icon, size='4', class='entity-card-icon') }}
-                            <span>{{ entity[field.field] }}</span>
+                            <span>{{ entity[field.name] }}</span>
                         </div>
                     {% endif %}
                 {% endfor %}
-            {% elif entity_type == 'task' %}
-                <div class="entity-card-badges">
-                    {# Priority badge using macro #}
-                    {% if entity.priority %}
-                        {{ priority_badge(entity.priority) }}
-                    {% endif %}
+            {% endif %}
 
-                    {# Status badge using macro #}
-                    {% if entity.status %}
-                        {{ status_badge(entity.status) }}
-                    {% endif %}
-                </div>
-            {% elif entity_type == 'opportunity' %}
+            {# Badge fields from config #}
+            {% if config and config.badge_fields %}
                 <div class="entity-card-badges">
-                    {{ status_badge(entity.status) }}
-                    {% if entity.value %}
-                        <span class="font-semibold text-green-600">${{ "{:,.0f}".format(entity.value) }}</span>
-                    {% endif %}
+                    {% for field_name in config.badge_fields %}
+                        {% if entity[field_name] %}
+                            {% if field_name == 'priority' %}
+                                {{ priority_badge(entity[field_name]) }}
+                            {% elif field_name == 'status' %}
+                                {{ status_badge(entity[field_name]) }}
+                            {% else %}
+                                {{ badge(entity[field_name]) }}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
                 </div>
             {% endif %}
 
-            {% if entity.description %}
+            {# Value fields from config #}
+            {% if config and config.value_fields %}
+                {% for field in config.value_fields %}
+                    {% if entity[field.name] %}
+                        <span class="font-semibold text-green-600">
+                            {% if field.currency %}${% endif %}
+                            {{ field.format.format(entity[field.name]) }}
+                            {{ field.unit }}
+                        </span>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            {# Description field from config #}
+            {% if config and config.description_field and entity[config.description_field] %}
                 <p class="entity-card-description">
-                    {{ entity.description[:150] }}{% if entity.description|length > 150 %}...{% endif %}
+                    {% set desc = entity[config.description_field] %}
+                    {{ desc[:150] }}{% if desc|length > 150 %}...{% endif %}
                 </p>
             {% endif %}
         </div>
 
-        {% if meta_data %}
+        {# Meta data - always use entity's get_meta_data() method #}
+        {% set meta = entity.get_meta_data() %}
+        {% if meta %}
             <div class="entity-card-meta">
-                {% if meta_data.created %}
-                    <span class="entity-card-meta-created">Created: {{ meta_data.created }}</span>
+                {% if meta.created %}
+                    <span class="entity-card-meta-created">Created: {{ meta.created }}</span>
                 {% endif %}
-                {% if meta_data.due %}
-                    {% if meta_data.created %}<span class="entity-card-meta-separator">|</span>{% endif %}
-                    <span class="entity-card-meta-due">Due: {{ meta_data.due }}</span>
+                {% if meta.due %}
+                    {% if meta.created %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    <span class="entity-card-meta-due">Due: {{ meta.due }}</span>
                 {% endif %}
             </div>
         {% endif %}
@@ -88,11 +98,11 @@
 {# ============================================
    ENTITY LIST
    ============================================ #}
-{% macro entity_list(entities, entity_type, show_actions=true, empty_message=None) %}
+{% macro entity_list(entities, entity_type, show_actions=true, empty_message=None, config=None) %}
     {% if entities %}
         <div class="entity-list">
             {% for entity in entities %}
-                {{ entity_card(entity, entity_type, show_actions, meta_data=entity.get_meta_data()) }}
+                {{ entity_card(entity, entity_type, show_actions, config) }}
             {% endfor %}
         </div>
     {% else %}
