@@ -162,6 +162,38 @@
     margin: 0 0.5rem;
 }
 
+/* Entity group components for collapsible sections */
+.entity-group-summary {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    cursor: pointer;
+    list-style: none;
+}
+
+.entity-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.entity-group-title {
+    font-weight: 500;
+    color: #111827;
+    display: flex;
+    align-items: center;
+}
+
+.entity-group-chevron {
+    margin-right: 0.5rem;
+    color: #9ca3af;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.entity-group-chevron:hover {
+    color: #4b5563;
+}
+
 /* Card group for entity listings */
 .card-group {
     display: flex;
