@@ -118,6 +118,8 @@ class CompanyAccountTeam(db.Model):
     """Pure assignment table - job_title comes from User model via JOIN"""
 
     __tablename__ = "company_account_teams"
+    __api_enabled__ = False  # Association table - no direct API
+    __web_enabled__ = False  # Association table - no web pages
 
     user_id = db.Column(
         db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
@@ -161,6 +163,8 @@ class OpportunityAccountTeam(db.Model):
     """Pure assignment table - job_title comes from User model via JOIN"""
 
     __tablename__ = "opportunity_account_teams"
+    __api_enabled__ = False  # Association table - no direct API
+    __web_enabled__ = False  # Association table - no web pages
 
     user_id = db.Column(
         db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
