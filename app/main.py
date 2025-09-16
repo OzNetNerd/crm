@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.models import db
 from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
+from app.utils.filters import badge_class
 # Models are imported via app.models - no registration needed
 
 
@@ -77,6 +78,9 @@ def create_app():
     # Helper functions for templates
     app.jinja_env.globals["getattr"] = getattr
     app.jinja_env.globals["hasattr"] = hasattr
+
+    # Register custom Jinja2 filters
+    app.jinja_env.filters["badge_class"] = badge_class
 
 
     with app.app_context():
