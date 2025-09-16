@@ -444,6 +444,235 @@ body.modal-open {
 }
 
 /* ========================================
+ * UNIVERSAL FORM FIELD STYLES
+ * Referenced throughout template system - single source of truth
+ * ======================================== */
+
+/* Search Input - Used by search_widget macro */
+.search-input {
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background: white;
+    transition: var(--transition-fast);
+    color: var(--color-gray-900);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-lighter);
+}
+
+.search-input::placeholder {
+    color: var(--color-gray-500);
+}
+
+/* Form Field Groups */
+.form-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+/* Form Labels */
+.form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    margin-bottom: 0.25rem;
+}
+
+.form-label-required::after {
+    content: ' *';
+    color: var(--color-danger);
+    font-weight: 600;
+}
+
+/* Form Inputs */
+.form-input {
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background: white;
+    transition: var(--transition-fast);
+    color: var(--color-gray-900);
+    line-height: 1.5;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-lighter);
+}
+
+.form-input.error {
+    border-color: var(--color-danger);
+}
+
+.form-input.error:focus {
+    box-shadow: 0 0 0 3px var(--color-danger-lighter);
+}
+
+.form-input::placeholder {
+    color: var(--color-gray-500);
+}
+
+/* Form Textarea */
+.form-textarea {
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background: white;
+    transition: var(--transition-fast);
+    color: var(--color-gray-900);
+    line-height: 1.5;
+    min-height: 6rem;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-lighter);
+}
+
+.form-textarea.error {
+    border-color: var(--color-danger);
+}
+
+.form-textarea.error:focus {
+    box-shadow: 0 0 0 3px var(--color-danger-lighter);
+}
+
+.form-textarea::placeholder {
+    color: var(--color-gray-500);
+}
+
+/* Form Select */
+.form-select {
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background: white;
+    transition: var(--transition-fast);
+    color: var(--color-gray-900);
+    line-height: 1.5;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-lighter);
+}
+
+.form-select.error {
+    border-color: var(--color-danger);
+}
+
+.form-select.error:focus {
+    box-shadow: 0 0 0 3px var(--color-danger-lighter);
+}
+
+/* Form Checkbox */
+.form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--color-gray-700);
+}
+
+.form-checkbox input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0.25rem;
+    background: white;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.form-checkbox input[type="checkbox"]:checked {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.form-checkbox input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--color-primary-lighter);
+}
+
+/* Form Errors */
+.form-error {
+    font-size: 0.75rem;
+    color: var(--color-danger);
+    margin-top: 0.25rem;
+    line-height: 1.4;
+}
+
+/* View Mode Styles */
+.form-field-view {
+    padding: 0.625rem 0.875rem;
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--color-gray-900);
+    line-height: 1.5;
+    min-height: 2.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.form-field-view-empty {
+    color: var(--color-gray-500);
+    font-style: italic;
+}
+
+/* Typography Improvements for Modal Content */
+.modal-body p {
+    line-height: 1.6;
+    color: var(--color-gray-700);
+    margin-bottom: 0.75rem;
+}
+
+.modal-body p:last-child {
+    margin-bottom: 0;
+}
+
+.modal-body h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin-bottom: 0.5rem;
+}
+
+.modal-body ul, .modal-body ol {
+    margin-left: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.modal-body li {
+    line-height: 1.6;
+    color: var(--color-gray-700);
+    margin-bottom: 0.25rem;
+}
+
+/* ========================================
  * RESPONSIVE DESIGN
  * ======================================== */
 
