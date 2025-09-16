@@ -43,13 +43,123 @@
 /* Entity-specific card variants - inherit from entities.css */
 /* These are already defined in entities.css as card-company, card-task, etc. */
 
-/* Entity card container - provides consistent padding and styling */
+/* Entity card container - DRY implementation with all styling */
 .entity-card-container {
-    padding: var(--entity-card-container-padding);
-    border: var(--entity-card-container-border);
-    border-radius: var(--entity-card-container-border-radius);
-    background: var(--entity-card-container-background);
-    margin-bottom: var(--entity-card-container-gap);
+    background: white;
+    padding: 1rem;
+    padding-left: 2rem; /* Add more left padding */
+    margin-bottom: 1rem; /* Gap between cards */
+    border: 1px solid #e5e7eb; /* gray-200 outline */
+    border-radius: 0.5rem;
+    transition: box-shadow 0.2s ease;
+}
+
+.entity-card-container:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Entity card header - title and actions section */
+.entity-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+/* Entity card title - the main heading */
+.entity-card-title {
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 600; /* font-semibold */
+}
+
+/* Entity card link - clickable title link */
+.entity-card-link {
+    color: #111827; /* text-gray-900 */
+    transition: color 0.2s ease;
+    text-decoration: none;
+}
+
+.entity-card-link:hover {
+    color: var(--color-primary); /* Use primary color from variables */
+    text-decoration: none;
+}
+
+/* Entity card action button - edit/delete buttons */
+.entity-card-action {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem; /* gap-1 */
+    padding: 0.25rem; /* p-1 */
+    border-radius: 0.25rem; /* rounded */
+    color: #6b7280; /* text-gray-500 */
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.entity-card-action:hover {
+    background-color: #f3f4f6; /* hover:bg-gray-100 */
+    color: #374151; /* hover:text-gray-700 */
+}
+
+/* Entity card content wrapper */
+.entity-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* space-y-2 */
+}
+
+/* Entity card badges container */
+.entity-card-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* gap-2 */
+}
+
+/* Entity card field row - for email, phone, due date etc */
+.entity-card-field-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem; /* text-sm */
+    color: #4b5563; /* text-gray-600 */
+}
+
+/* Entity card icon - consistent icon styling */
+.entity-card-icon {
+    width: 1rem; /* w-4 */
+    height: 1rem; /* h-4 */
+    color: #9ca3af; /* text-gray-400 */
+}
+
+/* Entity card description - truncated text */
+.entity-card-description {
+    font-size: 0.875rem; /* text-sm */
+    color: #4b5563; /* text-gray-600 */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* line-clamp-2 */
+    -webkit-box-orient: vertical;
+}
+
+/* Entity card meta - creation date, due date, etc */
+.entity-card-meta {
+    margin-top: 0.75rem; /* mt-3 */
+    padding-top: 0.75rem; /* pt-3 */
+    border-top: 1px solid #f3f4f6; /* border-gray-100 */
+    font-size: 0.75rem; /* text-xs */
+    color: #6b7280; /* text-gray-500 */
+}
+
+/* Meta date icons using CSS pseudo-elements */
+.entity-card-meta-created::before {
+    content: "📅 ";
+}
+
+.entity-card-meta-due::before {
+    content: "⏰ ";
+}
+
+.entity-card-meta-separator {
+    margin: 0 0.5rem;
 }
 
 /* Card group for entity listings */

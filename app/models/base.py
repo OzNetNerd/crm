@@ -157,6 +157,15 @@ class BaseModel(db.Model):
 
         return " • ".join(parts[:3])
 
+    def get_meta_data(self):
+        """Return structured meta data for entity cards."""
+        meta = {}
+        if hasattr(self, 'created_at') and self.created_at:
+            meta['created'] = self.created_at.strftime('%d/%m/%y')
+        if hasattr(self, 'due_date') and self.due_date:
+            meta['due'] = self.due_date.strftime('%d/%m/%y')
+        return meta
+
     def get_view_url(self):
         """Get the view URL for this entity"""
         from flask import url_for
@@ -174,3 +183,69 @@ class BaseModel(db.Model):
         if hasattr(self, field_name):
             return getattr(self, field_name) or f'Empty {self.get_display_name()}'
         return f'{self.get_display_name()} #{self.id}'
+
+    @classmethod
+    def get_recent(cls, limit=5):
+        """Get recent entities - uniform interface for all models."""
+        # Use created_at if available, otherwise id for ordering
+        if hasattr(cls, 'created_at'):
+            return cls.query.order_by(cls.created_at.desc()).limit(limit).all()
+        return cls.query.order_by(cls.id.desc()).limit(limit).all()
+
+    @classmethod
+    def get_overdue(cls, limit=5):
+        """Get overdue items - only for models with due_date."""
+        if hasattr(cls, 'due_date') and hasattr(cls, 'status'):
+            from datetime import date
+            return cls.query.filter(
+                cls.due_date < date.today(),
+                cls.status != 'complete'
+            ).limit(limit).all()
+        return []
+
+    @classmethod
+    def get_display_config(cls):
+        """Extract display configuration from column metadata."""
+        from sqlalchemy import Numeric, Float, Integer
+
+        config = {
+            'contact_fields': [],
+            'badge_fields': [],
+            'value_fields': [],
+            'description_field': None
+        }
+
+        for column in cls.__table__.columns:
+            col_info = column.info
+            col_name = column.name
+
+            # Skip ID fields
+            if col_name.endswith('_id') or col_name == 'id':
+                continue
+
+            # Contact fields - get icon from column info
+            if col_info.get('contact_field'):
+                config['contact_fields'].append({
+                    'name': col_name,
+                    'icon': col_info.get('icon', 'info')  # Icon should be in column info
+                })
+
+            # Badge fields (fields with choices)
+            elif col_info.get('choices'):
+                config['badge_fields'].append(col_name)
+
+            # Value fields (numeric)
+            elif isinstance(column.type, (Numeric, Float, Integer)):
+                config['value_fields'].append({
+                    'name': col_name,
+                    'currency': col_info.get('currency', col_name == 'value'),
+                    'unit': col_info.get('unit', ''),
+                    'format': col_info.get('format', '{:,.0f}')
+                })
+
+            # Description field (first Text field)
+            elif column.type.__class__.__name__ == 'Text' and not config['description_field']:
+                if col_name not in ['comments', 'notes', 'internal_notes']:
+                    config['description_field'] = col_name
+
+        return config

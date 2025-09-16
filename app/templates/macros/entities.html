@@ -8,95 +8,101 @@
    ENTITY CARD - DRY implementation with inline Tailwind
    ============================================ #}
 
-{% macro entity_card(entity, entity_type, show_actions=true) %}
-    {# Ultimate DRY - Dynamic CSS class generation using badge macro #}
+{% macro entity_card(entity, entity_type, show_actions=true, config=None) %}
+    {# DRY: Use display config from backend, no hardcoded entity types #}
 
-    {% set contact_fields = [
-        {'field': 'email', 'icon': 'envelope'},
-        {'field': 'phone', 'icon': 'phone'}
-    ] %}
+    <div class="entity-card-container"
+         data-entity="{{ entity_type }}"
+         data-entity-id="{{ entity.id }}">
+        <div class="entity-card-header">
+            <h3 class="entity-card-title">
+                <a href="{{ entity.get_view_url() }}" class="entity-card-link">
+                    {{ entity.get_display_title() }}
+                </a>
+            </h3>
+            {% if show_actions %}
+                <a href="{{ entity.get_edit_url() }}" class="entity-card-action">
+                    {{ icon('pencil', size='4') }}
+                </a>
+            {% endif %}
+        </div>
 
-    <div class="entity-card-container">
-        <div class="bg-white p-4 rounded-lg hover:shadow-md transition-shadow"
-             data-entity="{{ entity_type }}"
-             data-entity-id="{{ entity.id }}">
-            <div class="flex items-start justify-between mb-2">
-                <h3 class="text-sm font-semibold text-gray-900">
-                    <a href="{{ entity.get_view_url() }}" class="hover:text-primary-600 transition-colors">
-                        {{ entity.get_display_title() }}
-                    </a>
-                </h3>
-                {% if show_actions %}
-                    <div class="flex items-center gap-1">
-                        <a href="{{ entity.get_edit_url() }}" class="p-1 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700">
-                            {{ icon('pencil', size='4') }}
-                        </a>
-                    </div>
-                {% endif %}
-            </div>
-
-            <div class="space-y-2">
-                {% if entity_type == 'contact' %}
-                    {# Loop through contact fields #}
-                    {% for field in contact_fields %}
-                        {% if entity[field.field] %}
-                            <div class="flex items-center gap-2 text-sm text-gray-600">
-                                {{ icon(field.icon, size='4', class='text-gray-400') }}
-                                <span>{{ entity[field.field] }}</span>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                {% elif entity_type == 'task' %}
-                    <div class="flex items-center gap-2">
-                        {# Priority badge using macro #}
-                        {% if entity.priority %}
-                            {{ priority_badge(entity.priority) }}
-                        {% endif %}
-
-                        {# Status badge using macro #}
-                        {% if entity.status %}
-                            {{ status_badge(entity.status) }}
-                        {% endif %}
-                    </div>
-                    {% if entity.due_date %}
-                        <div class="flex items-center gap-2 text-sm text-gray-600">
-                            {{ icon('calendar', size='4', class='text-gray-400') }}
-                            <span>Due: {{ format_date(entity.due_date, 'short') }}</span>
+        <div class="entity-card-content">
+            {# Contact fields from config #}
+            {% if config and config.contact_fields %}
+                {% for field in config.contact_fields %}
+                    {% if entity[field.name] %}
+                        <div class="entity-card-field-row">
+                            {{ icon(field.icon, size='4', class='entity-card-icon') }}
+                            <span>{{ entity[field.name] }}</span>
                         </div>
                     {% endif %}
-                {% elif entity_type == 'opportunity' %}
-                    <div class="flex items-center gap-2">
-                        {{ status_badge(entity.status) }}
-                        {% if entity.value %}
-                            <span class="font-semibold text-green-600">${{ "{:,.0f}".format(entity.value) }}</span>
+                {% endfor %}
+            {% endif %}
+
+            {# Badge fields from config #}
+            {% if config and config.badge_fields %}
+                <div class="entity-card-badges">
+                    {% for field_name in config.badge_fields %}
+                        {% if entity[field_name] %}
+                            {% if field_name == 'priority' %}
+                                {{ priority_badge(entity[field_name]) }}
+                            {% elif field_name == 'status' %}
+                                {{ status_badge(entity[field_name]) }}
+                            {% else %}
+                                {{ badge(entity[field_name]) }}
+                            {% endif %}
                         {% endif %}
-                    </div>
-                {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-                {% if entity.description %}
-                    <p class="text-sm text-gray-600 line-clamp-2">
-                        {{ entity.description[:150] }}{% if entity.description|length > 150 %}...{% endif %}
-                    </p>
-                {% endif %}
-            </div>
+            {# Value fields from config #}
+            {% if config and config.value_fields %}
+                {% for field in config.value_fields %}
+                    {% if entity[field.name] %}
+                        <span class="font-semibold text-green-600">
+                            {% if field.currency %}${% endif %}
+                            {{ field.format.format(entity[field.name]) }}
+                            {{ field.unit }}
+                        </span>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
 
-            <div class="mt-3 pt-3 border-t border-gray-100">
-                <span class="text-xs text-gray-500">
-                    Created {{ format_date(entity.created_at, 'relative') }}
-                </span>
-            </div>
+            {# Description field from config #}
+            {% if config and config.description_field and entity[config.description_field] %}
+                <p class="entity-card-description">
+                    {% set desc = entity[config.description_field] %}
+                    {{ desc[:150] }}{% if desc|length > 150 %}...{% endif %}
+                </p>
+            {% endif %}
         </div>
+
+        {# Meta data - always use entity's get_meta_data() method #}
+        {% set meta = entity.get_meta_data() %}
+        {% if meta %}
+            <div class="entity-card-meta">
+                {% if meta.created %}
+                    <span class="entity-card-meta-created">Created: {{ meta.created }}</span>
+                {% endif %}
+                {% if meta.due %}
+                    {% if meta.created %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    <span class="entity-card-meta-due">Due: {{ meta.due }}</span>
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 {% endmacro %}
 
 {# ============================================
    ENTITY LIST
    ============================================ #}
-{% macro entity_list(entities, entity_type, show_actions=true, empty_message=None) %}
+{% macro entity_list(entities, entity_type, show_actions=true, empty_message=None, config=None) %}
     {% if entities %}
         <div class="entity-list">
             {% for entity in entities %}
-                {{ entity_card(entity, entity_type, show_actions) }}
+                {{ entity_card(entity, entity_type, show_actions, config) }}
             {% endfor %}
         </div>
     {% else %}

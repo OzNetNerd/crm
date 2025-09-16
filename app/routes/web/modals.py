@@ -50,7 +50,7 @@ def _render_modal(model_name, model_class, form, mode='create', entity=None, err
         'model_name': model_name,
         'model_class': model_class,
         'form': form,
-        'modal_title': f'{mode.title()} {model_name}'
+        'modal_title': f"{'View' if mode == 'view' else mode.title()} {model_name.title()}"
     }
 
     # Mode-specific parameters
