@@ -2,6 +2,7 @@ from . import db
 from datetime import datetime, date
 from sqlalchemy import String, Text, Date, Numeric
 from typing import Dict, Any, List, Callable
+from functools import lru_cache
 
 
 class BaseModel(db.Model):
@@ -22,6 +23,7 @@ class BaseModel(db.Model):
     # Modal configuration - override in models as needed
     __modal_size__ = 'md'  # sm, md, lg, xl
     __modal_icon__ = None   # Override to use custom icon
+    __display_field__ = 'name'  # Field to use for display title
 
     @classmethod
     def get_display_name(cls):
@@ -41,18 +43,46 @@ class BaseModel(db.Model):
         return cls.__tablename__.title()
 
     @classmethod
-    def get_entity_type(cls):
-        """Get entity type from MODEL_REGISTRY."""
-        from app.models import MODEL_REGISTRY
-        for key, model_class in MODEL_REGISTRY.items():
-            if model_class == cls:
-                return key
-        return cls.__name__.lower()
+    @lru_cache(maxsize=None)
+    def get_field_metadata(cls):
+        """Get metadata for all fields from column info.
+
+        Returns dict with field names as keys and metadata as values.
+        Cached per model class for performance.
+        """
+        metadata = {}
+        for column in cls.__table__.columns:
+            name = column.name
+            # Skip ID fields
+            if name.endswith('_id') or name == 'id':
+                continue
+
+            column_info = column.info
+            metadata[name] = {
+                'type': column.type.__class__.__name__,
+                'label': column_info.get('display_label', name.replace('_', ' ').title()),
+                'filterable': bool(column_info.get('choices')),
+                'sortable': column_info.get('sortable', name in ['created_at', 'name']),
+                'groupable': column_info.get('groupable', False),
+                'choices': column_info.get('choices'),
+                'required': column_info.get('required', False),
+                'contact_field': column_info.get('contact_field', False),
+                'icon': column_info.get('icon'),
+            }
+        return metadata
+
+    @classmethod
+    def get_default_sort_field(cls):
+        """Get default sort field for this model."""
+        # Priority order for default sort
+        for field in ['due_date', 'name', 'created_at', 'id']:
+            if hasattr(cls, field):
+                return field
+        return 'id'
 
     @classmethod
     def get_field_choices(cls, field_name: str):
-        """
-        Get choices for a field from column info metadata.
+        """Get choices for a specific field.
 
         Args:
             field_name: Name of the field to get choices for
@@ -61,34 +91,10 @@ class BaseModel(db.Model):
             List of (value, label) tuples for the field choices.
             Returns empty list if field doesn't exist or has no choices.
         """
-        if not hasattr(cls, field_name):
-            return []
-
-        column = getattr(cls, field_name)
-        if not hasattr(column, 'info') or 'choices' not in column.info:
-            return []
-
-        choices = column.info['choices']
+        metadata = cls.get_field_metadata()
+        field_info = metadata.get(field_name, {})
+        choices = field_info.get('choices', {})
         return [(value, data.get('label', value)) for value, data in choices.items()]
-
-    @classmethod
-    def get_metadata(cls):
-        """Get entity metadata dict for template **kwargs."""
-        return {
-            'entity_type': cls.__name__.lower(),
-            'entity_name_singular': cls.get_display_name(),
-            'entity_name_plural': cls.get_display_name_plural(),
-            'entity_name': cls.get_display_name_plural()
-        }
-
-    @classmethod
-    def get_modal_config(cls):
-        """Get modal configuration for this entity."""
-        return {
-            'size': cls.__modal_size__,
-            'icon': cls.__modal_icon__ or cls.get_entity_type(),
-            'title': cls.get_display_name()
-        }
 
     @classmethod
     def search(cls, query, limit=20):
@@ -129,7 +135,8 @@ class BaseModel(db.Model):
             'note': '📝'
         }
 
-        entity_type = self.get_entity_type()
+        from app.models import MODEL_REGISTRY
+        entity_type = next((key for key, model in MODEL_REGISTRY.items() if model == self.__class__), self.__class__.__name__.lower())
 
         return {
             "id": self.id,
@@ -202,25 +209,11 @@ class BaseModel(db.Model):
 
         return meta
 
-    def get_view_url(self):
-        """Get the view URL for this entity"""
-        from flask import url_for
-        return url_for('modals.view_modal', model_name=self.get_entity_type(), entity_id=self.id)
-
-    def get_edit_url(self):
-        """Get the edit URL for this entity"""
-        from flask import url_for
-        return url_for('modals.edit_modal', model_name=self.get_entity_type(), entity_id=self.id)
-
-    def get_delete_url(self):
-        """Get the delete URL for this entity"""
-        from flask import url_for
-        return url_for('modals.delete_modal', model_name=self.get_entity_type(), entity_id=self.id)
 
     def get_display_title(self):
         """Get display title using model's configured display field."""
         # Use the field specified by the model
-        field_name = getattr(self, '__display_field__', 'name')
+        field_name = self.__class__.__display_field__
         if hasattr(self, field_name):
             return getattr(self, field_name) or f'Empty {self.get_display_name()}'
         return f'{self.get_display_name()} #{self.id}'
@@ -244,52 +237,6 @@ class BaseModel(db.Model):
             ).limit(limit).all()
         return []
 
-    @classmethod
-    def get_display_config(cls):
-        """Extract display configuration from column metadata."""
-        from sqlalchemy import Numeric, Float, Integer
-
-        config = {
-            'contact_fields': [],
-            'badge_fields': [],
-            'value_fields': [],
-            'description_field': None
-        }
-
-        for column in cls.__table__.columns:
-            col_info = column.info
-            col_name = column.name
-
-            # Skip ID fields
-            if col_name.endswith('_id') or col_name == 'id':
-                continue
-
-            # Contact fields - get icon from column info
-            if col_info.get('contact_field'):
-                config['contact_fields'].append({
-                    'name': col_name,
-                    'icon': col_info.get('icon', 'info')  # Icon should be in column info
-                })
-
-            # Badge fields (fields with choices)
-            elif col_info.get('choices'):
-                config['badge_fields'].append(col_name)
-
-            # Value fields (numeric)
-            elif isinstance(column.type, (Numeric, Float, Integer)):
-                config['value_fields'].append({
-                    'name': col_name,
-                    'currency': col_info.get('currency', col_name == 'value'),
-                    'unit': col_info.get('unit', ''),
-                    'format': col_info.get('format', '{:,.0f}')
-                })
-
-            # Description field (first Text field)
-            elif column.type.__class__.__name__ == 'Text' and not config['description_field']:
-                if col_name not in ['comments', 'notes', 'internal_notes']:
-                    config['description_field'] = col_name
-
-        return config
 
     def to_dict(self) -> Dict[str, Any]:
         """

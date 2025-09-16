@@ -1,35 +1,46 @@
 from flask import Blueprint, request, jsonify, abort
-from app.models import db, Task, Stakeholder, Company, Opportunity
+from app.models import db, Task, MODEL_REGISTRY
 
 api_entities_bp = Blueprint("api_entities", __name__, url_prefix="/api")
 
-# Single source of truth - simple entity mapping
-ENTITIES = {
-    'companies': Company,
-    'stakeholders': Stakeholder,
-    'opportunities': Opportunity
-}
-
-# Singular mapping for validation endpoint
-ENTITY_SINGULAR_MAP = {
-    'company': Company,
-    'stakeholder': Stakeholder,
-    'opportunity': Opportunity
-}
-
 # Generic CRUD functions - DRY approach
+def get_model_by_name(entity_name):
+    """Get model class from entity name (plural or singular)."""
+    # Try exact match first (singular form)
+    model = MODEL_REGISTRY.get(entity_name)
+    if model:
+        return model
+
+    # Try plural forms - map common plurals to singular
+    plural_map = {
+        'companies': 'company',
+        'stakeholders': 'stakeholder',
+        'opportunities': 'opportunity',
+        'tasks': 'task',
+        'users': 'user',
+        'notes': 'note'
+    }
+
+    singular = plural_map.get(entity_name)
+    if singular:
+        return MODEL_REGISTRY.get(singular)
+
+    return None
+
 def get_entity_list(entity_name):
     """Get list of entities"""
-    model = ENTITIES.get(entity_name)
+    model = get_model_by_name(entity_name)
     if not model:
         abort(404)
 
-    entities = model.query.order_by(getattr(model, 'name', model.id)).all()
+    # Use model's default sort field
+    sort_field = model.get_default_sort_field()
+    entities = model.query.order_by(getattr(model, sort_field)).all()
     return jsonify([entity.to_dict() for entity in entities])
 
 def get_entity_detail(entity_name, entity_id):
     """Get single entity details"""
-    model = ENTITIES.get(entity_name)
+    model = get_model_by_name(entity_name)
     if not model:
         abort(404)
 
@@ -38,7 +49,7 @@ def get_entity_detail(entity_name, entity_id):
 
 def create_entity(entity_name):
     """Create new entity"""
-    model = ENTITIES.get(entity_name)
+    model = get_model_by_name(entity_name)
     if not model:
         abort(404)
 
@@ -57,7 +68,7 @@ def create_entity(entity_name):
 
 def update_entity(entity_name, entity_id):
     """Update existing entity"""
-    model = ENTITIES.get(entity_name)
+    model = get_model_by_name(entity_name)
     if not model:
         abort(404)
 
@@ -78,7 +89,7 @@ def update_entity(entity_name, entity_id):
 
 def delete_entity(entity_name, entity_id):
     """Delete entity"""
-    model = ENTITIES.get(entity_name)
+    model = get_model_by_name(entity_name)
     if not model:
         abort(404)
 
@@ -120,32 +131,59 @@ def create_route_handlers():
             return delete_entity(entity_name, entity_id)
         return handler
 
-    # Register routes for all entities
-    for entity_name, model in ENTITIES.items():
-        singular = model.get_display_name().lower().replace(' ', '_')
+    # Register routes for entities that have API endpoints
+    # Use plural forms for REST API endpoints
+    # NOTE: 'tasks' is excluded because it has custom handling below
+    api_entities = {
+        'companies': 'company',
+        'stakeholders': 'stakeholder',
+        'opportunities': 'opportunity'
+    }
 
+    for plural_name, singular_name in api_entities.items():
         # GET list
-        api_entities_bp.add_url_rule(f'/{entity_name}', f'list_{entity_name}',
-                                    make_list_handler(entity_name))
+        api_entities_bp.add_url_rule(f'/{plural_name}', f'list_{plural_name}',
+                                    make_list_handler(plural_name))
 
         # GET single
-        api_entities_bp.add_url_rule(f'/{entity_name}/<int:entity_id>', f'get_{singular}',
-                                    make_detail_handler(entity_name))
+        api_entities_bp.add_url_rule(f'/{plural_name}/<int:entity_id>', f'get_{singular_name}',
+                                    make_detail_handler(plural_name))
 
         # POST create
-        api_entities_bp.add_url_rule(f'/{entity_name}', f'create_{singular}',
-                                    make_create_handler(entity_name), methods=['POST'])
+        api_entities_bp.add_url_rule(f'/{plural_name}', f'create_{singular_name}',
+                                    make_create_handler(plural_name), methods=['POST'])
 
         # PUT update
-        api_entities_bp.add_url_rule(f'/{entity_name}/<int:entity_id>', f'update_{singular}',
-                                    make_update_handler(entity_name), methods=['PUT'])
+        api_entities_bp.add_url_rule(f'/{plural_name}/<int:entity_id>', f'update_{singular_name}',
+                                    make_update_handler(plural_name), methods=['PUT'])
 
         # DELETE
-        api_entities_bp.add_url_rule(f'/{entity_name}/<int:entity_id>', f'delete_{singular}',
-                                    make_delete_handler(entity_name), methods=['DELETE'])
+        api_entities_bp.add_url_rule(f'/{plural_name}/<int:entity_id>', f'delete_{singular_name}',
+                                    make_delete_handler(plural_name), methods=['DELETE'])
 
 # Call the function to register routes
 create_route_handlers()
+
+# Add standard task routes (GET, PUT, DELETE) that don't conflict with custom POST
+@api_entities_bp.route("/tasks", methods=["GET"])
+def get_tasks():
+    """Get list of tasks"""
+    return get_entity_list('tasks')
+
+@api_entities_bp.route("/tasks/<int:entity_id>", methods=["GET"])
+def get_task(entity_id):
+    """Get single task"""
+    return get_entity_detail('tasks', entity_id)
+
+@api_entities_bp.route("/tasks/<int:entity_id>", methods=["PUT"])
+def update_task(entity_id):
+    """Update task"""
+    return update_entity('tasks', entity_id)
+
+@api_entities_bp.route("/tasks/<int:entity_id>", methods=["DELETE"])
+def delete_task(entity_id):
+    """Delete task"""
+    return delete_entity('tasks', entity_id)
 
 # Task creation helper functions - DRY and focused
 def _parse_date_field(date_string):
@@ -250,7 +288,7 @@ def _create_multi_task(data):
     return parent_task
 
 
-# Task endpoints - clean and focused
+# Task endpoints - custom handling for complex task creation
 @api_entities_bp.route("/tasks", methods=["POST"])
 def create_task():
     """Create new task with support for linked entities"""
@@ -284,8 +322,8 @@ def validate_field(entity_type, field_name):
         if not field_value:
             return '', 200
 
-        # Use the singular mapping for validation
-        model_class = ENTITY_SINGULAR_MAP.get(entity_type.lower())
+        # Use MODEL_REGISTRY for validation
+        model_class = MODEL_REGISTRY.get(entity_type.lower())
         if not model_class:
             return '', 200  # Unknown entity, allow
 

@@ -4,85 +4,51 @@ Web routes for CRM entities - Fully dynamic, zero hardcoding.
 
 from flask import Blueprint, render_template, request
 from collections import defaultdict
-from app.models import db
+from app.models import db, MODEL_REGISTRY
 
 # Create blueprint
 entities_web_bp = Blueprint("entities", __name__)
 
-# Dynamic model discovery from the database models
-def get_entity_models():
-    """Get all entity models dynamically from SQLAlchemy"""
-    models = {}
-    for mapper in db.Model.registry.mappers:
-        model = mapper.class_
-        if hasattr(model, '__tablename__') and not model.__name__.startswith('_'):
-            # Skip association tables and internal models
-            if 'Team' in model.__name__ or model.__name__ in ['Note', 'ChatHistory', 'Embedding']:
-                continue
-            models[model.__tablename__] = model
-    return models
 
 
-def get_filterable_columns(model):
-    """Extract filterable columns from model metadata"""
-    filters = []
-    for column in model.__table__.columns:
-        column_info = getattr(column, 'info', {})
-        # Consider columns with choices or foreign keys as filterable
-        if column_info.get('choices') or column.name.endswith('_id'):
-            filters.append(column.name)
-    return filters
-
-
-def get_default_sort(model):
-    """Determine default sort field for a model"""
-    # Priority: due_date, name, created_at, id
-    for field in ['due_date', 'name', 'created_at', 'id']:
-        if hasattr(model, field):
-            return field
-    return 'id'
-
-
-def get_dropdowns_from_columns(model_class):
-    """Build dropdown configs from model columns with groupable/sortable info."""
+def build_dropdown_configs(model, request_args):
+    """Build dropdown configs from model metadata for web UI."""
     dropdowns = {}
-    current_group_by = request.args.get('group_by', '')
-    current_sort_by = request.args.get('sort_by', '')
-    current_sort_direction = request.args.get('sort_direction', 'asc')
+    metadata = model.get_field_metadata()
 
-    groupable_options = []
-    sortable_options = []
+    # Get current values from request
+    current_group_by = request_args.get('group_by', '')
+    current_sort_by = request_args.get('sort_by', model.get_default_sort_field())
+    current_sort_direction = request_args.get('sort_direction', 'asc')
 
-    for column in model_class.__table__.columns:
-        column_info = getattr(column, 'info', {})
-        label = column_info.get('display_label', column.name.replace('_', ' ').title())
+    # Build filter dropdowns for fields with choices
+    for field_name, field_info in metadata.items():
+        if field_info['filterable'] and field_info['choices']:
+            current_value = request_args.get(field_name, '')
+            options = [{'value': '', 'label': f'All {field_info["label"]}'}]
 
-        if column_info.get('groupable'):
-            groupable_options.append({'value': column.name, 'label': label})
-
-        if column_info.get('sortable') or column.name in ['created_at', 'name', 'id']:
-            sortable_options.append({'value': column.name, 'label': label})
-
-        # Add filter dropdowns for fields with choices
-        if column_info.get('choices'):
-            current_filter_value = request.args.get(column.name, '')
-            choice_options = [{'value': '', 'label': f'All {label}'}]  # "All" option
-
-            for choice_value, choice_data in column_info['choices'].items():
-                choice_options.append({
+            for choice_value, choice_data in field_info['choices'].items():
+                options.append({
                     'value': choice_value,
                     'label': choice_data.get('label', choice_value)
                 })
 
-            dropdowns[f'filter_{column.name}'] = {
-                'name': column.name,  # For form field name
-                'label': f'Filter by {label}',
-                'options': choice_options,
-                'current_value': current_filter_value,
-                'placeholder': f'All {label}',
+            dropdowns[f'filter_{field_name}'] = {
+                'name': field_name,
+                'label': f'Filter by {field_info["label"]}',
+                'options': options,
+                'current_value': current_value,
+                'placeholder': f'All {field_info["label"]}',
                 'multiple': False,
-                'searchable': False  # Most filter dropdowns don't need search
+                'searchable': False
             }
+
+    # Build groupable options
+    groupable_options = [
+        {'value': name, 'label': info['label']}
+        for name, info in metadata.items()
+        if info['groupable']
+    ]
 
     if groupable_options:
         dropdowns['group_by'] = {
@@ -93,14 +59,24 @@ def get_dropdowns_from_columns(model_class):
             'searchable': True
         }
 
-    if sortable_options:
-        dropdowns['sort_by'] = {
-            'options': sortable_options,
-            'current_value': current_sort_by,
-            'placeholder': 'Sort by...',
-            'multiple': False,
-            'searchable': True
-        }
+    # Build sortable options
+    sortable_options = [
+        {'value': name, 'label': info['label']}
+        for name, info in metadata.items()
+        if info['sortable']
+    ]
+
+    # Always include id as sortable
+    if not any(opt['value'] == 'id' for opt in sortable_options):
+        sortable_options.append({'value': 'id', 'label': 'ID'})
+
+    dropdowns['sort_by'] = {
+        'options': sortable_options,
+        'current_value': current_sort_by,
+        'placeholder': 'Sort by...',
+        'multiple': False,
+        'searchable': True
+    }
 
     dropdowns['sort_direction'] = {
         'options': [
@@ -119,10 +95,15 @@ def get_dropdowns_from_columns(model_class):
 
 
 def create_routes():
-    """Dynamically create all routes based on discovered models"""
-    models = get_entity_models()
+    """Dynamically create all routes based on MODEL_REGISTRY"""
+    # Use MODEL_REGISTRY as single source of truth, but skip certain models
+    skip_models = {'note'}  # Models without standard entity pages
 
-    for table_name, model in models.items():
+    for entity_type, model in MODEL_REGISTRY.items():
+        if entity_type in skip_models:
+            continue
+
+        table_name = model.__tablename__
         # Create closures to capture the model
         def make_index(model, table_name):
             def handler():
@@ -150,19 +131,22 @@ def create_routes():
         )
 
         # Add alternate routes for users -> teams
-        if table_name == 'users':
-            entities_web_bp.add_url_rule('/teams', 'teams_index', make_index(model, table_name))
-            entities_web_bp.add_url_rule('/teams/content', 'teams_content', make_content(model, table_name))
+        if entity_type == 'user':
+            entities_web_bp.add_url_rule('/teams', 'teams_index', make_index(model, 'users'))
+            entities_web_bp.add_url_rule('/teams/content', 'teams_content', make_content(model, 'users'))
 
 
 def entity_index(model, table_name):
     """Generic index handler"""
-    dropdown_configs = get_dropdowns_from_columns(model)
+    dropdown_configs = build_dropdown_configs(model, request.args)
 
-    # Get basic stats using model metadata
-    metadata = model.get_metadata()
+    # Get basic stats
+    display_name_plural = model.get_display_name_plural()
     total = model.query.count()
-    stats = {'title': f'{metadata["entity_name"]} Overview', 'stats': [{'value': total, 'label': f'Total {metadata["entity_name"]}'}]}
+    stats = {
+        'title': f'{display_name_plural} Overview',
+        'stats': [{'value': total, 'label': f'Total {display_name_plural}'}]
+    }
 
     # Add status breakdown for models with status field
     if hasattr(model, 'status'):
@@ -172,14 +156,18 @@ def entity_index(model, table_name):
             if status:
                 stats['stats'].append({'value': count, 'label': status.replace('-', ' ').replace('_', ' ').title()})
 
+    # Build entity config for template
+    from app.models import MODEL_REGISTRY
+    entity_type = next((key for key, value in MODEL_REGISTRY.items() if value == model), model.__name__.lower())
+
     entity_config = {
-        'entity_type': metadata['entity_type'],
-        'entity_name': metadata['entity_name'],
-        'entity_name_singular': metadata['entity_name_singular'],
+        'entity_type': entity_type,
+        'entity_name': model.get_display_name_plural(),
+        'entity_name_singular': model.get_display_name(),
         'content_endpoint': f'entities.{table_name}_content',
         'entity_buttons': [{
-            'title': f'New {metadata["entity_name_singular"]}',
-            'url': f'/modals/{model.__name__}/create'
+            'title': f'New {model.get_display_name()}',
+            'url': f'/modals/{entity_type}/create'
         }]
     }
 
@@ -194,7 +182,7 @@ def entity_content(model, table_name):
     """Generic content handler"""
     # Get params
     group_by = request.args.get('group_by', '')
-    sort_by = request.args.get('sort_by', get_default_sort(model))
+    sort_by = request.args.get('sort_by', model.get_default_sort_field())
     sort_direction = request.args.get('sort_direction', 'asc')
 
     # Build query
@@ -220,10 +208,12 @@ def entity_content(model, table_name):
         sort_field = getattr(model, sort_by) if hasattr(model, sort_by) else model.id
 
     # Apply filters dynamically from request args
-    for column in model.__table__.columns:
-        filter_value = request.args.get(column.name)
-        if filter_value:
-            query = query.filter(getattr(model, column.name) == filter_value)
+    metadata = model.get_field_metadata()
+    for field_name, field_info in metadata.items():
+        if field_info['filterable']:
+            filter_value = request.args.get(field_name)
+            if filter_value and hasattr(model, field_name):
+                query = query.filter(getattr(model, field_name) == filter_value)
 
     # Apply sorting
     query = query.order_by(sort_field.desc() if sort_direction == 'desc' else sort_field.asc())
@@ -250,11 +240,18 @@ def entity_content(model, table_name):
             'entities': entities
         }]
 
+    # Build template context
+    from app.models import MODEL_REGISTRY
+    entity_type = next((key for key, value in MODEL_REGISTRY.items() if value == model), model.__name__.lower())
+
     return render_template("shared/entity_content.html",
         grouped_entities=grouped_entities,
         group_by=group_by,
         total_count=len(entities),
-        **model.get_metadata()
+        entity_type=entity_type,
+        entity_name=model.get_display_name_plural(),
+        entity_name_singular=model.get_display_name(),
+        entity_name_plural=model.get_display_name_plural()
     )
 
 
