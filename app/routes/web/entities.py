@@ -1,124 +1,137 @@
 """
-Web routes for CRM entities - Dynamic and DRY.
+Web routes for CRM entities - Clean and DRY.
 """
 
 from flask import Blueprint, render_template, request
 from collections import defaultdict
+from sqlalchemy import func
 from app.models import db, MODEL_REGISTRY
 
 entities_web_bp = Blueprint("entities", __name__)
 
 
+def make_dropdown(name, options, current_value='', placeholder='', searchable=False):
+    """Create a dropdown configuration."""
+    return {
+        'name': name,
+        'options': options,
+        'current_value': current_value,
+        'placeholder': placeholder,
+        'multiple': False,
+        'searchable': searchable
+    }
+
+
+def get_filter_options(field_info):
+    """Convert field choices to dropdown options."""
+    options = [{'value': '', 'label': f'All {field_info["label"]}'}]
+
+    if not field_info.get('choices'):
+        return options
+
+    for val, data in field_info['choices'].items():
+        options.append({'value': val, 'label': data.get('label', val)})
+
+    return options
+
+
+def get_field_options(metadata, filter_func):
+    """Get field options based on filter function."""
+    return [
+        {'value': name, 'label': info['label']}
+        for name, info in metadata.items()
+        if filter_func(info)
+    ]
+
+
 def build_dropdowns(model, request_args):
-    """Build all dropdown configurations for filters and sorting."""
+    """Build dropdown configurations."""
     metadata = model.get_field_metadata()
     dropdowns = {}
 
-    # Add filter dropdowns for fields with choices
-    for field_name, field_info in metadata.items():
-        if field_info.get('filterable') and field_info.get('choices'):
-            options = [{'value': '', 'label': f'All {field_info["label"]}'}]
-            options.extend([
-                {'value': choice_val, 'label': choice_data.get('label', choice_val)}
-                for choice_val, choice_data in field_info['choices'].items()
-            ])
+    # Filter dropdowns
+    for name, info in metadata.items():
+        if not (info.get('filterable') and info.get('choices')):
+            continue
 
-            dropdowns[f'filter_{field_name}'] = {
-                'name': field_name,
-                'label': f'Filter by {field_info["label"]}',
-                'options': options,
-                'current_value': request_args.get(field_name, ''),
-                'placeholder': f'All {field_info["label"]}',
-                'multiple': False,
-                'searchable': False
-            }
+        options = get_filter_options(info)
+        dropdowns[f'filter_{name}'] = make_dropdown(
+            name,
+            options,
+            request_args.get(name, ''),
+            f'All {info["label"]}'
+        )
 
-    # Add group-by dropdown if groupable fields exist
-    groupable = [
-        {'value': name, 'label': info['label']}
-        for name, info in metadata.items()
-        if info.get('groupable')
-    ]
-
+    # Group dropdown
+    groupable = get_field_options(metadata, lambda x: x.get('groupable'))
     if groupable:
-        dropdowns['group_by'] = {
-            'options': groupable,
-            'current_value': request_args.get('group_by', ''),
-            'placeholder': 'Group by...',
-            'multiple': False,
-            'searchable': True
-        }
+        dropdowns['group_by'] = make_dropdown(
+            'group_by',
+            groupable,
+            request_args.get('group_by', ''),
+            'Group by...',
+            searchable=True
+        )
 
-    # Add sort dropdown
-    sortable = [
-        {'value': name, 'label': info['label']}
-        for name, info in metadata.items()
-        if info.get('sortable')
-    ]
-
-    if not any(field['value'] == 'id' for field in sortable):
+    # Sort dropdown
+    sortable = get_field_options(metadata, lambda x: x.get('sortable'))
+    if not any(f['value'] == 'id' for f in sortable):
         sortable.append({'value': 'id', 'label': 'ID'})
 
-    dropdowns['sort_by'] = {
-        'options': sortable,
-        'current_value': request_args.get('sort_by', model.get_default_sort_field()),
-        'placeholder': 'Sort by...',
-        'multiple': False,
-        'searchable': True
-    }
+    dropdowns['sort_by'] = make_dropdown(
+        'sort_by',
+        sortable,
+        request_args.get('sort_by', model.get_default_sort_field()),
+        'Sort by...',
+        searchable=True
+    )
 
-    # Add sort direction dropdown
-    dropdowns['sort_direction'] = {
-        'options': [
+    # Direction dropdown
+    dropdowns['sort_direction'] = make_dropdown(
+        'sort_direction',
+        [
             {'value': 'asc', 'label': 'Ascending'},
             {'value': 'desc', 'label': 'Descending'}
         ],
-        'current_value': request_args.get('sort_direction', 'asc'),
-        'placeholder': 'Order',
-        'multiple': False,
-        'searchable': False
-    }
+        request_args.get('sort_direction', 'asc'),
+        'Order'
+    )
 
     return dropdowns
 
 
 def get_entity_type(model):
-    """Get entity type from MODEL_REGISTRY."""
+    """Get entity type from registry."""
     for entity_type, model_class in MODEL_REGISTRY.items():
         if model_class == model:
             return entity_type
     return model.__name__.lower()
 
 
-def entity_index(model):
-    """Generic index handler for all entities."""
-    dropdown_configs = build_dropdowns(model, request.args)
-    entity_type = get_entity_type(model)
+def get_status_stats(model):
+    """Get status breakdown stats."""
+    if not hasattr(model, 'status'):
+        return []
 
-    # Get basic stats
-    display_name_plural = model.get_display_name_plural()
-    total = model.query.count()
-    stats = {
-        'title': f'{display_name_plural} Overview',
-        'stats': [{'value': total, 'label': f'Total {display_name_plural}'}]
-    }
+    counts = db.session.query(
+        model.status,
+        func.count(model.id)
+    ).group_by(model.status).all()
 
-    # Add status breakdown if model has status field
-    if hasattr(model, 'status'):
-        from sqlalchemy import func
-        status_counts = db.session.query(
-            model.status,
-            func.count(model.id)
-        ).group_by(model.status).all()
+    stats = []
+    for status, count in counts:
+        if status:
+            label = status.replace('-', ' ').replace('_', ' ').title()
+            stats.append({'value': count, 'label': label})
 
-        for status, count in status_counts:
-            if status:
-                label = status.replace('-', ' ').replace('_', ' ').title()
-                stats['stats'].append({'value': count, 'label': label})
+    return stats
 
-    entity_config = {
+
+def build_entity_config(model, entity_type):
+    """Build entity configuration."""
+    return {
         'entity_type': entity_type,
-        'entity_name': display_name_plural,
+        'entity_name': model.get_display_name_plural(),
         'entity_name_singular': model.get_display_name(),
         'content_endpoint': f'entities.{model.__tablename__}_content',
         'entity_buttons': [{
@@ -127,69 +140,84 @@ def entity_index(model):
         }]
     }
 
+
+def entity_index(model):
+    """Render entity index page."""
+    entity_type = get_entity_type(model)
+
+    # Build stats
+    total = model.query.count()
+    stats = {
+        'title': f'{model.get_display_name_plural()} Overview',
+        'stats': [{'value': total, 'label': f'Total {model.get_display_name_plural()}'}]
+    }
+    stats['stats'].extend(get_status_stats(model))
+
     return render_template(
         "base/entity_index.html",
-        entity_config=entity_config,
-        dropdown_configs=dropdown_configs,
+        entity_config=build_entity_config(model, entity_type),
+        dropdown_configs=build_dropdowns(model, request.args),
         entity_stats=stats
     )
 
 
-def entity_content(model):
-    """Generic content handler for all entities."""
-    # Get params
-    group_by = request.args.get('group_by', '')
+def apply_filters(query, model, metadata):
+    """Apply filters to query."""
+    for name, info in metadata.items():
+        if not info.get('filterable'):
+            continue
+
+        value = request.args.get(name)
+        if value and hasattr(model, name):
+            query = query.filter(getattr(model, name) == value)
+
+    return query
+
+
+def apply_sort(query, model):
+    """Apply sorting to query."""
     sort_by = request.args.get('sort_by', model.get_default_sort_field())
-    sort_direction = request.args.get('sort_direction', 'asc')
+    sort_dir = request.args.get('sort_direction', 'asc')
 
-    # Build query
-    query = model.query
+    sort_field = getattr(model, sort_by, model.id)
 
-    # Handle sorting - simplified logic
-    if hasattr(model, sort_by):
-        sort_field = getattr(model, sort_by)
-    else:
-        sort_field = model.id
+    if sort_dir == 'desc':
+        return query.order_by(sort_field.desc())
+    return query.order_by(sort_field.asc())
 
-    # Apply filters from request args
-    metadata = model.get_field_metadata()
-    for field_name, field_info in metadata.items():
-        if field_info.get('filterable'):
-            filter_value = request.args.get(field_name)
-            if filter_value and hasattr(model, field_name):
-                query = query.filter(getattr(model, field_name) == filter_value)
 
-    # Apply sorting
-    if sort_direction == 'desc':
-        query = query.order_by(sort_field.desc())
-    else:
-        query = query.order_by(sort_field.asc())
-
-    entities = query.all()
-
-    # Group entities if requested
-    if group_by and hasattr(model, group_by):
-        grouped = defaultdict(list)
-        for entity in entities:
-            group_key = getattr(entity, group_by, 'Other') or 'Uncategorized'
-            grouped[group_key].append(entity)
-
-        grouped_entities = [
-            {
-                'key': group_key,
-                'label': group_key,
-                'count': len(group_items),
-                'entities': group_items
-            }
-            for group_key, group_items in grouped.items()
-        ]
-    else:
-        grouped_entities = [{
+def group_entities(entities, model, group_by):
+    """Group entities by field."""
+    if not (group_by and hasattr(model, group_by)):
+        return [{
             'key': 'all',
             'label': 'All Results',
             'count': len(entities),
             'entities': entities
         }]
+
+    grouped = defaultdict(list)
+    for entity in entities:
+        key = getattr(entity, group_by, 'Other') or 'Uncategorized'
+        grouped[key].append(entity)
+
+    return [
+        {'key': k, 'label': k, 'count': len(v), 'entities': v}
+        for k, v in grouped.items()
+    ]
+
+
+def entity_content(model):
+    """Render entity content."""
+    # Get entities
+    query = model.query
+    query = apply_filters(query, model, model.get_field_metadata())
+    query = apply_sort(query, model)
+    entities = query.all()
+
+    # Group if requested
+    group_by = request.args.get('group_by', '')
+    grouped_entities = group_entities(entities, model, group_by)
 
     entity_type = get_entity_type(model)
 
@@ -205,35 +233,27 @@ def entity_content(model):
     )
 
 
-# Register routes for all models
+# Register routes
 for entity_type, model in MODEL_REGISTRY.items():
-    if not hasattr(model, 'is_web_enabled') or not model.is_web_enabled():
+    if not getattr(model, 'is_web_enabled', lambda: True)():
         continue
 
-    table_name = model.__tablename__
+    table = model.__tablename__
 
-    # Register main routes
+    # Main routes
     entities_web_bp.add_url_rule(
-        f'/{table_name}',
-        f'{table_name}_index',
+        f'/{table}',
+        f'{table}_index',
         lambda m=model: entity_index(m)
     )
 
     entities_web_bp.add_url_rule(
-        f'/{table_name}/content',
-        f'{table_name}_content',
+        f'/{table}/content',
+        f'{table}_content',
         lambda m=model: entity_content(m)
     )
 
-    # Add alternate routes for users -> teams
+    # Teams alias for users
     if entity_type == 'user':
-        entities_web_bp.add_url_rule(
-            '/teams',
-            'teams_index',
-            lambda m=model: entity_index(m)
-        )
-        entities_web_bp.add_url_rule(
-            '/teams/content',
-            'teams_content',
-            lambda m=model: entity_content(m)
-        )
+        entities_web_bp.add_url_rule('/teams', 'teams_index', lambda m=model: entity_index(m))
+        entities_web_bp.add_url_rule('/teams/content', 'teams_content', lambda m=model: entity_content(m))
