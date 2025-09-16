@@ -25,6 +25,10 @@ class BaseModel(db.Model):
     __modal_icon__ = None   # Override to use custom icon
     __display_field__ = 'name'  # Field to use for display title
 
+    # Route configuration - models control their own exposure
+    __api_enabled__ = True   # Default: all models have API endpoints
+    __web_enabled__ = True   # Default: all models have web pages
+
     @classmethod
     def get_display_name(cls):
         """Get singular display name."""
@@ -41,6 +45,27 @@ class BaseModel(db.Model):
             return cls.__display_name_plural__
         # Default to titleized table name (tables are already plural)
         return cls.__tablename__.title()
+
+    @classmethod
+    def get_plural_name(cls):
+        """Get plural name - just use the table name, it's already plural!"""
+        return cls.__tablename__
+
+    @classmethod
+    def get_singular_name(cls):
+        """Get singular name from MODEL_REGISTRY."""
+        from app.models import MODEL_REGISTRY
+        return next((k for k, v in MODEL_REGISTRY.items() if v == cls), cls.__name__.lower())
+
+    @classmethod
+    def is_api_enabled(cls):
+        """Check if this model should have API endpoints."""
+        return cls.__api_enabled__
+
+    @classmethod
+    def is_web_enabled(cls):
+        """Check if this model should have web entity pages."""
+        return cls.__web_enabled__
 
     @classmethod
     @lru_cache(maxsize=None)

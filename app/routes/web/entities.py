@@ -96,11 +96,9 @@ def build_dropdown_configs(model, request_args):
 
 def create_routes():
     """Dynamically create all routes based on MODEL_REGISTRY"""
-    # Use MODEL_REGISTRY as single source of truth, but skip certain models
-    skip_models = {'note'}  # Models without standard entity pages
-
     for entity_type, model in MODEL_REGISTRY.items():
-        if entity_type in skip_models:
+        # Let models control their own exposure
+        if not hasattr(model, 'is_web_enabled') or not model.is_web_enabled():
             continue
 
         table_name = model.__tablename__

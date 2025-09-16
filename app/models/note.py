@@ -23,6 +23,7 @@ class Note(BaseModel):
     __tablename__ = "notes"
     __display_name__ = "Note"
     __display_field__ = 'content'
+    __web_enabled__ = False  # No standard entity pages for notes
 
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
