@@ -10,6 +10,21 @@
     <div class="section-spacing">
         <h1 class="page-title">Dashboard</h1>
         <p class="page-subtitle">Overview of your CRM performance and activity</p>
+
+        {# DRY: Use existing entity_types from backend #}
+        {% if entity_types %}
+        <div class="page-actions">
+            {% for entity_type in entity_types %}
+                <a href="/modals/{{ entity_type }}/create"
+                   hx-get="/modals/{{ entity_type }}/create"
+                   hx-target="#modal-container"
+                   hx-swap="innerHTML"
+                   class="btn btn-primary">
+                    New {{ entity_type.title() }}
+                </a>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 
     <div class="grid-responsive-2">
