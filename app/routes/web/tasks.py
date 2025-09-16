@@ -173,19 +173,6 @@ def get_parent_tasks():
     )
 
 
-@tasks_bp.route("/<int:task_id>", methods=["DELETE"])
-def delete_task(task_id):
-    """Delete a task"""
-    try:
-        task = Task.query.get_or_404(task_id)
-        db.session.delete(task)
-        db.session.commit()
-        return (
-            jsonify({"status": "success", "message": "Task deleted successfully"}),
-            200,
-        )
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"status": "error", "message": str(e)}), 500
+# DELETE endpoint removed - use API routes for CRUD operations
 
 
