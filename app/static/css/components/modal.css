@@ -209,12 +209,12 @@ body.modal-open {
 .modal-btn-secondary {
     background: white;
     color: var(-color-gray-700);
-    border-color: var(-color-gray-300);
+    border-color: #9ca3af;
 }
 
 .modal-btn-secondary:hover {
     background: var(-color-gray-50);
-    border-color: var(-color-gray-400);
+    border-color: #6b7280;
 }
 
 .modal-btn-secondary:focus {
