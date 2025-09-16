@@ -9,6 +9,9 @@
 /* Layout utilities for consistent spacing and structure */
 @import url('components/layout.css');
 
+/* Button component styles */
+@import url('components/buttons.css');
+
 /* Card component styles */
 @import url('components/cards.css');
 
