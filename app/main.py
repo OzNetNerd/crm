@@ -10,8 +10,21 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.models import db
 from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
-from app.utils.filters import badge_class
 # Models are imported via app.models - no registration needed
+
+
+def badge_class(value):
+    """
+    Convert a value to a badge-compatible CSS class.
+
+    Rules:
+    - Lowercase the value
+    - Replace underscores with spaces
+    - Replace hyphens with spaces
+    """
+    if not value:
+        return ''
+    return str(value).lower().replace('_', ' ').replace('-', ' ')
 
 
 def get_database_path():
