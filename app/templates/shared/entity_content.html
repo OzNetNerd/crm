@@ -40,15 +40,15 @@
                 {% endfor %}
                 
                 {% if group.entities|length == 0 %}
-                    {{ group_empty_state(entity_name_plural, group.label) }}
+                    <p class="text-gray-500 text-center py-4">No {{ entity_name|lower }} in {{ group.label }}</p>
                 {% endif %}
             </div>
         </details>
     {% endfor %}
 
-    {# No results message - using DRY empty state component #}
+    {# No results message #}
     {% if grouped_entities|length == 0 %}
-        {{ empty_state(model_class.get_entity_config()) }}
+        <p class="text-gray-500 text-center py-8">No {{ entity_name|lower }} found</p>
     {% endif %}
 
 </div>

@@ -75,7 +75,6 @@ def get_dropdowns_from_columns(model_class):
 
             dropdowns[f'filter_{column.name}'] = {
                 'name': column.name,  # For form field name
-                'label': f'Filter by {label}',
                 'options': choice_options,
                 'current_value': current_filter_value,
                 'placeholder': f'All {label}',
