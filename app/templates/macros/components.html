@@ -200,24 +200,3 @@
     </div>
 {% endmacro %}
 
-{# ============================================
-   LEGACY FILTER CONTROLS - Deprecated
-   Use entity_dropdown_controls instead
-   ============================================ #}
-{% macro filter_controls(filters=[]) %}
-    {# Convert legacy format to new format for backwards compatibility #}
-    {% set dropdown_configs = {} %}
-    {% for filter in filters %}
-        {% set _ = dropdown_configs.update({
-            loop.index0: {
-                'name': filter.name,
-                'label': filter.label,
-                'options': filter.options,
-                'current_value': filter.current_value or '',
-                'placeholder': filter.placeholder or 'Select...',
-                'searchable': filter.searchable or false
-            }
-        }) %}
-    {% endfor %}
-    {{ entity_dropdown_controls(dropdown_configs) }}
-{% endmacro %}

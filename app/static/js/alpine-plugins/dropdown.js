@@ -6,7 +6,6 @@
 
 // Ensure Alpine is loaded before registering components
 function registerDropdown() {
-    console.log('Registering dropdown plugin...');
     Alpine.data('dropdown', (config = {}) => ({
         // Core state
         open: false,
