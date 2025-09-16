@@ -6,13 +6,13 @@
 {% block title %}Dashboard - CRM{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p class="text-gray-600 mt-1">Overview of your CRM performance and activity</p>
+<div class="container-content">
+    <div class="section-spacing">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Overview of your CRM performance and activity</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid-responsive-2">
         {# DRY: Iterate over dashboard sections from backend #}
         {% for section in dashboard_sections %}
             {% call card(title=section.title) %}

@@ -1,0 +1,302 @@
+/**
+ * Layout Component Styles
+ * Reusable layout utilities for consistent spacing and structure
+ * Following DRY principles for the CRM application
+ */
+
+/* ========================================
+ * CONTAINER LAYOUTS
+ * Consistent max-width and responsive padding
+ * ======================================== */
+
+/* Primary content container with vertical padding */
+.container-content {
+    max-width: 80rem; /* max-w-7xl */
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem; /* px-4 */
+    padding-right: 1rem;
+    padding-top: 2rem; /* py-8 */
+    padding-bottom: 2rem;
+}
+
+/* Navigation container without vertical padding */
+.container-nav {
+    max-width: 80rem; /* max-w-7xl */
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem; /* px-4 */
+    padding-right: 1rem;
+}
+
+/* Responsive padding adjustments */
+@media (min-width: 640px) {
+    .container-content,
+    .container-nav {
+        padding-left: 1.5rem; /* sm:px-6 */
+        padding-right: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .container-content,
+    .container-nav {
+        padding-left: 2rem; /* lg:px-8 */
+        padding-right: 2rem;
+    }
+}
+
+/* ========================================
+ * SURFACE STYLES
+ * Consistent background and border patterns
+ * ======================================== */
+
+/* Navigation bar surface */
+.surface-nav {
+    background-color: white;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
+}
+
+/* Card/panel surface */
+.surface-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+}
+
+/* Clean surface without shadows */
+.surface-clean {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+}
+
+/* ========================================
+ * FLEX LAYOUTS
+ * Common flex patterns for consistent alignment
+ * ======================================== */
+
+/* Navigation internal layout */
+.nav-layout {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 4rem; /* h-16 */
+}
+
+/* Standard row with spacing */
+.flex-row-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Centered flex container */
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Flex column with gap */
+.flex-col-gap {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ========================================
+ * PAGE STRUCTURE
+ * Semantic page section classes
+ * ======================================== */
+
+/* Main page container */
+.page-container {
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 2rem 1rem;
+}
+
+/* Page header section */
+.page-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Page title styling */
+.page-title {
+    font-size: 1.875rem; /* text-3xl */
+    font-weight: 700;
+    color: #111827; /* text-gray-900 */
+    margin: 0;
+}
+
+/* Page subtitle/description */
+.page-subtitle {
+    font-size: 1rem;
+    color: #6b7280; /* text-gray-600 */
+    margin-top: 0.5rem;
+}
+
+/* Page actions container */
+.page-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+/* Main content area */
+.content-area {
+    background-color: white;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+}
+
+/* ========================================
+ * GRID LAYOUTS
+ * Responsive grid systems
+ * ======================================== */
+
+/* Two column grid with responsive breakpoint */
+.grid-responsive-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .grid-responsive-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Stats grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* ========================================
+ * SPACING UTILITIES
+ * Consistent spacing patterns
+ * ======================================== */
+
+/* Section spacing */
+.section-spacing {
+    margin-bottom: 2rem;
+}
+
+/* Component spacing */
+.component-spacing {
+    margin-bottom: 1rem;
+}
+
+/* Inline spacing */
+.inline-spacing {
+    margin-right: 0.5rem;
+}
+
+/* ========================================
+ * RESPONSIVE UTILITIES
+ * Hide/show based on breakpoints
+ * ======================================== */
+
+/* Hide on mobile, show on desktop */
+.desktop-only {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .desktop-only {
+        display: block;
+    }
+}
+
+/* Show on mobile, hide on desktop */
+.mobile-only {
+    display: block;
+}
+
+@media (min-width: 768px) {
+    .mobile-only {
+        display: none;
+    }
+}
+
+/* ========================================
+ * RESPONSIVE PAGE CONTAINER ADJUSTMENTS
+ * ======================================== */
+
+@media (min-width: 640px) {
+    .page-container {
+        padding: 2rem 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .page-container {
+        padding: 2rem;
+    }
+}
+
+/* ========================================
+ * FILTER SECTION
+ * Consistent filter/toolbar layouts
+ * ======================================== */
+
+.filter-section {
+    background-color: #f9fafb; /* bg-gray-50 */
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ========================================
+ * LOADING STATES
+ * Consistent loading indicators
+ * ======================================== */
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 10rem;
+    color: #6b7280;
+}
+
+/* ========================================
+ * STAT CARDS
+ * Dashboard statistics cards
+ * ======================================== */
+
+.stat-card {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    transition: box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
