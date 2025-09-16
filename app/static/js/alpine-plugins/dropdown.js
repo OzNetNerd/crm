@@ -177,16 +177,7 @@ function registerDropdown() {
         }
     }));
 
-    // Register global click handler for all dropdowns
-    document.addEventListener('click', (event) => {
-        const dropdownEl = event.target.closest('[x-data*="dropdown"]');
-        if (dropdownEl && dropdownEl._x_dataStack) {
-            const dropdownData = dropdownEl._x_dataStack[0];
-            if (dropdownData && typeof dropdownData.clickOutside === 'function') {
-                dropdownData.clickOutside(event);
-            }
-        }
-    });
+    // Removed global click handler - handled by Alpine.js @click.away
 }
 
 // Register when Alpine is ready - ensure it works
