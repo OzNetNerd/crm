@@ -15,10 +15,10 @@
     {# Render grouped entities using card macro and details/summary #}
     {% for group in grouped_entities %}
         <details class="card" data-group="{{ group.key }}" open>
-            <summary class="card-header cursor-pointer list-none">
-                <div class="flex items-center justify-between">
-                    <h3 class="font-medium text-gray-900 flex items-center">
-                        <span class="mr-2 text-gray-400 hover:text-gray-600 transition-transform duration-200 details-chevron">
+            <summary class="entity-group-summary">
+                <div class="entity-group-header">
+                    <h3 class="entity-group-title">
+                        <span class="entity-group-chevron">
                             {{ icon('chevron-right') }}
                         </span>
                         {{ group.label }}
@@ -30,7 +30,7 @@
             </summary>
             
             {# Group Content #}
-            <div>
+            <div class="card-body">
                 
                 {% for entity in group.entities %}
                     {# Render all entities with the simple entity card #}
