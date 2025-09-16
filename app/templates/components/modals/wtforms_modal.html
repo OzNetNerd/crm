@@ -1,4 +1,5 @@
 {% from 'macros/forms.html' import render_filtered_fields %}
+{% from 'macros/ui.html' import icon %}
 {#
 WTForms Modal Template - Clean DRY Version
 Direct modal rendering without wrapper nonsense
@@ -18,13 +19,16 @@ Direct modal rendering without wrapper nonsense
     <div class="modal-content modal-content-md">
         <!-- Header -->
         <div class="modal-header">
-            <h3 class="modal-title">{{ modal_title }}</h3>
+            <h3 class="modal-title">
+                {{ icon(model_name, size='5', class='inline-block mr-2') }}
+                {{ modal_title }}
+            </h3>
             <button type="button"
                     class="modal-close"
                     hx-get="/modals/close"
                     hx-swap="outerHTML"
                     hx-target="#{{ model_name }}-modal">
-                <i class="icon icon-x-mark"></i>
+                {{ icon('x-mark') }}
             </button>
         </div>
 
@@ -38,6 +42,9 @@ Direct modal rendering without wrapper nonsense
             {% else %}
                 <!-- Form Mode -->
                 <form id="{{ model_name }}-form"
+                      x-data="{ changed: false }"
+                      @input="changed = true"
+                      @submit="changed = false"
                       hx-post="{{ action_url }}"
                       hx-target="#{{ model_name }}-modal"
                       hx-swap="outerHTML"
@@ -70,11 +77,20 @@ Direct modal rendering without wrapper nonsense
                 Cancel
             </button>
 
-            {% if mode != 'view' %}
+            {% if mode == 'view' %}
+            <button type="button"
+                    class="modal-btn modal-btn-primary"
+                    hx-get="/modals/{{ model_name }}/{{ entity_id }}/edit"
+                    hx-target="#{{ model_name }}-modal"
+                    hx-swap="outerHTML">
+                Edit
+            </button>
+            {% else %}
             <button type="submit"
                     form="{{ model_name }}-form"
+                    x-bind:disabled="!changed && {{ is_edit|lower }}"
                     class="modal-btn modal-btn-primary">
-                {{ 'Update' if is_edit else 'Create' }}
+                {{ 'Save' if is_edit else 'Create' }}
             </button>
             {% endif %}
         </div>
