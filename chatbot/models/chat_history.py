@@ -49,14 +49,6 @@ class ChatHistory(BaseModel):
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        Convert chat history to dictionary for JSON serialization.
-        
-        Returns:
-            Dictionary representation of the chat history record.
-        """
-        return super().to_dict()
 
     def __repr__(self) -> str:
         """Return string representation of the chat history."""

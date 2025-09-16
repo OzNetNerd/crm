@@ -1,6 +1,7 @@
 from . import db
 from datetime import datetime, date
 from sqlalchemy import String, Text, Date, Numeric
+from typing import Dict, Any, List, Callable
 
 
 class BaseModel(db.Model):
@@ -13,6 +14,10 @@ class BaseModel(db.Model):
 
     # Search configuration - override in models as needed
     __search_config__ = {}
+
+    # Serialization configuration - override in models as needed
+    __include_properties__: List[str] = []  # Additional properties to include
+    __relationship_transforms__: Dict[str, Callable] = {}  # Custom relationship serializers
 
     @classmethod
     def get_display_name(cls):
@@ -249,3 +254,41 @@ class BaseModel(db.Model):
                     config['description_field'] = col_name
 
         return config
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert model to dictionary for JSON serialization.
+
+        This base implementation:
+        1. Serializes all database columns
+        2. Converts datetime/date objects to ISO format
+        3. Includes properties specified in __include_properties__
+        4. Applies relationship transforms from __relationship_transforms__
+
+        Models can override this method to add custom logic while calling super().to_dict()
+
+        Returns:
+            Dictionary representation suitable for JSON serialization
+        """
+        result = {}
+
+        # Serialize all columns
+        for column in self.__table__.columns:
+            column_name = column.name
+            value = getattr(self, column_name, None)
+            # Handle datetime/date serialization
+            if isinstance(value, (datetime, date)):
+                result[column_name] = value.isoformat() if value else None
+            else:
+                result[column_name] = value
+
+        # Add configured properties
+        for prop in self.__include_properties__:
+            if hasattr(self, prop):
+                result[prop] = getattr(self, prop)
+
+        # Apply relationship transforms
+        for field, transform in self.__relationship_transforms__.items():
+            result[field] = transform(self)
+
+        return result

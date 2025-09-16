@@ -52,14 +52,6 @@ class Embedding(BaseModel):
     # Index for faster lookups
     __table_args__ = (db.Index("idx_content_type_id", "content_type", "content_id"),)
 
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        Convert embedding to dictionary for JSON serialization.
-        
-        Returns:
-            Dictionary representation of the embedding model.
-        """
-        return super().to_dict()
 
     def __repr__(self) -> str:
         """Return string representation of the embedding."""

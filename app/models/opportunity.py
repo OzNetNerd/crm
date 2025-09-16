@@ -31,6 +31,21 @@ class Opportunity(BaseModel):
         'subtitle_fields': ['value', 'stage'],
         'relationships': [('company', 'name')]
     }
+
+    # Serialization configuration
+    __include_properties__ = ["calculated_priority", "deal_age"]
+    __relationship_transforms__ = {
+        "stakeholders": lambda self: [
+            {
+                "id": stakeholder["id"],
+                "name": stakeholder["name"],
+                "job_title": stakeholder["job_title"],
+                "email": stakeholder["email"],
+                "meddpicc_roles": stakeholder["meddpicc_roles"],
+            }
+            for stakeholder in self.get_stakeholders()
+        ]
+    }
     
 
     id = db.Column(db.Integer, primary_key=True)
@@ -425,67 +440,22 @@ class Opportunity(BaseModel):
     def to_dict(self) -> Dict[str, Any]:
         """
         Convert opportunity to dictionary for JSON serialization.
-        
-        Creates a comprehensive dictionary representation including
-        all database fields, computed properties, related entities,
-        and UI helper fields like CSS classes.
-        
+
+        Extends base implementation with opportunity-specific fields.
+
         Returns:
-            Dictionary containing:
-            - All database column values
-            - Computed properties (calculated_priority, deal_age)
-            - Related entity summaries (stakeholders with MEDDPICC roles)
-            - UI helper fields (company_name)
-            
-        Example:
-            >>> opp = Opportunity(name="Big Deal", stage="qualified")
-            >>> data = opp.to_dict()
-            >>> print(data['name'])
-            'Big Deal'
+            Dictionary containing all fields plus company_name and
+            value conversion to float.
         """
-        # Define properties to include beyond database columns
-        include_properties = ["calculated_priority", "deal_age"]
-        
-        # Define custom transforms for specific fields and relationships
-        field_transforms = {
-            "value": lambda val: float(val) if val else None,
-            "stakeholders": lambda _: [
-                {
-                    "id": stakeholder["id"],
-                    "name": stakeholder["name"],
-                    "job_title": stakeholder["job_title"],
-                    "email": stakeholder["email"],
-                    "meddpicc_roles": stakeholder["meddpicc_roles"],
-                }
-                for stakeholder in self.get_stakeholders()
-            ]
-        }
-        
-        # Start with base serialization - convert model to dict
-        result = {}
-        # Serialize all columns
-        for column in self.__table__.columns:
-            column_name = column.name
-            value = getattr(self, column_name, None)
-            # Handle datetime/date serialization
-            if isinstance(value, (datetime, date)):
-                result[column_name] = value.isoformat() if value else None
-            else:
-                result[column_name] = value
+        result = super().to_dict()
 
-        # Add custom properties and transforms
-        for prop in include_properties:
-            if hasattr(self, prop):
-                result[prop] = getattr(self, prop)
-
-        # Apply field transforms
-        for field, transform in field_transforms.items():
-            if field in result:
-                result[field] = transform(result[field])
-        
         # Add computed company name
         result["company_name"] = self.company.name if self.company else None
-        
+
+        # Ensure value is float
+        if "value" in result and result["value"] is not None:
+            result["value"] = float(result["value"])
+
         return result
 
     def to_display_dict(self) -> Dict[str, Any]:

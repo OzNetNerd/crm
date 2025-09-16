@@ -75,19 +75,6 @@ class User(BaseModel):
     })
     created_at = db.Column(db.DateTime, default=datetime.utcnow, info={'display_label': 'Created At'})
 
-    def to_dict(self):
-        """Convert user to dictionary for JSON serialization"""
-        result = {}
-        # Serialize all columns
-        for column in self.__table__.columns:
-            column_name = column.name
-            value = getattr(self, column_name, None)
-            # Handle datetime/date serialization
-            if isinstance(value, (datetime, date)):
-                result[column_name] = value.isoformat() if value else None
-            else:
-                result[column_name] = value
-        return result
 
     def get_company_assignments(self):
         """Get all companies this user is assigned to"""
