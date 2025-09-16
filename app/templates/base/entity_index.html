@@ -36,12 +36,13 @@
     </div>
     {% endif %}
 
-    {# Filters #}
+    {# Filters - Single form handles all filtering #}
     {% if dropdown_configs %}
     <div class="filter-section">
         <form hx-get="{{ url_for(entity_config.content_endpoint) }}"
               hx-target="#entity-content"
               hx-trigger="change"
+              hx-push-url="true"
               class="flex flex-wrap gap-3">
             {{ entity_dropdown_controls(dropdowns=dropdown_configs) }}
         </form>

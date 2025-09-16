@@ -36,7 +36,6 @@ def get_filterable_columns(model):
 
 def get_default_sort(model):
     """Determine default sort field for a model"""
-    # Priority: due_date, name, created_at, id
     for field in ['due_date', 'name', 'created_at', 'id']:
         if hasattr(model, field):
             return field
@@ -200,25 +199,6 @@ def entity_content(model, table_name):
     # Build query
     query = model.query
 
-    # Detect and handle joins for _name fields
-    if sort_by.endswith('_name'):
-        # Try to find the related model
-        base_field = sort_by.replace('_name', '')
-        if hasattr(model, f'{base_field}_id'):
-            # Find the relationship
-            for rel in model.__mapper__.relationships:
-                if rel.key == base_field:
-                    related_model = rel.mapper.class_
-                    query = query.join(related_model)
-                    sort_field = related_model.name
-                    break
-            else:
-                sort_field = getattr(model, sort_by) if hasattr(model, sort_by) else model.id
-        else:
-            sort_field = getattr(model, sort_by) if hasattr(model, sort_by) else model.id
-    else:
-        sort_field = getattr(model, sort_by) if hasattr(model, sort_by) else model.id
-
     # Apply filters dynamically from request args
     for column in model.__table__.columns:
         filter_value = request.args.get(column.name)
@@ -226,6 +206,7 @@ def entity_content(model, table_name):
             query = query.filter(getattr(model, column.name) == filter_value)
 
     # Apply sorting
+    sort_field = getattr(model, sort_by) if hasattr(model, sort_by) else model.id
     query = query.order_by(sort_field.desc() if sort_direction == 'desc' else sort_field.asc())
 
     entities = query.all()
@@ -254,6 +235,7 @@ def entity_content(model, table_name):
         grouped_entities=grouped_entities,
         group_by=group_by,
         total_count=len(entities),
+        model_class=model,
         **model.get_metadata()
     )
 

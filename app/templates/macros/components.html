@@ -147,53 +147,15 @@
                         </label>
                     {% endif %}
 
-                    <div class="dropdown"
-                         x-data="dropdown({
-                             name: {{ (config.name or dropdown_key) | tojson }},
-                             options: {{ config.options | tojson }},
-                             selected: {{ (config.current_value or '') | tojson }},
-                             placeholder: {{ (config.placeholder or 'Select...') | tojson }},
-                             searchable: {{ config.searchable | default(false) | tojson }},
-                             htmx: {
-                                 trigger: true
-                             }
-                         })">
-
-                        <button @click="toggle()" class="dropdown-trigger">
-                            <span x-text="displayText" class="truncate"></span>
-                            <svg class="dropdown-icon" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-
-                        <div x-show="open" @click.away="close()" class="dropdown-menu" x-cloak>
-                            {% raw %}
-                            <template x-if="searchable">
-                                <div class="dropdown-search">
-                                    <input type="text"
-                                           x-model="search"
-                                           x-ref="searchInput"
-                                           placeholder="Search..."
-                                           class="dropdown-search-input">
-                                </div>
-                            </template>
-
-                            <template x-for="option in filteredOptions">
-                                <button @click="select(option.value)"
-                                        class="dropdown-option"
-                                        :class="{'dropdown-option-selected': isSelected(option.value)}">
-                                    <span x-text="option.label"></span>
-                                </button>
-                            </template>
-                            {% endraw %}
-                        </div>
-
-                        <!-- Hidden input for HTMX -->
-                        <input type="hidden"
-                               :name="name"
-                               :value="selected"
-                               x-ref="hiddenInput">
-                    </div>
+                    <select name="{{ config.name or dropdown_key }}"
+                            class="dropdown-trigger">
+                        {% for option in config.options %}
+                            <option value="{{ option.value }}"
+                                    {% if option.value == config.current_value %}selected{% endif %}>
+                                {{ option.label }}
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
             {% endif %}
         {% endfor %}

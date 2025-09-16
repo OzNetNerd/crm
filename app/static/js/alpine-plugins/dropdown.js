@@ -148,11 +148,24 @@ function registerDropdown() {
         },
 
         triggerHtmx() {
-            // Create a change event on hidden input to trigger HTMX
+            // Find the form containing this dropdown and trigger HTMX
             const input = this.$refs.hiddenInput;
             if (input) {
-                const event = new Event('change', { bubbles: true });
-                input.dispatchEvent(event);
+                // Update the input value first
+                input.value = this.selected;
+
+                // Find the parent form
+                const form = input.closest('form');
+                if (form) {
+                    // Trigger HTMX on the form using htmx API
+                    if (window.htmx) {
+                        htmx.trigger(form, 'change');
+                    }
+                } else {
+                    // Fallback: dispatch event on input
+                    const event = new Event('change', { bubbles: true });
+                    input.dispatchEvent(event);
+                }
             }
         },
 
@@ -176,9 +189,11 @@ function registerDropdown() {
     });
 }
 
-// Register when Alpine is ready
-if (typeof Alpine !== 'undefined') {
-    registerDropdown();
-} else {
-    document.addEventListener('alpine:init', registerDropdown);
-}
+// Register when Alpine is ready - ensure it works
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof Alpine !== 'undefined') {
+        registerDropdown();
+    } else {
+        document.addEventListener('alpine:init', registerDropdown);
+    }
+});

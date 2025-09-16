@@ -13,8 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize modal handlers
     initializeModals();
 
-    // Initialize dropdown handlers
-    initializeDropdowns();
+    // Alpine.js handles all dropdowns now - removed duplicate vanilla JS handlers
 
     // Initialize search functionality
     initializeSearch();
@@ -57,38 +56,7 @@ function closeModal(modalId) {
     }
 }
 
-// Dropdown Functions
-function initializeDropdowns() {
-    // Close dropdowns on outside click
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.dropdown')) {
-            document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                menu.classList.remove('show');
-            });
-        }
-    });
-
-    // Toggle dropdown on trigger click
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('dropdown-trigger') || e.target.closest('.dropdown-trigger')) {
-            e.preventDefault();
-            const dropdown = e.target.closest('.dropdown');
-            if (dropdown) {
-                const menu = dropdown.querySelector('.dropdown-menu');
-                if (menu) {
-                    menu.classList.toggle('show');
-                }
-            }
-        }
-    });
-}
-
-function toggleDropdown(dropdownId) {
-    const menu = document.getElementById(dropdownId);
-    if (menu) {
-        menu.classList.toggle('show');
-    }
-}
+// Dropdown functionality moved to Alpine.js plugin - no duplicate code needed
 
 // Search Functions
 function initializeSearch() {
@@ -173,7 +141,7 @@ function selectEntity(fieldId, entityId, entityName, entityType) {
 // Export functions for global use
 window.openModal = openModal;
 window.closeModal = closeModal;
-window.toggleDropdown = toggleDropdown;
+// toggleDropdown removed - handled by Alpine.js
 window.selectEntity = selectEntity;
 window.closeAdvancedSearchModal = closeAdvancedSearchModal;
 window.confirmAction = confirmAction;
