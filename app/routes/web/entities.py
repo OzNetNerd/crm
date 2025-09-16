@@ -129,11 +129,14 @@ def get_status_stats(model):
 
 def build_entity_config(model, entity_type):
     """Build entity configuration."""
+    # Use __route_name__ if defined, otherwise use display_name_plural
+    route_name = getattr(model, '__route_name__', model.get_display_name_plural().lower())
     return {
         'entity_type': entity_type,
         'entity_name': model.get_display_name_plural(),
         'entity_name_singular': model.get_display_name(),
-        'content_endpoint': f'entities.{model.__tablename__}_content',
+        'route_path': f'/{route_name}',
+        'content_endpoint': f'entities.{route_name}_content',
         'entity_buttons': [{
             'title': f'New {model.get_display_name()}',
             'url': f'/modals/{entity_type}/create'
@@ -238,22 +241,20 @@ for entity_type, model in MODEL_REGISTRY.items():
     if not getattr(model, 'is_web_enabled', lambda: True)():
         continue
 
-    table = model.__tablename__
+    config = build_entity_config(model, entity_type)
+    route_path = config['route_path']
 
-    # Main routes
+    # Use route name for endpoint (e.g., 'companies_index' not 'company_index')
+    route_name = route_path[1:]  # Remove leading slash
+
     entities_web_bp.add_url_rule(
-        f'/{table}',
-        f'{table}_index',
-        lambda m=model: entity_index(m)
+        route_path,
+        f'{route_name}_index',
+        lambda model=model: entity_index(model)
     )
 
     entities_web_bp.add_url_rule(
-        f'/{table}/content',
-        f'{table}_content',
-        lambda m=model: entity_content(m)
+        f'{route_path}/content',
+        f'{route_name}_content',
+        lambda model=model: entity_content(model)
     )
-
-    # Teams alias for users
-    if entity_type == 'user':
-        entities_web_bp.add_url_rule('/teams', 'teams_index', lambda m=model: entity_index(m))
-        entities_web_bp.add_url_rule('/teams/content', 'teams_content', lambda m=model: entity_content(m))

@@ -23,6 +23,7 @@ class User(BaseModel):
     __tablename__ = "users"
     __display_name__ = "Team Member"
     __display_name_plural__ = "Teams"
+    __route_name__ = "users"  # Override to match navbar expectations
     __search_config__ = {
         'subtitle_fields': ['email', 'job_title']
     }

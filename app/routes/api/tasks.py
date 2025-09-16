@@ -5,15 +5,18 @@ from datetime import timedelta, date
 tasks_api_bp = Blueprint("tasks_api", __name__, url_prefix="/api/tasks")
 
 
+def _error_response(message, code=400):
+    """Consistent error response format"""
+    return jsonify({'error': message}), code
+
+
 @tasks_api_bp.route("/<int:task_id>")
 def get_task(task_id):
     """Get a specific task as JSON"""
     task = Task.query.get_or_404(task_id)
-    
-    # Use the model's to_dict method for consistent serialization
     task_data = task.to_dict()
-    
-    # Include child task information for parent tasks
+
+    # Include child tasks for parent tasks
     if task.task_type == "parent":
         task_data["child_tasks"] = [
             {
@@ -24,14 +27,14 @@ def get_task(task_id):
             }
             for child in task.child_tasks
         ]
-    
+
     return jsonify(task_data)
 
 
 @tasks_api_bp.route("/<int:task_id>/notes")
 def get_task_notes(task_id):
     """Get all notes for a specific task"""
-    Task.query.get_or_404(task_id)  # Ensure task exists
+    Task.query.get_or_404(task_id)
     notes = Note.query.filter_by(
         entity_type='task',
         entity_id=task_id
@@ -42,10 +45,11 @@ def get_task_notes(task_id):
 @tasks_api_bp.route("/<int:task_id>/notes", methods=["POST"])
 def create_task_note(task_id):
     """Create a new note for a specific task"""
-    Task.query.get_or_404(task_id)  # Ensure task exists
+    Task.query.get_or_404(task_id)
+
     data = request.get_json()
     if not data or not data.get('content'):
-        return jsonify({'error': 'Content required'}), 400
+        return _error_response('Content required')
 
     try:
         note = Note(
@@ -59,35 +63,28 @@ def create_task_note(task_id):
         return jsonify(note.to_dict()), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        return _error_response(str(e))
 
 
 @tasks_api_bp.route("/<int:task_id>/reschedule", methods=["PUT"])
 def reschedule_task(task_id):
     """Reschedule a task by adjusting its due date"""
+    task = Task.query.get_or_404(task_id)
+
+    data = request.get_json()
+    if not data:
+        return _error_response("Request body is required")
+
     try:
-        task = Task.query.get_or_404(task_id)
-        data = request.get_json()
-
-        if not data:
-            return jsonify({"error": "Request body is required"}), 400
-
-        days_adjustment = data.get("days_adjustment", 0)
-
-        # Update the due date
-        if task.due_date:
-            task.due_date = task.due_date + timedelta(days=days_adjustment)
-        else:
-            task.due_date = date.today() + timedelta(days=days_adjustment)
-
+        days = data.get("days_adjustment", 0)
+        task.due_date = (task.due_date or date.today()) + timedelta(days=days)
         db.session.commit()
 
         return jsonify({
             "status": "success",
-            "message": f"Task rescheduled by {days_adjustment} days",
+            "message": f"Task rescheduled by {days} days",
             "due_date": task.due_date.isoformat() if task.due_date else None,
         })
-
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return _error_response(str(e), 500)
