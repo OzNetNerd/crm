@@ -12,6 +12,9 @@
 /* Card component styles */
 @import url('components/cards.css');
 
+/* Badge component styles */
+@import url('components/badges.css');
+
 /* Modal overlay utilities (minimal custom) */
 @import url('components/modal.css');
 
