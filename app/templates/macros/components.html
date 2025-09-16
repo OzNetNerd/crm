@@ -133,33 +133,70 @@
 {% endmacro %}
 
 {# ============================================
-   FILTERS
+   ENTITY DROPDOWN CONTROLS - Ultra DRY
+   Uses Alpine.js dropdown component for consistent styling
    ============================================ #}
-{% macro filter_controls(filters=[]) %}
-    <div class="filter-controls">
-        {% for filter in filters %}
-            <div class="filter-item">
-                <label class="filter-label">{{ filter.label }}</label>
-                {% if filter.type == 'select' %}
-                    <select class="form-select filter-select" name="{{ filter.name }}">
-                        <option value="">All</option>
-                        {% for option in filter.options %}
-                            <option value="{{ option.value }}">{{ option.text }}</option>
-                        {% endfor %}
-                    </select>
-                {% elif filter.type == 'checkbox' %}
-                    <label class="form-checkbox">
-                        <input type="checkbox" name="{{ filter.name }}" value="{{ filter.value }}">
-                        <span>{{ filter.text }}</span>
-                    </label>
-                {% elif filter.type == 'date' %}
-                    <input type="date" class="form-input" name="{{ filter.name }}">
-                {% else %}
-                    <input type="text" class="form-input" name="{{ filter.name }}" placeholder="{{ filter.placeholder }}">
-                {% endif %}
-            </div>
+{% macro entity_dropdown_controls(dropdowns={}) %}
+    <div class="flex flex-wrap gap-3 items-center">
+        {% for dropdown_key, config in dropdowns.items() %}
+            {% if config.options %}
+                <div class="min-w-48">
+                    {% if config.label is defined %}
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ config.label }}
+                        </label>
+                    {% endif %}
+
+                    <div class="dropdown"
+                         x-data="dropdown({
+                             name: {{ (config.name or dropdown_key) | tojson }},
+                             options: {{ config.options | tojson }},
+                             selected: {{ (config.current_value or '') | tojson }},
+                             placeholder: {{ (config.placeholder or 'Select...') | tojson }},
+                             searchable: {{ config.searchable | default(false) | tojson }},
+                             htmx: {
+                                 trigger: true
+                             }
+                         })">
+
+                        <button @click="toggle()" class="dropdown-trigger">
+                            <span x-text="displayText" class="truncate"></span>
+                            <svg class="dropdown-icon" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+
+                        <div x-show="open" @click.away="close()" class="dropdown-menu" x-cloak>
+                            {% raw %}
+                            <template x-if="searchable">
+                                <div class="dropdown-search">
+                                    <input type="text"
+                                           x-model="search"
+                                           x-ref="searchInput"
+                                           placeholder="Search..."
+                                           class="dropdown-search-input">
+                                </div>
+                            </template>
+
+                            <template x-for="option in filteredOptions">
+                                <button @click="select(option.value)"
+                                        class="dropdown-option"
+                                        :class="{'dropdown-option-selected': isSelected(option.value)}">
+                                    <span x-text="option.label"></span>
+                                </button>
+                            </template>
+                            {% endraw %}
+                        </div>
+
+                        <!-- Hidden input for HTMX -->
+                        <input type="hidden"
+                               :name="name"
+                               :value="selected"
+                               x-ref="hiddenInput">
+                    </div>
+                </div>
+            {% endif %}
         {% endfor %}
-        <button class="btn btn-primary">Apply Filters</button>
-        <button class="btn btn-secondary">Clear</button>
     </div>
 {% endmacro %}
+

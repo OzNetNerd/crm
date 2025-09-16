@@ -63,6 +63,27 @@ def get_dropdowns_from_columns(model_class):
         if column_info.get('sortable') or column.name in ['created_at', 'name', 'id']:
             sortable_options.append({'value': column.name, 'label': label})
 
+        # Add filter dropdowns for fields with choices
+        if column_info.get('choices'):
+            current_filter_value = request.args.get(column.name, '')
+            choice_options = [{'value': '', 'label': f'All {label}'}]  # "All" option
+
+            for choice_value, choice_data in column_info['choices'].items():
+                choice_options.append({
+                    'value': choice_value,
+                    'label': choice_data.get('label', choice_value)
+                })
+
+            dropdowns[f'filter_{column.name}'] = {
+                'name': column.name,  # For form field name
+                'label': f'Filter by {label}',
+                'options': choice_options,
+                'current_value': current_filter_value,
+                'placeholder': f'All {label}',
+                'multiple': False,
+                'searchable': False  # Most filter dropdowns don't need search
+            }
+
     if groupable_options:
         dropdowns['group_by'] = {
             'options': groupable_options,
@@ -89,7 +110,7 @@ def get_dropdowns_from_columns(model_class):
         'current_value': current_sort_direction,
         'placeholder': 'Order',
         'multiple': False,
-        'searchable': True
+        'searchable': False
     }
 
     return dropdowns
