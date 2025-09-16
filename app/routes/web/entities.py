@@ -11,83 +11,105 @@ entities_web_bp = Blueprint("entities", __name__)
 
 
 
-def build_dropdown_configs(model, request_args):
-    """Build dropdown configs from model metadata for web UI."""
+def build_filter_dropdowns(metadata, request_args):
+    """Build filter dropdowns for fields with choices."""
     dropdowns = {}
-    metadata = model.get_field_metadata()
-
-    # Get current values from request
-    current_group_by = request_args.get('group_by', '')
-    current_sort_by = request_args.get('sort_by', model.get_default_sort_field())
-    current_sort_direction = request_args.get('sort_direction', 'asc')
-
-    # Build filter dropdowns for fields with choices
     for field_name, field_info in metadata.items():
-        if field_info['filterable'] and field_info['choices']:
-            current_value = request_args.get(field_name, '')
-            options = [{'value': '', 'label': f'All {field_info["label"]}'}]
+        if not (field_info.get('filterable') and field_info.get('choices')):
+            continue
 
-            for choice_value, choice_data in field_info['choices'].items():
-                options.append({
-                    'value': choice_value,
-                    'label': choice_data.get('label', choice_value)
-                })
+        options = [{'value': '', 'label': f'All {field_info["label"]}'}]
+        for choice_value, choice_data in field_info['choices'].items():
+            options.append({
+                'value': choice_value,
+                'label': choice_data.get('label', choice_value)
+            })
 
-            dropdowns[f'filter_{field_name}'] = {
-                'name': field_name,
-                'label': f'Filter by {field_info["label"]}',
-                'options': options,
-                'current_value': current_value,
-                'placeholder': f'All {field_info["label"]}',
-                'multiple': False,
-                'searchable': False
-            }
-
-    # Build groupable options
-    groupable_options = [
-        {'value': name, 'label': info['label']}
-        for name, info in metadata.items()
-        if info['groupable']
-    ]
-
-    if groupable_options:
-        dropdowns['group_by'] = {
-            'options': groupable_options,
-            'current_value': current_group_by,
-            'placeholder': 'Group by...',
+        dropdowns[f'filter_{field_name}'] = {
+            'name': field_name,
+            'label': f'Filter by {field_info["label"]}',
+            'options': options,
+            'current_value': request_args.get(field_name, ''),
+            'placeholder': f'All {field_info["label"]}',
             'multiple': False,
-            'searchable': True
+            'searchable': False
         }
+    return dropdowns
 
-    # Build sortable options
-    sortable_options = [
-        {'value': name, 'label': info['label']}
-        for name, info in metadata.items()
-        if info['sortable']
+
+def build_group_dropdown(metadata, request_args):
+    """Build group-by dropdown if groupable fields exist."""
+    groupable_fields = [
+        {'value': field_name, 'label': field_info['label']}
+        for field_name, field_info in metadata.items()
+        if field_info.get('groupable')
     ]
 
-    # Always include id as sortable
-    if not any(opt['value'] == 'id' for opt in sortable_options):
-        sortable_options.append({'value': 'id', 'label': 'ID'})
+    if not groupable_fields:
+        return None
 
-    dropdowns['sort_by'] = {
-        'options': sortable_options,
-        'current_value': current_sort_by,
+    return {
+        'options': groupable_fields,
+        'current_value': request_args.get('group_by', ''),
+        'placeholder': 'Group by...',
+        'multiple': False,
+        'searchable': True
+    }
+
+
+def build_sort_dropdown(metadata, request_args, default_sort):
+    """Build sort-by dropdown with all sortable fields."""
+    sortable_fields = [
+        {'value': field_name, 'label': field_info['label']}
+        for field_name, field_info in metadata.items()
+        if field_info.get('sortable')
+    ]
+
+    # Ensure ID is always sortable
+    has_id = any(field['value'] == 'id' for field in sortable_fields)
+    if not has_id:
+        sortable_fields.append({'value': 'id', 'label': 'ID'})
+
+    return {
+        'options': sortable_fields,
+        'current_value': request_args.get('sort_by', default_sort),
         'placeholder': 'Sort by...',
         'multiple': False,
         'searchable': True
     }
 
-    dropdowns['sort_direction'] = {
+
+def build_direction_dropdown(request_args):
+    """Build sort direction dropdown."""
+    return {
         'options': [
             {'value': 'asc', 'label': 'Ascending'},
             {'value': 'desc', 'label': 'Descending'}
         ],
-        'current_value': current_sort_direction,
+        'current_value': request_args.get('sort_direction', 'asc'),
         'placeholder': 'Order',
         'multiple': False,
         'searchable': False
     }
+
+
+def build_dropdown_configs(model, request_args):
+    """Build all dropdown configurations for entity UI."""
+    metadata = model.get_field_metadata()
+    dropdowns = {}
+
+    # Add filter dropdowns
+    dropdowns.update(build_filter_dropdowns(metadata, request_args))
+
+    # Add group dropdown if applicable
+    if group_dropdown := build_group_dropdown(metadata, request_args):
+        dropdowns['group_by'] = group_dropdown
+
+    # Add sort dropdowns
+    dropdowns['sort_by'] = build_sort_dropdown(
+        metadata, request_args, model.get_default_sort_field()
+    )
+    dropdowns['sort_direction'] = build_direction_dropdown(request_args)
 
     return dropdowns
 
