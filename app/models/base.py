@@ -194,6 +194,11 @@ class BaseModel(db.Model):
         from flask import url_for
         return url_for('modals.edit_modal', model_name=self.get_entity_type(), entity_id=self.id)
 
+    def get_delete_url(self):
+        """Get the delete URL for this entity"""
+        from flask import url_for
+        return url_for('modals.delete_modal', model_name=self.get_entity_type(), entity_id=self.id)
+
     def get_display_title(self):
         """Get display title using model's configured display field."""
         # Use the field specified by the model

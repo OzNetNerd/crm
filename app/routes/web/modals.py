@@ -210,6 +210,41 @@ def update_entity(model_name, entity_id):
     return _handle_form_submission(model_name, model_class, form, entity=entity)
 
 
+@modals_bp.route('/<model_name>/<int:entity_id>/delete')
+def delete_modal(model_name, entity_id):
+    """Render delete confirmation modal for any model and entity."""
+    model_class, form_class, error = _validate_model_and_form(model_name)
+    if error:
+        return error
+
+    entity = model_class.query.get_or_404(entity_id)
+    return render_template('components/modals/delete_modal.html',
+                         model_name=model_name,
+                         entity=entity,
+                         entity_id=entity_id,
+                         modal_title=f"Delete {model_name.title()}")
+
+
+@modals_bp.route('/<model_name>/<int:entity_id>/delete', methods=['POST'])
+def delete_entity(model_name, entity_id):
+    """Handle entity deletion."""
+    model_class, form_class, error = _validate_model_and_form(model_name)
+    if error:
+        return render_template('components/modals/form_error.html',
+                             error=error.get_data(as_text=True))
+
+    entity = model_class.query.get_or_404(entity_id)
+    try:
+        db.session.delete(entity)
+        db.session.commit()
+        return render_template('components/modals/form_success.html',
+                             message=f"{model_name.title()} deleted successfully")
+    except Exception as e:
+        db.session.rollback()
+        return render_template('components/modals/form_error.html',
+                             error=str(e))
+
+
 @modals_bp.route('/close')
 def close_modal():
     """Return modal close response."""
