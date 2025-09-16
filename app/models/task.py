@@ -173,10 +173,10 @@ class Task(BaseModel):
             'groupable': True,
             'sortable': True,
             'choices': {
-                'single': {
-                    'label': 'Single Task',
-                    'description': 'Standalone task'
-                },
+                # 'single': {
+                #     'label': 'Single Task',
+                #     'description': 'Standalone task'
+                # },
                 'parent': {
                     'label': 'Parent Task',
                     'description': 'Task with subtasks'
@@ -198,10 +198,10 @@ class Task(BaseModel):
             'groupable': True,
             'sortable': True,
             'choices': {
-                'parallel': {
-                    'label': 'Parallel',
-                    'description': 'Can run simultaneously'
-                },
+                # 'parallel': {
+                #     'label': 'Parallel',
+                #     'description': 'Can run simultaneously'
+                # },
                 'sequential': {
                     'label': 'Sequential',
                     'description': 'Must complete in order'
