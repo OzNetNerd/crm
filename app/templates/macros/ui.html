@@ -85,8 +85,8 @@
 
 {% macro typed_badge(value, type) %}
     {% if value %}
-        <span class="badge badge-{{ value|lower|replace(' ', '-') }}">
-            {{ value|capitalize }}
+        <span class="badge badge-{{ value|lower|replace(' ', '-')|replace('_', '-') }}">
+            {{ value|lower|replace('_', ' ') }}
         </span>
     {% endif %}
 {% endmacro %}
