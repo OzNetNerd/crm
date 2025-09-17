@@ -29,8 +29,17 @@ def create_app():
     app.jinja_env.add_extension("jinja2.ext.do")
 
     # Template globals and filters
+    def entity_url(entity, entity_type, action):
+        """Generate URLs for entity operations (view, edit, delete)."""
+        if action in ['view', 'edit', 'delete']:
+            return f"/modals/{entity_type}/{entity.id}/{action}"
+        elif action == 'create':
+            return f"/modals/{entity_type}/create"
+        raise ValueError(f"Unknown action: {action}")
+
     app.jinja_env.globals.update({
         'get_dashboard_action_buttons': get_dashboard_action_buttons,
+        'entity_url': entity_url,
         'getattr': getattr,
         'hasattr': hasattr,
     })

@@ -1,284 +1,202 @@
 """
-Generic Modal Routes for HTMX-based Forms - DRY Refactored
+Generic Modal Routes for HTMX-based Forms - Ultra DRY, Zero Duplication
 
-Clean, maintainable modal handling with zero duplication.
+Follows Python best practices: DRY, KISS, YAGNI, single responsibility.
 """
 
+from functools import wraps
 from flask import Blueprint, render_template
 from app.models import db, MODEL_REGISTRY
+import json
 
 modals_bp = Blueprint("modals", __name__, url_prefix="/modals")
 
 
-# ============= HELPER FUNCTIONS =============
-
-
-def _get_form_class(model_name):
-    """Dynamically import and return form class for model."""
-    # Standard form class name pattern: {ModelName}Form
-    form_class_name = f"{model_name.title()}Form"
-
-    # Try both singular and plural module names
-    for module_name in [model_name, f"{model_name}s"]:
+def handle_errors(f):
+    """Decorator for consistent error handling."""
+    @wraps(f)
+    def wrapper(*args, **kwargs):
         try:
-            module = __import__(
-                f"app.forms.entities.{module_name}", fromlist=[form_class_name]
-            )
-            return getattr(module, form_class_name)
+            return f(*args, **kwargs)
+        except Exception as e:
+            db.session.rollback()
+            return render_template("components/modals/form_error.html", error=str(e))
+    return wrapper
+
+
+def get_model_and_form(model_name):
+    """Get model and form class or raise ValueError."""
+    model = MODEL_REGISTRY.get(model_name.lower())
+    if not model:
+        raise ValueError(f"Unknown model: {model_name}")
+
+    # Dynamic form import
+    form_name = f"{model_name.title()}Form"
+    for module in [model_name, f"{model_name}s"]:
+        try:
+            mod = __import__(f"app.forms.entities.{module}", fromlist=[form_name])
+            return model, getattr(mod, form_name)
         except (ImportError, AttributeError):
             continue
 
-    # If we get here, let it fail loudly
-    module = __import__(f"app.forms.entities.{model_name}", fromlist=[form_class_name])
-    return getattr(module, form_class_name)
+    raise ValueError(f"No form available for {model_name}")
 
 
-def _validate_model_and_form(model_name):
-    """Validate model and form exist, return components or error."""
-    model_class = MODEL_REGISTRY.get(model_name.lower())
-    if not model_class:
-        return (
-            None,
-            None,
-            render_template(
-                "components/modals/error_modal.html",
-                error=f"Unknown model: {model_name}",
-            ),
-        )
-
-    form_class = _get_form_class(model_name.lower())
-    if not form_class:
-        return (
-            None,
-            None,
-            render_template(
-                "components/modals/error_modal.html",
-                error=f"No form available for {model_name}",
-            ),
-        )
-
-    return model_class, form_class, None
-
-
-def _render_modal(
-    model_name, model_class, form, mode="create", entity=None, error=None
-):
-    """Render modal template with appropriate parameters."""
-    # Base parameters - always present
+def render_modal(model_name, form, mode="create", entity=None):
+    """Render modal with unified parameters."""
     params = {
         "model_name": model_name,
-        "model_class": model_class,
+        "model_class": MODEL_REGISTRY.get(model_name.lower()),
         "form": form,
-        "modal_title": f"{'View' if mode == 'view' else mode.title()} {model_name.title()}",
+        "modal_title": f"{mode.title()} {model_name.title()}",
+        "mode": mode,
+        "is_view": mode == "view",
+        "is_edit": mode == "edit"
     }
 
-    # Mode-specific parameters
-    if mode == "view":
-        params.update(
-            {
-                "mode": "view",
-                "is_view": True,
-                "entity": entity,
-                "entity_id": entity.id if entity else None,
-            }
-        )
-    elif mode == "edit":
-        params.update(
-            {
-                "entity": entity,
-                "entity_id": entity.id,
-                "action_url": f"/modals/{model_name}/{entity.id}/update",
-                "is_edit": True,
-            }
-        )
-    else:  # create
-        params.update({"action_url": f"/modals/{model_name}/create", "is_edit": False})
+    if entity:
+        params["entity"] = entity
+        params["entity_id"] = entity.id
 
-    if error:
-        params["error"] = error
+    if mode != "view":
+        action = "update" if entity else "create"
+        params["action_url"] = f"/modals/{model_name}/{entity.id if entity else ''}/{action}".rstrip('/')
 
     return render_template("components/modals/wtforms_modal.html", **params)
 
 
-def _handle_form_submission(model_name, model_class, form, entity=None):
-    """Handle form submission for both create and update operations."""
-    if form.validate_on_submit():
-        try:
-            if entity is None:
-                # Create new entity
-                entity = model_class()
-                form.populate_obj(entity)
-                db.session.add(entity)
-                action = "created"
-            else:
-                # Update existing entity
-                form.populate_obj(entity)
-                action = "updated"
+def handle_task_relationships(entity, form, action):
+    """Handle special Task entity relationships."""
+    if not (hasattr(entity, "set_linked_entities") and hasattr(form, "entity")):
+        return
 
-            # Handle Task entity relationships (for the "Related To" field)
-            if model_name.lower() == "task" and hasattr(form, "entity"):
-                import json
+    try:
+        entity_data = form.entity.data
+        if not entity_data:
+            return
 
-                try:
-                    # Parse the JSON array from the entity field
-                    entity_data = form.entity.data
-                    if entity_data:
-                        entities_list = json.loads(entity_data)
-                        # Flush to get the task ID if it's a new task
-                        if action == "created":
-                            db.session.flush()
-                        # Set linked entities using the Task model's method
-                        if hasattr(entity, "set_linked_entities"):
-                            entity.set_linked_entities(entities_list)
-                except (json.JSONDecodeError, TypeError):
-                    # If it's not valid JSON, ignore it
-                    pass
-
-            db.session.commit()
-            return render_template(
-                "components/modals/form_success.html",
-                message=f"{model_name} {action} successfully",
-                entity=entity,
-            )
-        except Exception as e:
-            db.session.rollback()
-            mode = "edit" if entity else "create"
-            return _render_modal(
-                model_name, model_class, form, mode=mode, entity=entity, error=str(e)
-            )
-
-    # Form validation failed - re-render with errors
-    mode = "edit" if entity else "create"
-    return _render_modal(model_name, model_class, form, mode=mode, entity=entity)
+        entities = json.loads(entity_data)
+        if action == "created":
+            db.session.flush()  # Get ID for new tasks
+        entity.set_linked_entities(entities)
+    except (json.JSONDecodeError, TypeError):
+        pass  # Ignore invalid JSON
 
 
-# ============= ROUTE HANDLERS =============
+def process_form_submission(model_name, model, form, entity=None):
+    """Process form submission with zero duplication."""
+    if not form.validate_on_submit():
+        return render_modal(model_name, form, "edit" if entity else "create", entity)
 
+    is_new = entity is None
+    if is_new:
+        entity = model()
+        db.session.add(entity)
 
-@modals_bp.route("/<model_name>/create")
-def create_modal(model_name):
-    """Render create modal for any model."""
-    model_class, form_class, error = _validate_model_and_form(model_name)
-    if error:
-        return error
+    form.populate_obj(entity)
 
-    form = form_class()
-    return _render_modal(model_name, model_class, form, mode="create")
+    # Special handling for tasks
+    if model_name.lower() == "task":
+        handle_task_relationships(entity, form, "created" if is_new else "updated")
 
+    db.session.commit()
 
-@modals_bp.route("/<model_name>/<int:entity_id>/edit")
-def edit_modal(model_name, entity_id):
-    """Render edit modal for any model and entity."""
-    model_class, form_class, error = _validate_model_and_form(model_name)
-    if error:
-        return error
-
-    entity = model_class.query.get_or_404(entity_id)
-    form = form_class(obj=entity)
-
-    # For tasks, populate the entity field with linked entities as JSON
-    if model_name.lower() == "task" and hasattr(entity, "linked_entities"):
-        import json
-
-        linked = entity.linked_entities
-        if linked:
-            # Convert to the format expected by the frontend
-            entities_data = [
-                {"id": e["id"], "name": e["name"], "type": e["type"]} for e in linked
-            ]
-            form.entity.data = json.dumps(entities_data)
-
-    return _render_modal(model_name, model_class, form, mode="edit", entity=entity)
-
-
-@modals_bp.route("/<model_name>/<int:entity_id>/view")
-def view_modal(model_name, entity_id):
-    """Render read-only view modal for any model and entity."""
-    model_class, form_class, error = _validate_model_and_form(model_name)
-    if error:
-        return error
-
-    entity = model_class.query.get_or_404(entity_id)
-    form = form_class(obj=entity)
-
-    # For tasks, format the linked entities for display
-    if model_name.lower() == "task" and hasattr(entity, "linked_entities"):
-        linked = entity.linked_entities
-        if linked:
-            # Create a readable string of linked entities
-            entity_names = [f"{e['name']} ({e['type']})" for e in linked]
-            form.entity.data = ", ".join(entity_names)
-
-    return _render_modal(model_name, model_class, form, mode="view", entity=entity)
-
-
-@modals_bp.route("/<model_name>/create", methods=["POST"])
-def create_entity(model_name):
-    """Handle form submission for creating new entity."""
-    model_class, form_class, error = _validate_model_and_form(model_name)
-    if error:
-        return render_template(
-            "components/modals/form_error.html", error=error.get_data(as_text=True)
-        )
-
-    form = form_class()
-    return _handle_form_submission(model_name, model_class, form)
-
-
-@modals_bp.route("/<model_name>/<int:entity_id>/update", methods=["POST"])
-def update_entity(model_name, entity_id):
-    """Handle form submission for updating existing entity."""
-    model_class, form_class, error = _validate_model_and_form(model_name)
-    if error:
-        return render_template(
-            "components/modals/form_error.html", error=error.get_data(as_text=True)
-        )
-
-    entity = model_class.query.get_or_404(entity_id)
-    form = form_class(obj=entity)
-    return _handle_form_submission(model_name, model_class, form, entity=entity)
-
-
-@modals_bp.route("/<model_name>/<int:entity_id>/delete")
-def delete_modal(model_name, entity_id):
-    """Render delete confirmation modal for any model and entity."""
-    model_class, form_class, error = _validate_model_and_form(model_name)
-    if error:
-        return error
-
-    entity = model_class.query.get_or_404(entity_id)
     return render_template(
-        "components/modals/delete_modal.html",
-        model_name=model_name,
-        entity=entity,
-        entity_id=entity_id,
-        modal_title=f"Delete {model_name.title()}",
+        "components/modals/form_success.html",
+        message=f"{model_name} {'created' if is_new else 'updated'} successfully",
+        entity=entity
     )
 
 
-@modals_bp.route("/<model_name>/<int:entity_id>/delete", methods=["POST"])
-def delete_entity(model_name, entity_id):
-    """Handle entity deletion."""
-    model_class, form_class, error = _validate_model_and_form(model_name)
-    if error:
+def populate_task_form_data(entity, form, mode):
+    """Populate task form with linked entities data."""
+    if not hasattr(entity, "linked_entities"):
+        return
+
+    linked = entity.linked_entities
+    if not linked:
+        return
+
+    if mode == "edit":
+        entities_data = [{"id": e["id"], "name": e["name"], "type": e["type"]} for e in linked]
+        form.entity.data = json.dumps(entities_data)
+    else:  # view mode
+        entity_names = [f"{e['name']} ({e['type']})" for e in linked]
+        form.entity.data = ", ".join(entity_names)
+
+
+# ============= ROUTE HANDLERS - DRY CONSOLIDATED =============
+
+@modals_bp.route("/<model_name>/create")
+@handle_errors
+def create_modal(model_name):
+    """Create modal for any model."""
+    model, form_class = get_model_and_form(model_name)
+    return render_modal(model_name, form_class(), "create")
+
+
+@modals_bp.route("/<model_name>/<int:entity_id>/<mode>")
+@handle_errors
+def entity_modal(model_name, entity_id, mode):
+    """View/Edit/Delete modal for any entity - single handler."""
+    if mode not in ["view", "edit", "delete"]:
+        raise ValueError(f"Invalid mode: {mode}")
+
+    model, form_class = get_model_and_form(model_name)
+    entity = model.query.get_or_404(entity_id)
+
+    if mode == "delete":
         return render_template(
-            "components/modals/form_error.html", error=error.get_data(as_text=True)
+            "components/modals/delete_modal.html",
+            model_name=model_name,
+            entity=entity,
+            entity_id=entity_id,
+            modal_title=f"Delete {model_name.title()}"
         )
 
-    entity = model_class.query.get_or_404(entity_id)
-    try:
-        db.session.delete(entity)
-        db.session.commit()
-        return render_template(
-            "components/modals/form_success.html",
-            message=f"{model_name.title()} deleted successfully",
-        )
-    except Exception as e:
-        db.session.rollback()
-        return render_template("components/modals/form_error.html", error=str(e))
+    form = form_class(obj=entity)
+
+    # Handle task relationships
+    if model_name.lower() == "task":
+        populate_task_form_data(entity, form, mode)
+
+    return render_modal(model_name, form, mode, entity)
+
+
+@modals_bp.route("/<model_name>/create", methods=["POST"])
+@handle_errors
+def create_entity(model_name):
+    """Create new entity - POST handler."""
+    model, form_class = get_model_and_form(model_name)
+    return process_form_submission(model_name, model, form_class())
+
+
+@modals_bp.route("/<model_name>/<int:entity_id>/update", methods=["POST"])
+@handle_errors
+def update_entity(model_name, entity_id):
+    """Update existing entity - POST handler."""
+    model, form_class = get_model_and_form(model_name)
+    entity = model.query.get_or_404(entity_id)
+    return process_form_submission(model_name, model, form_class(obj=entity), entity)
+
+
+@modals_bp.route("/<model_name>/<int:entity_id>/delete", methods=["POST"])
+@handle_errors
+def delete_entity(model_name, entity_id):
+    """Delete entity - POST handler."""
+    model, _ = get_model_and_form(model_name)
+    entity = model.query.get_or_404(entity_id)
+
+    db.session.delete(entity)
+    db.session.commit()
+
+    return render_template(
+        "components/modals/form_success.html",
+        message=f"{model_name.title()} deleted successfully"
+    )
 
 
 @modals_bp.route("/close")
 def close_modal():
-    """Return modal close response."""
+    """Close modal response."""
     return render_template("components/modals/modal_close.html")
