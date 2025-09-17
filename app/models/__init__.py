@@ -12,12 +12,12 @@ from .user import User, CompanyAccountTeam, OpportunityAccountTeam  # noqa: E402
 
 # Single source of truth for model name-to-class mapping
 MODEL_REGISTRY = {
-    'company': Company,
-    'stakeholder': Stakeholder,
-    'opportunity': Opportunity,
-    'task': Task,
-    'user': User,
-    'note': Note
+    "company": Company,
+    "stakeholder": Stakeholder,
+    "opportunity": Opportunity,
+    "task": Task,
+    "user": User,
+    "note": Note,
 }
 
 __all__ = [

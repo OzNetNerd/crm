@@ -64,11 +64,13 @@ def reschedule_task(task_id):
 
         db.session.commit()
 
-        return jsonify({
-            "status": "success",
-            "message": f"Task rescheduled by {days} days",
-            "due_date": task.due_date.isoformat() if task.due_date else None
-        })
+        return jsonify(
+            {
+                "status": "success",
+                "message": f"Task rescheduled by {days} days",
+                "due_date": task.due_date.isoformat() if task.due_date else None,
+            }
+        )
 
     except Exception as e:
         db.session.rollback()

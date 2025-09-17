@@ -8,7 +8,7 @@ including the new created_at field for companies.
 
 import sys
 from pathlib import Path
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 import random
 
 # Add project root to Python path
@@ -65,7 +65,7 @@ def seed_companies():
             "phone": "+1-555-0105",
             "address": "654 Learning Lane, Seattle, WA 98101",
             "comments": "Online education platform",
-        }
+        },
     ]
 
     companies = []
@@ -75,10 +75,7 @@ def seed_companies():
         # Spread creation times over the past year
         created_at = base_time + timedelta(days=random.randint(0, 365))
 
-        company = Company(
-            created_at=created_at,
-            **company_data
-        )
+        company = Company(created_at=created_at, **company_data)
         companies.append(company)
         db.session.add(company)
 
@@ -90,11 +87,36 @@ def seed_companies():
 def seed_stakeholders(companies):
     """Create sample stakeholders linked to companies."""
     stakeholders_data = [
-        {"name": "John Smith", "email": "john.smith@techcorp.com", "job_title": "CTO", "phone": "+1-555-1001"},
-        {"name": "Sarah Johnson", "email": "sarah.j@healthfirst.com", "job_title": "VP Operations", "phone": "+1-555-1002"},
-        {"name": "Mike Chen", "email": "mike.chen@greenenergy.com", "job_title": "Founder", "phone": "+1-555-1003"},
-        {"name": "Lisa Rodriguez", "email": "lisa.r@retailmax.com", "job_title": "Director of Sales", "phone": "+1-555-1004"},
-        {"name": "David Wilson", "email": "d.wilson@edutech.edu", "job_title": "Head of Product", "phone": "+1-555-1005"},
+        {
+            "name": "John Smith",
+            "email": "john.smith@techcorp.com",
+            "job_title": "CTO",
+            "phone": "+1-555-1001",
+        },
+        {
+            "name": "Sarah Johnson",
+            "email": "sarah.j@healthfirst.com",
+            "job_title": "VP Operations",
+            "phone": "+1-555-1002",
+        },
+        {
+            "name": "Mike Chen",
+            "email": "mike.chen@greenenergy.com",
+            "job_title": "Founder",
+            "phone": "+1-555-1003",
+        },
+        {
+            "name": "Lisa Rodriguez",
+            "email": "lisa.r@retailmax.com",
+            "job_title": "Director of Sales",
+            "phone": "+1-555-1004",
+        },
+        {
+            "name": "David Wilson",
+            "email": "d.wilson@edutech.edu",
+            "job_title": "Head of Product",
+            "phone": "+1-555-1005",
+        },
     ]
 
     stakeholders = []
@@ -106,7 +128,7 @@ def seed_stakeholders(companies):
         stakeholder = Stakeholder(
             company=companies[i % len(companies)],
             created_at=created_at,
-            **stakeholder_data
+            **stakeholder_data,
         )
         stakeholders.append(stakeholder)
         db.session.add(stakeholder)
@@ -119,11 +141,41 @@ def seed_stakeholders(companies):
 def seed_opportunities(companies):
     """Create sample opportunities linked to companies."""
     opportunities_data = [
-        {"name": "Software License Deal", "value": 150000, "probability": 75, "stage": "proposal", "priority": "high"},
-        {"name": "Healthcare System Upgrade", "value": 500000, "probability": 60, "stage": "negotiation", "priority": "high"},
-        {"name": "Solar Panel Installation", "value": 75000, "probability": 90, "stage": "closed_won", "priority": "medium"},
-        {"name": "Retail POS System", "value": 250000, "probability": 45, "stage": "discovery", "priority": "medium"},
-        {"name": "Learning Management System", "value": 100000, "probability": 80, "stage": "proposal", "priority": "low"},
+        {
+            "name": "Software License Deal",
+            "value": 150000,
+            "probability": 75,
+            "stage": "proposal",
+            "priority": "high",
+        },
+        {
+            "name": "Healthcare System Upgrade",
+            "value": 500000,
+            "probability": 60,
+            "stage": "negotiation",
+            "priority": "high",
+        },
+        {
+            "name": "Solar Panel Installation",
+            "value": 75000,
+            "probability": 90,
+            "stage": "closed_won",
+            "priority": "medium",
+        },
+        {
+            "name": "Retail POS System",
+            "value": 250000,
+            "probability": 45,
+            "stage": "discovery",
+            "priority": "medium",
+        },
+        {
+            "name": "Learning Management System",
+            "value": 100000,
+            "probability": 80,
+            "stage": "proposal",
+            "priority": "low",
+        },
     ]
 
     opportunities = []
@@ -137,7 +189,7 @@ def seed_opportunities(companies):
             company=companies[i % len(companies)],
             created_at=created_at,
             expected_close_date=expected_close_date.date(),
-            **opp_data
+            **opp_data,
         )
         opportunities.append(opportunity)
         db.session.add(opportunity)
@@ -151,10 +203,26 @@ def seed_tasks():
     """Create sample tasks."""
     tasks_data = [
         {"description": "Follow up on proposal", "priority": "high", "status": "todo"},
-        {"description": "Schedule demo meeting", "priority": "medium", "status": "in_progress"},
-        {"description": "Send contract for review", "priority": "high", "status": "todo"},
-        {"description": "Conduct technical assessment", "priority": "low", "status": "complete"},
-        {"description": "Prepare implementation plan", "priority": "medium", "status": "todo"},
+        {
+            "description": "Schedule demo meeting",
+            "priority": "medium",
+            "status": "in_progress",
+        },
+        {
+            "description": "Send contract for review",
+            "priority": "high",
+            "status": "todo",
+        },
+        {
+            "description": "Conduct technical assessment",
+            "priority": "low",
+            "status": "complete",
+        },
+        {
+            "description": "Prepare implementation plan",
+            "priority": "medium",
+            "status": "todo",
+        },
     ]
 
     tasks = []
@@ -164,11 +232,7 @@ def seed_tasks():
         created_at = base_time + timedelta(days=random.randint(0, 60))
         due_date = created_at + timedelta(days=random.randint(1, 30))
 
-        task = Task(
-            created_at=created_at,
-            due_date=due_date.date(),
-            **task_data
-        )
+        task = Task(created_at=created_at, due_date=due_date.date(), **task_data)
         tasks.append(task)
         db.session.add(task)
 
@@ -180,9 +244,21 @@ def seed_tasks():
 def seed_users():
     """Create sample users."""
     users_data = [
-        {"name": "Admin User", "email": "admin@crm.com", "job_title": "System Administrator"},
-        {"name": "Sales Manager", "email": "sales@crm.com", "job_title": "Sales Manager"},
-        {"name": "Account Executive", "email": "ae@crm.com", "job_title": "Account Executive"},
+        {
+            "name": "Admin User",
+            "email": "admin@crm.com",
+            "job_title": "System Administrator",
+        },
+        {
+            "name": "Sales Manager",
+            "email": "sales@crm.com",
+            "job_title": "Sales Manager",
+        },
+        {
+            "name": "Account Executive",
+            "email": "ae@crm.com",
+            "job_title": "Account Executive",
+        },
     ]
 
     users = []
@@ -191,10 +267,7 @@ def seed_users():
     for i, user_data in enumerate(users_data):
         created_at = base_time + timedelta(days=random.randint(0, 100))
 
-        user = User(
-            created_at=created_at,
-            **user_data
-        )
+        user = User(created_at=created_at, **user_data)
         users.append(user)
         db.session.add(user)
 
@@ -223,7 +296,7 @@ def main():
         opportunities = seed_opportunities(companies)
         tasks = seed_tasks()
 
-        print(f"\n🎉 Database seeded successfully!")
+        print("\n🎉 Database seeded successfully!")
         print(f"   {len(companies)} companies")
         print(f"   {len(stakeholders)} stakeholders")
         print(f"   {len(opportunities)} opportunities")

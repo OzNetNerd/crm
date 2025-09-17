@@ -4,6 +4,7 @@ from .notes import api_notes_bp
 from .tasks import tasks_api_bp
 from .forms import forms_api
 
+
 def register_api_blueprints(app):
     """Register all API blueprints"""
     app.register_blueprint(api_core_bp)

@@ -40,7 +40,7 @@
                 {% endfor %}
                 
                 {% if group.entities|length == 0 %}
-                    {{ group_empty_state(entity_name_plural, group.label) }}
+                    {{ empty_state('No ' + entity_name_plural|lower + ' in ' + group.label) }}
                 {% endif %}
             </div>
         </details>
@@ -48,7 +48,7 @@
 
     {# No results message - using DRY empty state component #}
     {% if grouped_entities|length == 0 %}
-        {{ empty_state(model_class.get_entity_config()) }}
+        {{ empty_state('No ' + entity_name_plural|lower + ' found') }}
     {% endif %}
 
 </div>
@@ -58,7 +58,7 @@
 details[data-group] summary::-webkit-details-marker {
     display: none;
 }
-details[data-group][open] .details-chevron {
+details[data-group][open] .entity-group-chevron {
     transform: rotate(90deg);
 }
 </style>

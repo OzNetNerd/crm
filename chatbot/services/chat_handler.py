@@ -327,7 +327,6 @@ class ChatHandler:
             "response_metadata": {"query_type": "task", "processing_time": 0.1},
         }
 
-
     async def _handle_general_query(
         self, message: str, db_session: AsyncSession
     ) -> Dict[str, Any]:

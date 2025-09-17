@@ -24,8 +24,7 @@ def search():
         # Parse comma-separated types
         type_list = [t.strip() for t in entity_type.split(",")]
         models_to_search = [
-            MODEL_REGISTRY.get(t) for t in type_list
-            if t in MODEL_REGISTRY
+            MODEL_REGISTRY.get(t) for t in type_list if t in MODEL_REGISTRY
         ]
         models_to_search = [m for m in models_to_search if m]  # Filter None
 
@@ -41,7 +40,9 @@ def search():
 
     # Sort by type order and title
     type_order = {name: i for i, name in enumerate(MODEL_REGISTRY.keys())}
-    results.sort(key=lambda x: (type_order.get(x["type"], 99), x.get("title", "").lower()))
+    results.sort(
+        key=lambda x: (type_order.get(x["type"], 99), x.get("title", "").lower())
+    )
 
     return jsonify(results[:limit])
 
@@ -54,8 +55,8 @@ def get_entity_types():
     # Use MODEL_REGISTRY as source of truth
     for model_name, model_class in MODEL_REGISTRY.items():
         entity_types[model_name] = {
-            'name': model_class.get_display_name_plural(),
-            'icon': model_name  # Frontend will map to appropriate icon
+            "name": model_class.get_display_name_plural(),
+            "icon": model_name,  # Frontend will map to appropriate icon
         }
 
     return jsonify(entity_types)
@@ -82,11 +83,11 @@ def autocomplete():
         result = {
             "id": entity.id,
             "name": entity._get_search_title(),
-            "type": entity_type
+            "type": entity_type,
         }
 
         # Add company name for entities that have it
-        if hasattr(entity, 'company') and entity.company:
+        if hasattr(entity, "company") and entity.company:
             result["company"] = entity.company.name
 
         suggestions.append(result)
@@ -98,10 +99,12 @@ def autocomplete():
 def htmx_search():
     """HTMX endpoint for live search - returns HTML instead of JSON."""
     query = request.args.get("q", "").strip()
-    entity_type = request.args.get("type", "all")
+    # Support both 'type' and 'entity_type' for backward compatibility
+    entity_type = request.args.get("type") or request.args.get("entity_type", "all")
     limit = min(int(request.args.get("limit", 10)), 20)
     mode = request.args.get("mode", "modal")  # 'modal' or 'select'
     field_id = request.args.get("field_id", "")
+    field_name = request.args.get("field_name", "")
 
     # Reuse the main search logic
     if entity_type == "all":
@@ -109,8 +112,7 @@ def htmx_search():
     else:
         type_list = [t.strip() for t in entity_type.split(",")]
         models_to_search = [
-            MODEL_REGISTRY.get(t) for t in type_list
-            if t in MODEL_REGISTRY
+            MODEL_REGISTRY.get(t) for t in type_list if t in MODEL_REGISTRY
         ]
         models_to_search = [m for m in models_to_search if m]
 
@@ -118,7 +120,9 @@ def htmx_search():
     results = []
 
     # Distribute results across entity types for better diversity
-    items_per_type = max(1, limit // len(models_to_search)) if models_to_search else limit
+    items_per_type = (
+        max(1, limit // len(models_to_search)) if models_to_search else limit
+    )
 
     for model in models_to_search:
         try:
@@ -129,11 +133,16 @@ def htmx_search():
 
     # Sort and limit
     type_order = {name: i for i, name in enumerate(MODEL_REGISTRY.keys())}
-    results.sort(key=lambda x: (type_order.get(x["type"], 99), x.get("title", "").lower()))
+    results.sort(
+        key=lambda x: (type_order.get(x["type"], 99), x.get("title", "").lower())
+    )
     results = results[:limit]
 
-    return render_template('components/search/results.html',
-                         results=results,
-                         query=query,
-                         mode=mode,
-                         field_id=field_id)
+    return render_template(
+        "components/search/results.html",
+        results=results,
+        query=query,
+        mode=mode,
+        field_id=field_id,
+        field_name=field_name,
+    )

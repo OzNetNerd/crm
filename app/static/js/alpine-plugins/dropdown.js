@@ -1,12 +1,10 @@
 /**
  * Alpine.js Dropdown Plugin
  * Unified dropdown component for single-select, multi-select, and form dropdowns
- * Replaces duplicate css_dropdown and form_select_dropdown macros
  */
 
-// Ensure Alpine is loaded before registering components
-function registerDropdown() {
-    Alpine.data('dropdown', (config = {}) => ({
+window.dropdown = function(config = {}) {
+    return {
         // Core state
         open: false,
         selected: config.multi ? (config.selected || []) : (config.selected || ''),
@@ -51,15 +49,6 @@ function registerDropdown() {
             }
         },
 
-        get isSelected() {
-            return (value) => {
-                if (this.multi) {
-                    return this.selected.includes(value);
-                }
-                return this.selected === value;
-            };
-        },
-
         // Methods
         init() {
             // Watch for changes and dispatch events
@@ -73,18 +62,6 @@ function registerDropdown() {
                 // Trigger HTMX if configured
                 if (this.htmx.trigger) {
                     this.triggerHtmx();
-                }
-            });
-
-            // Close on click outside
-            this.$refs.container.addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
-
-            // Keyboard navigation
-            this.$refs.container.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    this.close();
                 }
             });
         },
@@ -115,6 +92,13 @@ function registerDropdown() {
                 this.selected = value;
                 this.close();
             }
+        },
+
+        isSelected(value) {
+            if (this.multi) {
+                return this.selected.includes(value);
+            }
+            return this.selected === value;
         },
 
         selectAll() {
@@ -154,31 +138,6 @@ function registerDropdown() {
                 const event = new Event('change', { bubbles: true });
                 input.dispatchEvent(event);
             }
-        },
-
-        // Click outside handler
-        clickOutside(event) {
-            if (!this.$refs.container.contains(event.target)) {
-                this.close();
-            }
         }
-    }));
-
-    // Register global click handler for all dropdowns
-    document.addEventListener('click', (event) => {
-        const dropdownEl = event.target.closest('[x-data*="dropdown"]');
-        if (dropdownEl && dropdownEl._x_dataStack) {
-            const dropdownData = dropdownEl._x_dataStack[0];
-            if (dropdownData && typeof dropdownData.clickOutside === 'function') {
-                dropdownData.clickOutside(event);
-            }
-        }
-    });
-}
-
-// Register when Alpine is ready
-if (typeof Alpine !== 'undefined') {
-    registerDropdown();
-} else {
-    document.addEventListener('alpine:init', registerDropdown);
-}
+    };
+};

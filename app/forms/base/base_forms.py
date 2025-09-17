@@ -26,7 +26,9 @@ class BaseForm(FlaskForm):
                         or "type" not in entity
                         or "id" not in entity
                     ):
-                        raise ValueError("Each linked entity must have 'type' and 'id' fields")
+                        raise ValueError(
+                            "Each linked entity must have 'type' and 'id' fields"
+                        )
 
             except json.JSONDecodeError:
                 raise ValueError("Invalid JSON format for linked entities")
@@ -38,7 +40,9 @@ class BaseForm(FlaskForm):
     def validate_parent_task_relationship(self, parent_task_id_field, task_type_field):
         """Validation for parent-child task relationships"""
         if task_type_field.data == "child" and not parent_task_id_field.data:
-            parent_task_id_field.errors.append("Parent task is required for child tasks")
+            parent_task_id_field.errors.append(
+                "Parent task is required for child tasks"
+            )
             return False
         return True
 

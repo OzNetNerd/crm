@@ -7,7 +7,7 @@ Centralizes dashboard data fetching and processing to keep routes clean.
 
 from typing import Dict, Any, List
 from datetime import date
-from app.models import Task, Company, Stakeholder, Opportunity, Note, User
+from app.models import Task, Opportunity, Note
 
 
 class DashboardService:
@@ -29,20 +29,21 @@ class DashboardService:
         # Get first 4 stages for dashboard display
         # Get stage choices and convert to list of tuples
         stage_choices = Opportunity.get_stage_choices()
-        stages = [(k, v['label']) for k, v in list(stage_choices.items())[:4]]
+        stages = [(k, v["label"]) for k, v in list(stage_choices.items())[:4]]
 
         stats = []
         for stage_value, stage_label in stages:
-            stats.append({
-                'value': breakdown.get(stage_value, 0),  # Return raw value, let template format
-                'label': stage_label.title(),
-                'status': stage_value
-            })
+            stats.append(
+                {
+                    "value": breakdown.get(
+                        stage_value, 0
+                    ),  # Return raw value, let template format
+                    "label": stage_label.title(),
+                    "status": stage_value,
+                }
+            )
 
-        return {
-            'title': 'Sales Pipeline',
-            'stats': stats
-        }
+        return {"title": "Sales Pipeline", "stats": stats}
 
     @staticmethod
     def get_recent_activity() -> Dict[str, List]:
@@ -55,14 +56,21 @@ class DashboardService:
             Dictionary with recent_tasks, recent_notes, recent_opportunities
         """
         # Get recent items using direct queries
-        recent_tasks = Task.query.filter(Task.status != 'complete').order_by(Task.created_at.desc()).limit(5).all()
+        recent_tasks = (
+            Task.query.filter(Task.status != "complete")
+            .order_by(Task.created_at.desc())
+            .limit(5)
+            .all()
+        )
         recent_notes = Note.query.order_by(Note.created_at.desc()).limit(3).all()
-        recent_opportunities = Opportunity.query.order_by(Opportunity.created_at.desc()).limit(3).all()
+        recent_opportunities = (
+            Opportunity.query.order_by(Opportunity.created_at.desc()).limit(3).all()
+        )
 
         return {
-            'recent_tasks': recent_tasks,  # Pass raw objects, let templates handle formatting
-            'recent_notes': recent_notes,
-            'recent_opportunities': recent_opportunities
+            "recent_tasks": recent_tasks,  # Pass raw objects, let templates handle formatting
+            "recent_notes": recent_notes,
+            "recent_opportunities": recent_opportunities,
         }
 
     @staticmethod
@@ -75,20 +83,20 @@ class DashboardService:
         Returns:
             Dictionary with overdue_tasks and closing_soon opportunities
         """
-        from datetime import datetime, timedelta
 
         # Get overdue tasks
-        overdue_tasks = Task.query.filter(
-            Task.due_date < date.today(),
-            Task.status != 'complete'
-        ).limit(5).all()
+        overdue_tasks = (
+            Task.query.filter(Task.due_date < date.today(), Task.status != "complete")
+            .limit(5)
+            .all()
+        )
 
         # Get opportunities closing soon
         closing_soon = Opportunity.get_closing_soon()
 
         return {
-            'overdue_tasks': overdue_tasks,  # Pass raw objects
-            'closing_soon': closing_soon
+            "overdue_tasks": overdue_tasks,  # Pass raw objects
+            "closing_soon": closing_soon,
         }
 
     @staticmethod
@@ -102,8 +110,8 @@ class DashboardService:
         Returns:
             List of endpoint names for dashboard buttons
         """
-        # Just return the main entity types for dashboard buttons
-        return ['companies', 'tasks', 'opportunities', 'stakeholders', 'users']
+        # Return singular entity types for modal routes
+        return ["company", "task", "opportunity", "stakeholder", "user"]
 
     @staticmethod
     def get_dashboard_data() -> Dict[str, Any]:
@@ -120,33 +128,41 @@ class DashboardService:
 
         dashboard_sections = [
             {
-                'title': f'{prefix} {model_class.get_display_name_plural()}',
-                'entities': entities,
-                'entity_type': entity_type
+                "title": f"{prefix} {model_class.get_display_name_plural()}",
+                "entities": entities,
+                "entity_type": entity_type,
+                "display_config": model_class.get_display_config(),
             }
             for entity_type, model_class in sorted(MODEL_REGISTRY.items())
-            for method_name, prefix in [('get_overdue', 'Overdue'), ('get_recent', 'Recent')]
+            for method_name, prefix in [
+                ("get_overdue", "Overdue"),
+                ("get_recent", "Recent"),
+            ]
             if hasattr(model_class, method_name)
-            if (entities := getattr(model_class, method_name)(3 if entity_type in {'note', 'opportunity'} else 5))
+            if (
+                entities := getattr(model_class, method_name)(
+                    3 if entity_type in {"note", "opportunity"} else 5
+                )
+            )
         ]
 
         # Combine all dashboard data
         data = {
-            'dashboard_sections': dashboard_sections,
-            'dashboard_stats': DashboardService.get_pipeline_stats(),
-            'entity_types': DashboardService.get_entity_buttons(),
-            'today': date.today()
+            "dashboard_sections": dashboard_sections,
+            "dashboard_stats": DashboardService.get_pipeline_stats(),
+            "entity_types": DashboardService.get_entity_buttons(),
+            "today": date.today(),
         }
 
         # Add pipeline stats for compatibility
         breakdown = Opportunity.get_pipeline_breakdown()
-        data['pipeline_stats'] = {
-            'prospect': breakdown.get('prospect', 0),
-            'qualified': breakdown.get('qualified', 0),
-            'proposal': breakdown.get('proposal', 0),
-            'negotiation': breakdown.get('negotiation', 0),
-            'total_value': breakdown.get('total', 0),
-            'total_count': Opportunity.query.count()
+        data["pipeline_stats"] = {
+            "prospect": breakdown.get("prospect", 0),
+            "qualified": breakdown.get("qualified", 0),
+            "proposal": breakdown.get("proposal", 0),
+            "negotiation": breakdown.get("negotiation", 0),
+            "total_value": breakdown.get("total", 0),
+            "total_count": Opportunity.query.count(),
         }
 
         return data

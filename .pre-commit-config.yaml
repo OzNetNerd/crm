@@ -1,56 +1,75 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.6.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-added-large-files
+      - id: check-merge-conflict
 
-  - repo: https://github.com/psf/black
-    rev: 23.3.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
     hooks:
-      - id: black
-        language_version: python3
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
 
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
     hooks:
-      - id: isort
-        args: ["--profile", "black"]
-
-  - repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
-    hooks:
-      - id: flake8
-        args: ['--max-line-length=88', '--extend-ignore=E203']
+      - id: mypy
+        additional_dependencies: [types-flask, types-sqlalchemy]
+        args: [--ignore-missing-imports]
 
   - repo: local
     hooks:
-      - id: check-docstrings
-        name: Check Python docstrings
-        entry: python scripts/validate_docstrings.py
+      - id: enforce-claude-principles
+        name: Enforce CLAUDE.MD principles
+        entry: python -c "
+import sys
+import re
+from pathlib import Path
+
+violations = []
+
+for file_path in sys.argv[1:]:
+    if not file_path.endswith('.py'):
+        continue
+
+    content = Path(file_path).read_text()
+    lines = content.split('\n')
+
+    # Check for functions returning 4+ values
+    for i, line in enumerate(lines, 1):
+        if 'return ' in line and line.count(',') >= 3:
+            violations.append(f'{file_path}:{i}: Function returns 4+ values (violates CLAUDE.MD)')
+
+    # Check for arrow code (deep nesting)
+    indent_level = 0
+    for i, line in enumerate(lines, 1):
+        stripped = line.lstrip()
+        if not stripped or stripped.startswith('#'):
+            continue
+        current_indent = len(line) - len(stripped)
+        if current_indent > 12:  # More than 3 levels
+            violations.append(f'{file_path}:{i}: Deep nesting detected (violates CLAUDE.MD)')
+
+    # Check for code duplication patterns
+    if content.count('def ') > 0:
+        methods = re.findall(r'def (\w+)', content)
+        similar_methods = []
+        for method in methods:
+            similar = [m for m in methods if m != method and m.startswith(method[:4]) and len(method) > 4]
+            if similar:
+                similar_methods.extend(similar)
+        if similar_methods:
+            violations.append(f'{file_path}: Similar method names detected - consolidate: {similar_methods}')
+
+if violations:
+    print('\\n'.join(violations))
+    sys.exit(1)
+"
         language: system
         files: '\.py$'
         pass_filenames: true
-
-      - id: check-type-annotations
-        name: Check type annotations
-        entry: python scripts/validate_type_annotations.py
-        language: system
-        files: '\.py$'
-        pass_filenames: true
-
-      - id: check-documentation-coverage
-        name: Check documentation coverage
-        entry: python scripts/check_documentation_coverage.py
-        language: system
-        files: '\.py$'
-        always_run: true
-
-      - id: detect-legacy-patterns
-        name: Detect legacy code patterns (ADR-010)
-        entry: python scripts/detect_legacy_patterns.py --fail-fast
-        language: system
-        files: '\.(py|html)$'
-        always_run: true

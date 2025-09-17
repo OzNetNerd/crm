@@ -18,9 +18,12 @@
         {% if entity_config.entity_buttons %}
         <div class="page-actions">
             {% for button in entity_config.entity_buttons %}
-                <a href="{{ button.url }}" class="btn btn-{{ button.variant|default('primary') }}">
+                <button class="btn btn-{{ button.variant|default('primary') }}"
+                        hx-get="{{ button.url }}"
+                        hx-target="#modal-container"
+                        hx-swap="innerHTML">
                     {{ button.title }}
-                </a>
+                </button>
             {% endfor %}
         </div>
         {% endif %}
@@ -38,8 +41,8 @@
     </div>
     {% endif %}
 
-    {# Filters #}
-    {% if dropdown_configs %}
+    {# Filters - Always show if available #}
+    {% if dropdown_configs and dropdown_configs|length > 0 %}
     <div class="filter-section">
         <form hx-get="{{ url_for(entity_config.content_endpoint) }}"
               hx-target="#entity-content"

@@ -7,6 +7,7 @@ Simple company form using WTForms with model introspection.
 from wtforms import StringField, TextAreaField, SelectField, ValidationError
 from wtforms.validators import DataRequired, Optional, URL, Length
 from ..base.base_forms import BaseForm
+
 # ModelIntrospector removed - use model methods directly
 
 
@@ -18,68 +19,51 @@ class CompanyForm(BaseForm):
 
         # Set choices from model metadata
         from app.models.company import Company
-        industry_choices = Company.get_field_choices('industry')
-        self.industry.choices = [('', 'Select industry')] + industry_choices
 
-        size_choices = Company.get_field_choices('size')
-        self.size.choices = [('', 'Select size')] + size_choices
+        industry_choices = Company.get_field_choices("industry")
+        self.industry.choices = [("", "Select industry")] + industry_choices
+
+        size_choices = Company.get_field_choices("size")
+        self.size.choices = [("", "Select size")] + size_choices
 
     def validate_name(self, field):
         """Check for duplicate company names"""
         from app.models.company import Company
+
         existing = Company.query.filter(Company.name.ilike(field.data.strip())).first()
         if existing:
             # Allow editing same record
-            if hasattr(self, '_obj') and self._obj and self._obj.id == existing.id:
+            if hasattr(self, "_obj") and self._obj and self._obj.id == existing.id:
                 return
-            raise ValidationError('A company with this name already exists.')
+            raise ValidationError("A company with this name already exists.")
 
     # Entity field (for related companies/stakeholders/opportunities)
     entity = StringField(
-        'Related To',
+        "Related To",
         validators=[Optional()],
-        render_kw={'placeholder': 'Search companies, contacts, opportunities...'}
+        render_kw={"placeholder": "Search companies, contacts, opportunities..."},
     )
 
-    name = StringField(
-        'Company Name',
-        validators=[DataRequired(), Length(max=255)]
-    )
+    name = StringField("Company Name", validators=[DataRequired(), Length(max=255)])
 
     industry = SelectField(
-        'Industry',
-        validators=[Optional()],
-        choices=[]  # Will be populated in __init__
+        "Industry", validators=[Optional()], choices=[]  # Will be populated in __init__
     )
 
-    website = StringField(
-        'Website',
-        validators=[Optional(), URL()]
-    )
+    website = StringField("Website", validators=[Optional(), URL()])
 
     size = SelectField(
-        'Company Size',
+        "Company Size",
         validators=[Optional()],
-        choices=[]  # Will be populated in __init__
+        choices=[],  # Will be populated in __init__
     )
 
-    phone = StringField(
-        'Phone',
-        validators=[Optional(), Length(max=50)]
-    )
+    phone = StringField("Phone", validators=[Optional(), Length(max=50)])
 
-    address = TextAreaField(
-        'Address',
-        validators=[Optional()],
-        render_kw={'rows': 2}
-    )
+    address = TextAreaField("Address", validators=[Optional()], render_kw={"rows": 2})
 
-    comments = TextAreaField(
-        'Comments',
-        validators=[Optional()],
-        render_kw={'rows': 3}
-    )
+    comments = TextAreaField("Comments", validators=[Optional()], render_kw={"rows": 3})
 
     def get_display_fields(self):
         """Return field names to display in modal, in this exact order"""
-        return ['name', 'industry', 'comments']
+        return ["name", "industry", "comments"]

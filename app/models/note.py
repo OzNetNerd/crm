@@ -20,9 +20,10 @@ class Note(BaseModel):
         entity_type: Type of entity this note is attached to.
         entity_id: ID of the entity this note is attached to.
     """
+
     __tablename__ = "notes"
     __display_name__ = "Note"
-    __display_field__ = 'content'
+    __display_field__ = "content"
     __web_enabled__ = False  # No standard entity pages for notes
 
     id = db.Column(db.Integer, primary_key=True)
@@ -44,14 +45,17 @@ class Note(BaseModel):
 
         if self.entity_type == "company":
             from .company import Company
+
             entity = Company.query.get(self.entity_id)
             return entity.name if entity else None
         elif self.entity_type == "stakeholder":
             from .stakeholder import Stakeholder
+
             entity = Stakeholder.query.get(self.entity_id)
             return entity.company.name if entity and entity.company else None
         elif self.entity_type == "opportunity":
             from .opportunity import Opportunity
+
             entity = Opportunity.query.get(self.entity_id)
             return entity.company.name if entity and entity.company else None
 
@@ -61,11 +65,11 @@ class Note(BaseModel):
     def entity_name(self) -> Optional[str]:
         """
         Get the name of the entity this note is attached to.
-        
+
         Returns:
             Name of the attached entity, or None if no entity attached
             or entity not found.
-            
+
         Example:
             >>> note = Note(entity_type="company", entity_id=1)
             >>> note.entity_name
@@ -102,9 +106,10 @@ class Note(BaseModel):
             return ""
 
         from datetime import datetime
+
         now = datetime.utcnow()
         diff = now - self.created_at
-        formatted_date = self.created_at.strftime('%d/%m/%y %H:%M')
+        formatted_date = self.created_at.strftime("%d/%m/%y %H:%M")
 
         if diff.days == 0:
             hours = diff.seconds // 3600
@@ -120,7 +125,6 @@ class Note(BaseModel):
             return f"{formatted_date} ({diff.days} days ago)"
         else:
             return formatted_date  # Just show date/time for older notes
-
 
     def to_display_dict(self) -> Dict[str, Any]:
         """
@@ -140,10 +144,12 @@ class Note(BaseModel):
         result = super().to_dict()
 
         # Add note-specific computed fields
-        result['entity_name'] = self.entity_name
-        result['company_name'] = self.company_name
-        result['content_preview'] = self.content[:100] + '...' if len(self.content) > 100 else self.content
-        result['created_at_display'] = self.created_at_display
+        result["entity_name"] = self.entity_name
+        result["company_name"] = self.company_name
+        result["content_preview"] = (
+            self.content[:100] + "..." if len(self.content) > 100 else self.content
+        )
+        result["created_at_display"] = self.created_at_display
 
         return result
 

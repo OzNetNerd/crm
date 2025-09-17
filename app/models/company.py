@@ -1,5 +1,5 @@
-from typing import Dict, Any, List, Optional
-from datetime import datetime, date
+from typing import Dict, Any, List
+from datetime import datetime
 from . import db
 from .base import BaseModel
 
@@ -24,10 +24,14 @@ class Company(BaseModel):
         stakeholders: Related stakeholder contacts.
         opportunities: Related business opportunities.
     """
+
     __tablename__ = "companies"
     __display_name__ = "Company"
     __search_config__ = {
-        'subtitle_fields': ['industry', 'size']  # Auto-detection works well, but be explicit
+        "subtitle_fields": [
+            "industry",
+            "size",
+        ]  # Auto-detection works well, but be explicit
     }
 
     # Serialization configuration
@@ -51,154 +55,122 @@ class Company(BaseModel):
                 "probability": opp.probability,
             }
             for opp in self.opportunities
-        ]
+        ],
     }
-    
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(
         db.String(255),
         nullable=False,
         info={
-            'display_label': 'Company Name',
-            'required': True,
-            'groupable': True,
-            'form_include': True,
-            'searchable': True,
-            'search_title': True
-        }
+            "display_label": "Company Name",
+            "required": True,
+            "groupable": True,
+            "form_include": True,
+            "searchable": True,
+            "search_title": True,
+        },
     )
     industry = db.Column(
         db.String(100),
         info={
-            'display_label': 'Industry',
-            'groupable': True,
-            'form_include': True,
-            'searchable': True,
-            'search_subtitle': True,
-            'choices': {
-                'technology': {
-                    'label': 'Technology',
-                    'description': 'Software and technology companies'
+            "display_label": "Industry",
+            "groupable": True,
+            "form_include": True,
+            "searchable": True,
+            "search_subtitle": True,
+            "choices": {
+                "technology": {
+                    "label": "Technology",
+                    "description": "Software and technology companies",
                 },
-                'healthcare': {
-                    'label': 'Healthcare',
-                    'description': 'Medical and healthcare services'
+                "healthcare": {
+                    "label": "Healthcare",
+                    "description": "Medical and healthcare services",
                 },
-                'finance': {
-                    'label': 'Finance',
-                    'description': 'Financial services and banking'
+                "finance": {
+                    "label": "Finance",
+                    "description": "Financial services and banking",
                 },
-                'manufacturing': {
-                    'label': 'Manufacturing',
-                    'description': 'Manufacturing and production'
+                "manufacturing": {
+                    "label": "Manufacturing",
+                    "description": "Manufacturing and production",
                 },
-                'retail': {
-                    'label': 'Retail',
-                    'description': 'Retail and e-commerce'
+                "retail": {"label": "Retail", "description": "Retail and e-commerce"},
+                "education": {
+                    "label": "Education",
+                    "description": "Educational institutions",
                 },
-                'education': {
-                    'label': 'Education',
-                    'description': 'Educational institutions'
+                "consulting": {
+                    "label": "Consulting",
+                    "description": "Professional services and consulting",
                 },
-                'consulting': {
-                    'label': 'Consulting',
-                    'description': 'Professional services and consulting'
-                },
-                'energy': {
-                    'label': 'Energy',
-                    'description': 'Energy and utilities'
-                },
-                'other': {
-                    'label': 'Other',
-                    'description': 'Other industries'
-                }
-            }
-        }
+                "energy": {"label": "Energy", "description": "Energy and utilities"},
+                "other": {"label": "Other", "description": "Other industries"},
+            },
+        },
     )
     website = db.Column(
-        db.String(255),
-        info={
-            'display_label': 'Website',
-            'url_field': True
-        }
+        db.String(255), info={"display_label": "Website", "url_field": True}
     )
-    
+
     size = db.Column(
         db.String(50),
         info={
-            'display_label': 'Company Size',
-            'groupable': True,
-            'choices': {
-                'startup': {
-                    'label': 'Startup (1-10)',
-                    'description': 'Small startup company'
+            "display_label": "Company Size",
+            "groupable": True,
+            "choices": {
+                "startup": {
+                    "label": "Startup (1-10)",
+                    "description": "Small startup company",
                 },
-                'small': {
-                    'label': 'Small (11-50)',
-                    'description': 'Small business'
+                "small": {"label": "Small (11-50)", "description": "Small business"},
+                "medium": {
+                    "label": "Medium (51-200)",
+                    "description": "Medium-sized company",
                 },
-                'medium': {
-                    'label': 'Medium (51-200)',
-                    'description': 'Medium-sized company'
+                "large": {
+                    "label": "Large (201-1000)",
+                    "description": "Large corporation",
                 },
-                'large': {
-                    'label': 'Large (201-1000)',
-                    'description': 'Large corporation'
+                "enterprise": {
+                    "label": "Enterprise (1000+)",
+                    "description": "Enterprise-level organization",
                 },
-                'enterprise': {
-                    'label': 'Enterprise (1000+)',
-                    'description': 'Enterprise-level organization'
-                }
-            }
-        }
-    )
-    
-    phone = db.Column(
-        db.String(50),
-        info={
-            'display_label': 'Phone',
-            'contact_field': True
-        }
-    )
-    
-    address = db.Column(
-        db.Text,
-        info={
-            'display_label': 'Address',
-            'rows': 2
-        }
+            },
+        },
     )
 
+    phone = db.Column(
+        db.String(50), info={"display_label": "Phone", "contact_field": True}
+    )
+
+    address = db.Column(db.Text, info={"display_label": "Address", "rows": 2})
+
     comments = db.Column(
-        db.Text,
-        info={
-            'display_label': 'Comments',
-            'form_include': True,
-            'rows': 3
-        }
+        db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3}
     )
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
     stakeholders = db.relationship("Stakeholder", back_populates="company", lazy=True)
-    opportunities = db.relationship("Opportunity", backref="company", lazy=True)
+    opportunities = db.relationship("Opportunity", back_populates="company", lazy=True)
 
     def get_account_team(self) -> List[Dict[str, Any]]:
         """
         Get account team members assigned to this company.
-        
+
         Retrieves all users assigned to manage this company account,
         sorted by job title and name for consistent ordering.
-        
+
         Returns:
             List of dictionaries containing team member information:
             - id: User ID
             - name: User's full name
-            - email: User's email address  
+            - email: User's email address
             - job_title: User's job title or None
-            
+
         Example:
             >>> company = Company.query.first()
             >>> team = company.get_account_team()
@@ -219,46 +191,45 @@ class Company(BaseModel):
             }
             for assignment in team_assignments
         ]
-    
+
     @classmethod
     def get_industry_choices(cls) -> Dict[str, Dict[str, str]]:
         """
         Get industry choices from model metadata.
-        
+
         Retrieves the available industry options defined in the model's
         field configuration for use in forms and validation.
-        
+
         Returns:
             Dictionary mapping industry keys to their display information:
             - label: Human-readable industry name
             - description: Detailed industry description
-            
+
         Example:
             >>> choices = Company.get_industry_choices()
             >>> print(choices['technology'])
             {'label': 'Technology', 'description': 'Software and technology companies'}
         """
         # Get choices directly from column info
-        return cls.industry.info.get('choices', {})
-    
-    
+        return cls.industry.info.get("choices", {})
+
     @property
     def size_category(self) -> str:
         """
         Calculate company size based on number of stakeholders.
-        
+
         Automatically determines company size category by counting
         the number of stakeholders associated with the company.
         This provides a dynamic size assessment beyond the manually
         set size field.
-        
+
         Returns:
             Size category string: 'unknown', 'small', 'medium', or 'large'.
             - unknown: No stakeholders
             - small: 1-10 stakeholders
-            - medium: 11-50 stakeholders  
+            - medium: 11-50 stakeholders
             - large: 51+ stakeholders
-            
+
         Example:
             >>> company = Company(name="Test Corp")
             >>> company.size_category
@@ -266,15 +237,13 @@ class Company(BaseModel):
         """
         stakeholder_count = len(self.stakeholders) if self.stakeholders else 0
         if stakeholder_count == 0:
-            return 'unknown'
+            return "unknown"
         elif stakeholder_count <= 10:
-            return 'small'
+            return "small"
         elif stakeholder_count <= 50:
-            return 'medium'
+            return "medium"
         else:
-            return 'large'
-
-
+            return "large"
 
     def __repr__(self) -> str:
         """Return string representation of the company."""

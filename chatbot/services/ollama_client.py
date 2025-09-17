@@ -114,7 +114,6 @@ Focus on helping users understand their CRM data and providing actionable insigh
             logger.error(f"Failed to load model {model_name}: {e}")
             return False
 
-
     async def generate_chat_response(
         self,
         user_message: str,

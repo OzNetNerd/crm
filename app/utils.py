@@ -1,5 +1,5 @@
-from datetime import datetime, date
-from typing import Optional, Tuple
+from datetime import date
+from typing import Optional
 
 
 def calculate_relative_days(target_date: date, from_date: Optional[date] = None) -> int:
@@ -41,9 +41,11 @@ def format_relative_time(days_diff: int) -> str:
         return f"({days_diff} day{'s' if days_diff != 1 else ''} to go)"
 
 
-def format_date_with_relative(target_date: Optional[date],
-                             from_date: Optional[date] = None,
-                             date_format: str = '%d/%m/%y') -> str:
+def format_date_with_relative(
+    target_date: Optional[date],
+    from_date: Optional[date] = None,
+    date_format: str = "%d/%m/%y",
+) -> str:
     """
     Format date with relative time information.
 
@@ -76,9 +78,9 @@ def get_next_step_icon(next_step_type: Optional[str]) -> str:
         str: Icon name for use with the icon macro
     """
     icon_map = {
-        'call': 'phone',
-        'email': 'envelope',
-        'meeting': 'calendar',
-        'demo': 'calendar'
+        "call": "phone",
+        "email": "envelope",
+        "meeting": "calendar",
+        "demo": "calendar",
     }
-    return icon_map.get(next_step_type, 'calendar')
+    return icon_map.get(next_step_type, "calendar")

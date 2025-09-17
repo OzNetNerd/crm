@@ -11,7 +11,6 @@
 {% from 'macros/ui.html' import icon, entity_badge %}
 
 {% if results %}
-<div class="py-1">
     {% if query %}
     <div class="px-4 py-2 text-xs font-medium text-gray-600 bg-gray-50 border-b">
         {{ results|length }} result{% if results|length != 1 %}s{% endif %} for "{{ query }}"
@@ -19,10 +18,10 @@
     {% endif %}
 
     {% for result in results %}
-    <div class="border-b border-gray-100 last:border-b-0" data-search-result="{{ result.type }}">
+    <div class="border-b border-gray-100 last:border-b-0 py-1" data-search-result="{{ result.type }}">
         <a href="#"
            {% if mode == 'select' %}
-           data-entity-select="{{ field_id }}"
+           data-entity-select="{{ field_name if field_name else field_id }}"
            data-entity-id="{{ result.id }}"
            data-entity-title="{{ result.title }}"
            data-entity-type="{{ result.type }}"
@@ -67,7 +66,6 @@
         </a>
     </div>
     {% endfor %}
-</div>
 {% else %}
     <div class="px-4 py-6 text-sm text-gray-500 text-center">
         <div class="text-gray-400 text-2xl mb-2">🔍</div>

@@ -22,35 +22,35 @@ class UserModalForm(FlaskForm):
 
     # Field 1: Name (required, at top)
     name = StringField(
-        'Full Name',
+        "Full Name",
         validators=[DataRequired(), Length(max=255)],
-        render_kw={'placeholder': 'Enter team member name...'}
+        render_kw={"placeholder": "Enter team member name..."},
     )
 
     # Field 2: Email (required)
     email = StringField(
-        'Email Address',
+        "Email Address",
         validators=[DataRequired(), Email(), Length(max=255)],
-        render_kw={'placeholder': 'Enter email address...'}
+        render_kw={"placeholder": "Enter email address..."},
     )
 
     # Field 3: Job Title (optional)
     job_title = StringField(
-        'Job Title',
+        "Job Title",
         validators=[Optional(), Length(max=100)],
-        render_kw={'placeholder': 'Enter job title...'}
+        render_kw={"placeholder": "Enter job title..."},
     )
 
     # Field 4: Department (optional dropdown)
     department = SelectField(
-        'Department',
+        "Department",
         validators=[Optional()],
-        choices=[]  # Will be populated in __init__
+        choices=[],  # Will be populated in __init__
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # Set department choices from model metadata
-        department_choices = User.get_field_choices('department')
-        self.department.choices = [('', 'Select department')] + department_choices
+        department_choices = User.get_field_choices("department")
+        self.department.choices = [("", "Select department")] + department_choices

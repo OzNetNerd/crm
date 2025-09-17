@@ -4,6 +4,7 @@ from .tasks import tasks_bp
 from .modals import modals_bp
 from .search import search_bp
 
+
 def register_web_blueprints(app):
     """Register all web blueprints"""
     app.register_blueprint(dashboard_bp, url_prefix="/")

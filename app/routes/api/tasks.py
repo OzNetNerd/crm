@@ -14,9 +14,10 @@ def _error_response(message, code=400):
 def get_task(task_id):
     """Get a specific task as JSON"""
     task = Task.query.get_or_404(task_id)
+    # Use the model's to_dict method for consistent serialization
     task_data = task.to_dict()
 
-    # Include child tasks for parent tasks
+    # Include child task information for parent tasks
     if task.task_type == "parent":
         task_data["child_tasks"] = [
             {
@@ -34,11 +35,12 @@ def get_task(task_id):
 @tasks_api_bp.route("/<int:task_id>/notes")
 def get_task_notes(task_id):
     """Get all notes for a specific task"""
-    Task.query.get_or_404(task_id)
-    notes = Note.query.filter_by(
-        entity_type='task',
-        entity_id=task_id
-    ).order_by(Note.created_at.desc()).all()
+    Task.query.get_or_404(task_id)  # Ensure task exists
+    notes = (
+        Note.query.filter_by(entity_type="task", entity_id=task_id)
+        .order_by(Note.created_at.desc())
+        .all()
+    )
     return jsonify([note.to_dict() for note in notes])
 
 
@@ -48,15 +50,15 @@ def create_task_note(task_id):
     Task.query.get_or_404(task_id)
 
     data = request.get_json()
-    if not data or not data.get('content'):
-        return _error_response('Content required')
+    if not data or not data.get("content"):
+        return _error_response("Content required")
 
     try:
         note = Note(
-            content=data['content'],
-            entity_type='task',
+            content=data["content"],
+            entity_type="task",
             entity_id=task_id,
-            is_internal=data.get('is_internal', True)
+            is_internal=data.get("is_internal", True),
         )
         db.session.add(note)
         db.session.commit()
@@ -80,11 +82,13 @@ def reschedule_task(task_id):
         task.due_date = (task.due_date or date.today()) + timedelta(days=days)
         db.session.commit()
 
-        return jsonify({
-            "status": "success",
-            "message": f"Task rescheduled by {days} days",
-            "due_date": task.due_date.isoformat() if task.due_date else None,
-        })
+        return jsonify(
+            {
+                "status": "success",
+                "message": f"Task rescheduled by {days} days",
+                "due_date": task.due_date.isoformat() if task.due_date else None,
+            }
+        )
     except Exception as e:
         db.session.rollback()
         return _error_response(str(e), 500)

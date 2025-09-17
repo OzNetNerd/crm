@@ -2,4 +2,4 @@
 
 from .base_forms import BaseForm
 
-__all__ = ['BaseForm']
+__all__ = ["BaseForm"]
