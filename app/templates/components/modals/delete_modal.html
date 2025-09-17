@@ -5,15 +5,17 @@ Simple confirmation dialog following existing modal patterns
 #}
 
 <div class="modal"
-     x-data="modal({
-         id: '{{ model_name }}-delete-modal',
-         title: '{{ modal_title }}',
-         closable: true
-     })"
-     x-show="true"
-     id="{{ model_name }}-delete-modal">
+     x-data="{
+         open: true,
+         close() {
+             htmx.ajax('GET', '/modals/close', {target: '#{{ model_name }}-delete-modal', swap: 'outerHTML'});
+         }
+     }"
+     x-show="open"
+     id="{{ model_name }}-delete-modal"
+     style="display: block;">
 
-    <div class="modal-backdrop" @click="handleBackdropClick($event)"></div>
+    <div class="modal-backdrop" @click="close()"></div>
 
     <div class="modal-content modal-content-sm">
         <!-- Header -->

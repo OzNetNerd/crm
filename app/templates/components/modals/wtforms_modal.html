@@ -6,15 +6,18 @@ Direct modal rendering without wrapper nonsense
 #}
 
 <div class="modal"
-     x-data="modal({
-         id: '{{ model_name }}-modal',
-         title: '{{ modal_title }}',
-         closable: true
-     })"
-     x-show="true"
-     id="{{ model_name }}-modal">
+     x-data="{
+         open: true,
+         changed: false,
+         close() {
+             htmx.ajax('GET', '/modals/close', {target: '#{{ model_name }}-modal', swap: 'outerHTML'});
+         }
+     }"
+     x-show="open"
+     id="{{ model_name }}-modal"
+     style="display: block;">
 
-    <div class="modal-backdrop" @click="handleBackdropClick($event)"></div>
+    <div class="modal-backdrop" @click="close()"></div>
 
     <div class="modal-content modal-content-md">
         <!-- Header -->
@@ -42,7 +45,6 @@ Direct modal rendering without wrapper nonsense
             {% else %}
                 <!-- Form Mode -->
                 <form id="{{ model_name }}-form"
-                      x-data="{ changed: false }"
                       @input="changed = true"
                       @submit="changed = false"
                       hx-post="{{ action_url }}"
