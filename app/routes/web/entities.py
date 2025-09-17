@@ -79,17 +79,24 @@ def entity_index(model: type, table_name: str) -> str:
 
     # Build context
     context = {
-        "model": model,
-        "entity_name": model.__name__.lower(),
-        "table_name": table_name,
-        "display_name": model.get_display_name(),
-        "display_name_plural": model.get_display_name_plural(),
+        "entity_config": {
+            "entity_name": model.get_display_name_plural(),
+            "entity_description": f"Manage your {model.get_display_name_plural().lower()}",
+            "entity_buttons": [
+                {
+                    "title": f"Add {model.get_display_name()}",
+                    "url": f"/modals/{model.__name__.lower()}/create",
+                    "variant": "primary"
+                }
+            ],
+            "entity_stats": stats_list,
+        },
         "dropdown_configs": dropdown_configs,
-        "stats": stats_list,
-        "filters": dict(request.args),
+        "model": model,
+        "table_name": table_name,
     }
 
-    return render_template("entity_index.html", **context)
+    return render_template("base/entity_index.html", **context)
 
 
 def entity_content(model: type, table_name: str) -> str:
@@ -127,7 +134,7 @@ def entity_content(model: type, table_name: str) -> str:
             "entity_type": model.__name__.lower(),
             "is_grouped": True,
         }
-        return render_template("entity_cards.html", **context)
+        return render_template("shared/entity_content.html", **context)
 
     # Regular list view
     entities = query.all()

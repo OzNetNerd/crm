@@ -16,10 +16,12 @@ from .display_service import DisplayService
 from .search_service import SearchService
 from .serialization_service import SerializationService
 from .metadata_service import MetadataService
+from .query_service import QueryService
 
 __all__ = [
     "DisplayService",
     "SearchService",
     "SerializationService",
     "MetadataService",
+    "QueryService",
 ]
