@@ -79,6 +79,15 @@ class BaseModel(db.Model):
         from app.services import DisplayService
         return DisplayService.get_entity_type_from_model(cls)
 
+    @classmethod
+    def get_display_config(cls) -> Dict[str, Any]:
+        """Get display configuration for the model."""
+        return {
+            "icon": getattr(cls, "__icon__", "📄"),
+            "color": getattr(cls, "__color__", "blue"),
+            "show_in_nav": getattr(cls, "__show_in_nav__", True),
+        }
+
     # Business logic delegated to utils
     @classmethod
     def get_recent(cls, limit: int = 5):
@@ -108,6 +117,18 @@ class BaseModel(db.Model):
         from app.services import DisplayService
         entity_type = DisplayService.get_entity_type_from_model(self.__class__)
         return f"/modals/{entity_type}/{self.id}/view"
+
+    def get_edit_url(self) -> str:
+        """Get URL for editing this entity."""
+        from app.services import DisplayService
+        entity_type = DisplayService.get_entity_type_from_model(self.__class__)
+        return f"/modals/{entity_type}/{self.id}/edit"
+
+    def get_delete_url(self) -> str:
+        """Get URL for deleting this entity."""
+        from app.services import DisplayService
+        entity_type = DisplayService.get_entity_type_from_model(self.__class__)
+        return f"/modals/{entity_type}/{self.id}/delete"
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert model to dictionary via SerializationService."""

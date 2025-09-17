@@ -23,6 +23,7 @@ def get_overdue_items(model_class, limit: int = 5) -> List:
 
 def get_model_meta_data(model_instance) -> Dict[str, Any]:
     """Return structured meta data for entity cards."""
+    # Import from the utils package
     from app.utils import format_date_with_relative, get_next_step_icon
     from datetime import datetime
 
