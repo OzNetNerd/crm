@@ -14,119 +14,120 @@ modals_bp = Blueprint('modals', __name__, url_prefix='/modals')
 
 def _get_form_class(model_name):
     """Dynamically import and return form class for model."""
-    # Standard form class name pattern: {ModelName}Form
     form_class_name = f'{model_name.title()}Form'
+    module_names = [model_name, f'{model_name}s']  # Try singular and plural
 
-    # Try both singular and plural module names
-    for module_name in [model_name, f'{model_name}s']:
+    for module_name in module_names:
         try:
             module = __import__(f'app.forms.entities.{module_name}', fromlist=[form_class_name])
             return getattr(module, form_class_name)
         except (ImportError, AttributeError):
             continue
 
-    # If we get here, let it fail loudly
-    module = __import__(f'app.forms.entities.{model_name}', fromlist=[form_class_name])
-    return getattr(module, form_class_name)
+    # Let it fail with proper error if not found
+    raise ImportError(f"Form class {form_class_name} not found for model {model_name}")
 
 def _validate_model_and_form(model_name):
-    """Validate model and form exist, return components or error."""
+    """Validate model and form exist, return components or raise error template."""
     model_class = MODEL_REGISTRY.get(model_name.lower())
     if not model_class:
         return None, None, render_template('components/modals/error_modal.html',
                                           error=f"Unknown model: {model_name}")
 
-    form_class = _get_form_class(model_name.lower())
-    if not form_class:
+    try:
+        form_class = _get_form_class(model_name.lower())
+        return model_class, form_class, None
+    except ImportError:
         return None, None, render_template('components/modals/error_modal.html',
                                           error=f"No form available for {model_name}")
-
-    return model_class, form_class, None
 
 
 def _render_modal(model_name, model_class, form, mode='create', entity=None, error=None):
     """Render modal template with appropriate parameters."""
-    # Base parameters - always present
-    params = {
+    context = {
         'model_name': model_name,
         'model_class': model_class,
         'form': form,
-        'modal_title': f"{'View' if mode == 'view' else mode.title()} {model_name.title()}"
+        'modal_title': f"{'View' if mode == 'view' else mode.title()} {model_name.title()}",
+        'error': error
     }
 
-    # Mode-specific parameters
-    if mode == 'view':
-        params.update({
+    mode_configs = {
+        'view': {
             'mode': 'view',
             'is_view': True,
             'entity': entity,
             'entity_id': entity.id if entity else None
-        })
-    elif mode == 'edit':
-        params.update({
+        },
+        'edit': {
             'entity': entity,
             'entity_id': entity.id,
             'action_url': f'/modals/{model_name}/{entity.id}/update',
             'is_edit': True
-        })
-    else:  # create
-        params.update({
+        },
+        'create': {
             'action_url': f'/modals/{model_name}/create',
             'is_edit': False
-        })
+        }
+    }
 
-    if error:
-        params['error'] = error
+    context.update(mode_configs.get(mode, mode_configs['create']))
+    return render_template('components/modals/wtforms_modal.html', **context)
 
-    return render_template('components/modals/wtforms_modal.html', **params)
+
+def _save_new_entity(model_class, form):
+    """Create and save a new entity."""
+    entity = model_class()
+    form.populate_obj(entity)
+    db.session.add(entity)
+    return entity
+
+
+def _save_existing_entity(entity, form):
+    """Update an existing entity."""
+    form.populate_obj(entity)
+    return entity
+
+
+def _handle_task_relationships(entity, form_data, is_new=False):
+    """Handle task entity relationships if applicable."""
+    if not form_data or not hasattr(entity, 'set_linked_entities'):
+        return
+
+    import json
+    try:
+        entities_list = json.loads(form_data)
+        if is_new:
+            db.session.flush()  # Get ID for new tasks
+        entity.set_linked_entities(entities_list)
+    except (json.JSONDecodeError, TypeError):
+        pass  # Invalid JSON, skip silently
 
 
 def _handle_form_submission(model_name, model_class, form, entity=None):
-    """Handle form submission for both create and update operations."""
-    if form.validate_on_submit():
-        try:
-            if entity is None:
-                # Create new entity
-                entity = model_class()
-                form.populate_obj(entity)
-                db.session.add(entity)
-                action = "created"
-            else:
-                # Update existing entity
-                form.populate_obj(entity)
-                action = "updated"
+    """Handle form submission for create or update."""
+    if not form.validate_on_submit():
+        mode = 'edit' if entity else 'create'
+        return _render_modal(model_name, model_class, form, mode=mode, entity=entity)
 
-            # Handle Task entity relationships (for the "Related To" field)
-            if model_name.lower() == 'task' and hasattr(form, 'entity'):
-                import json
-                try:
-                    # Parse the JSON array from the entity field
-                    entity_data = form.entity.data
-                    if entity_data:
-                        entities_list = json.loads(entity_data)
-                        # Flush to get the task ID if it's a new task
-                        if action == "created":
-                            db.session.flush()
-                        # Set linked entities using the Task model's method
-                        if hasattr(entity, 'set_linked_entities'):
-                            entity.set_linked_entities(entities_list)
-                except (json.JSONDecodeError, TypeError):
-                    # If it's not valid JSON, ignore it
-                    pass
+    try:
+        is_new = entity is None
+        entity = _save_new_entity(model_class, form) if is_new else _save_existing_entity(entity, form)
 
-            db.session.commit()
-            return render_template('components/modals/form_success.html',
-                                 message=f"{model_name} {action} successfully",
-                                 entity=entity)
-        except Exception as e:
-            db.session.rollback()
-            mode = 'edit' if entity else 'create'
-            return _render_modal(model_name, model_class, form,
-                               mode=mode, entity=entity, error=str(e))
+        # Handle task relationships if needed
+        if model_name.lower() == 'task' and hasattr(form, 'entity'):
+            _handle_task_relationships(entity, form.entity.data, is_new)
 
-    # Form validation failed - re-render with errors
-    mode = 'edit' if entity else 'create'
-    return _render_modal(model_name, model_class, form, mode=mode, entity=entity)
+        db.session.commit()
+        action = "created" if is_new else "updated"
+        return render_template('components/modals/form_success.html',
+                             message=f"{model_name} {action} successfully",
+                             entity=entity)
+    except Exception as e:
+        db.session.rollback()
+        mode = 'edit' if entity else 'create'
+        return _render_modal(model_name, model_class, form,
+                           mode=mode, entity=entity, error=str(e))
 
 
 # ============= ROUTE HANDLERS =============
@@ -153,13 +154,11 @@ def edit_modal(model_name, entity_id):
     form = form_class(obj=entity)
 
     # For tasks, populate the entity field with linked entities as JSON
-    if model_name.lower() == 'task' and hasattr(entity, 'linked_entities'):
+    if model_name.lower() == 'task' and hasattr(entity, 'linked_entities') and entity.linked_entities:
         import json
-        linked = entity.linked_entities
-        if linked:
-            # Convert to the format expected by the frontend
-            entities_data = [{'id': e['id'], 'name': e['name'], 'type': e['type']} for e in linked]
-            form.entity.data = json.dumps(entities_data)
+        entities_data = [{'id': item['id'], 'name': item['name'], 'type': item['type']}
+                       for item in entity.linked_entities]
+        form.entity.data = json.dumps(entities_data)
 
     return _render_modal(model_name, model_class, form, mode='edit', entity=entity)
 
@@ -175,12 +174,9 @@ def view_modal(model_name, entity_id):
     form = form_class(obj=entity)
 
     # For tasks, format the linked entities for display
-    if model_name.lower() == 'task' and hasattr(entity, 'linked_entities'):
-        linked = entity.linked_entities
-        if linked:
-            # Create a readable string of linked entities
-            entity_names = [f"{e['name']} ({e['type']})" for e in linked]
-            form.entity.data = ', '.join(entity_names)
+    if model_name.lower() == 'task' and hasattr(entity, 'linked_entities') and entity.linked_entities:
+        entity_names = [f"{item['name']} ({item['type']})" for item in entity.linked_entities]
+        form.entity.data = ', '.join(entity_names)
 
     return _render_modal(model_name, model_class, form, mode='view', entity=entity)
 

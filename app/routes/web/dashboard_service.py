@@ -122,8 +122,7 @@ class DashboardService:
             {
                 'title': f'{prefix} {model_class.get_display_name_plural()}',
                 'entities': entities,
-                'entity_type': entity_type,
-                'display_config': model_class.get_display_config()
+                'entity_type': entity_type
             }
             for entity_type, model_class in sorted(MODEL_REGISTRY.items())
             for method_name, prefix in [('get_overdue', 'Overdue'), ('get_recent', 'Recent')]

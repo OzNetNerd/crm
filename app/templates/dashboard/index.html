@@ -34,21 +34,12 @@
         {% for section in dashboard_sections %}
             {% call card(title=section.title) %}
                 {% for entity in section.entities %}
-                    {{ entity_card(entity, section.entity_type, config=section.display_config) }}
+                    {{ entity_card(entity, section.entity_type) }}
                 {% endfor %}
             {% endcall %}
         {% endfor %}
     </div>
 </div>
-{% endblock %}
-
-{% block modals %}
-<div id="modal-container"
-     hx-target="this"
-     hx-swap="innerHTML"
-     role="dialog"
-     aria-live="polite"
-     aria-label="Modal dialogs"></div>
 {% endblock %}
 
 {% block scripts %}
