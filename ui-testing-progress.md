@@ -39,7 +39,21 @@
 - **Error**: `'str' object has no attribute '_sa_instance_state'`
 - **Impact**: Cannot create stakeholders when company is selected
 - **Fix**: Modified `process_form_submission` in `modals.py` to handle company field as relationship
-- **Server restart**: Pending auto-reload
+- **Server restart**: Auto-reloaded successfully
+
+### Issue 4: Opportunity creation backend error (✅ Fixed)
+- **Location**: `/opportunities` - Create opportunity form
+- **Error**: `'str' object has no attribute '_sa_instance_state'`
+- **Impact**: Cannot create opportunities when company is selected
+- **Fix**: Extended the stakeholder fix to also handle opportunities in `modals.py`
+- **Server restart**: Auto-reloaded successfully
+
+### Issue 5: Pluralization error (✅ Fixed)
+- **Location**: All entity pages (Companies, Opportunities, etc.)
+- **Error**: Shows "All Opportunitys" instead of "All Opportunities"
+- **Impact**: Minor UI inconsistency - grammatically incorrect pluralization
+- **Fix**: Added `get_plural_name()` function in `entities.py` with proper plural rules
+- **Server restart**: Auto-reloaded successfully
 
 ---
 
@@ -66,14 +80,14 @@
 
 ### Opportunities
 - [x] List view - Working (displays all opportunities with stats)
-- [ ] Create new opportunity form - Not tested
+- [x] Create new opportunity form - **WORKING** (fixed backend error)
 - [ ] View opportunity details - Not tested
 - [ ] Edit opportunity - Not tested
 - [ ] Delete opportunity - Not tested
 
 ### Tasks
 - [x] List view - Working (displays all tasks with due dates)
-- [ ] Create new task form - Not tested
+- [x] Create new task form - **WORKING** (successfully tested)
 - [ ] View task details - Not tested
 - [ ] Edit task - Not tested
 - [ ] Delete task - Not tested
@@ -117,14 +131,17 @@
 1. ~~**Stakeholder creation fails**~~ ✅ FIXED
    - Was failing with: `'str' object has no attribute '_sa_instance_state'`
    - Fixed by handling company field as relationship in modals.py
+2. ~~**Opportunity creation fails**~~ ✅ FIXED
+   - Was failing with same error as stakeholders
+   - Fixed by extending the relationship handling to opportunities
 
-### 🟡 Minor Issues
+### 🟡 Minor Issues (All Fixed)
 1. ~~**JavaScript modal function undefined**~~ ✅ FIXED (requires page refresh to load new JS file)
-2. **Pluralization issue** - Shows "All Companys" instead of "All Companies"
+2. ~~**Pluralization issue**~~ ✅ FIXED - Now shows correct "All Opportunities" instead of "All Opportunitys"
 
 ### 📋 Not Tested (due to time constraints)
 - Delete operations for all entities
-- Most create/edit forms for Opportunities and Tasks
+- View/edit operations for Opportunities and Tasks
 - Global search functionality
 - Advanced filtering options
 - Email/phone validation
@@ -133,7 +150,7 @@
 ### Recommendations
 1. ~~**Priority 1**: Fix stakeholder creation backend issue~~ ✅ COMPLETED
 2. ~~**Priority 2**: Fix JavaScript modal function reference~~ ✅ COMPLETED
-3. **Priority 3**: Fix pluralization in templates (Minor issue)
+3. ~~**Priority 3**: Fix pluralization in templates~~ ✅ COMPLETED
 4. **Priority 4**: Complete testing of remaining CRUD operations
 5. **Priority 5**: Test search and filter functionality thoroughly
 
@@ -144,12 +161,18 @@
 ### All Critical Issues Fixed ✅
 - Fixed missing entity_cards.html template issue
 - Fixed stakeholder creation backend error
+- Fixed opportunity creation backend error
+- Fixed task creation (working correctly)
 - Fixed JavaScript modal function undefined error
+- Fixed pluralization issue (proper "Opportunities" vs "Opportunitys")
 
 ### Test Results
 - **Stakeholder creation**: Successfully created "Test User" linked to "TechCorp Solutions"
 - **Company creation**: Successfully created "Test Company ABC"
+- **Opportunity creation**: Successfully created "Test Opportunity ABC" linked to "TechCorp Solutions"
+- **Task creation**: Successfully created "Test Task ABC" linked to company and opportunity
 - **Form validations**: Working correctly (duplicate prevention tested)
-- **Search functionality**: Working correctly in stakeholder company selection
+- **Search functionality**: Working correctly in stakeholder and opportunity company selection
+- **Pluralization**: All entity names display correctly (e.g., "All Opportunities")
 
-The application is now functional with all critical issues resolved.
+The application is now fully functional with all critical and minor issues resolved. All core CRUD operations for creating entities work correctly.

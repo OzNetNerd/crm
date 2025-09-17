@@ -11,6 +11,18 @@ from app.services import QueryService
 entities_web_bp = Blueprint("entities", __name__)
 
 
+def get_plural_name(model_name: str) -> str:
+    """Get proper plural form of model name."""
+    if model_name.lower() == "company":
+        return "Companies"
+    elif model_name.lower() == "opportunity":
+        return "Opportunities"
+    elif model_name.lower().endswith("y"):
+        return model_name[:-1] + "ies"
+    else:
+        return model_name + "s"
+
+
 def create_routes() -> None:
     """Dynamically create all routes based on MODEL_REGISTRY."""
     for entity_type, model in MODEL_REGISTRY.items():
@@ -141,7 +153,7 @@ def entity_content(model: type, table_name: str) -> str:
             "entity_type": model.__name__.lower(),
             "entity_name": model.__name__,
             "entity_name_singular": model.__name__,
-            "entity_name_plural": f"{model.__name__}s",
+            "entity_name_plural": get_plural_name(model.__name__),
             "total_count": len(entities_list),
             "is_grouped": True,
         }
@@ -154,7 +166,7 @@ def entity_content(model: type, table_name: str) -> str:
     grouped_entities = [
         {
             "key": "all",
-            "label": f"All {model.__name__}s",
+            "label": f"All {get_plural_name(model.__name__)}",
             "entities": entities
         }
     ]
@@ -164,7 +176,7 @@ def entity_content(model: type, table_name: str) -> str:
         "entity_type": model.__name__.lower(),
         "entity_name": model.__name__,
         "entity_name_singular": model.__name__,
-        "entity_name_plural": f"{model.__name__}s",
+        "entity_name_plural": get_plural_name(model.__name__),
         "total_count": len(entities),
         "is_grouped": False,
     }
