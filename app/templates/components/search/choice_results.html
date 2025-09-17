@@ -1,0 +1,44 @@
+{#
+  Choice Search Results Component
+
+  Displays filtered choice options in a dropdown format
+  Used by choice search fields like Industry
+
+  Variables:
+  - choices: List of choice objects with key, label, description
+  - query: The search query string
+  - field_name: Name of the field being searched
+#}
+
+{% if choices %}
+    {% if query %}
+    <div class="px-4 py-2 text-xs font-medium text-gray-600 bg-gray-50 border-b">
+        {{ choices|length }} result{% if choices|length != 1 %}s{% endif %} for "{{ query }}"
+    </div>
+    {% endif %}
+
+    {% for choice in choices %}
+    <div class="border-b border-gray-100 last:border-b-0 py-1">
+        <a href="#"
+           onclick="selectChoice('{{ field_name }}', '{{ choice.key }}', '{{ choice.label }}'); return false;"
+           class="flex items-start space-x-3 px-4 py-3 block hover:bg-blue-50 transition-colors duration-150">
+            <!-- Choice content -->
+            <div class="min-w-0 flex-1">
+                <div class="text-sm font-semibold text-gray-900 break-words hover:text-blue-700 transition-colors">
+                    {{ choice.label }}
+                </div>
+                {% if choice.description %}
+                <div class="text-xs text-gray-500 break-words mt-1">
+                    {{ choice.description }}
+                </div>
+                {% endif %}
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="px-4 py-6 text-sm text-gray-500 text-center">
+        <div class="text-gray-400 text-2xl mb-2">🔍</div>
+        No choices found{% if query %} for "{{ query }}"{% endif %}
+    </div>
+{% endif %}
