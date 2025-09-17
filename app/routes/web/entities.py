@@ -92,8 +92,10 @@ def build_direction_dropdown(request_args):
 
 
 def build_dropdown_configs(model, request_args):
-    """Build all dropdown configurations for entity UI."""
-    metadata = model.get_field_metadata()
+    """Build all dropdown configurations for entity UI using services."""
+    from app.services import MetadataService
+
+    metadata = MetadataService.get_field_metadata(model)
     dropdowns = {}
 
     # Add filter dropdowns
@@ -105,7 +107,7 @@ def build_dropdown_configs(model, request_args):
 
     # Add sort dropdowns
     dropdowns["sort_by"] = build_sort_dropdown(
-        metadata, request_args, model.get_default_sort_field()
+        metadata, request_args, MetadataService.get_default_sort_field(model)
     )
     dropdowns["sort_direction"] = build_direction_dropdown(request_args)
 
@@ -187,26 +189,10 @@ def entity_index(model, table_name):
                     }
                 )
 
-    # Build entity config for template
-    from app.models import MODEL_REGISTRY
+    # Build entity config for template using services
+    from app.services import DisplayService
 
-    entity_type = next(
-        (key for key, value in MODEL_REGISTRY.items() if value == model),
-        model.__name__.lower(),
-    )
-
-    entity_config = {
-        "entity_type": entity_type,
-        "entity_name": model.get_display_name_plural(),
-        "entity_name_singular": model.get_display_name(),
-        "content_endpoint": f"entities.{table_name}_content",
-        "entity_buttons": [
-            {
-                "title": f"New {model.get_display_name()}",
-                "url": f"/modals/{entity_type}/create",
-            }
-        ],
-    }
+    entity_config = DisplayService.build_entity_config(model)
 
     return render_template(
         "base/entity_index.html",
@@ -249,8 +235,10 @@ def entity_content(model, table_name):
     else:
         sort_field = getattr(model, sort_by) if hasattr(model, sort_by) else model.id
 
-    # Apply filters dynamically from request args
-    metadata = model.get_field_metadata()
+    # Apply filters dynamically from request args using services
+    from app.services import MetadataService
+
+    metadata = MetadataService.get_field_metadata(model)
     for field_name, field_info in metadata.items():
         if field_info["filterable"]:
             filter_value = request.args.get(field_name)
