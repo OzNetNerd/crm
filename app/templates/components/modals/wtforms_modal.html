@@ -9,6 +9,21 @@ Direct modal rendering without wrapper nonsense
      x-data="{
          open: true,
          changed: false,
+         isEdit: {{ is_edit|lower }},
+         checkValidity() {
+             if (this.isEdit) {
+                 return this.changed;
+             }
+             const form = document.getElementById('{{ model_name }}-form');
+             if (!form) return true;
+             const requiredFields = form.querySelectorAll('[required]');
+             for (let field of requiredFields) {
+                 if (!field.value || field.value.trim() === '') {
+                     return false;
+                 }
+             }
+             return true;
+         },
          close() {
              htmx.ajax('GET', '/modals/close', {target: '#{{ model_name }}-modal', swap: 'outerHTML'});
          }
@@ -45,7 +60,7 @@ Direct modal rendering without wrapper nonsense
             {% else %}
                 <!-- Form Mode -->
                 <form id="{{ model_name }}-form"
-                      @input="changed = true"
+                      @input="changed = true; $nextTick(() => $dispatch('validate'))"
                       @submit="changed = false"
                       hx-post="{{ action_url }}"
                       hx-target="#{{ model_name }}-modal"
@@ -72,7 +87,7 @@ Direct modal rendering without wrapper nonsense
         <!-- Footer -->
         <div class="modal-footer">
             <button type="button"
-                    class="modal-btn modal-btn-secondary"
+                    class="btn btn-secondary"
                     hx-get="/modals/close"
                     hx-swap="outerHTML"
                     hx-target="#{{ model_name }}-modal">
@@ -81,7 +96,7 @@ Direct modal rendering without wrapper nonsense
 
             {% if mode == 'view' %}
             <button type="button"
-                    class="modal-btn modal-btn-primary"
+                    class="btn btn-primary"
                     hx-get="/modals/{{ model_name }}/{{ entity_id }}/edit"
                     hx-target="#{{ model_name }}-modal"
                     hx-swap="outerHTML">
@@ -90,8 +105,9 @@ Direct modal rendering without wrapper nonsense
             {% else %}
             <button type="submit"
                     form="{{ model_name }}-form"
-                    x-bind:disabled="!changed && {{ is_edit|lower }}"
-                    class="modal-btn modal-btn-primary">
+                    x-bind:disabled="!checkValidity()"
+                    @validate.window="$el.disabled = !checkValidity()"
+                    class="btn btn-primary">
                 {{ 'Save' if is_edit else 'Create' }}
             </button>
             {% endif %}

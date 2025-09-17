@@ -37,6 +37,11 @@ class CompanyForm(BaseForm):
                 return
             raise ValidationError("A company with this name already exists.")
 
+    def validate_industry(self, field):
+        """Ensure an industry is selected"""
+        if not field.data or field.data == "":
+            raise ValidationError("Please select an industry.")
+
     # Entity field (for related companies/stakeholders/opportunities)
     entity = StringField(
         "Related To",
@@ -47,7 +52,7 @@ class CompanyForm(BaseForm):
     name = StringField("Company Name", validators=[DataRequired(), Length(max=255)])
 
     industry = SelectField(
-        "Industry", validators=[Optional()], choices=[]  # Will be populated in __init__
+        "Industry", validators=[DataRequired()], choices=[]  # Will be populated in __init__
     )
 
     website = StringField("Website", validators=[Optional(), URL()])
