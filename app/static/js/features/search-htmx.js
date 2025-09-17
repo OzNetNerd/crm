@@ -78,9 +78,22 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!resultsDiv) return;
 
             // Show results when HTMX loads content
-            input.addEventListener('htmx:afterSwap', function() {
-                if (resultsDiv.children.length > 0) {
-                    resultsDiv.style.display = 'block';
+            document.addEventListener('htmx:afterSwap', function(event) {
+                if (event.target.id === fieldName + '_results') {
+                    if (resultsDiv.children.length > 0) {
+                        // Check if we're in a modal
+                        const inModal = input.closest('.modal');
+                        if (inModal) {
+                            // Use fixed positioning to escape modal overflow
+                            const rect = input.getBoundingClientRect();
+                            resultsDiv.style.position = 'fixed';
+                            resultsDiv.style.left = rect.left + 'px';
+                            resultsDiv.style.top = (rect.bottom + 2) + 'px';
+                            resultsDiv.style.width = rect.width + 'px';
+                            resultsDiv.style.zIndex = '100001';
+                        }
+                        resultsDiv.style.display = 'block';
+                    }
                 }
             });
 
@@ -95,6 +108,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show results when focusing input if there's content
             input.addEventListener('focus', function() {
                 if (resultsDiv.children.length > 0 && this.value.trim()) {
+                    // Check if we're in a modal
+                    const inModal = input.closest('.modal');
+                    if (inModal) {
+                        // Use fixed positioning to escape modal overflow
+                        const rect = input.getBoundingClientRect();
+                        resultsDiv.style.position = 'fixed';
+                        resultsDiv.style.left = rect.left + 'px';
+                        resultsDiv.style.top = (rect.bottom + 2) + 'px';
+                        resultsDiv.style.width = rect.width + 'px';
+                        resultsDiv.style.zIndex = '100001';
+                    }
                     resultsDiv.style.display = 'block';
                 }
             });
@@ -150,6 +174,20 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 resultsDiv.innerHTML = '';
             }, 100);
+        } else {
+            // Fallback: find and hide the div containing the results
+            const parent = searchInput?.parentElement;
+            if (parent) {
+                const divs = parent.querySelectorAll('div');
+                divs.forEach(div => {
+                    if (div.querySelector('[data-entity-select]')) {
+                        div.style.display = 'none';
+                        setTimeout(() => {
+                            div.innerHTML = '';
+                        }, 100);
+                    }
+                });
+            }
         }
     });
 

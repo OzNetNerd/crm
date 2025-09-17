@@ -152,6 +152,7 @@
                    hx-get="{{ url_for('search.htmx_search') }}"
                    hx-trigger="input changed delay:300ms, focus"
                    hx-target="#{{ name }}_results"
+                   hx-swap="innerHTML"
                    hx-include="this"
                    hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}"}'>
             <button type="button" class="absolute right-2 top-2 text-gray-400 hover:text-gray-600">
@@ -159,7 +160,7 @@
             </button>
             <input type="hidden" name="{{ name }}" id="{{ name }}" value="{{ value }}">
             <div id="{{ name }}_results"
-                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto"
+                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
                  style="display: none;"></div>
             <div id="{{ name }}_selected" class="mt-1 text-sm text-gray-600"></div>
         </div>
