@@ -133,8 +133,39 @@
 {% endmacro %}
 
 {# ============================================
-   ENTITY DROPDOWN CONTROLS - Ultra DRY
-   Uses Alpine.js dropdown component for consistent styling
+   ENTITY SEARCH DROPDOWN - For form fields
+   ============================================ #}
+{% macro entity_search_dropdown(name, entity_type, value='', label='', required=false, placeholder='Search...') %}
+    <div class="form-group">
+        {% if label %}
+            <label for="{{ name }}" class="form-label">
+                {{ label }}
+                {% if required %}<span class="text-danger">*</span>{% endif %}
+            </label>
+        {% endif %}
+        <div class="relative">
+            <input type="text"
+                   id="{{ name }}_search"
+                   class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="{{ placeholder }}"
+                   autocomplete="off"
+                   hx-get="{{ url_for('search.htmx_search') }}"
+                   hx-trigger="input changed delay:300ms, focus"
+                   hx-target="#{{ name }}_results"
+                   hx-include="this"
+                   hx-vals='{"mode": "select", "entity_type": "{{ entity_type }}", "field_name": "{{ name }}"}'>
+            <button type="button" class="absolute right-2 top-2 text-gray-400 hover:text-gray-600">
+                {{ icon('magnifying-glass') }}
+            </button>
+            <input type="hidden" name="{{ name }}" id="{{ name }}" value="{{ value }}">
+            <div id="{{ name }}_results" class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg hidden z-50 max-h-60 overflow-y-auto"></div>
+            <div id="{{ name }}_selected" class="mt-1 text-sm text-gray-600"></div>
+        </div>
+    </div>
+{% endmacro %}
+
+{# ============================================
+   ENTITY DROPDOWN CONTROLS - Simple HTML Select
    ============================================ #}
 {% macro entity_dropdown_controls(dropdowns={}) %}
     <div class="flex flex-wrap gap-3 items-center">
@@ -147,56 +178,17 @@
                         </label>
                     {% endif %}
 
-                    <div class="dropdown"
-                         x-data="dropdown({
-                             name: {{ (config.name or dropdown_key) | tojson }},
-                             options: {{ config.options | tojson }},
-                             selected: {{ (config.current_value or '') | tojson }},
-                             placeholder: {{ (config.placeholder or 'Select...') | tojson }},
-                             searchable: {{ config.searchable | default(false) | tojson }},
-                             htmx: {
-                                 trigger: true
-                             }
-                         })">
-
-                        <button @click="toggle()" class="dropdown-trigger">
-                            <span x-text="displayText" class="truncate"></span>
-                            <svg class="dropdown-icon" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-
-                        <div x-show="open" @click.away="close()" class="dropdown-menu" x-cloak>
-                            {% raw %}
-                            <template x-if="searchable">
-                                <div class="dropdown-search">
-                                    <input type="text"
-                                           x-model="search"
-                                           x-ref="searchInput"
-                                           placeholder="Search..."
-                                           class="dropdown-search-input">
-                                </div>
-                            </template>
-
-                            <template x-for="option in filteredOptions">
-                                <button @click="select(option.value)"
-                                        class="dropdown-option"
-                                        :class="{'dropdown-option-selected': isSelected(option.value)}">
-                                    <span x-text="option.label"></span>
-                                </button>
-                            </template>
-                            {% endraw %}
-                        </div>
-
-                        <!-- Hidden input for HTMX -->
-                        <input type="hidden"
-                               :name="name"
-                               :value="selected"
-                               x-ref="hiddenInput">
-                    </div>
+                    <select name="{{ config.name or dropdown_key }}"
+                            class="dropdown-select block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        {% for option in config.options %}
+                            <option value="{{ option.value }}"
+                                    {% if option.value == config.current_value %}selected{% endif %}>
+                                {{ option.label }}
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
             {% endif %}
         {% endfor %}
     </div>
 {% endmacro %}
-

@@ -25,7 +25,6 @@ def build_filter_dropdowns(metadata, request_args):
 
         dropdowns[f"filter_{field_name}"] = {
             "name": field_name,
-            "label": f'Filter by {field_info["label"]}',
             "options": options,
             "current_value": request_args.get(field_name, ""),
             "placeholder": f'All {field_info["label"]}',
@@ -160,34 +159,169 @@ def create_routes():
 
 
 def entity_index(model, table_name):
-    """Generic index handler"""
+    """
+    Render the index page for an entity type with stats, filters, and controls.
+
+    Generates comprehensive statistics based on entity type (companies, stakeholders, etc),
+    builds dropdown configurations for filtering/sorting, and renders the entity list page.
+
+    Args:
+        model: SQLAlchemy model class for the entity
+        table_name: Database table name for entity-specific stat generation
+
+    Returns:
+        Rendered template with entity stats, dropdowns, and configuration
+    """
     dropdown_configs = build_dropdown_configs(model, request.args)
+
+    # Import needed functions
+    from sqlalchemy import func
+    from datetime import datetime, timedelta
 
     # Get basic stats
     display_name_plural = model.get_display_name_plural()
+    display_name = model.get_display_name()
     total = model.query.count()
-    stats = {
-        "title": f"{display_name_plural} Overview",
-        "stats": [{"value": total, "label": f"Total {display_name_plural}"}],
-    }
+
+    # Initialize stats list
+    stats_list = []
+
+    # Always add total count
+    stats_list.append({"value": total, "label": f"Total {display_name_plural}"})
+
+    # Add entity-specific stats
+    if table_name == "companies":
+        # Companies stats
+        from app.models import Opportunity, Stakeholder
+
+        # Active companies (with opportunities)
+        active_companies = db.session.query(func.count(func.distinct(model.id)))\
+            .join(Opportunity).scalar() or 0
+        stats_list.append({"value": active_companies, "label": "Active Companies"})
+
+        # Total opportunities
+        total_opps = Opportunity.query.count()
+        stats_list.append({"value": total_opps, "label": "Total Opportunities"})
+
+        # Industry breakdown - get top industry
+        top_industry = db.session.query(model.industry, func.count(model.id))\
+            .filter(model.industry.isnot(None))\
+            .group_by(model.industry)\
+            .order_by(func.count(model.id).desc())\
+            .first()
+        if top_industry:
+            stats_list.append({"value": top_industry[1], "label": f"In {top_industry[0].title()}"})
+
+    elif table_name == "stakeholders":
+        # Stakeholders stats
+        from app.models import Company
+
+        # Decision makers
+        decision_makers = model.query.filter(
+            model.role.in_(['CEO', 'CTO', 'CFO', 'President', 'VP', 'Director'])
+        ).count()
+        stats_list.append({"value": decision_makers, "label": "Decision Makers"})
+
+        # With email
+        with_email = model.query.filter(model.email.isnot(None)).count()
+        stats_list.append({"value": with_email, "label": "With Email"})
+
+        # Companies represented
+        companies = db.session.query(func.count(func.distinct(model.company_id))).scalar() or 0
+        stats_list.append({"value": companies, "label": "Companies"})
+
+    elif table_name == "opportunities":
+        # Opportunities stats
+        from app.models import Opportunity
+
+        # Pipeline value
+        total_value = db.session.query(func.sum(model.value)).scalar() or 0
+        if total_value > 1000000:
+            value_str = f"${total_value/1000000:.1f}M"
+        elif total_value > 1000:
+            value_str = f"${total_value/1000:.0f}K"
+        else:
+            value_str = f"${total_value:.0f}"
+        stats_list.append({"value": value_str, "label": "Pipeline Value"})
+
+        # Average deal size
+        avg_value = db.session.query(func.avg(model.value)).scalar() or 0
+        if avg_value > 1000:
+            avg_str = f"${avg_value/1000:.0f}K"
+        else:
+            avg_str = f"${avg_value:.0f}"
+        stats_list.append({"value": avg_str, "label": "Avg Deal Size"})
+
+        # Win rate (if closed won/lost)
+        closed_won = model.query.filter_by(stage='closed_won').count()
+        closed_lost = model.query.filter_by(stage='closed_lost').count()
+        total_closed = closed_won + closed_lost
+        if total_closed > 0:
+            win_rate = int((closed_won / total_closed) * 100)
+            stats_list.append({"value": f"{win_rate}%", "label": "Win Rate"})
+        else:
+            stats_list.append({"value": "N/A", "label": "Win Rate"})
+
+    elif table_name == "tasks":
+        # Tasks stats
+        # Overdue tasks
+        overdue = model.query.filter(
+            model.due_date < datetime.now().date(),
+            model.status != 'completed'
+        ).count()
+        stats_list.append({"value": overdue, "label": "Overdue"})
+
+        # Due this week
+        week_end = datetime.now().date() + timedelta(days=7)
+        due_this_week = model.query.filter(
+            model.due_date <= week_end,
+            model.due_date >= datetime.now().date(),
+            model.status != 'completed'
+        ).count()
+        stats_list.append({"value": due_this_week, "label": "Due This Week"})
+
+        # Completed
+        completed = model.query.filter_by(status='completed').count()
+        stats_list.append({"value": completed, "label": "Completed"})
+
+    elif table_name == "users":
+        # Users/Account Teams stats
+        from app.models import Task, Opportunity
+
+        # Active users (with tasks)
+        active_users = db.session.query(func.count(func.distinct(Task.assigned_to_id))).scalar() or 0
+        stats_list.append({"value": active_users, "label": "Active Members"})
+
+        # Opportunities owned
+        opps_owned = db.session.query(func.count(Opportunity.id))\
+            .filter(Opportunity.owner_id.isnot(None)).scalar() or 0
+        stats_list.append({"value": opps_owned, "label": "Opportunities Owned"})
+
+        # Open tasks
+        open_tasks = Task.query.filter(Task.status != 'completed').count()
+        stats_list.append({"value": open_tasks, "label": "Open Tasks"})
 
     # Add status breakdown for models with status field
-    if hasattr(model, "status"):
-        from sqlalchemy import func
-
+    if hasattr(model, "status") and table_name not in ["tasks"]:  # Tasks already handled above
         status_counts = (
             db.session.query(model.status, func.count(model.id))
             .group_by(model.status)
             .all()
         )
         for status, count in status_counts:
-            if status:
-                stats["stats"].append(
+            if status and len(stats_list) < 6:  # Limit to 6 stats cards
+                stats_list.append(
                     {
                         "value": count,
                         "label": status.replace("-", " ").replace("_", " ").title(),
                     }
                 )
+
+    # Build stats dict
+    stats = {
+        "title": f"{display_name_plural} Overview",
+        "stats": stats_list
+    }
 
     # Build entity config for template using services
     from app.services import DisplayService
@@ -203,7 +337,19 @@ def entity_index(model, table_name):
 
 
 def entity_content(model, table_name):
-    """Generic content handler"""
+    """
+    Render the HTMX content partial for entity lists with filtering, grouping, and sorting.
+
+    Applies URL parameters for filtering, grouping, and sorting to the query,
+    then renders grouped entity cards via HTMX for dynamic updates.
+
+    Args:
+        model: SQLAlchemy model class for the entity
+        table_name: Database table name (used for model registry lookup)
+
+    Returns:
+        Rendered HTMX partial with grouped/sorted/filtered entities
+    """
     # Get params
     group_by = request.args.get("group_by", "")
     sort_by = request.args.get("sort_by", model.get_default_sort_field())
