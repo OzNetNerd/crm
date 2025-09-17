@@ -161,10 +161,17 @@
             <input type="hidden" name="{{ name }}" id="{{ name }}" value="{{ value }}">
             <div id="{{ name }}_results"
                  class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
-                 style="display: none;"></div>
+                 hidden></div>
             <div id="{{ name }}_selected" class="mt-1 text-sm text-gray-600"></div>
         </div>
     </div>
+{% endmacro %}
+
+{# ============================================
+   CHOICE SEARCH DROPDOWN - For searchable choice fields
+   ============================================ #}
+{% macro choice_search_dropdown(name, choices, value='', label='', required=false, placeholder='Search...') %}
+    {{ entity_search_dropdown(name, 'choice:' + name, value, label, required, placeholder) }}
 {% endmacro %}
 
 {# ============================================
