@@ -58,3 +58,64 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+/**
+ * Handle entity selection for form fields (single selection)
+ * Used by company, stakeholder, and other entity reference fields
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle clicks on entity select results
+    document.addEventListener('click', function(event) {
+        const selectLink = event.target.closest('a[data-entity-select]');
+        if (!selectLink) return;
+
+        event.preventDefault();
+
+        const fieldName = selectLink.dataset.entitySelect;
+        const entityId = selectLink.dataset.entityId;
+        const entityTitle = selectLink.dataset.entityTitle;
+        const entityType = selectLink.dataset.entityType;
+
+        // Find the search input, hidden field, results div, and selected display
+        const searchInput = document.getElementById(fieldName + '_search');
+        const hiddenField = document.getElementById(fieldName);
+        const resultsDiv = document.getElementById(fieldName + '_results');
+        const selectedDiv = document.getElementById(fieldName + '_selected');
+
+        if (hiddenField) {
+            // Set the hidden field value to the entity ID
+            hiddenField.value = entityId;
+        }
+
+        if (searchInput) {
+            // Show the entity title in the search field
+            searchInput.value = entityTitle;
+        }
+
+        if (selectedDiv) {
+            // Show selected entity info below the field
+            selectedDiv.innerHTML = `Selected: ${entityTitle}`;
+            selectedDiv.classList.remove('hidden');
+        }
+
+        if (resultsDiv) {
+            // Hide the results dropdown
+            resultsDiv.classList.add('hidden');
+        }
+    });
+
+    // Clear selection when search input is cleared
+    document.addEventListener('input', function(event) {
+        if (event.target.matches('[id$="_search"]')) {
+            const fieldName = event.target.id.replace('_search', '');
+            const hiddenField = document.getElementById(fieldName);
+            const selectedDiv = document.getElementById(fieldName + '_selected');
+
+            // If input is cleared, clear the selection
+            if (!event.target.value.trim()) {
+                if (hiddenField) hiddenField.value = '';
+                if (selectedDiv) selectedDiv.innerHTML = '';
+            }
+        }
+    });
+});

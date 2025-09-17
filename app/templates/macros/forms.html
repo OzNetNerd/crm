@@ -4,39 +4,57 @@
 #}
 
 {% from 'macros/ui.html' import icon %}
+{% from 'macros/components.html' import entity_search_dropdown %}
 
 {# ============================================
    WTFORMS FIELD RENDERING
    ============================================ #}
 {% macro render_field(field, show_label=true, show_errors=true) %}
-    <div class="form-field-group">
-        {% if show_label and field.label.text %}
-            <label for="{{ field.id }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
-                {{ field.label.text }}
-            </label>
-        {% endif %}
-
-        {% if field.type == 'StringField' or field.type == 'PasswordField' or field.type == 'EmailField' %}
-            {{ field(class="form-input" + (" error" if field.errors else "")) }}
-        {% elif field.type == 'TextAreaField' %}
-            {{ field(class="form-textarea" + (" error" if field.errors else "")) }}
-        {% elif field.type == 'SelectField' %}
-            {{ field(class="form-select" + (" error" if field.errors else "")) }}
-        {% elif field.type == 'BooleanField' %}
-            <label class="form-checkbox">
-                {{ field }}
-                <span>{{ field.label.text }}</span>
-            </label>
-        {% else %}
-            {{ field(class="form-input") }}
-        {% endif %}
-
+    {# Special handling for company fields #}
+    {% if field.name == 'company' and field.type == 'StringField' %}
+        {{ entity_search_dropdown(
+            name=field.name,
+            entity_type='company',
+            value=field.data or '',
+            label=field.label.text if show_label else '',
+            required=field.flags.required,
+            placeholder='Search companies...'
+        ) }}
         {% if show_errors and field.errors %}
             {% for error in field.errors %}
                 <p class="form-error">{{ error }}</p>
             {% endfor %}
         {% endif %}
-    </div>
+    {% else %}
+        <div class="form-field-group">
+            {% if show_label and field.label.text %}
+                <label for="{{ field.id }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
+                    {{ field.label.text }}
+                </label>
+            {% endif %}
+
+            {% if field.type == 'StringField' or field.type == 'PasswordField' or field.type == 'EmailField' %}
+                {{ field(class="form-input" + (" error" if field.errors else "")) }}
+            {% elif field.type == 'TextAreaField' %}
+                {{ field(class="form-textarea" + (" error" if field.errors else "")) }}
+            {% elif field.type == 'SelectField' %}
+                {{ field(class="form-select" + (" error" if field.errors else "")) }}
+            {% elif field.type == 'BooleanField' %}
+                <label class="form-checkbox">
+                    {{ field }}
+                    <span>{{ field.label.text }}</span>
+                </label>
+            {% else %}
+                {{ field(class="form-input") }}
+            {% endif %}
+
+            {% if show_errors and field.errors %}
+                {% for error in field.errors %}
+                    <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+    {% endif %}
 {% endmacro %}
 
 {# ============================================

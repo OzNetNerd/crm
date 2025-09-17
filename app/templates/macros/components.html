@@ -153,7 +153,7 @@
                    hx-trigger="input changed delay:300ms, focus"
                    hx-target="#{{ name }}_results"
                    hx-include="this"
-                   hx-vals='{"mode": "select", "entity_type": "{{ entity_type }}", "field_name": "{{ name }}"}'>
+                   hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}"}'>
             <button type="button" class="absolute right-2 top-2 text-gray-400 hover:text-gray-600">
                 {{ icon('magnifying-glass') }}
             </button>

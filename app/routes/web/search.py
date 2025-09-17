@@ -103,6 +103,7 @@ def htmx_search():
     limit = min(int(request.args.get("limit", 10)), 20)
     mode = request.args.get("mode", "modal")  # 'modal' or 'select'
     field_id = request.args.get("field_id", "")
+    field_name = request.args.get("field_name", "")
 
     # Reuse the main search logic
     if entity_type == "all":
@@ -142,4 +143,5 @@ def htmx_search():
         query=query,
         mode=mode,
         field_id=field_id,
+        field_name=field_name,
     )
