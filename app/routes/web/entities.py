@@ -123,27 +123,52 @@ def entity_content(model: type, table_name: str) -> str:
     if group_by and hasattr(model, group_by):
         # Group entities
         grouped_entities = defaultdict(list)
-        for entity in query.all():
+        entities_list = query.all()
+        for entity in entities_list:
             group_key = getattr(entity, group_by) or "No Group"
             if hasattr(group_key, "label"):
                 group_key = group_key.label
             grouped_entities[str(group_key)].append(entity)
 
+        # Convert to list format expected by template
+        grouped_list = [
+            {"key": key, "label": key, "entities": entities}
+            for key, entities in grouped_entities.items()
+        ]
+
         context = {
-            "grouped_entities": dict(grouped_entities),
+            "grouped_entities": grouped_list,
             "entity_type": model.__name__.lower(),
+            "entity_name": model.__name__,
+            "entity_name_singular": model.__name__,
+            "entity_name_plural": f"{model.__name__}s",
+            "total_count": len(entities_list),
             "is_grouped": True,
         }
         return render_template("shared/entity_content.html", **context)
 
     # Regular list view
     entities = query.all()
+
+    # Convert entities to grouped format for template consistency
+    grouped_entities = [
+        {
+            "key": "all",
+            "label": f"All {model.__name__}s",
+            "entities": entities
+        }
+    ]
+
     context = {
-        "entities": entities,
+        "grouped_entities": grouped_entities,
         "entity_type": model.__name__.lower(),
+        "entity_name": model.__name__,
+        "entity_name_singular": model.__name__,
+        "entity_name_plural": f"{model.__name__}s",
+        "total_count": len(entities),
         "is_grouped": False,
     }
-    return render_template("entity_cards.html", **context)
+    return render_template("shared/entity_content.html", **context)
 
 
 # Initialize routes on import
