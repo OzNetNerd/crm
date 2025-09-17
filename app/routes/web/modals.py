@@ -59,8 +59,10 @@ def render_modal(model_name, form, mode="create", entity=None):
         params["entity_id"] = entity.id
 
     if mode != "view":
-        action = "update" if entity else "create"
-        params["action_url"] = f"/modals/{model_name}/{entity.id if entity else ''}/{action}".rstrip('/')
+        if entity:
+            params["action_url"] = f"/modals/{model_name}/{entity.id}/update"
+        else:
+            params["action_url"] = f"/modals/{model_name}/create"
 
     return render_template("components/modals/wtforms_modal.html", **params)
 

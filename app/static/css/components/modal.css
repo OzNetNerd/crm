@@ -16,6 +16,8 @@
     align-items: center;
     justify-content: center;
     padding: 1rem;
+    /* Prevent modal from jumping when content updates */
+    overflow: auto;
 }
 
 /* Body scroll lock */
