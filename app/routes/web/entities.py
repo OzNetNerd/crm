@@ -216,9 +216,17 @@ def entity_index(model, table_name):
         # Stakeholders stats
         from app.models import Company
 
-        # Decision makers
+        # Decision makers (based on job title)
         decision_makers = model.query.filter(
-            model.role.in_(['CEO', 'CTO', 'CFO', 'President', 'VP', 'Director'])
+            db.or_(
+                model.job_title.ilike('%CEO%'),
+                model.job_title.ilike('%CTO%'),
+                model.job_title.ilike('%CFO%'),
+                model.job_title.ilike('%President%'),
+                model.job_title.ilike('%VP%'),
+                model.job_title.ilike('%Director%'),
+                model.job_title.ilike('%Vice President%')
+            )
         ).count()
         stats_list.append({"value": decision_makers, "label": "Decision Makers"})
 
