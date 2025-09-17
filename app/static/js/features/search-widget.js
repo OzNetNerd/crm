@@ -18,6 +18,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Helper functions for robust visibility control
+function showElement(element) {
+    element.classList.remove('hidden');
+    element.style.display = '';
+}
+
+function hideElement(element) {
+    element.classList.add('hidden');
+    element.style.display = 'none';
+}
+
 function initializeSearchWidgets() {
     // Find all search inputs - now unified with .search-input class
     const searchInputs = document.querySelectorAll('.search-input');
@@ -37,21 +48,21 @@ function initializeSearchWidgets() {
         // Show results when HTMX loads content
         input.addEventListener('htmx:afterSwap', function() {
             if (resultsDiv.children.length > 0) {
-                resultsDiv.classList.remove('hidden');
+                showElement(resultsDiv);
             }
         });
 
         // Hide results when input is cleared
         input.addEventListener('input', function() {
             if (!this.value.trim()) {
-                resultsDiv.classList.add('hidden');
+                hideElement(resultsDiv);
             }
         });
 
         // Show results when focusing input if there's content
         input.addEventListener('focus', function() {
             if (resultsDiv.children.length > 0) {
-                resultsDiv.classList.remove('hidden');
+                showElement(resultsDiv);
             }
         });
     });
@@ -64,7 +75,7 @@ function initializeSearchWidgets() {
 
             // Check if click is outside the search container
             if (container && !container.contains(event.target)) {
-                resultsDiv.classList.add('hidden');
+                hideElement(resultsDiv);
             }
         });
     });
@@ -73,7 +84,7 @@ function initializeSearchWidgets() {
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             document.querySelectorAll('.search-results:not(.hidden)').forEach(resultsDiv => {
-                resultsDiv.classList.add('hidden');
+                hideElement(resultsDiv);
                 // Blur the associated input
                 const container = resultsDiv.closest('.search-container');
                 if (container) {
@@ -106,7 +117,7 @@ window.selectEntity = function(fieldId, entityId, entityName, entityType) {
     if (entities.some(e => e.id == entityId && e.type === entityType)) {
         // Clear search and hide results
         if (searchField) searchField.value = '';
-        if (resultsDiv) resultsDiv.classList.add('hidden');
+        if (resultsDiv) hideElement(resultsDiv);
         return;
     }
 
@@ -129,7 +140,7 @@ window.selectEntity = function(fieldId, entityId, entityName, entityType) {
         // Trigger input event to ensure HTMX clears results
         searchField.dispatchEvent(new Event('input', { bubbles: true }));
     }
-    if (resultsDiv) resultsDiv.classList.add('hidden');
+    if (resultsDiv) hideElement(resultsDiv);
 };
 
 window.createEntityBadge = function(fieldId, entityId, entityName, entityType) {
@@ -210,5 +221,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Make selectChoice globally available for choice search results to call
+window.selectChoice = function(fieldName, choiceKey, choiceLabel) {
+    const searchField = document.getElementById(fieldName + '_search');
+    const hiddenField = document.getElementById(fieldName);
+    const selectedDiv = document.getElementById(fieldName + '_selected');
+    const resultsDiv = document.getElementById(fieldName + '_results');
+
+    if (!hiddenField || !selectedDiv) return;
+
+    // Set the hidden field value
+    hiddenField.value = choiceKey;
+
+    // Update the selected display
+    selectedDiv.innerHTML = `
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            ${choiceLabel}
+        </span>
+    `;
+
+    // Clear search and hide results
+    if (searchField) {
+        searchField.value = '';
+        // Trigger input event to ensure HTMX clears results
+        searchField.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    if (resultsDiv) hideElement(resultsDiv);
+};
 
 // Function is available globally via window object

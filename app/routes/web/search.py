@@ -5,6 +5,7 @@ Clean, maintainable search using BaseModel search capabilities.
 """
 
 from flask import Blueprint, request, jsonify, render_template
+import json
 from app.models import MODEL_REGISTRY
 
 search_bp = Blueprint("search", __name__)
@@ -106,7 +107,12 @@ def htmx_search():
     field_id = request.args.get("field_id", "")
     field_name = request.args.get("field_name", "")
 
-    # Reuse the main search logic
+    # Handle choice fields as virtual entities
+    if entity_type.startswith("choice:"):
+        choice_field = entity_type.split(":", 1)[1]
+        return _handle_choice_search(query, choice_field, mode, field_name)
+
+    # Reuse the main search logic for entity searches
     if entity_type == "all":
         models_to_search = MODEL_REGISTRY.values()
     else:
@@ -146,3 +152,52 @@ def htmx_search():
         field_id=field_id,
         field_name=field_name,
     )
+
+
+def _handle_choice_search(query, choice_field, mode, field_name):
+    """Handle choice field search by converting choices to search results."""
+    from app.forms import get_field_choices
+
+    # Get choices for the field
+    choices = get_field_choices(choice_field)
+    if not choices:
+        return render_template(
+            "components/search/results.html",
+            results=[],
+            query=query,
+            mode=mode,
+            field_name=field_name,
+        )
+
+    # Convert choices to search results format
+    results = []
+    query_lower = query.lower()
+
+    for key, choice_data in choices.items():
+        label = choice_data.get("label", "")
+        description = choice_data.get("description", "")
+
+        # Filter based on query
+        if not query or (query_lower in label.lower() or
+                        query_lower in description.lower() or
+                        query_lower in key.lower()):
+            results.append({
+                "id": key,
+                "title": label,
+                "description": description,
+                "type": "choice",
+                "url": "#"  # Not used for choices
+            })
+
+    # Sort by label
+    results.sort(key=lambda x: x["title"])
+
+    return render_template(
+        "components/search/results.html",
+        results=results,
+        query=query,
+        mode=mode,
+        field_name=field_name,
+    )
+
+

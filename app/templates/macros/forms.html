@@ -4,7 +4,7 @@
 #}
 
 {% from 'macros/ui.html' import icon %}
-{% from 'macros/components.html' import entity_search_dropdown %}
+{% from 'macros/components.html' import entity_search_dropdown, choice_search_dropdown %}
 
 {# ============================================
    WTFORMS FIELD RENDERING
@@ -19,6 +19,27 @@
             label=field.label.text if show_label else '',
             required=field.flags.required,
             placeholder='Search companies...'
+        ) }}
+        {% if show_errors and field.errors %}
+            {% for error in field.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+    {# Special handling for industry fields with choice search #}
+    {% elif field.name == 'industry' and field.type == 'SelectField' %}
+        {% set industry_choices = {} %}
+        {% for value, label in field.choices %}
+            {% if value %}
+                {% set _ = industry_choices.update({value: {'label': label, 'description': ''}}) %}
+            {% endif %}
+        {% endfor %}
+        {{ choice_search_dropdown(
+            name=field.name,
+            choices=industry_choices,
+            value=field.data or '',
+            label=field.label.text if show_label else '',
+            required=field.flags.required,
+            placeholder='Search industries...'
         ) }}
         {% if show_errors and field.errors %}
             {% for error in field.errors %}
