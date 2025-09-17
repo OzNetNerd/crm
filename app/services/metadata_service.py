@@ -67,8 +67,8 @@ class MetadataService:
                     "display_label", name.replace("_", " ").title()
                 ),
                 "filterable": bool(column_info.get("choices")),
-                "sortable": column_info.get("sortable", name in ["created_at", "name"]),
-                "groupable": column_info.get("groupable", False),
+                "sortable": column_info.get("sortable", True),  # Make all fields sortable by default
+                "groupable": column_info.get("groupable", bool(column_info.get("choices"))),  # Groupable if has choices
                 "choices": column_info.get("choices"),
                 "required": column_info.get("required", False),
                 "contact_field": column_info.get("contact_field", False),

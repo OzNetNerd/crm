@@ -38,8 +38,8 @@
     </div>
     {% endif %}
 
-    {# Filters #}
-    {% if dropdown_configs %}
+    {# Filters - Always show if available #}
+    {% if dropdown_configs and dropdown_configs|length > 0 %}
     <div class="filter-section">
         <form hx-get="{{ url_for(entity_config.content_endpoint) }}"
               hx-target="#entity-content"

@@ -103,6 +103,12 @@ class BaseModel(db.Model):
         from app.services import DisplayService
         return DisplayService.get_display_title(self)
 
+    def get_view_url(self) -> str:
+        """Get URL for viewing this entity."""
+        from app.services import DisplayService
+        entity_type = DisplayService.get_entity_type_from_model(self.__class__)
+        return f"/modals/{entity_type}/{self.id}/view"
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert model to dictionary via SerializationService."""
         from app.services import SerializationService
