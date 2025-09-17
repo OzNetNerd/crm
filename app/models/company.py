@@ -155,7 +155,7 @@ class Company(BaseModel):
 
     # Relationships
     stakeholders = db.relationship("Stakeholder", back_populates="company", lazy=True)
-    opportunities = db.relationship("Opportunity", backref="company", lazy=True)
+    opportunities = db.relationship("Opportunity", back_populates="company", lazy=True)
 
     def get_account_team(self) -> List[Dict[str, Any]]:
         """
