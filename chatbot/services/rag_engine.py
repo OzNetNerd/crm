@@ -324,7 +324,6 @@ class RAGEngine:
                         }
                     )
 
-
         except Exception as e:
             logger.error(f"Direct database search failed: {e}")
 

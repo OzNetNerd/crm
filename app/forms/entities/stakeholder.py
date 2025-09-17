@@ -18,41 +18,41 @@ class StakeholderForm(BaseForm):
         from app.models.stakeholder import Stakeholder
 
         # Set MEDDPICC choices
-        meddpicc_choices = Stakeholder.get_field_choices('meddpicc_role')
-        self.meddpicc_role.choices = [('', 'Select MEDDPICC role')] + meddpicc_choices
+        meddpicc_choices = Stakeholder.get_field_choices("meddpicc_role")
+        self.meddpicc_role.choices = [("", "Select MEDDPICC role")] + meddpicc_choices
 
     name = StringField(
-        'Full Name',
+        "Full Name",
         validators=[DataRequired(), Length(max=255)],
-        render_kw={'placeholder': 'Enter stakeholder name...'}
+        render_kw={"placeholder": "Enter stakeholder name..."},
     )
 
     job_title = StringField(
-        'Job Title',
+        "Job Title",
         validators=[Optional(), Length(max=100)],
-        render_kw={'placeholder': 'Enter job title...'}
+        render_kw={"placeholder": "Enter job title..."},
     )
 
     email = StringField(
-        'Email Address',
+        "Email Address",
         validators=[Optional(), Email(), Length(max=255)],
-        render_kw={'placeholder': 'Enter email address...'}
+        render_kw={"placeholder": "Enter email address..."},
     )
 
     phone = StringField(
-        'Phone Number',
+        "Phone Number",
         validators=[Optional(), Length(max=50)],
-        render_kw={'placeholder': 'Enter phone number...'}
+        render_kw={"placeholder": "Enter phone number..."},
     )
 
     meddpicc_role = SelectField(
-        'MEDDPICC Role',
+        "MEDDPICC Role",
         validators=[Optional()],
-        choices=[]  # Will be populated in __init__
+        choices=[],  # Will be populated in __init__
     )
 
-    company = StringField('Company', validators=[DataRequired()])
+    company = StringField("Company", validators=[DataRequired()])
 
     def get_display_fields(self):
         """Return field names to display in modal, in this exact order"""
-        return ['name', 'company']
+        return ["name", "company"]

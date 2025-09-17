@@ -10,17 +10,18 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 from database import get_async_session
-from models import Company, ChatHistory
+from models import ChatHistory
 from services.chat_handler import ChatHandler
 from logging_config import setup_chatbot_logging, log_request_middleware
 
 app = FastAPI(title="CRM Chatbot Service", version="1.0.0")
 
 # ADR-012: Configure structured logging for chatbot service
-setup_chatbot_logging("chatbot-service", debug=os.environ.get('DEBUG', 'False').lower() == 'true')
+setup_chatbot_logging(
+    "chatbot-service", debug=os.environ.get("DEBUG", "False").lower() == "true"
+)
 
 # Add request correlation middleware
 app.middleware("http")(log_request_middleware)
@@ -64,7 +65,6 @@ manager = ConnectionManager()
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "service": "chatbot"}
-
 
 
 @app.websocket("/ws/chat/{session_id}")

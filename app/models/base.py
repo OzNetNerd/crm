@@ -1,12 +1,13 @@
 from . import db
 from datetime import datetime, date
-from sqlalchemy import String, Text, Date, Numeric
+from sqlalchemy import String, Text
 from typing import Dict, Any, List, Callable
 from functools import lru_cache
 
 
 class BaseModel(db.Model):
     """Lightweight base class for entity metadata and search."""
+
     __abstract__ = True
 
     # Name-mangled attributes - singular is REQUIRED
@@ -18,24 +19,24 @@ class BaseModel(db.Model):
 
     # Serialization configuration - override in models as needed
     __include_properties__: List[str] = []  # Additional properties to include
-    __relationship_transforms__: Dict[str, Callable] = {}  # Custom relationship serializers
+    __relationship_transforms__: Dict[str, Callable] = (
+        {}
+    )  # Custom relationship serializers
 
     # Modal configuration - override in models as needed
-    __modal_size__ = 'md'  # sm, md, lg, xl
-    __modal_icon__ = None   # Override to use custom icon
-    __display_field__ = 'name'  # Field to use for display title
+    __modal_size__ = "md"  # sm, md, lg, xl
+    __modal_icon__ = None  # Override to use custom icon
+    __display_field__ = "name"  # Field to use for display title
 
     # Route configuration - models control their own exposure
-    __api_enabled__ = True   # Default: all models have API endpoints
-    __web_enabled__ = True   # Default: all models have web pages
+    __api_enabled__ = True  # Default: all models have API endpoints
+    __web_enabled__ = True  # Default: all models have web pages
 
     @classmethod
     def get_display_name(cls):
         """Get singular display name."""
         if not cls.__display_name__:
-            raise NotImplementedError(
-                f"{cls.__name__} must define __display_name__"
-            )
+            raise NotImplementedError(f"{cls.__name__} must define __display_name__")
         return cls.__display_name__
 
     @classmethod
@@ -55,7 +56,10 @@ class BaseModel(db.Model):
     def get_singular_name(cls):
         """Get singular name from MODEL_REGISTRY."""
         from app.models import MODEL_REGISTRY
-        return next((k for k, v in MODEL_REGISTRY.items() if v == cls), cls.__name__.lower())
+
+        return next(
+            (k for k, v in MODEL_REGISTRY.items() if v == cls), cls.__name__.lower()
+        )
 
     @classmethod
     def is_api_enabled(cls):
@@ -79,20 +83,22 @@ class BaseModel(db.Model):
         for column in cls.__table__.columns:
             name = column.name
             # Skip ID fields
-            if name.endswith('_id') or name == 'id':
+            if name.endswith("_id") or name == "id":
                 continue
 
             column_info = column.info
             metadata[name] = {
-                'type': column.type.__class__.__name__,
-                'label': column_info.get('display_label', name.replace('_', ' ').title()),
-                'filterable': bool(column_info.get('choices')),
-                'sortable': column_info.get('sortable', name in ['created_at', 'name']),
-                'groupable': column_info.get('groupable', False),
-                'choices': column_info.get('choices'),
-                'required': column_info.get('required', False),
-                'contact_field': column_info.get('contact_field', False),
-                'icon': column_info.get('icon'),
+                "type": column.type.__class__.__name__,
+                "label": column_info.get(
+                    "display_label", name.replace("_", " ").title()
+                ),
+                "filterable": bool(column_info.get("choices")),
+                "sortable": column_info.get("sortable", name in ["created_at", "name"]),
+                "groupable": column_info.get("groupable", False),
+                "choices": column_info.get("choices"),
+                "required": column_info.get("required", False),
+                "contact_field": column_info.get("contact_field", False),
+                "icon": column_info.get("icon"),
             }
         return metadata
 
@@ -100,10 +106,10 @@ class BaseModel(db.Model):
     def get_default_sort_field(cls):
         """Get default sort field for this model."""
         # Priority order for default sort
-        for field in ['due_date', 'name', 'created_at', 'id']:
+        for field in ["due_date", "name", "created_at", "id"]:
             if hasattr(cls, field):
                 return field
-        return 'id'
+        return "id"
 
     @classmethod
     def get_field_choices(cls, field_name: str):
@@ -118,8 +124,8 @@ class BaseModel(db.Model):
         """
         metadata = cls.get_field_metadata()
         field_info = metadata.get(field_name, {})
-        choices = field_info.get('choices', {})
-        return [(value, data.get('label', value)) for value, data in choices.items()]
+        choices = field_info.get("choices", {})
+        return [(value, data.get("label", value)) for value, data in choices.items()]
 
     @classmethod
     def search(cls, query, limit=20):
@@ -132,9 +138,10 @@ class BaseModel(db.Model):
 
         # Get searchable text columns
         text_columns = [
-            col for col in cls.__table__.columns
+            col
+            for col in cls.__table__.columns
             if isinstance(col.type, (String, Text))
-            and col.name not in {'password', 'hash', 'token', 'secret'}
+            and col.name not in {"password", "hash", "token", "secret"}
         ]
 
         if not text_columns:
@@ -142,8 +149,7 @@ class BaseModel(db.Model):
 
         # Build search conditions
         conditions = [
-            getattr(cls, col.name).ilike(f"%{query}%")
-            for col in text_columns
+            getattr(cls, col.name).ilike(f"%{query}%") for col in text_columns
         ]
 
         return cls.query.filter(or_(*conditions)).limit(limit).all()
@@ -152,16 +158,20 @@ class BaseModel(db.Model):
         """Convert to search result for API responses."""
         # Icon mapping for each entity type
         icon_map = {
-            'company': '🏢',
-            'stakeholder': '👤',
-            'opportunity': '💼',
-            'task': '📋',
-            'user': '👥',
-            'note': '📝'
+            "company": "🏢",
+            "stakeholder": "👤",
+            "opportunity": "💼",
+            "task": "📋",
+            "user": "👥",
+            "note": "📝",
         }
 
         from app.models import MODEL_REGISTRY
-        entity_type = next((key for key, model in MODEL_REGISTRY.items() if model == self.__class__), self.__class__.__name__.lower())
+
+        entity_type = next(
+            (key for key, model in MODEL_REGISTRY.items() if model == self.__class__),
+            self.__class__.__name__.lower(),
+        )
 
         return {
             "id": self.id,
@@ -169,19 +179,19 @@ class BaseModel(db.Model):
             "title": self._get_search_title(),
             "subtitle": self._build_search_subtitle(),
             "url": f"/modals/{entity_type}/{self.id}/view",
-            "icon": icon_map.get(entity_type, '📄')
+            "icon": icon_map.get(entity_type, "📄"),
         }
 
     def _get_search_title(self):
         """Get title for search results."""
         # Use configured title field or common fields
         config = self.__search_config__
-        if title_field := config.get('title_field'):
+        if title_field := config.get("title_field"):
             if hasattr(self, title_field):
-                return str(getattr(self, title_field, ''))[:100]
+                return str(getattr(self, title_field, ""))[:100]
 
         # Try common title fields
-        for field in ['name', 'title', 'description', 'email']:
+        for field in ["name", "title", "description", "email"]:
             if hasattr(self, field) and (value := getattr(self, field)):
                 return str(value)[:100]
 
@@ -193,15 +203,15 @@ class BaseModel(db.Model):
         config = self.__search_config__
 
         # Use configured subtitle fields
-        subtitle_fields = config.get('subtitle_fields', [])
+        subtitle_fields = config.get("subtitle_fields", [])
 
         for field_name in subtitle_fields:
             if hasattr(self, field_name) and (value := getattr(self, field_name)):
                 # Simple formatting for common field types
                 if isinstance(value, (date, datetime)):
-                    parts.append(value.strftime('%d/%m/%y'))
-                elif field_name in {'status', 'stage', 'priority'}:
-                    parts.append(str(value).replace('_', ' ').title())
+                    parts.append(value.strftime("%d/%m/%y"))
+                elif field_name in {"status", "stage", "priority"}:
+                    parts.append(str(value).replace("_", " ").title())
                 else:
                     parts.append(str(value))
 
@@ -214,54 +224,62 @@ class BaseModel(db.Model):
         meta = {}
 
         # Created date with relative time
-        if hasattr(self, 'created_at') and self.created_at:
-            created_date = self.created_at.date() if isinstance(self.created_at, datetime) else self.created_at
-            meta['created'] = format_date_with_relative(created_date)
+        if hasattr(self, "created_at") and self.created_at:
+            created_date = (
+                self.created_at.date()
+                if isinstance(self.created_at, datetime)
+                else self.created_at
+            )
+            meta["created"] = format_date_with_relative(created_date)
 
         # Due date with relative time
-        if hasattr(self, 'due_date') and self.due_date:
-            meta['due'] = format_date_with_relative(self.due_date)
+        if hasattr(self, "due_date") and self.due_date:
+            meta["due"] = format_date_with_relative(self.due_date)
 
         # Next step for tasks
-        if (hasattr(self, 'next_step_type') and self.next_step_type and
-            hasattr(self, 'due_date') and self.due_date):
-            meta['next_step'] = {
-                'type': self.next_step_type,
-                'icon': get_next_step_icon(self.next_step_type),
-                'date': format_date_with_relative(self.due_date),
-                'type_display': self.next_step_type.replace('_', ' ').title()
+        if (
+            hasattr(self, "next_step_type")
+            and self.next_step_type
+            and hasattr(self, "due_date")
+            and self.due_date
+        ):
+            meta["next_step"] = {
+                "type": self.next_step_type,
+                "icon": get_next_step_icon(self.next_step_type),
+                "date": format_date_with_relative(self.due_date),
+                "type_display": self.next_step_type.replace("_", " ").title(),
             }
 
         return meta
-
 
     def get_display_title(self):
         """Get display title using model's configured display field."""
         # Use the field specified by the model
         field_name = self.__class__.__display_field__
         if hasattr(self, field_name):
-            return getattr(self, field_name) or f'Empty {self.get_display_name()}'
-        return f'{self.get_display_name()} #{self.id}'
+            return getattr(self, field_name) or f"Empty {self.get_display_name()}"
+        return f"{self.get_display_name()} #{self.id}"
 
     @classmethod
     def get_recent(cls, limit=5):
         """Get recent entities - uniform interface for all models."""
         # Use created_at if available, otherwise id for ordering
-        if hasattr(cls, 'created_at'):
+        if hasattr(cls, "created_at"):
             return cls.query.order_by(cls.created_at.desc()).limit(limit).all()
         return cls.query.order_by(cls.id.desc()).limit(limit).all()
 
     @classmethod
     def get_overdue(cls, limit=5):
         """Get overdue items - only for models with due_date."""
-        if hasattr(cls, 'due_date') and hasattr(cls, 'status'):
+        if hasattr(cls, "due_date") and hasattr(cls, "status"):
             from datetime import date
-            return cls.query.filter(
-                cls.due_date < date.today(),
-                cls.status != 'complete'
-            ).limit(limit).all()
-        return []
 
+            return (
+                cls.query.filter(cls.due_date < date.today(), cls.status != "complete")
+                .limit(limit)
+                .all()
+            )
+        return []
 
     def to_dict(self) -> Dict[str, Any]:
         """

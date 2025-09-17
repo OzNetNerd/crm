@@ -34,7 +34,6 @@ class EmbeddingService:
                 # self.model = SentenceTransformer(self.model_name)
                 logger.info(f"Loaded embedding model: {self.model_name}")
 
-
             except ImportError:
                 logger.error("sentence-transformers not installed")
                 self.model = "mock"
@@ -47,7 +46,9 @@ class EmbeddingService:
         self._load_model()
 
         if self.model == "mock":
-            raise NotImplementedError("Embedding model not available - install sentence-transformers")
+            raise NotImplementedError(
+                "Embedding model not available - install sentence-transformers"
+            )
         else:
             return self.model.encode(text).tolist()
 

@@ -3,6 +3,7 @@ from app.models import db, Task, MODEL_REGISTRY
 
 api_entities_bp = Blueprint("api_entities", __name__, url_prefix="/api")
 
+
 # Generic CRUD functions - DRY approach
 def get_model_by_table_name(table_name):
     """Get model class from table name (which is plural)."""
@@ -11,6 +12,7 @@ def get_model_by_table_name(table_name):
         if model.__tablename__ == table_name:
             return model
     return None
+
 
 def get_entity_list(table_name):
     """Get list of entities"""
@@ -23,6 +25,7 @@ def get_entity_list(table_name):
     entities = model.query.order_by(getattr(model, sort_field)).all()
     return jsonify([entity.to_dict() for entity in entities])
 
+
 def get_entity_detail(table_name, entity_id):
     """Get single entity details"""
     model = get_model_by_table_name(table_name)
@@ -32,6 +35,7 @@ def get_entity_detail(table_name, entity_id):
     entity = model.query.get_or_404(entity_id)
     return jsonify(entity.to_dict())
 
+
 def create_entity(table_name):
     """Create new entity"""
     model = get_model_by_table_name(table_name)
@@ -40,7 +44,7 @@ def create_entity(table_name):
 
     data = request.get_json()
     if not data:
-        return jsonify({'error': 'No data provided'}), 400
+        return jsonify({"error": "No data provided"}), 400
 
     try:
         entity = model(**data)
@@ -49,7 +53,8 @@ def create_entity(table_name):
         return jsonify(entity.to_dict()), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
+
 
 def update_entity(table_name, entity_id):
     """Update existing entity"""
@@ -60,7 +65,7 @@ def update_entity(table_name, entity_id):
     entity = model.query.get_or_404(entity_id)
     data = request.get_json()
     if not data:
-        return jsonify({'error': 'No data provided'}), 400
+        return jsonify({"error": "No data provided"}), 400
 
     try:
         for key, value in data.items():
@@ -70,7 +75,8 @@ def update_entity(table_name, entity_id):
         return jsonify(entity.to_dict())
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
+
 
 def delete_entity(table_name, entity_id):
     """Delete entity"""
@@ -82,10 +88,11 @@ def delete_entity(table_name, entity_id):
     try:
         db.session.delete(entity)
         db.session.commit()
-        return '', 204
+        return "", 204
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
+
 
 # Auto-generate routes for all entities
 def create_route_handlers():
@@ -94,84 +101,111 @@ def create_route_handlers():
     def make_list_handler(table_name):
         def handler():
             return get_entity_list(table_name)
+
         return handler
 
     def make_detail_handler(table_name):
         def handler(entity_id):
             return get_entity_detail(table_name, entity_id)
+
         return handler
 
     def make_create_handler(table_name):
         def handler():
             return create_entity(table_name)
+
         return handler
 
     def make_update_handler(table_name):
         def handler(entity_id):
             return update_entity(table_name, entity_id)
+
         return handler
 
     def make_delete_handler(table_name):
         def handler(entity_id):
             return delete_entity(table_name, entity_id)
+
         return handler
 
     # Register routes for all models with API enabled
     for entity_type, model in MODEL_REGISTRY.items():
         # Let models control their own API exposure
-        if not hasattr(model, 'is_api_enabled') or not model.is_api_enabled():
+        if not hasattr(model, "is_api_enabled") or not model.is_api_enabled():
             continue
 
         # Skip tasks - it has custom POST handling below
-        if model.__tablename__ == 'tasks':
+        if model.__tablename__ == "tasks":
             continue
 
         table_name = model.__tablename__  # Already plural!
         singular_name = entity_type  # From MODEL_REGISTRY key
 
         # GET list
-        api_entities_bp.add_url_rule(f'/{table_name}', f'list_{table_name}',
-                                    make_list_handler(table_name))
+        api_entities_bp.add_url_rule(
+            f"/{table_name}", f"list_{table_name}", make_list_handler(table_name)
+        )
 
         # GET single
-        api_entities_bp.add_url_rule(f'/{table_name}/<int:entity_id>', f'get_{singular_name}',
-                                    make_detail_handler(table_name))
+        api_entities_bp.add_url_rule(
+            f"/{table_name}/<int:entity_id>",
+            f"get_{singular_name}",
+            make_detail_handler(table_name),
+        )
 
         # POST create
-        api_entities_bp.add_url_rule(f'/{table_name}', f'create_{singular_name}',
-                                    make_create_handler(table_name), methods=['POST'])
+        api_entities_bp.add_url_rule(
+            f"/{table_name}",
+            f"create_{singular_name}",
+            make_create_handler(table_name),
+            methods=["POST"],
+        )
 
         # PUT update
-        api_entities_bp.add_url_rule(f'/{table_name}/<int:entity_id>', f'update_{singular_name}',
-                                    make_update_handler(table_name), methods=['PUT'])
+        api_entities_bp.add_url_rule(
+            f"/{table_name}/<int:entity_id>",
+            f"update_{singular_name}",
+            make_update_handler(table_name),
+            methods=["PUT"],
+        )
 
         # DELETE
-        api_entities_bp.add_url_rule(f'/{table_name}/<int:entity_id>', f'delete_{singular_name}',
-                                    make_delete_handler(table_name), methods=['DELETE'])
+        api_entities_bp.add_url_rule(
+            f"/{table_name}/<int:entity_id>",
+            f"delete_{singular_name}",
+            make_delete_handler(table_name),
+            methods=["DELETE"],
+        )
+
 
 # Call the function to register routes
 create_route_handlers()
+
 
 # Add standard task routes (GET, PUT, DELETE) that don't conflict with custom POST
 @api_entities_bp.route("/tasks", methods=["GET"])
 def get_tasks():
     """Get list of tasks"""
-    return get_entity_list('tasks')
+    return get_entity_list("tasks")
+
 
 @api_entities_bp.route("/tasks/<int:entity_id>", methods=["GET"])
 def get_task(entity_id):
     """Get single task"""
-    return get_entity_detail('tasks', entity_id)
+    return get_entity_detail("tasks", entity_id)
+
 
 @api_entities_bp.route("/tasks/<int:entity_id>", methods=["PUT"])
 def update_task(entity_id):
     """Update task"""
-    return update_entity('tasks', entity_id)
+    return update_entity("tasks", entity_id)
+
 
 @api_entities_bp.route("/tasks/<int:entity_id>", methods=["DELETE"])
 def delete_task(entity_id):
     """Delete task"""
-    return delete_entity('tasks', entity_id)
+    return delete_entity("tasks", entity_id)
+
 
 # Task creation helper functions - DRY and focused
 def _parse_date_field(date_string):
@@ -179,6 +213,7 @@ def _parse_date_field(date_string):
     if not date_string:
         return None
     from datetime import datetime
+
     return datetime.strptime(date_string, "%Y-%m-%d").date()
 
 
@@ -187,6 +222,7 @@ def _process_linked_entities(data):
     linked_entities = data.get("linked_entities", [])
     if isinstance(linked_entities, str):
         import json
+
         linked_entities = json.loads(linked_entities)
     return linked_entities
 
@@ -194,7 +230,12 @@ def _process_linked_entities(data):
 def _parse_task_data(data):
     """Parse and validate task data with defaults"""
     allowed_fields = [
-        "description", "due_date", "priority", "status", "next_step_type", "task_type"
+        "description",
+        "due_date",
+        "priority",
+        "status",
+        "next_step_type",
+        "task_type",
     ]
 
     task_data = {}
@@ -237,7 +278,7 @@ def _create_multi_task(data):
         priority=data.get("priority", "medium"),
         status="todo",
         task_type="parent",
-        dependency_type=data.get("dependency_type", "parallel")
+        dependency_type=data.get("dependency_type", "parallel"),
     )
 
     db.session.add(parent_task)
@@ -263,7 +304,7 @@ def _create_multi_task(data):
                 task_type="child",
                 parent_task_id=parent_task.id,
                 sequence_order=i,
-                dependency_type=data.get("dependency_type", "parallel")
+                dependency_type=data.get("dependency_type", "parallel"),
             )
             db.session.add(child_task)
 
@@ -295,6 +336,7 @@ def create_task():
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
 
+
 # Validation endpoint for inline duplicate checking
 @api_entities_bp.route("/validate/<entity_type>/<field_name>", methods=["POST"])
 def validate_field(entity_type, field_name):
@@ -304,22 +346,22 @@ def validate_field(entity_type, field_name):
     """
     try:
         data = request.get_json()
-        field_value = data.get('value', '').strip()
+        field_value = data.get("value", "").strip()
 
         # Allow empty values - they're handled by required validation
         if not field_value:
-            return '', 200
+            return "", 200
 
         # Use MODEL_REGISTRY for validation
         model_class = MODEL_REGISTRY.get(entity_type.lower())
         if not model_class:
-            return '', 200  # Unknown entity, allow
+            return "", 200  # Unknown entity, allow
 
         # Check for duplicates based on field
         unique_fields = {
-            'Company': {'name'},
-            'Stakeholder': {'email'},
-            'Opportunity': set()  # No unique fields for opportunities
+            "Company": {"name"},
+            "Stakeholder": {"email"},
+            "Opportunity": set(),  # No unique fields for opportunities
         }
 
         model_name = model_class.__name__
@@ -327,23 +369,22 @@ def validate_field(entity_type, field_name):
 
         # Only validate if this field should be unique
         if field_name not in allowed_fields:
-            return '', 200
+            return "", 200
 
         # Always check database for duplicates (case-insensitive)
         field_attribute = getattr(model_class, field_name)
-        existing = model_class.query.filter(
-            field_attribute.ilike(field_value)
-        ).first()
-
+        existing = model_class.query.filter(field_attribute.ilike(field_value)).first()
 
         if existing:
-            field_label = field_name.replace('_', ' ').title()
-            error_message = f'A {entity_type} with this {field_label.lower()} already exists.'
-            return jsonify({'error': error_message}), 400
+            field_label = field_name.replace("_", " ").title()
+            error_message = (
+                f"A {entity_type} with this {field_label.lower()} already exists."
+            )
+            return jsonify({"error": error_message}), 400
 
         # No duplicates found - field is valid
-        return '', 200
+        return "", 200
 
-    except Exception as e:
+    except Exception:
         # On error, don't block the user - but log for debugging
-        return '', 200
+        return "", 200

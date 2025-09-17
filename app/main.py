@@ -1,7 +1,6 @@
 import argparse
 import sys
 import os
-import logging
 from pathlib import Path
 from flask import Flask
 
@@ -10,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.models import db
 from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
+
 # Models are imported via app.models - no registration needed
 
 
@@ -23,14 +23,14 @@ def badge_class(value):
     - Replace hyphens with spaces
     """
     if not value:
-        return ''
-    return str(value).lower().replace('_', ' ').replace('-', ' ')
+        return ""
+    return str(value).lower().replace("_", " ").replace("-", " ")
 
 
 def get_database_path():
     """Get database path from environment or default location."""
     # Allow environment variable override
-    if db_url := os.environ.get('DATABASE_URL'):
+    if db_url := os.environ.get("DATABASE_URL"):
         return db_url
 
     # Default to local SQLite database in instance folder
@@ -63,16 +63,16 @@ def create_app():
     # Global trailing slash handling - DRY solution for all routes
     app.url_map.strict_slashes = False
 
-    app.config["SECRET_KEY"] = os.environ.get('SECRET_KEY', os.urandom(32).hex())
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", os.urandom(32).hex())
     app.config["SQLALCHEMY_DATABASE_URI"] = get_database_path()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     # Basic logging setup
-    if os.environ.get('WERKZEUG_RUN_MAIN'):
-        app.logger.info('CRM Application startup')
+    if os.environ.get("WERKZEUG_RUN_MAIN"):
+        app.logger.info("CRM Application startup")
 
     # Enable Jinja2 do extension for template logic
-    app.jinja_env.add_extension('jinja2.ext.do')
+    app.jinja_env.add_extension("jinja2.ext.do")
 
     db.init_app(app)
 
@@ -84,7 +84,7 @@ def create_app():
 
     # Dashboard button function
     def get_dashboard_action_buttons():
-        return ['companies', 'tasks', 'opportunities', 'stakeholders', 'teams']
+        return ["companies", "tasks", "opportunities", "stakeholders", "teams"]
 
     app.jinja_env.globals["get_dashboard_action_buttons"] = get_dashboard_action_buttons
 
@@ -107,7 +107,6 @@ def create_app():
 
     # Register custom Jinja2 filters
     app.jinja_env.filters["badge_class"] = badge_class
-
 
     with app.app_context():
         db.create_all()

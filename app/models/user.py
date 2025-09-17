@@ -1,5 +1,4 @@
 from datetime import datetime, date
-from typing import Dict, Any
 from . import db
 from .base import BaseModel
 
@@ -7,11 +6,11 @@ from .base import BaseModel
 class User(BaseModel):
     """
     User model representing team members in the CRM system.
-    
+
     This model manages internal team members who are assigned to
     manage customer accounts and opportunities. Users serve as the
     single source of truth for job titles and team assignments.
-    
+
     Attributes:
         id: Primary key identifier.
         name: User's full name (required).
@@ -24,58 +23,54 @@ class User(BaseModel):
     __display_name__ = "Team Member"
     __display_name_plural__ = "Teams"
     __route_name__ = "users"  # Override to match navbar expectations
-    __search_config__ = {
-        'subtitle_fields': ['email', 'job_title']
-    }
-    
+    __search_config__ = {"subtitle_fields": ["email", "job_title"]}
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False, info={
-        'display_label': 'Name'
-    })
-    email = db.Column(db.String(255), unique=True, info={
-        'display_label': 'Email'
-    })
-    job_title = db.Column(db.String(100), info={
-        'display_label': 'Job Title',
-        'groupable': True
-    })  # Single source of truth for role
-    department = db.Column(db.String(100), info={
-        'display_label': 'Department',
-        'groupable': True,
-        'choices': {
-            'sales': {
-                'label': 'Sales',
-                'description': 'Sales and business development'
+    name = db.Column(db.String(255), nullable=False, info={"display_label": "Name"})
+    email = db.Column(db.String(255), unique=True, info={"display_label": "Email"})
+    job_title = db.Column(
+        db.String(100), info={"display_label": "Job Title", "groupable": True}
+    )  # Single source of truth for role
+    department = db.Column(
+        db.String(100),
+        info={
+            "display_label": "Department",
+            "groupable": True,
+            "choices": {
+                "sales": {
+                    "label": "Sales",
+                    "description": "Sales and business development",
+                },
+                "engineering": {
+                    "label": "Engineering",
+                    "description": "Software development and engineering",
+                },
+                "marketing": {
+                    "label": "Marketing",
+                    "description": "Marketing and communications",
+                },
+                "support": {
+                    "label": "Support",
+                    "description": "Customer support and success",
+                },
+                "operations": {
+                    "label": "Operations",
+                    "description": "Business operations and administration",
+                },
+                "finance": {
+                    "label": "Finance",
+                    "description": "Finance and accounting",
+                },
+                "hr": {
+                    "label": "Human Resources",
+                    "description": "Human resources and people operations",
+                },
             },
-            'engineering': {
-                'label': 'Engineering',
-                'description': 'Software development and engineering'
-            },
-            'marketing': {
-                'label': 'Marketing',
-                'description': 'Marketing and communications'
-            },
-            'support': {
-                'label': 'Support',
-                'description': 'Customer support and success'
-            },
-            'operations': {
-                'label': 'Operations',
-                'description': 'Business operations and administration'
-            },
-            'finance': {
-                'label': 'Finance',
-                'description': 'Finance and accounting'
-            },
-            'hr': {
-                'label': 'Human Resources',
-                'description': 'Human resources and people operations'
-            }
-        }
-    })
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, info={'display_label': 'Created At'})
-
+        },
+    )
+    created_at = db.Column(
+        db.DateTime, default=datetime.utcnow, info={"display_label": "Created At"}
+    )
 
     def get_company_assignments(self):
         """Get all companies this user is assigned to"""
@@ -152,7 +147,7 @@ class CompanyAccountTeam(db.Model):
         result["user_name"] = self.user.name if self.user else None
         result["user_job_title"] = self.user.job_title if self.user else None
         result["company_name"] = self.company.name if self.company else None
-        
+
         return result
 
     def __repr__(self) -> str:
@@ -183,7 +178,7 @@ class OpportunityAccountTeam(db.Model):
 
     def to_dict(self):
         """Convert to dictionary for JSON serialization"""
-        
+
         result = {}
         # Serialize all columns
         for column in self.__table__.columns:
@@ -199,7 +194,7 @@ class OpportunityAccountTeam(db.Model):
         result["user_name"] = self.user.name if self.user else None
         result["user_job_title"] = self.user.job_title if self.user else None
         result["opportunity_name"] = self.opportunity.name if self.opportunity else None
-        
+
         return result
 
     def __repr__(self) -> str:

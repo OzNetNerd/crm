@@ -1,5 +1,4 @@
-from datetime import datetime, date
-from typing import Dict, Any, List, Optional
+from datetime import datetime
 from . import db
 from .base import BaseModel
 
@@ -43,12 +42,12 @@ stakeholder_opportunities = db.Table(
 class Stakeholder(BaseModel):
     """
     Stakeholder model representing customer-side contacts in the CRM system.
-    
+
     This model manages stakeholder relationships including MEDDPICC role tracking,
     opportunity associations, and relationship ownership. Stakeholders are
     individuals within customer organizations who influence or participate
     in business opportunities.
-    
+
     Attributes:
         id: Primary key identifier.
         name: Stakeholder full name (required).
@@ -62,13 +61,15 @@ class Stakeholder(BaseModel):
     __tablename__ = "stakeholders"
     __display_name__ = "Stakeholder"
     __search_config__ = {
-        'subtitle_fields': ['job_title', 'email'],
-        'relationships': [('company', 'name')]
+        "subtitle_fields": ["job_title", "email"],
+        "relationships": [("company", "name")],
     }
 
     # Serialization configuration
     __include_properties__ = [
-        "contact_info_status", "meddpicc_roles", "relationship_owners"
+        "contact_info_status",
+        "meddpicc_roles",
+        "relationship_owners",
     ]
     __relationship_transforms__ = {
         "meddpicc_roles": lambda self: self.get_meddpicc_role_names(),
@@ -80,122 +81,98 @@ class Stakeholder(BaseModel):
                 "stage": opp.stage,
             }
             for opp in self.opportunities
-        ]
+        ],
     }
-    
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(
         db.String(255),
         nullable=False,
-        info={
-            'display_label': 'Full Name',
-            'required': True,
-            'form_include': True
-        }
+        info={"display_label": "Full Name", "required": True, "form_include": True},
     )
     job_title = db.Column(
         db.String(100),
         info={
-            'display_label': 'Job Title',
-            'groupable': True,
-            'common_roles': {
-                'ceo': {
-                    'label': 'CEO',
-                    'description': 'Chief Executive Officer'
+            "display_label": "Job Title",
+            "groupable": True,
+            "common_roles": {
+                "ceo": {"label": "CEO", "description": "Chief Executive Officer"},
+                "cto": {"label": "CTO", "description": "Chief Technology Officer"},
+                "vp_sales": {
+                    "label": "VP Sales",
+                    "description": "Vice President of Sales",
                 },
-                'cto': {
-                    'label': 'CTO',
-                    'description': 'Chief Technology Officer'
+                "director": {
+                    "label": "Director",
+                    "description": "Director level management",
                 },
-                'vp_sales': {
-                    'label': 'VP Sales',
-                    'description': 'Vice President of Sales'
-                },
-                'director': {
-                    'label': 'Director',
-                    'description': 'Director level management'
-                },
-                'manager': {
-                    'label': 'Manager',
-                    'description': 'Manager level role'
-                }
-            }
-        }
+                "manager": {"label": "Manager", "description": "Manager level role"},
+            },
+        },
     )  # Their actual job: "VP Sales", "CTO", etc.
-    
+
     # Virtual field for forms only - MEDDPICC roles are stored in junction table
     meddpicc_role = db.Column(
         db.String(50),
         info={
-            'display_label': 'MEDDPICC Role',
-            'form_exclude': True,  # Don't include in auto-generated forms
-            'choices': {
-                'economic_buyer': {
-                    'label': 'Economic Buyer',
-                    'description': 'Person who controls the budget'
+            "display_label": "MEDDPICC Role",
+            "form_exclude": True,  # Don't include in auto-generated forms
+            "choices": {
+                "economic_buyer": {
+                    "label": "Economic Buyer",
+                    "description": "Person who controls the budget",
                 },
-                'decision_maker': {
-                    'label': 'Decision Maker',
-                    'description': 'Person who makes the final decision'
+                "decision_maker": {
+                    "label": "Decision Maker",
+                    "description": "Person who makes the final decision",
                 },
-                'influencer': {
-                    'label': 'Influencer',
-                    'description': 'Person who influences the decision'
+                "influencer": {
+                    "label": "Influencer",
+                    "description": "Person who influences the decision",
                 },
-                'champion': {
-                    'label': 'Champion',
-                    'description': 'Internal advocate for the solution'
+                "champion": {
+                    "label": "Champion",
+                    "description": "Internal advocate for the solution",
                 },
-                'user': {
-                    'label': 'User',
-                    'description': 'End user of the solution'
-                },
-                'other': {
-                    'label': 'Other',
-                    'description': 'Other role type'
-                }
-            }
-        }
+                "user": {"label": "User", "description": "End user of the solution"},
+                "other": {"label": "Other", "description": "Other role type"},
+            },
+        },
     )
-    
+
     email = db.Column(
         db.String(255),
         info={
-            'display_label': 'Email Address',
-            'contact_field': True,
-            'icon': 'envelope',
-            'form_include': True,
-            'required': True
-        }
+            "display_label": "Email Address",
+            "contact_field": True,
+            "icon": "envelope",
+            "form_include": True,
+            "required": True,
+        },
     )
     phone = db.Column(
         db.String(50),
-        info={
-            'display_label': 'Phone Number',
-            'contact_field': True,
-            'icon': 'phone'
-        }
+        info={"display_label": "Phone Number", "contact_field": True, "icon": "phone"},
     )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Foreign key to company
-    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"), nullable=False, info={
-        'display_label': 'Company',
-        'groupable': True,
-        'relationship_field': 'company',
-        'relationship_display_field': 'name',
-        'form_include': True,
-        'required': True
-    })
+    company_id = db.Column(
+        db.Integer,
+        db.ForeignKey("companies.id"),
+        nullable=False,
+        info={
+            "display_label": "Company",
+            "groupable": True,
+            "relationship_field": "company",
+            "relationship_display_field": "name",
+            "form_include": True,
+            "required": True,
+        },
+    )
 
     comments = db.Column(
-        db.Text,
-        info={
-            'display_label': 'Comments',
-            'form_include': True,
-            'rows': 3
-        }
+        db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3}
     )
 
     # Relationships (use back_populates to avoid conflicts)
@@ -239,7 +216,7 @@ class Stakeholder(BaseModel):
             insert_stmt = stakeholder_meddpicc_roles.insert().values(
                 stakeholder_id=self.id,
                 meddpicc_role=role_name,
-                created_at=datetime.utcnow()
+                created_at=datetime.utcnow(),
             )
             db.session.execute(insert_stmt)
             db.session.commit()
@@ -247,8 +224,8 @@ class Stakeholder(BaseModel):
     def remove_meddpicc_role(self, role_name):
         """Remove a MEDDPICC role from this stakeholder"""
         delete_stmt = stakeholder_meddpicc_roles.delete().where(
-            (stakeholder_meddpicc_roles.c.stakeholder_id == self.id) &
-            (stakeholder_meddpicc_roles.c.meddpicc_role == role_name)
+            (stakeholder_meddpicc_roles.c.stakeholder_id == self.id)
+            & (stakeholder_meddpicc_roles.c.meddpicc_role == role_name)
         )
         db.session.execute(delete_stmt)
         db.session.commit()
@@ -283,21 +260,21 @@ class Stakeholder(BaseModel):
         # For now, just return the base dictionary
         # Templates will handle formatting using Jinja2 macros
         return self.to_dict()
-    
+
     @property
     def contact_info_status(self):
         """Calculate contact info completeness"""
         has_email = bool(self.email)
         has_phone = bool(self.phone)
-        
+
         if has_email and has_phone:
-            return 'complete'
+            return "complete"
         elif has_email:
-            return 'email_only'
+            return "email_only"
         elif has_phone:
-            return 'phone_only'
+            return "phone_only"
         else:
-            return 'missing'
+            return "missing"
 
     def __repr__(self) -> str:
         """Return string representation of the stakeholder."""

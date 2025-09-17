@@ -7,12 +7,12 @@ from .base import BaseModel
 class Opportunity(BaseModel):
     """
     Opportunity model representing sales opportunities in the CRM system.
-    
+
     This model tracks sales opportunities through various pipeline stages,
     including deal value, probability, timeline, and relationships with
     companies and stakeholders. Each opportunity represents a potential
     sale or business transaction.
-    
+
     Attributes:
         id: Primary key identifier.
         name: Opportunity name/title (required).
@@ -25,11 +25,12 @@ class Opportunity(BaseModel):
         company_id: Associated company foreign key.
         company: Related company entity.
     """
+
     __tablename__ = "opportunities"
     __display_name__ = "Opportunity"
     __search_config__ = {
-        'subtitle_fields': ['value', 'stage'],
-        'relationships': [('company', 'name')]
+        "subtitle_fields": ["value", "stage"],
+        "relationships": [("company", "name")],
     }
 
     # Serialization configuration
@@ -46,115 +47,105 @@ class Opportunity(BaseModel):
             for stakeholder in self.get_stakeholders()
         ]
     }
-    
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(
         db.String(255),
         nullable=False,
         info={
-            'display_label': 'Opportunity Name',
-            'required': True,
-            'form_include': True
-        }
+            "display_label": "Opportunity Name",
+            "required": True,
+            "form_include": True,
+        },
     )
     value = db.Column(
         db.Integer,
         info={
-            'display_label': 'Deal Value',
-            'groupable': True,
-            'sortable': True,
-            'form_include': True,
-            'required': True,
-            'priority_ranges': [
-                (50000, 'high', 'High Value ($50K+)'),
-                (10000, 'medium', 'Medium Value ($10K-$50K)'),
-                (0, 'low', 'Low Value (<$10K)')
-            ]
-        }
+            "display_label": "Deal Value",
+            "groupable": True,
+            "sortable": True,
+            "form_include": True,
+            "required": True,
+            "priority_ranges": [
+                (50000, "high", "High Value ($50K+)"),
+                (10000, "medium", "Medium Value ($10K-$50K)"),
+                (0, "low", "Low Value (<$10K)"),
+            ],
+        },
     )  # Store monetary value in whole dollars
     probability = db.Column(
-        db.Integer, 
+        db.Integer,
         default=0,
         info={
-            'display_label': 'Win Probability',
-            'groupable': True,
-            'sortable': True,
-            'unit': '%',
-            'min_value': 0,
-            'max_value': 100
-        }
+            "display_label": "Win Probability",
+            "groupable": True,
+            "sortable": True,
+            "unit": "%",
+            "min_value": 0,
+            "max_value": 100,
+        },
     )  # 0-100 percentage
-    
+
     priority = db.Column(
         db.String(50),
         info={
-            'display_label': 'Priority',
-            'choices': {
-                'low': {
-                    'label': 'Low',
-                    'description': 'Low priority opportunity'
+            "display_label": "Priority",
+            "choices": {
+                "low": {"label": "Low", "description": "Low priority opportunity"},
+                "medium": {
+                    "label": "Medium",
+                    "description": "Medium priority opportunity",
                 },
-                'medium': {
-                    'label': 'Medium', 
-                    'description': 'Medium priority opportunity'
-                },
-                'high': {
-                    'label': 'High',
-                    'description': 'High priority opportunity'
-                }
-            }
-        }
+                "high": {"label": "High", "description": "High priority opportunity"},
+            },
+        },
     )
-    
+
     expected_close_date = db.Column(
         db.Date,
         info={
-            'display_label': 'Expected Close Date',
-            'groupable': True,
-            'sortable': True,
-            'date_groupings': {
-                'overdue': 'Overdue',
-                'this_week': 'This Week',
-                'this_month': 'This Month', 
-                'later': 'Later',
-                'no_date': 'No Close Date'
-            }
-        }
+            "display_label": "Expected Close Date",
+            "groupable": True,
+            "sortable": True,
+            "date_groupings": {
+                "overdue": "Overdue",
+                "this_week": "This Week",
+                "this_month": "This Month",
+                "later": "Later",
+                "no_date": "No Close Date",
+            },
+        },
     )
     stage = db.Column(
         db.String(50),
         default="prospect",
         info={
-            'display_label': 'Pipeline Stage',
-            'form_include': True,
-            'choices': {
-                'prospect': {
-                    'label': 'Prospect',
-                    'description': 'Initial contact made'
+            "display_label": "Pipeline Stage",
+            "form_include": True,
+            "choices": {
+                "prospect": {
+                    "label": "Prospect",
+                    "description": "Initial contact made",
                 },
-                'qualified': {
-                    'label': 'Qualified',
-                    'description': 'Meets our criteria'
+                "qualified": {
+                    "label": "Qualified",
+                    "description": "Meets our criteria",
                 },
-                'proposal': {
-                    'label': 'Proposal',
-                    'description': 'Formal proposal submitted'
+                "proposal": {
+                    "label": "Proposal",
+                    "description": "Formal proposal submitted",
                 },
-                'negotiation': {
-                    'label': 'Negotiation',
-                    'description': 'Terms discussion in progress'
+                "negotiation": {
+                    "label": "Negotiation",
+                    "description": "Terms discussion in progress",
                 },
-                'closed-won': {
-                    'label': 'Closed Won',
-                    'description': 'Deal successful'
+                "closed-won": {"label": "Closed Won", "description": "Deal successful"},
+                "closed-lost": {
+                    "label": "Closed Lost",
+                    "description": "Deal unsuccessful",
                 },
-                'closed-lost': {
-                    'label': 'Closed Lost',
-                    'description': 'Deal unsuccessful'
-                }
-            }
-        }
+            },
+        },
     )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -164,34 +155,29 @@ class Opportunity(BaseModel):
         db.ForeignKey("companies.id"),
         nullable=False,
         info={
-            'display_label': 'Company',
-            'form_include': True,
-            'required': True,
-            'relationship_field': 'company',
-            'relationship_display_field': 'name'
-        }
+            "display_label": "Company",
+            "form_include": True,
+            "required": True,
+            "relationship_field": "company",
+            "relationship_display_field": "name",
+        },
     )
 
     comments = db.Column(
-        db.Text,
-        info={
-            'display_label': 'Comments',
-            'form_include': True,
-            'rows': 3
-        }
+        db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3}
     )
 
     @property
     def deal_age(self) -> int:
         """
         Calculate the age of the deal in days.
-        
+
         Computes the number of days since the opportunity was created,
         providing insights into deal velocity and aging.
-        
+
         Returns:
             Number of days since opportunity creation.
-            
+
         Example:
             >>> opp = Opportunity(name="Test Deal")
             >>> # After 5 days
@@ -199,38 +185,38 @@ class Opportunity(BaseModel):
             5
         """
         return (datetime.utcnow() - self.created_at).days
-    
+
     @property
     def calculated_priority(self) -> str:
         """
         Calculate priority based on deal value using model metadata.
-        
+
         Automatically determines opportunity priority by comparing
         the deal value against predefined thresholds in model metadata.
         This provides dynamic priority calculation based on monetary value.
-        
+
         Returns:
             Priority string: 'low', 'medium', or 'high'.
             Returns 'low' if value is None or doesn't meet any thresholds.
-            
+
         Example:
             >>> opp = Opportunity(value=75000)
             >>> opp.calculated_priority
             'high'  # Assuming 50000+ is high priority threshold
         """
         if not self.value:
-            return 'low'
-            
+            return "low"
+
         # Get priority ranges from model metadata
         value_info = self.__class__.value.property.columns[0].info
-        priority_ranges = value_info.get('priority_ranges', [])
-        
+        priority_ranges = value_info.get("priority_ranges", [])
+
         for min_value, priority, label in priority_ranges:
             if self.value >= min_value:
                 return priority
-                
-        return 'low'
-    
+
+        return "low"
+
     @classmethod
     def calculate_pipeline_value(cls, stage: Optional[str] = None) -> float:
         """
@@ -278,7 +264,7 @@ class Opportunity(BaseModel):
             breakdown[stage_value] = cls.calculate_pipeline_value(stage_value)
 
         # Add total
-        breakdown['total'] = cls.calculate_pipeline_value()
+        breakdown["total"] = cls.calculate_pipeline_value()
 
         return breakdown
 
@@ -303,11 +289,15 @@ class Opportunity(BaseModel):
         """
         cutoff = date.today() + timedelta(days=days)
 
-        return cls.query.filter(
-            cls.expected_close_date <= cutoff,
-            cls.expected_close_date >= date.today(),
-            cls.stage.in_(['proposal', 'negotiation'])
-        ).limit(limit).all()
+        return (
+            cls.query.filter(
+                cls.expected_close_date <= cutoff,
+                cls.expected_close_date >= date.today(),
+                cls.stage.in_(["proposal", "negotiation"]),
+            )
+            .limit(limit)
+            .all()
+        )
 
     @classmethod
     def get_stage_choices(cls) -> Dict[str, Dict[str, str]]:
@@ -316,29 +306,28 @@ class Opportunity(BaseModel):
 
         Retrieves the available pipeline stage options defined in the model's
         field configuration for use in forms and validation.
-        
+
         Returns:
             Dictionary mapping stage keys to their display information:
             - label: Human-readable stage name
             - description: Detailed stage description
-            
+
         Example:
             >>> choices = Opportunity.get_stage_choices()
             >>> print(choices['qualified'])
             {'label': 'Qualified', 'description': 'Meets our criteria'}
         """
         # Get choices directly from column info
-        return cls.stage.info.get('choices', {})
-    
+        return cls.stage.info.get("choices", {})
 
     def get_stakeholders(self) -> List[Dict[str, Any]]:
         """
         Get all stakeholders for this opportunity with their MEDDPICC roles.
-        
+
         Retrieves stakeholders associated with this opportunity, including
         their contact information and MEDDPICC roles for sales methodology
         tracking. Results are sorted alphabetically by name.
-        
+
         Returns:
             List of dictionaries containing stakeholder information:
             - id: Stakeholder ID
@@ -347,7 +336,7 @@ class Opportunity(BaseModel):
             - email: Stakeholder's email address
             - phone: Stakeholder's phone number
             - meddpicc_roles: List of MEDDPICC role names
-            
+
         Example:
             >>> opp = Opportunity.query.first()
             >>> stakeholders = opp.get_stakeholders()
@@ -372,12 +361,12 @@ class Opportunity(BaseModel):
     def get_full_account_team(self) -> List[Dict[str, Any]]:
         """
         Get full account team including inherited company team and opportunity-specific assignments.
-        
+
         Combines account team members from both the parent company and
         opportunity-specific assignments. Handles deduplication when users
         are assigned at both levels, and provides source tracking to indicate
         the origin of each team member assignment.
-        
+
         Returns:
             List of dictionaries containing team member information:
             - id: User ID
@@ -385,7 +374,7 @@ class Opportunity(BaseModel):
             - email: User's email address
             - job_title: User's job title or None
             - source: Assignment source ('company', 'opportunity', or 'both')
-            
+
         Example:
             >>> opp = Opportunity.query.first()
             >>> team = opp.get_full_account_team()
@@ -489,11 +478,17 @@ class Opportunity(BaseModel):
         result = self.to_dict()
 
         # Add opportunity-specific computed fields
-        result['deal_age_formatted'] = f"{self.deal_age} days old"
+        result["deal_age_formatted"] = f"{self.deal_age} days old"
 
         # Add display-friendly versions of choice fields
-        result['stage_display'] = self.stage.replace('-', ' ').replace('_', ' ').title() if self.stage else ''
-        result['priority_display'] = self.priority.replace('-', ' ').replace('_', ' ').title() if self.priority else ''
+        result["stage_display"] = (
+            self.stage.replace("-", " ").replace("_", " ").title() if self.stage else ""
+        )
+        result["priority_display"] = (
+            self.priority.replace("-", " ").replace("_", " ").title()
+            if self.priority
+            else ""
+        )
 
         return result
 

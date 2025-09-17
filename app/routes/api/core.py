@@ -10,5 +10,3 @@ api_core_bp = Blueprint("api_core", __name__, url_prefix="/api")
 
 
 # Placeholder for future core API endpoints
-
-
