@@ -127,12 +127,29 @@ def validate_field(entity_type, field_name):
 
     data = request.get_json()
     value = data.get("value")
+    entity_id = data.get("entity_id")  # For edit mode
 
-    # Check uniqueness if needed
+    if not value or not value.strip():
+        return jsonify({"valid": False, "message": f"{field_name} is required"}), 200
+
+    # Check uniqueness for specific fields
     if field_name in ["email", "name"]:
-        existing = model.query.filter(getattr(model, field_name) == value).first()
+        # Use case-insensitive search for company names
+        if entity_type == "companies" and field_name == "name":
+            existing = model.query.filter(model.name.ilike(value.strip())).first()
+        else:
+            existing = model.query.filter(getattr(model, field_name) == value).first()
+
         if existing:
-            return jsonify({"valid": False, "message": f"{field_name} already exists"}), 200
+            # Allow editing the same entity
+            if entity_id and existing.id == int(entity_id):
+                return jsonify({"valid": True})
+
+            # Custom message for company names
+            if entity_type == "companies" and field_name == "name":
+                return jsonify({"valid": False, "message": "A company with this name already exists."}), 200
+            else:
+                return jsonify({"valid": False, "message": f"{field_name} already exists"}), 200
 
     return jsonify({"valid": True})
 
