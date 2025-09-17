@@ -110,8 +110,8 @@ class DashboardService:
         Returns:
             List of endpoint names for dashboard buttons
         """
-        # Just return the main entity types for dashboard buttons
-        return ["companies", "tasks", "opportunities", "stakeholders", "users"]
+        # Return singular entity types for modal routes
+        return ["company", "task", "opportunity", "stakeholder", "user"]
 
     @staticmethod
     def get_dashboard_data() -> Dict[str, Any]:

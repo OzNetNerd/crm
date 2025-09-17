@@ -40,7 +40,7 @@
                 {% endfor %}
                 
                 {% if group.entities|length == 0 %}
-                    {{ group_empty_state(entity_name_plural, group.label) }}
+                    {{ empty_state('No ' + entity_name_plural|lower + ' in ' + group.label) }}
                 {% endif %}
             </div>
         </details>
