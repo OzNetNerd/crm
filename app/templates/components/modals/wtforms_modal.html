@@ -10,12 +10,67 @@ Direct modal rendering without wrapper nonsense
          open: true,
          changed: false,
          isEdit: {{ is_edit|lower }},
+         validationErrors: {},
+         validationTimer: null,
+         isValidating: false,
+         async validateField(fieldName, value) {
+             // Clear previous timer
+             if (this.validationTimer) {
+                 clearTimeout(this.validationTimer);
+             }
+
+             // Don't validate empty values for non-required fields
+             if (!value || value.trim() === '') {
+                 delete this.validationErrors[fieldName];
+                 return;
+             }
+
+             // Debounce validation
+             this.validationTimer = setTimeout(async () => {
+                 this.isValidating = true;
+                 try {
+                     const response = await fetch('/api/validate/{{ model_class.__tablename__ }}/' + fieldName, {
+                         method: 'POST',
+                         headers: {
+                             'Content-Type': 'application/json',
+                         },
+                         body: JSON.stringify({
+                             value: value,
+                             entity_id: {{ entity_id if entity_id else 'null' }}
+                         })
+                     });
+
+                     const result = await response.json();
+
+                     if (result.valid) {
+                         delete this.validationErrors[fieldName];
+                     } else {
+                         this.validationErrors[fieldName] = result.message;
+                     }
+
+                     // Trigger re-evaluation of button state
+                     this.$dispatch('validation-complete');
+                 } catch (error) {
+                     console.error('Validation error:', error);
+                 } finally {
+                     this.isValidating = false;
+                 }
+             }, 500); // 500ms debounce
+         },
          checkValidity() {
              if (this.isEdit) {
-                 return this.changed;
+                 return this.changed && Object.keys(this.validationErrors).length === 0;
              }
+
              const form = document.getElementById('{{ model_name }}-form');
              if (!form) return true;
+
+             // Check for validation errors
+             if (Object.keys(this.validationErrors).length > 0) {
+                 return false;
+             }
+
+             // Check required fields
              const requiredFields = form.querySelectorAll('[required]');
              for (let field of requiredFields) {
                  if (!field.value || field.value.trim() === '') {
@@ -60,7 +115,12 @@ Direct modal rendering without wrapper nonsense
             {% else %}
                 <!-- Form Mode -->
                 <form id="{{ model_name }}-form"
-                      @input="changed = true; $nextTick(() => $dispatch('validate'))"
+                      @input="changed = true;
+                              // Trigger validation for name field on company forms
+                              if ('{{ model_name.lower() }}' === 'company' && $event.target.name === 'name') {
+                                  validateField('name', $event.target.value);
+                              }
+                              $nextTick(() => $dispatch('validate'))"
                       @submit="changed = false"
                       hx-post="{{ action_url }}"
                       hx-target="#{{ model_name }}-modal"
@@ -68,16 +128,6 @@ Direct modal rendering without wrapper nonsense
                       class="space-y-4">
 
                     {{ form.csrf_token }}
-
-                    {% if form.errors %}
-                    <div class="modal-message modal-message-error">
-                        {% for field, errors in form.errors.items() %}
-                            {% for error in errors %}
-                                <p>{{ field }}: {{ error }}</p>
-                            {% endfor %}
-                        {% endfor %}
-                    </div>
-                    {% endif %}
 
                     {{ render_filtered_fields(form, mode='form') }}
                 </form>
@@ -107,6 +157,7 @@ Direct modal rendering without wrapper nonsense
                     form="{{ model_name }}-form"
                     x-bind:disabled="!checkValidity()"
                     @validate.window="$el.disabled = !checkValidity()"
+                    @validation-complete.window="$el.disabled = !checkValidity()"
                     class="btn btn-primary">
                 {{ 'Save' if is_edit else 'Create' }}
             </button>

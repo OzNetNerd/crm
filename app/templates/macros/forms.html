@@ -57,6 +57,14 @@
                     <p class="form-error">{{ error }}</p>
                 {% endfor %}
             {% endif %}
+
+            {# Client-side validation errors #}
+            {% if field.name == 'name' %}
+                <p x-show="validationErrors.name"
+                   x-text="validationErrors.name"
+                   class="form-error"
+                   style="display: none;"></p>
+            {% endif %}
         </div>
     {% endif %}
 {% endmacro %}
