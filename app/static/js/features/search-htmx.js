@@ -4,6 +4,44 @@
  * HTMX handles the search logic, this just manages UI interactions
  */
 
+// Helper function to position dropdown for modal contexts
+function positionDropdownForModal(dropdown, inputElement) {
+    const inModal = inputElement.closest('.modal');
+    if (inModal) {
+        // Use fixed positioning to escape modal overflow constraints
+        const rect = inputElement.getBoundingClientRect();
+        dropdown.style.position = 'fixed';
+        dropdown.style.left = rect.left + 'px';
+        dropdown.style.top = (rect.bottom + 2) + 'px';
+        dropdown.style.width = rect.width + 'px';
+        dropdown.style.zIndex = '100001';
+        return true;
+    }
+    return false;
+}
+
+// Helper function to hide and clear dropdown
+function hideDropdown(dropdown) {
+    if (dropdown) {
+        dropdown.style.display = 'none';
+        setTimeout(() => {
+            dropdown.innerHTML = '';
+        }, 100);
+    }
+}
+
+// Helper function to find and hide dropdowns with entity selects
+function hideEntityDropdowns(parentElement) {
+    if (parentElement) {
+        const divs = parentElement.querySelectorAll('div');
+        divs.forEach(div => {
+            if (div.querySelector('[data-entity-select]')) {
+                hideDropdown(div);
+            }
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('global-search');
     const searchResults = document.getElementById('global-search-results');
