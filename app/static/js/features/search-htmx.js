@@ -64,12 +64,57 @@ document.addEventListener('DOMContentLoaded', function() {
  * Used by company, stakeholder, and other entity reference fields
  */
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize entity search inputs
+    function initializeEntitySearchInputs() {
+        const entitySearchInputs = document.querySelectorAll('[id$="_search"].form-input');
+
+        entitySearchInputs.forEach(input => {
+            if (input.dataset.entitySearchInitialized) return;
+            input.dataset.entitySearchInitialized = 'true';
+
+            const fieldName = input.id.replace('_search', '');
+            const resultsDiv = document.getElementById(fieldName + '_results');
+
+            if (!resultsDiv) return;
+
+            // Show results when HTMX loads content
+            input.addEventListener('htmx:afterSwap', function() {
+                if (resultsDiv.children.length > 0) {
+                    resultsDiv.classList.remove('hidden');
+                }
+            });
+
+            // Hide results when input is cleared
+            input.addEventListener('input', function() {
+                if (!this.value.trim()) {
+                    resultsDiv.classList.add('hidden');
+                }
+            });
+
+            // Show results when focusing input if there's content
+            input.addEventListener('focus', function() {
+                if (resultsDiv.children.length > 0 && this.value.trim()) {
+                    resultsDiv.classList.remove('hidden');
+                }
+            });
+        });
+    }
+
+    // Initialize on page load and after HTMX swaps
+    initializeEntitySearchInputs();
+    document.addEventListener('htmx:afterSwap', function(event) {
+        if (event.target.classList.contains('modal') || event.target.id === 'modal-container') {
+            initializeEntitySearchInputs();
+        }
+    });
+
     // Handle clicks on entity select results
     document.addEventListener('click', function(event) {
         const selectLink = event.target.closest('a[data-entity-select]');
         if (!selectLink) return;
 
         event.preventDefault();
+        event.stopPropagation();
 
         const fieldName = selectLink.dataset.entitySelect;
         const entityId = selectLink.dataset.entityId;
@@ -99,8 +144,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (resultsDiv) {
-            // Hide the results dropdown
+            // Hide the results dropdown and clear its contents
             resultsDiv.classList.add('hidden');
+            setTimeout(() => {
+                resultsDiv.innerHTML = '';
+            }, 100);
         }
     });
 
@@ -110,12 +158,42 @@ document.addEventListener('DOMContentLoaded', function() {
             const fieldName = event.target.id.replace('_search', '');
             const hiddenField = document.getElementById(fieldName);
             const selectedDiv = document.getElementById(fieldName + '_selected');
+            const resultsDiv = document.getElementById(fieldName + '_results');
 
             // If input is cleared, clear the selection
             if (!event.target.value.trim()) {
                 if (hiddenField) hiddenField.value = '';
                 if (selectedDiv) selectedDiv.innerHTML = '';
+                if (resultsDiv) {
+                    resultsDiv.classList.add('hidden');
+                    resultsDiv.innerHTML = '';
+                }
             }
+        }
+    });
+
+    // Hide dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        // Close entity search dropdowns when clicking outside
+        document.querySelectorAll('[id$="_results"]:not(.hidden)').forEach(resultsDiv => {
+            const fieldName = resultsDiv.id.replace('_results', '');
+            const searchInput = document.getElementById(fieldName + '_search');
+
+            if (searchInput && !searchInput.contains(event.target) && !resultsDiv.contains(event.target)) {
+                resultsDiv.classList.add('hidden');
+            }
+        });
+    });
+
+    // Hide dropdowns on escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            document.querySelectorAll('[id$="_results"]:not(.hidden)').forEach(resultsDiv => {
+                resultsDiv.classList.add('hidden');
+                const fieldName = resultsDiv.id.replace('_results', '');
+                const searchInput = document.getElementById(fieldName + '_search');
+                if (searchInput) searchInput.blur();
+            });
         }
     });
 });
