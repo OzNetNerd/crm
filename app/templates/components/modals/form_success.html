@@ -5,16 +5,20 @@ Shows success and auto-closes or allows manual close
 #}
 
 <div class="modal"
-     x-data="modal({
-         id: 'success-modal',
-         title: 'Success',
-         closable: true
-     })"
-     x-show="true"
-     x-init="setTimeout(() => { close() }, 2000)"
+     x-data="{
+         open: true,
+         close() {
+             this.open = false;
+             // Close the modal
+             htmx.ajax('GET', '/modals/close', {target: '#success-modal', swap: 'outerHTML'});
+             // Refresh the content to show the new company
+             htmx.ajax('GET', '/companies/content', {target: '#entity-content', swap: 'innerHTML'});
+         }
+     }"
+     x-show="open"
      id="success-modal">
 
-    <div class="modal-backdrop" @click="handleBackdropClick($event)"></div>
+    <div class="modal-backdrop" @click="close()"></div>
 
     <div class="modal-content modal-content-sm">
         <!-- Header -->
@@ -51,11 +55,7 @@ Shows success and auto-closes or allows manual close
         <div class="modal-footer">
             <button type="button"
                     class="btn btn-primary"
-                    hx-get="/modals/close"
-                    hx-swap="outerHTML"
-                    hx-target="#success-modal"
-                    hx-trigger="click"
-                    hx-on::after-request="window.location.reload()">
+                    @click="close()">
                 OK
             </button>
         </div>

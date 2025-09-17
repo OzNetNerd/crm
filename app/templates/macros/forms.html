@@ -61,9 +61,10 @@
             {# Client-side validation errors #}
             {% if field.name == 'name' %}
                 <p x-show="validationErrors.name"
-                   x-text="validationErrors.name"
-                   class="form-error"
-                   style="display: none;"></p>
+                   class="form-error form-error-enhanced"
+                   style="display: none; margin-left: 4px; font-size: 1.1em;">
+                    <strong>Error:</strong> <span x-text="validationErrors.name"></span>
+                </p>
             {% endif %}
         </div>
     {% endif %}
