@@ -59,8 +59,10 @@ def render_modal(model_name, form, mode="create", entity=None):
         params["entity_id"] = entity.id
 
     if mode != "view":
-        action = "update" if entity else "create"
-        params["action_url"] = f"/modals/{model_name}/{entity.id if entity else ''}/{action}".rstrip('/')
+        if entity:
+            params["action_url"] = f"/modals/{model_name}/{entity.id}/update"
+        else:
+            params["action_url"] = f"/modals/{model_name}/create"
 
     return render_template("components/modals/wtforms_modal.html", **params)
 
@@ -93,7 +95,29 @@ def process_form_submission(model_name, model, form, entity=None):
         entity = model()
         db.session.add(entity)
 
-    form.populate_obj(entity)
+    # Special handling for stakeholder company field
+    if model_name.lower() == "stakeholder" and hasattr(form, "company"):
+        # Store company value before populate_obj
+        company_value = form.company.data
+        # Remove company from form to avoid populate_obj error
+        delattr(form, "company")
+        form.populate_obj(entity)
+        # Handle company relationship
+        if company_value:
+            try:
+                # Extract company ID from the string (format: "TechCorp Solutions" or ID)
+                from app.models import Company
+                if company_value.isdigit():
+                    entity.company_id = int(company_value)
+                else:
+                    # Try to find company by name
+                    company = Company.query.filter_by(name=company_value).first()
+                    if company:
+                        entity.company_id = company.id
+            except (ValueError, AttributeError):
+                pass
+    else:
+        form.populate_obj(entity)
 
     # Special handling for tasks
     if model_name.lower() == "task":
