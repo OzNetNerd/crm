@@ -80,21 +80,22 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show results when HTMX loads content
             input.addEventListener('htmx:afterSwap', function() {
                 if (resultsDiv.children.length > 0) {
-                    resultsDiv.classList.remove('hidden');
+                    resultsDiv.style.display = 'block';
                 }
             });
 
             // Hide results when input is cleared
             input.addEventListener('input', function() {
                 if (!this.value.trim()) {
-                    resultsDiv.classList.add('hidden');
+                    resultsDiv.style.display = 'none';
+                    resultsDiv.innerHTML = '';
                 }
             });
 
             // Show results when focusing input if there's content
             input.addEventListener('focus', function() {
                 if (resultsDiv.children.length > 0 && this.value.trim()) {
-                    resultsDiv.classList.remove('hidden');
+                    resultsDiv.style.display = 'block';
                 }
             });
         });
@@ -145,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (resultsDiv) {
             // Hide the results dropdown and clear its contents
-            resultsDiv.classList.add('hidden');
+            resultsDiv.style.display = 'none';
             setTimeout(() => {
                 resultsDiv.innerHTML = '';
             }, 100);
@@ -165,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (hiddenField) hiddenField.value = '';
                 if (selectedDiv) selectedDiv.innerHTML = '';
                 if (resultsDiv) {
-                    resultsDiv.classList.add('hidden');
+                    resultsDiv.style.display = 'none';
                     resultsDiv.innerHTML = '';
                 }
             }
@@ -175,12 +176,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hide dropdowns when clicking outside
     document.addEventListener('click', function(event) {
         // Close entity search dropdowns when clicking outside
-        document.querySelectorAll('[id$="_results"]:not(.hidden)').forEach(resultsDiv => {
-            const fieldName = resultsDiv.id.replace('_results', '');
-            const searchInput = document.getElementById(fieldName + '_search');
+        document.querySelectorAll('[id$="_results"]').forEach(resultsDiv => {
+            if (resultsDiv.style.display !== 'none') {
+                const fieldName = resultsDiv.id.replace('_results', '');
+                const searchInput = document.getElementById(fieldName + '_search');
 
-            if (searchInput && !searchInput.contains(event.target) && !resultsDiv.contains(event.target)) {
-                resultsDiv.classList.add('hidden');
+                if (searchInput && !searchInput.contains(event.target) && !resultsDiv.contains(event.target)) {
+                    resultsDiv.style.display = 'none';
+                }
             }
         });
     });
@@ -188,11 +191,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hide dropdowns on escape key
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
-            document.querySelectorAll('[id$="_results"]:not(.hidden)').forEach(resultsDiv => {
-                resultsDiv.classList.add('hidden');
-                const fieldName = resultsDiv.id.replace('_results', '');
-                const searchInput = document.getElementById(fieldName + '_search');
-                if (searchInput) searchInput.blur();
+            document.querySelectorAll('[id$="_results"]').forEach(resultsDiv => {
+                if (resultsDiv.style.display !== 'none') {
+                    resultsDiv.style.display = 'none';
+                    const fieldName = resultsDiv.id.replace('_results', '');
+                    const searchInput = document.getElementById(fieldName + '_search');
+                    if (searchInput) searchInput.blur();
+                }
             });
         }
     });

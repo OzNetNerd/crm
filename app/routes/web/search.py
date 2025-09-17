@@ -99,7 +99,8 @@ def autocomplete():
 def htmx_search():
     """HTMX endpoint for live search - returns HTML instead of JSON."""
     query = request.args.get("q", "").strip()
-    entity_type = request.args.get("type", "all")
+    # Support both 'type' and 'entity_type' for backward compatibility
+    entity_type = request.args.get("type") or request.args.get("entity_type", "all")
     limit = min(int(request.args.get("limit", 10)), 20)
     mode = request.args.get("mode", "modal")  # 'modal' or 'select'
     field_id = request.args.get("field_id", "")
