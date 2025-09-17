@@ -189,8 +189,14 @@ def _handle_choice_search(query, choice_field, mode, field_name):
                 "url": "#"  # Not used for choices
             })
 
-    # Sort by label
-    results.sort(key=lambda x: x["title"])
+    # Sort by label, with custom ordering for stage field
+    if choice_field == "stage":
+        # Define custom order for pipeline stages
+        stage_order = ["prospect", "qualified", "proposal", "negotiation", "closed-won", "closed-lost"]
+        stage_order_map = {stage: i for i, stage in enumerate(stage_order)}
+        results.sort(key=lambda x: stage_order_map.get(x["id"].lower(), 999))
+    else:
+        results.sort(key=lambda x: x["title"])
 
     return render_template(
         "components/search/results.html",

@@ -46,6 +46,27 @@
                 <p class="form-error">{{ error }}</p>
             {% endfor %}
         {% endif %}
+    {# Special handling for stage fields with choice search #}
+    {% elif field.name == 'stage' and field.type == 'SelectField' %}
+        {% set stage_choices = {} %}
+        {% for value, label in field.choices %}
+            {% if value %}
+                {% set _ = stage_choices.update({value: {'label': label, 'description': ''}}) %}
+            {% endif %}
+        {% endfor %}
+        {{ choice_search_dropdown(
+            name=field.name,
+            choices=stage_choices,
+            value=field.data or '',
+            label=field.label.text if show_label else '',
+            required=field.flags.required,
+            placeholder='Search pipeline stages...'
+        ) }}
+        {% if show_errors and field.errors %}
+            {% for error in field.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
     {% else %}
         <div class="form-field-group">
             {% if show_label and field.label.text %}
