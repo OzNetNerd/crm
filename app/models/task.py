@@ -9,6 +9,9 @@ from ..utils.task_utils import (
     can_task_start,
     get_completion_percentage,
     get_next_available_child,
+    add_linked_entity,
+    remove_linked_entity,
+    set_linked_entities,
 )
 
 
@@ -137,32 +140,16 @@ class Task(BaseModel):
         return f"Due: {format_date_with_relative(self.due_date)}"
 
     def add_linked_entity(self, entity_type, entity_id):
-        """Add a linked entity to this task"""
-        if not db.session.query(task_entities).filter(
-            task_entities.c.task_id == self.id,
-            task_entities.c.entity_type == entity_type,
-            task_entities.c.entity_id == entity_id
-        ).first():
-            db.session.execute(task_entities.insert().values(
-                task_id=self.id, entity_type=entity_type, entity_id=entity_id, created_at=datetime.utcnow()
-            ))
-            db.session.commit()
+        """Add a linked entity to this task."""
+        add_linked_entity(self.id, entity_type, entity_id)
 
     def remove_linked_entity(self, entity_type, entity_id):
-        """Remove a linked entity from this task"""
-        db.session.execute(task_entities.delete().where(
-            (task_entities.c.task_id == self.id) & (task_entities.c.entity_type == entity_type) & (task_entities.c.entity_id == entity_id)
-        ))
-        db.session.commit()
+        """Remove a linked entity from this task."""
+        remove_linked_entity(self.id, entity_type, entity_id)
 
     def set_linked_entities(self, entities):
-        """Set the linked entities for this task (replaces all existing links)"""
-        db.session.execute(task_entities.delete().where(task_entities.c.task_id == self.id))
-        for entity in entities:
-            db.session.execute(task_entities.insert().values(
-                task_id=self.id, entity_type=entity["type"], entity_id=entity["id"], created_at=datetime.utcnow()
-            ))
-        db.session.commit()
+        """Set the linked entities for this task (replaces all existing links)."""
+        set_linked_entities(self.id, entities)
 
     def to_display_dict(self) -> Dict[str, Any]:
         """Convert task to dictionary with pre-formatted display fields."""

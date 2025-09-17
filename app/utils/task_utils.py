@@ -89,3 +89,52 @@ def get_next_available_child(task):
         return None
 
     return next((child for child in task.child_tasks if child.status != "complete" and can_task_start(child)), None)
+
+
+def add_linked_entity(task_id: int, entity_type: str, entity_id: int) -> None:
+    """Add a linked entity to a task."""
+    from app import db
+    from app.models.task import task_entities
+    from datetime import datetime
+
+    existing = db.session.query(task_entities).filter(
+        task_entities.c.task_id == task_id,
+        task_entities.c.entity_type == entity_type,
+        task_entities.c.entity_id == entity_id
+    ).first()
+
+    if not existing:
+        db.session.execute(task_entities.insert().values(
+            task_id=task_id, entity_type=entity_type, entity_id=entity_id, created_at=datetime.utcnow()
+        ))
+        db.session.commit()
+
+
+def remove_linked_entity(task_id: int, entity_type: str, entity_id: int) -> None:
+    """Remove a linked entity from a task."""
+    from app import db
+    from app.models.task import task_entities
+
+    db.session.execute(task_entities.delete().where(
+        (task_entities.c.task_id == task_id) &
+        (task_entities.c.entity_type == entity_type) &
+        (task_entities.c.entity_id == entity_id)
+    ))
+    db.session.commit()
+
+
+def set_linked_entities(task_id: int, entities: List[Dict[str, Any]]) -> None:
+    """Set the linked entities for a task (replaces all existing links)."""
+    from app import db
+    from app.models.task import task_entities
+    from datetime import datetime
+
+    # Clear existing links
+    db.session.execute(task_entities.delete().where(task_entities.c.task_id == task_id))
+
+    # Add new links
+    for entity in entities:
+        db.session.execute(task_entities.insert().values(
+            task_id=task_id, entity_type=entity["type"], entity_id=entity["id"], created_at=datetime.utcnow()
+        ))
+    db.session.commit()
