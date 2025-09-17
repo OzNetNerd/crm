@@ -67,8 +67,8 @@ def get_stakeholders(opportunity_id: int) -> List[Dict[str, Any]]:
         return []
 
     # Import here to avoid circular imports
-    from .. import db
-    from ..models.stakeholder import stakeholder_opportunities
+    from app import db
+    from app.models.stakeholder import stakeholder_opportunities
 
     # Query the junction table
     linked = (db.session.query(stakeholder_opportunities.c.stakeholder_id)
@@ -77,7 +77,7 @@ def get_stakeholders(opportunity_id: int) -> List[Dict[str, Any]]:
 
     stakeholders = []
     for (stakeholder_id,) in linked:
-        from ..models.stakeholder import Stakeholder
+        from app.models.stakeholder import Stakeholder
         stakeholder = Stakeholder.query.get(stakeholder_id)
         if stakeholder:
             stakeholders.append({
@@ -100,7 +100,7 @@ def get_full_account_team(opportunity_id: int) -> List[Dict[str, Any]]:
     if not opportunity_id:
         return stakeholders
 
-    from ..models.opportunity import Opportunity
+    from app.models.opportunity import Opportunity
     opportunity = Opportunity.query.get(opportunity_id)
     if not opportunity or not opportunity.company:
         return stakeholders

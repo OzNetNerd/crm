@@ -7,8 +7,8 @@ def get_linked_entities(task_id: int) -> List[Dict[str, Any]]:
     if not task_id:
         return []
 
-    from .. import db
-    from ..models.task import task_entities
+    from app import db
+    from app.models.task import task_entities
 
     linked = db.session.query(task_entities.c.entity_type, task_entities.c.entity_id).filter(task_entities.c.task_id == task_id).all()
 
@@ -21,12 +21,16 @@ def get_linked_entities(task_id: int) -> List[Dict[str, Any]]:
 
 def _get_entity(entity_type: str, entity_id: int):
     """Get entity by type and id."""
-    models = {
-        "company": lambda: __import__("..models.company", fromlist=["Company"]).Company,
-        "stakeholder": lambda: __import__("..models.stakeholder", fromlist=["Stakeholder"]).Stakeholder,
-        "opportunity": lambda: __import__("..models.opportunity", fromlist=["Opportunity"]).Opportunity,
-    }
-    return models.get(entity_type, lambda: None)().query.get(entity_id) if entity_type in models else None
+    if entity_type == "company":
+        from app.models.company import Company
+        return Company.query.get(entity_id)
+    elif entity_type == "stakeholder":
+        from app.models.stakeholder import Stakeholder
+        return Stakeholder.query.get(entity_id)
+    elif entity_type == "opportunity":
+        from app.models.opportunity import Opportunity
+        return Opportunity.query.get(entity_id)
+    return None
 
 
 def _get_entity_name(entity_type: str, entity_id: int) -> str:
@@ -59,7 +63,7 @@ def can_task_start(task) -> bool:
     if task.task_type != "child" or task.dependency_type != "sequential" or not task.parent_task:
         return True
 
-    from ..models.task import Task
+    from app.models.task import Task
     previous_tasks = Task.query.filter(Task.parent_task_id == task.parent_task_id, Task.sequence_order < task.sequence_order).all()
     return all(t.status == "complete" for t in previous_tasks)
 
@@ -69,7 +73,7 @@ def get_completion_percentage(task) -> int:
     if task.task_type != "parent":
         return 100 if task.status == "complete" else 0
 
-    from ..models.task import Task
+    from app.models.task import Task
     child_tasks = Task.query.filter(Task.parent_task_id == task.id).all()
 
     if not child_tasks:
