@@ -5,7 +5,7 @@ Follows Python best practices: DRY, KISS, YAGNI, single responsibility.
 """
 
 from functools import wraps
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template
 from app.models import db, MODEL_REGISTRY
 import json
 

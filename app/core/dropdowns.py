@@ -1,6 +1,6 @@
 """Dropdown configuration builders - DRY and reusable."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, Any, List, Optional
 
 

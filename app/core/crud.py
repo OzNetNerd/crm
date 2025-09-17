@@ -64,9 +64,9 @@ def handle_form_errors(form: Any) -> None:
     Args:
         form: WTForms form instance with validation errors.
     """
-    for field, errors in form.errors.items():
+    for field_name, errors in form.errors.items():
         for error in errors:
-            flash(f'{field}: {error}', 'error')
+            flash(f'{field_name}: {error}', 'error')
 
 
 def crud_response(

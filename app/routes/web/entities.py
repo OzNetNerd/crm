@@ -1,9 +1,8 @@
 """Web routes for CRM entities - Ultra DRY, zero duplication."""
 
-from typing import Dict, Any, Optional
 from flask import Blueprint, render_template, request
 from collections import defaultdict
-from app.models import db, MODEL_REGISTRY
+from app.models import MODEL_REGISTRY
 from app.core.stats import StatsGenerator
 from app.core.dropdowns import DropdownBuilder
 from app.services import QueryService
@@ -89,8 +88,9 @@ def entity_index(model: type, table_name: str) -> str:
                     "variant": "primary"
                 }
             ],
-            "entity_stats": stats_list,
+            "content_endpoint": f"entities.{table_name}_content",
         },
+        "entity_stats": stats_list,
         "dropdown_configs": dropdown_configs,
         "model": model,
         "table_name": table_name,
