@@ -95,8 +95,8 @@ def process_form_submission(model_name, model, form, entity=None):
         entity = model()
         db.session.add(entity)
 
-    # Special handling for stakeholder company field
-    if model_name.lower() == "stakeholder" and hasattr(form, "company"):
+    # Special handling for stakeholder and opportunity company field
+    if model_name.lower() in ["stakeholder", "opportunity"] and hasattr(form, "company"):
         # Store company value before populate_obj
         company_value = form.company.data
         # Remove company from form to avoid populate_obj error
