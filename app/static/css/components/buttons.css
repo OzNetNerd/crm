@@ -85,8 +85,34 @@
     font-size: 1.125rem;
 }
 
-/* Disabled state */
+/* Disabled state - explicit colors for visibility */
 .btn:disabled {
-    opacity: 0.5;
     cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Each variant has explicit disabled state for proper visibility */
+.btn-primary:disabled {
+    background-color: #94a3b8;  /* Slate-400: visible gray-blue */
+    color: #e2e8f0;  /* Slate-200: muted white text */
+}
+
+.btn-secondary:disabled {
+    background-color: #9ca3af;  /* Gray-400 */
+    color: #e5e7eb;  /* Gray-200 */
+}
+
+.btn-danger:disabled {
+    background-color: #f87171;  /* Red-400: muted red */
+    color: #fecaca;  /* Red-200 */
+}
+
+.btn-success:disabled {
+    background-color: #86efac;  /* Green-300: muted green */
+    color: #dcfce7;  /* Green-100 */
+}
+
+.btn-ghost:disabled {
+    background-color: transparent;
+    color: #d1d5db;  /* Gray-300 */
 }
