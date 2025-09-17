@@ -111,3 +111,18 @@ class TaskForm(FlaskForm):
         self.opportunity_id.choices = [(0, 'No Opportunity')] + [
             (o.id, o.name) for o in opportunities
         ]
+
+    def get_display_fields(self):
+        """Define field order for modal display."""
+        return [
+            'company_id',           # Company at top
+            'opportunity_id',       # Opportunity below Company
+            'name',                 # Task Name
+            'description',          # Description
+            'task_type',           # Task Type (first in inline group)
+            'priority',            # Priority (second in inline group)
+            'status',              # Status (third in inline group)
+            'due_date',            # Due Date with enhancements
+            'assigned_to_id'       # Assigned To
+            # Note: parent_task_id is excluded (HiddenField should not display)
+        ]

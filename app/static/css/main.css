@@ -21,6 +21,9 @@
 /* Modal overlay utilities (minimal custom) */
 @import url('components/modal.css');
 
+/* Form enhancement styles */
+@import url('components/forms.css');
+
 /* Legacy chatbot styles (to be refactored) */
 @import url('chatbot.css');
 

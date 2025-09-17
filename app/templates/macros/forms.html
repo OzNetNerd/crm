@@ -145,16 +145,138 @@
         {% endif %}
     {% endif %}
 
+    {# Special handling for Task forms #}
+    {% if hasattr(form, 'task_type') and hasattr(form, 'due_date') and mode == 'form' %}
+        {{ render_task_form_fields(form, allowed_fields) }}
+    {% else %}
+        {% for field_name in allowed_fields %}
+            {% set field = form[field_name] %}
+            {% if field %}
+                {% if mode == 'view' %}
+                    {{ render_field_view(field) }}
+                {% else %}
+                    {{ render_field(field) }}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+
+{# ============================================
+   FIELD RENDERING WITH CUSTOM CLASSES
+   ============================================ #}
+{% macro render_field_with_class(field, additional_classes='', show_label=true, show_errors=true) %}
+    {# Special handling for company fields #}
+    {% if field.name == 'company' and field.type == 'StringField' %}
+        {{ entity_search_dropdown(
+            name=field.name,
+            entity_type='company',
+            value=field.data or '',
+            label=field.label.text if show_label else '',
+            required=field.flags.required,
+            placeholder='Search companies...'
+        ) }}
+        {% if show_errors and field.errors %}
+            {% for error in field.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+    {% else %}
+        <div class="form-field-group {{ additional_classes }}">
+            {% if show_label and field.label.text %}
+                <label for="{{ field.id }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
+                    {{ field.label.text }}
+                </label>
+            {% endif %}
+
+            {% if field.type == 'StringField' or field.type == 'PasswordField' or field.type == 'EmailField' %}
+                {{ field(class="form-input" + (" error" if field.errors else "")) }}
+            {% elif field.type == 'TextAreaField' %}
+                {{ field(class="form-textarea" + (" error" if field.errors else "")) }}
+            {% elif field.type == 'SelectField' %}
+                {% if field.flags.required %}
+                    {{ field(class="form-select" + (" error" if field.errors else ""), required=true) }}
+                {% else %}
+                    {{ field(class="form-select" + (" error" if field.errors else "")) }}
+                {% endif %}
+            {% elif field.type == 'BooleanField' %}
+                <label class="form-checkbox">
+                    {{ field }}
+                    <span>{{ field.label.text }}</span>
+                </label>
+            {% else %}
+                {{ field(class="form-input") }}
+            {% endif %}
+
+            {% if show_errors and field.errors %}
+                {% for error in field.errors %}
+                    <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+
+            {# Client-side validation errors #}
+            {% if field.name == 'name' %}
+                <p x-show="validationErrors.name"
+                   class="form-error form-error-enhanced"
+                   style="display: none; margin-left: 4px; font-size: 1.1em;">
+                    <strong>Error:</strong> <span x-text="validationErrors.name"></span>
+                </p>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{# ============================================
+   TASK FORM SPECIAL RENDERING
+   ============================================ #}
+{% macro render_task_form_fields(form, allowed_fields) %}
     {% for field_name in allowed_fields %}
         {% set field = form[field_name] %}
-        {% if field %}
-            {% if mode == 'view' %}
-                {{ render_field_view(field) }}
-            {% else %}
-                {{ render_field(field) }}
-            {% endif %}
+
+        {# Handle inline group: task_type, priority, status with proper structure #}
+        {% if field_name == 'task_type' %}
+            <div class="form-fields-inline-container">
+                {{ render_field_with_class(form.task_type, 'form-field-inline-item') }}
+                {{ render_field_with_class(form.priority, 'form-field-inline-item') }}
+                {{ render_field_with_class(form.status, 'form-field-inline-item') }}
+            </div>
+        {% elif field_name == 'priority' or field_name == 'status' %}
+            {# Skip - already rendered in inline group #}
+        {% elif field_name == 'due_date' %}
+            {{ render_enhanced_date_field(field) }}
+        {% else %}
+            {{ render_field(field) }}
         {% endif %}
     {% endfor %}
+{% endmacro %}
+
+{# ============================================
+   ENHANCED DATE FIELD
+   ============================================ #}
+{% macro render_enhanced_date_field(field) %}
+    <div class="form-field-group">
+        <label for="{{ field.id }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
+            {{ field.label.text }}
+        </label>
+        <div class="form-date-enhanced">
+            <div class="form-date-input-container">
+                {{ field(class="form-input form-date-compact" + (" error" if field.errors else "")) }}
+                <div class="form-date-buttons">
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="addDaysToDate('{{ field.id }}', 1)">+1 Day</button>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="addDaysToDate('{{ field.id }}', 7)">+1 Week</button>
+                </div>
+            </div>
+            <div class="form-date-countdown" id="{{ field.id }}_countdown" style="display: none;">
+                <span class="countdown-text"></span>
+            </div>
+        </div>
+
+        {% if field.errors %}
+            {% for error in field.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+    </div>
 {% endmacro %}
 
 {# ============================================

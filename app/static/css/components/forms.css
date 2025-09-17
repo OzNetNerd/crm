@@ -1,0 +1,130 @@
+/**
+ * Form Enhancement Styles
+ * - Inline field layouts
+ * - Enhanced date fields
+ * - Form field groups
+ */
+
+/* ============================================
+   INLINE FIELD GROUPS
+   ============================================ */
+
+/* Inline field container */
+.form-fields-inline-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+    min-width: 0; /* Prevent grid overflow */
+}
+
+/* Individual inline fields */
+.form-field-inline-item {
+    margin-bottom: 0;
+    width: 100%;
+    min-width: 0; /* Allow fields to shrink properly */
+}
+
+/* Responsive behavior for smaller screens */
+@media (max-width: 480px) {
+    .form-fields-inline-container {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+}
+
+/* ============================================
+   ENHANCED DATE FIELDS
+   ============================================ */
+
+.form-date-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-date-input-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.form-date-compact {
+    max-width: 20rem;
+}
+
+.form-date-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.form-date-buttons .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   DATE COUNTDOWN INDICATORS
+   ============================================ */
+
+.form-date-countdown {
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    display: inline-block;
+}
+
+.form-date-countdown.countdown-today {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.form-date-countdown.countdown-soon {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.form-date-countdown.countdown-future {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.form-date-countdown.countdown-overdue {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* ============================================
+   BUTTON SIZE ADJUSTMENTS
+   ============================================ */
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 640px) {
+    .form-date-input-container {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-date-buttons {
+        justify-content: flex-start;
+    }
+
+    .form-field-group-inline {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-field-group-inline .form-field-group {
+        width: 100%;
+    }
+}
