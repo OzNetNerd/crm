@@ -46,7 +46,11 @@ def create_parent_task(data: Dict[str, Any], from_form: bool = True) -> Task:
     # JSON data
     return Task(
         description=data["description"],
-        due_date=datetime.strptime(data["due_date"], "%Y-%m-%d").date() if data.get("due_date") else None,
+        due_date=(
+            datetime.strptime(data["due_date"], "%Y-%m-%d").date()
+            if data.get("due_date")
+            else None
+        ),
         priority=data.get("priority", "medium"),
         status="todo",
         task_type="parent",
@@ -59,7 +63,7 @@ def create_child_task(
     parent_id: int,
     sequence: int,
     dependency_type: str,
-    from_form: bool = True
+    from_form: bool = True,
 ) -> Optional[Task]:
     """Create child task from form or JSON data.
 
@@ -95,7 +99,11 @@ def create_child_task(
 
     return Task(
         description=child_data["description"],
-        due_date=datetime.strptime(child_data["due_date"], "%Y-%m-%d").date() if child_data.get("due_date") else None,
+        due_date=(
+            datetime.strptime(child_data["due_date"], "%Y-%m-%d").date()
+            if child_data.get("due_date")
+            else None
+        ),
         priority=child_data.get("priority", "medium"),
         status="todo",
         next_step_type=child_data.get("next_step_type"),
@@ -142,10 +150,7 @@ def handle_form_submission(form: MultiTaskForm) -> Optional[Any]:
         # Create children
         for i, child_form in enumerate(form.child_tasks.entries):
             child = create_child_task(
-                child_form,
-                parent_task.id,
-                i,
-                form.dependency_type.data
+                child_form, parent_task.id, i, form.dependency_type.data
             )
             if child:
                 db.session.add(child)
@@ -179,7 +184,9 @@ def handle_json_submission(data: Dict[str, Any]) -> Dict[str, Any]:
 
         # Set entities
         if entity_data := data.get("entity"):
-            set_task_entities(parent_task, entity_data.get("type"), entity_data.get("id"))
+            set_task_entities(
+                parent_task, entity_data.get("type"), entity_data.get("id")
+            )
 
         # Create children
         for i, child_data in enumerate(data.get("child_tasks", [])):
@@ -188,16 +195,22 @@ def handle_json_submission(data: Dict[str, Any]) -> Dict[str, Any]:
                 parent_task.id,
                 i,
                 data.get("dependency_type", "parallel"),
-                from_form=False
+                from_form=False,
             )
             if child:
                 db.session.add(child)
                 db.session.flush()
                 if entity_data:
-                    set_task_entities(child, entity_data.get("type"), entity_data.get("id"))
+                    set_task_entities(
+                        child, entity_data.get("type"), entity_data.get("id")
+                    )
 
         db.session.commit()
-        return {"success": True, "message": "Multi Task created successfully", "task_id": parent_task.id}
+        return {
+            "success": True,
+            "message": "Multi Task created successfully",
+            "task_id": parent_task.id,
+        }
 
     except Exception as e:
         db.session.rollback()
@@ -226,9 +239,7 @@ def create_multi() -> Any:
     # Render form
     entity_data = get_entity_data()
     return render_template(
-        "forms/multi_task_form.html",
-        form=form,
-        entity_data=entity_data
+        "forms/multi_task_form.html", form=form, entity_data=entity_data
     )
 
 
@@ -249,17 +260,12 @@ def complete_task(task_id: int) -> Dict[str, Any]:
         task.completed_at = datetime.utcnow()
         db.session.commit()
 
-        return jsonify({
-            "success": True,
-            "message": "Task marked as complete",
-            "task_id": task.id
-        })
+        return jsonify(
+            {"success": True, "message": "Task marked as complete", "task_id": task.id}
+        )
     except Exception as e:
         db.session.rollback()
-        return jsonify({
-            "success": False,
-            "message": f"Error: {str(e)}"
-        })
+        return jsonify({"success": False, "message": f"Error: {str(e)}"})
 
 
 @tasks_bp.route("/<int:task_id>/uncomplete", methods=["POST"])
@@ -279,14 +285,13 @@ def uncomplete_task(task_id: int) -> Dict[str, Any]:
         task.completed_at = None
         db.session.commit()
 
-        return jsonify({
-            "success": True,
-            "message": "Task marked as incomplete",
-            "task_id": task.id
-        })
+        return jsonify(
+            {
+                "success": True,
+                "message": "Task marked as incomplete",
+                "task_id": task.id,
+            }
+        )
     except Exception as e:
         db.session.rollback()
-        return jsonify({
-            "success": False,
-            "message": f"Error: {str(e)}"
-        })
+        return jsonify({"success": False, "message": f"Error: {str(e)}"})

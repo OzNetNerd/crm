@@ -1,14 +1,21 @@
 """Modern entity CRUD utilities with safe deletion."""
-from typing import Dict, List, Tuple, Any
+
+from typing import Dict, Any
 from flask import abort, jsonify
 from sqlalchemy import inspect
-from sqlalchemy.orm import relationship
 from app.models import db, MODEL_REGISTRY
 
 
 def get_model_by_table_name(table_name: str):
     """Get model class from table name."""
-    return next((model for model in MODEL_REGISTRY.values() if model.__tablename__ == table_name), None)
+    return next(
+        (
+            model
+            for model in MODEL_REGISTRY.values()
+            if model.__tablename__ == table_name
+        ),
+        None,
+    )
 
 
 def get_entity_list(table_name: str):
@@ -68,7 +75,7 @@ def get_deletion_impact(model_class, entity_id: int) -> Dict[str, Any]:
         "entity": f"{model_class.__display_name__} '{entity}' (ID: {entity_id})",
         "will_cascade": [],
         "dependent_entities": [],
-        "safe_to_delete": True
+        "safe_to_delete": True,
     }
 
     # Check relationships that will cascade
@@ -82,26 +89,39 @@ def get_deletion_impact(model_class, entity_id: int) -> Dict[str, Any]:
 
             if related_items:
                 # Check if this relationship will cascade
-                fk_columns = rel.local_columns if rel.direction.name == 'ONETOMANY' else rel.remote_side
+                fk_columns = (
+                    rel.local_columns
+                    if rel.direction.name == "ONETOMANY"
+                    else rel.remote_side
+                )
 
                 cascades = any(
-                    fk.foreign_keys and
-                    any(fk_constraint.ondelete == 'CASCADE' for fk_constraint in fk.foreign_keys)
+                    fk.foreign_keys
+                    and any(
+                        fk_constraint.ondelete == "CASCADE"
+                        for fk_constraint in fk.foreign_keys
+                    )
                     for fk in fk_columns
                 )
 
                 if cascades:
-                    impact["will_cascade"].append({
-                        "relationship": rel_name,
-                        "count": len(related_items),
-                        "items": [str(item) for item in related_items[:5]]  # Sample
-                    })
+                    impact["will_cascade"].append(
+                        {
+                            "relationship": rel_name,
+                            "count": len(related_items),
+                            "items": [
+                                str(item) for item in related_items[:5]
+                            ],  # Sample
+                        }
+                    )
                 else:
-                    impact["dependent_entities"].append({
-                        "relationship": rel_name,
-                        "count": len(related_items),
-                        "items": [str(item) for item in related_items[:5]]
-                    })
+                    impact["dependent_entities"].append(
+                        {
+                            "relationship": rel_name,
+                            "count": len(related_items),
+                            "items": [str(item) for item in related_items[:5]],
+                        }
+                    )
                     impact["safe_to_delete"] = False
 
     return impact
@@ -118,7 +138,7 @@ def delete_entity_safe(model_class, entity_id: int) -> Dict[str, Any]:
             return {
                 "success": False,
                 "error": "Cannot delete entity with dependencies",
-                "impact": impact
+                "impact": impact,
             }
 
         # Proceed with deletion
@@ -126,19 +146,11 @@ def delete_entity_safe(model_class, entity_id: int) -> Dict[str, Any]:
         db.session.delete(entity)
         db.session.commit()
 
-        return {
-            "success": True,
-            "message": "Deleted successfully",
-            "impact": impact
-        }
+        return {"success": True, "message": "Deleted successfully", "impact": impact}
 
     except Exception as e:
         db.session.rollback()
-        return {
-            "success": False,
-            "error": str(e),
-            "impact": None
-        }
+        return {"success": False, "error": str(e), "impact": None}
 
 
 def delete_entity(model_class, entity_id: int):

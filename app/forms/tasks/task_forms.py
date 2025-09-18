@@ -30,19 +30,16 @@ class TaskForm(BaseForm):
 
     # Task category selector
     task_category = RadioField(
-        'Task Category',
-        choices=[
-            ('opportunity', 'Opportunity'),
-            ('internal', 'Internal')
-        ],
-        default='opportunity',
-        validators=[DataRequired()]
+        "Task Category",
+        choices=[("opportunity", "Opportunity"), ("internal", "Internal")],
+        default="opportunity",
+        validators=[DataRequired()],
     )
 
     name = StringField(
-        'Task Name',
+        "Task Name",
         validators=[DataRequired(), Length(min=1, max=200)],
-        render_kw={"placeholder": "Enter task name"}
+        render_kw={"placeholder": "Enter task name"},
     )
 
     description = TextAreaField(
@@ -52,60 +49,54 @@ class TaskForm(BaseForm):
     )
 
     task_type = StringField(
-        'Task Type',
+        "Task Type",
         validators=[DataRequired()],
         render_kw={
             "data-search-type": "task_type",
             "placeholder": "Search task types...",
-            "autocomplete": "off"
-        }
+            "autocomplete": "off",
+        },
     )
 
     status = StringField(
-        'Status',
+        "Status",
         validators=[DataRequired()],
         render_kw={
             "data-search-type": "task_status",
             "placeholder": "Search status...",
             "autocomplete": "off",
-            "data-default": "pending"
-        }
+            "data-default": "pending",
+        },
     )
 
     priority = StringField(
-        'Priority',
+        "Priority",
         validators=[DataRequired()],
         render_kw={
             "data-search-type": "task_priority",
             "placeholder": "Search priority...",
             "autocomplete": "off",
-            "data-default": "medium"
-        }
+            "data-default": "medium",
+        },
     )
 
     due_date = DateField("Due Date", validators=[OptionalValidator()])
 
     # Related entities
     assigned_to_id = StringField(
-        'Assigned To',
+        "Assigned To",
         validators=[OptionalValidator()],
         render_kw={
             "data-search-type": "assignment",
             "placeholder": "Search assignees...",
-            "autocomplete": "off"
-        }
+            "autocomplete": "off",
+        },
     )
 
-    company_id = SelectField(
-        'Company',
-        coerce=int,
-        validators=[OptionalValidator()]
-    )
+    company_id = SelectField("Company", coerce=int, validators=[OptionalValidator()])
 
     opportunity_id = SelectField(
-        'Opportunity',
-        coerce=int,
-        validators=[OptionalValidator()]
+        "Opportunity", coerce=int, validators=[OptionalValidator()]
     )
 
     next_step_type = SelectField(
@@ -140,13 +131,13 @@ class TaskForm(BaseForm):
 
         # Populate company choices
         companies = Company.query.order_by(Company.name).all()
-        self.company_id.choices = [(0, 'No Company')] + [
+        self.company_id.choices = [(0, "No Company")] + [
             (c.id, c.name) for c in companies
         ]
 
         # Populate opportunity choices
         opportunities = Opportunity.query.order_by(Opportunity.name).all()
-        self.opportunity_id.choices = [(0, 'No Opportunity')] + [
+        self.opportunity_id.choices = [(0, "No Opportunity")] + [
             (o.id, o.name) for o in opportunities
         ]
 
@@ -160,22 +151,24 @@ class TaskForm(BaseForm):
 
     def validate_company_id(self, field):
         """Validate that Company is required for Opportunity tasks."""
-        if self.task_category.data == 'opportunity' and (not field.data or field.data == 0):
-            raise ValidationError('Company is required for Opportunity tasks.')
+        if self.task_category.data == "opportunity" and (
+            not field.data or field.data == 0
+        ):
+            raise ValidationError("Company is required for Opportunity tasks.")
 
     def get_display_fields(self):
         """Define field order for modal display."""
         return [
-            'task_category',        # Radio buttons at top
-            'company_id',           # Company (conditional)
-            'opportunity_id',       # Opportunity (conditional)
-            'name',                 # Task Name
-            'description',          # Description
-            'task_type',           # Task Type (first in inline group)
-            'priority',            # Priority (second in inline group)
-            'status',              # Status (third in inline group)
-            'due_date',            # Due Date with enhancements
-            'assigned_to_id'       # Assigned To
+            "task_category",  # Radio buttons at top
+            "company_id",  # Company (conditional)
+            "opportunity_id",  # Opportunity (conditional)
+            "name",  # Task Name
+            "description",  # Description
+            "task_type",  # Task Type (first in inline group)
+            "priority",  # Priority (second in inline group)
+            "status",  # Status (third in inline group)
+            "due_date",  # Due Date with enhancements
+            "assigned_to_id",  # Assigned To
         ]
 
     def validate(self, extra_validators=None):

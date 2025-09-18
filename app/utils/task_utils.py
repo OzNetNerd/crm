@@ -1,4 +1,5 @@
 """Simple task utilities - no classes, just functions."""
+
 from typing import List, Dict, Any, Optional
 
 
@@ -10,10 +11,19 @@ def get_linked_entities(task_id: int) -> List[Dict[str, Any]]:
     from app import db
     from app.models.task import task_entities
 
-    linked = db.session.query(task_entities.c.entity_type, task_entities.c.entity_id).filter(task_entities.c.task_id == task_id).all()
+    linked = (
+        db.session.query(task_entities.c.entity_type, task_entities.c.entity_id)
+        .filter(task_entities.c.task_id == task_id)
+        .all()
+    )
 
     return [
-        {"type": entity_type, "id": entity_id, "name": _get_entity_name(entity_type, entity_id), "entity": _get_entity(entity_type, entity_id)}
+        {
+            "type": entity_type,
+            "id": entity_id,
+            "name": _get_entity_name(entity_type, entity_id),
+            "entity": _get_entity(entity_type, entity_id),
+        }
         for entity_type, entity_id in linked
         if _get_entity(entity_type, entity_id)
     ]
@@ -23,12 +33,15 @@ def _get_entity(entity_type: str, entity_id: int):
     """Get entity by type and id."""
     if entity_type == "company":
         from app.models.company import Company
+
         return Company.query.get(entity_id)
     elif entity_type == "stakeholder":
         from app.models.stakeholder import Stakeholder
+
         return Stakeholder.query.get(entity_id)
     elif entity_type == "opportunity":
         from app.models.opportunity import Opportunity
+
         return Opportunity.query.get(entity_id)
     return None
 
@@ -42,7 +55,9 @@ def _get_entity_name(entity_type: str, entity_id: int) -> str:
 def get_entity_attr(task_id: int, entity_type: str, attr: str):
     """Get attribute from first matching linked entity."""
     entities = get_linked_entities(task_id)
-    entity = next((e for e in entities if e["type"] == entity_type and e["entity"]), None)
+    entity = next(
+        (e for e in entities if e["type"] == entity_type and e["entity"]), None
+    )
     return getattr(entity["entity"], attr, None) if entity else None
 
 
@@ -53,18 +68,30 @@ def get_company_name(task_id: int) -> Optional[str]:
     for entity in entities:
         if entity["type"] == "company":
             return entity["name"]
-        elif entity["entity"] and hasattr(entity["entity"], "company") and entity["entity"].company:
+        elif (
+            entity["entity"]
+            and hasattr(entity["entity"], "company")
+            and entity["entity"].company
+        ):
             return entity["entity"].company.name
     return None
 
 
 def can_task_start(task) -> bool:
     """Check if task can be started based on dependencies."""
-    if task.task_type != "child" or task.dependency_type != "sequential" or not task.parent_task:
+    if (
+        task.task_type != "child"
+        or task.dependency_type != "sequential"
+        or not task.parent_task
+    ):
         return True
 
     from app.models.task import Task
-    previous_tasks = Task.query.filter(Task.parent_task_id == task.parent_task_id, Task.sequence_order < task.sequence_order).all()
+
+    previous_tasks = Task.query.filter(
+        Task.parent_task_id == task.parent_task_id,
+        Task.sequence_order < task.sequence_order,
+    ).all()
     return all(t.status == "complete" for t in previous_tasks)
 
 
@@ -74,6 +101,7 @@ def get_completion_percentage(task) -> int:
         return 100 if task.status == "complete" else 0
 
     from app.models.task import Task
+
     child_tasks = Task.query.filter(Task.parent_task_id == task.id).all()
 
     if not child_tasks:
@@ -88,7 +116,14 @@ def get_next_available_child(task):
     if task.task_type != "parent":
         return None
 
-    return next((child for child in task.child_tasks if child.status != "complete" and can_task_start(child)), None)
+    return next(
+        (
+            child
+            for child in task.child_tasks
+            if child.status != "complete" and can_task_start(child)
+        ),
+        None,
+    )
 
 
 def add_linked_entity(task_id: int, entity_type: str, entity_id: int) -> None:
@@ -97,16 +132,25 @@ def add_linked_entity(task_id: int, entity_type: str, entity_id: int) -> None:
     from app.models.task import task_entities
     from datetime import datetime
 
-    existing = db.session.query(task_entities).filter(
-        task_entities.c.task_id == task_id,
-        task_entities.c.entity_type == entity_type,
-        task_entities.c.entity_id == entity_id
-    ).first()
+    existing = (
+        db.session.query(task_entities)
+        .filter(
+            task_entities.c.task_id == task_id,
+            task_entities.c.entity_type == entity_type,
+            task_entities.c.entity_id == entity_id,
+        )
+        .first()
+    )
 
     if not existing:
-        db.session.execute(task_entities.insert().values(
-            task_id=task_id, entity_type=entity_type, entity_id=entity_id, created_at=datetime.utcnow()
-        ))
+        db.session.execute(
+            task_entities.insert().values(
+                task_id=task_id,
+                entity_type=entity_type,
+                entity_id=entity_id,
+                created_at=datetime.utcnow(),
+            )
+        )
         db.session.commit()
 
 
@@ -115,11 +159,13 @@ def remove_linked_entity(task_id: int, entity_type: str, entity_id: int) -> None
     from app import db
     from app.models.task import task_entities
 
-    db.session.execute(task_entities.delete().where(
-        (task_entities.c.task_id == task_id) &
-        (task_entities.c.entity_type == entity_type) &
-        (task_entities.c.entity_id == entity_id)
-    ))
+    db.session.execute(
+        task_entities.delete().where(
+            (task_entities.c.task_id == task_id)
+            & (task_entities.c.entity_type == entity_type)
+            & (task_entities.c.entity_id == entity_id)
+        )
+    )
     db.session.commit()
 
 
@@ -134,7 +180,12 @@ def set_linked_entities(task_id: int, entities: List[Dict[str, Any]]) -> None:
 
     # Add new links
     for entity in entities:
-        db.session.execute(task_entities.insert().values(
-            task_id=task_id, entity_type=entity["type"], entity_id=entity["id"], created_at=datetime.utcnow()
-        ))
+        db.session.execute(
+            task_entities.insert().values(
+                task_id=task_id,
+                entity_type=entity["type"],
+                entity_id=entity["id"],
+                created_at=datetime.utcnow(),
+            )
+        )
     db.session.commit()

@@ -24,7 +24,7 @@ def get_field_choices(field_name):
         "status": "Opportunity",
         "stage": "Opportunity",
         "priority": "Task",
-        "type": "Stakeholder"
+        "type": "Stakeholder",
     }
 
     model_name = field_model_map.get(field_name)
@@ -34,15 +34,19 @@ def get_field_choices(field_name):
     try:
         if model_name == "Company":
             from app.models.company import Company
+
             choices = Company.get_field_choices(field_name)
         elif model_name == "Opportunity":
             from app.models.opportunity import Opportunity
+
             choices = Opportunity.get_field_choices(field_name)
         elif model_name == "Task":
             from app.models.task import Task
+
             choices = Task.get_field_choices(field_name)
         elif model_name == "Stakeholder":
             from app.models.stakeholder import Stakeholder
+
             choices = Stakeholder.get_field_choices(field_name)
         else:
             return {}
@@ -53,7 +57,7 @@ def get_field_choices(field_name):
             if value:  # Skip empty values
                 choice_dict[value] = {
                     "label": label,
-                    "description": ""  # Could be enhanced later
+                    "description": "",  # Could be enhanced later
                 }
 
         return choice_dict

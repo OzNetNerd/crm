@@ -28,10 +28,7 @@ class QueryService:
 
     @staticmethod
     def apply_sorting(
-        query: Query,
-        model: type,
-        sort_by: str,
-        direction: str = "asc"
+        query: Query, model: type, sort_by: str, direction: str = "asc"
     ) -> Query:
         """Apply sorting to a query.
 

@@ -1,4 +1,5 @@
 """Lightweight base model - pure data definition only."""
+
 from . import db
 from typing import Dict, Any, List, Callable
 
@@ -36,36 +37,42 @@ class BaseModel(db.Model):
     def get_display_name(cls) -> str:
         """Get singular display name via DisplayService."""
         from app.services import DisplayService
+
         return DisplayService.get_display_name(cls)
 
     @classmethod
     def get_display_name_plural(cls) -> str:
         """Get plural display name via DisplayService."""
         from app.services import DisplayService
+
         return DisplayService.get_display_name_plural(cls)
 
     @classmethod
     def get_field_metadata(cls) -> Dict[str, Any]:
         """Get field metadata via MetadataService."""
         from app.services import MetadataService
+
         return MetadataService.get_field_metadata(cls)
 
     @classmethod
     def get_field_choices(cls, field_name: str) -> List[tuple]:
         """Get field choices via MetadataService."""
         from app.services import MetadataService
+
         return MetadataService.get_field_choices(cls, field_name)
 
     @classmethod
     def get_default_sort_field(cls) -> str:
         """Get default sort field via MetadataService."""
         from app.services import MetadataService
+
         return MetadataService.get_default_sort_field(cls)
 
     @classmethod
     def search(cls, query: str, limit: int = 20) -> List[Any]:
         """Search entities via SearchService."""
         from app.services import SearchService
+
         return SearchService.search_entities(cls, query, limit)
 
     # Simple configuration methods
@@ -77,6 +84,7 @@ class BaseModel(db.Model):
     def get_singular_name(cls) -> str:
         """Get singular name from DisplayService."""
         from app.services import DisplayService
+
         return DisplayService.get_entity_type_from_model(cls)
 
     @classmethod
@@ -93,46 +101,54 @@ class BaseModel(db.Model):
     def get_recent(cls, limit: int = 5):
         """Get recent entities via model utils."""
         from ..utils.model_utils import get_recent_items
+
         return get_recent_items(cls, limit)
 
     @classmethod
     def get_overdue(cls, limit: int = 5):
         """Get overdue items via model utils."""
         from ..utils.model_utils import get_overdue_items
+
         return get_overdue_items(cls, limit)
 
     # Instance methods delegated to services
     def to_search_result(self) -> Dict[str, Any]:
         """Convert to search result via SearchService."""
         from app.services import SearchService
+
         return SearchService.format_search_result(self)
 
     def get_display_title(self) -> str:
         """Get display title via DisplayService."""
         from app.services import DisplayService
+
         return DisplayService.get_display_title(self)
 
     def get_view_url(self) -> str:
         """Get URL for viewing this entity."""
         from app.services import DisplayService
+
         entity_type = DisplayService.get_entity_type_from_model(self.__class__)
         return f"/modals/{entity_type}/{self.id}/view"
 
     def get_edit_url(self) -> str:
         """Get URL for editing this entity."""
         from app.services import DisplayService
+
         entity_type = DisplayService.get_entity_type_from_model(self.__class__)
         return f"/modals/{entity_type}/{self.id}/edit"
 
     def get_delete_url(self) -> str:
         """Get URL for deleting this entity."""
         from app.services import DisplayService
+
         entity_type = DisplayService.get_entity_type_from_model(self.__class__)
         return f"/modals/{entity_type}/{self.id}/delete"
 
     def get_deletion_impact(self) -> Dict[str, Any]:
         """Get deletion impact analysis for this entity."""
         from app.utils.entity_crud import get_deletion_impact
+
         return get_deletion_impact(self.__class__, self.id)
 
     def can_be_deleted(self) -> bool:
@@ -143,14 +159,17 @@ class BaseModel(db.Model):
     def delete_safely(self) -> Dict[str, Any]:
         """Delete entity with safety checks and impact analysis."""
         from app.utils.entity_crud import delete_entity_safe
+
         return delete_entity_safe(self.__class__, self.id)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert model to dictionary via SerializationService."""
         from app.services import SerializationService
+
         return SerializationService.serialize_model(self)
 
     def get_meta_data(self) -> Dict[str, Any]:
         """Get meta data via model utils."""
         from ..utils.model_utils import get_model_meta_data
+
         return get_model_meta_data(self)

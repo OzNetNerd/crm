@@ -48,7 +48,7 @@
               hx-target="#entity-content"
               hx-trigger="change"
               class="flex flex-wrap gap-3">
-            {{ entity_dropdown_controls(dropdowns=dropdown_configs) }}
+            {{ entity_dropdown_controls(dropdowns=dropdown_configs, entity_type=entity_config.entity_type) }}
         </form>
     </div>
     {% endif %}

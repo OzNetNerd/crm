@@ -23,7 +23,7 @@
     <div class="border-b border-gray-100 last:border-b-0 py-1" data-search-result="{{ result.type }}">
         <a href="#"
            {% if mode == 'select' %}
-               {% if result.type == 'choice' or result.type == 'task_field' or result.type == 'assignment' %}
+               {% if result.type == 'choice' or result.type == 'task_field' or result.type == 'assignment' or result.type == 'dropdown_option' %}
                    onclick="selectChoice('{{ field_name }}', '{{ result.id }}', '{{ result.title }}'); return false;"
                {% else %}
                    onclick="selectEntity('{{ field_name }}', '{{ result.id }}', '{{ result.title }}', '{{ result.type }}'); return false;"

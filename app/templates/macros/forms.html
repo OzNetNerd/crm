@@ -138,7 +138,7 @@
             {% if field.name == 'name' %}
                 <p x-show="validationErrors.name"
                    class="form-error form-error-enhanced"
-                   style="display: none; margin-left: 4px; font-size: 1.1em;">
+                   class="field-check-icon">
                     <strong>Error:</strong> <span x-text="validationErrors.name"></span>
                 </p>
             {% endif %}
@@ -250,7 +250,7 @@
             {% if field.name == 'name' %}
                 <p x-show="validationErrors.name"
                    class="form-error form-error-enhanced"
-                   style="display: none; margin-left: 4px; font-size: 1.1em;">
+                   class="field-check-icon">
                     <strong>Error:</strong> <span x-text="validationErrors.name"></span>
                 </p>
             {% endif %}
@@ -284,7 +284,7 @@
             <input type="hidden" name="{{ field.name }}" id="{{ field.id }}" value="{{ field.data or '' }}">
             <div id="{{ field.id }}_results"
                  class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
-                 style="display: none;"></div>
+                 class="dropdown-selected-text"></div>
         </div>
         {% if field.errors %}
             {% for error in field.errors %}
@@ -345,7 +345,7 @@
                     <button type="button" class="btn btn-sm btn-secondary" onclick="addDaysToDate('{{ field.id }}', 7)">+1 Week</button>
                 </div>
             </div>
-            <div class="form-date-countdown" id="{{ field.id }}_countdown" style="display: none;">
+            <div class="form-date-countdown hidden" id="{{ field.id }}_countdown">
                 <span class="countdown-text"></span>
             </div>
         </div>

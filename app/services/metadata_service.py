@@ -7,7 +7,6 @@ rules without abusing LRU cache.
 """
 
 from typing import Dict, Any, List, Tuple
-from functools import lru_cache
 
 
 class MetadataService:
@@ -67,8 +66,12 @@ class MetadataService:
                     "display_label", name.replace("_", " ").title()
                 ),
                 "filterable": bool(column_info.get("choices")),
-                "sortable": column_info.get("sortable", True),  # Make all fields sortable by default
-                "groupable": column_info.get("groupable", bool(column_info.get("choices"))),  # Groupable if has choices
+                "sortable": column_info.get(
+                    "sortable", True
+                ),  # Make all fields sortable by default
+                "groupable": column_info.get(
+                    "groupable", bool(column_info.get("choices"))
+                ),  # Groupable if has choices
                 "choices": column_info.get("choices"),
                 "required": column_info.get("required", False),
                 "contact_field": column_info.get("contact_field", False),

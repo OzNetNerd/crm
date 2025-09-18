@@ -1,4 +1,5 @@
 """Simple application configuration - no over-engineering."""
+
 import os
 from pathlib import Path
 
@@ -14,7 +15,9 @@ def get_database_url():
         git_path = current / ".git"
         if git_path.exists():
             # Handle worktree vs regular repo
-            if git_path.is_file() and (content := git_path.read_text().strip()).startswith("gitdir: "):
+            if git_path.is_file() and (
+                content := git_path.read_text().strip()
+            ).startswith("gitdir: "):
                 # Worktree: extract main repo path
                 git_dir = Path(content[8:])
                 main_repo_root = git_dir.parent.parent.parent

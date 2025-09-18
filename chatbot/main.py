@@ -17,12 +17,16 @@ from utils.message_processor import handle_streaming_response, handle_regular_re
 app = FastAPI(title="CRM Chatbot Service", version="1.0.0")
 
 # Configure logging
-setup_chatbot_logging("chatbot-service", debug=os.environ.get("DEBUG", "False").lower() == "true")
+setup_chatbot_logging(
+    "chatbot-service", debug=os.environ.get("DEBUG", "False").lower() == "true"
+)
 app.middleware("http")(log_request_middleware)
 
 # Setup static files and templates
 current_dir = os.path.dirname(__file__)
-app.mount("/static", StaticFiles(directory=os.path.join(current_dir, "static")), name="static")
+app.mount(
+    "/static", StaticFiles(directory=os.path.join(current_dir, "static")), name="static"
+)
 templates = Jinja2Templates(directory=os.path.join(current_dir, "templates"))
 
 # Initialize managers
@@ -65,7 +69,9 @@ async def websocket_endpoint(
             if response_data.get("type") == "stream":
                 await handle_streaming_response(response_data, websocket, ws_manager)
             else:
-                await handle_regular_response(response_data["response"], websocket, ws_manager)
+                await handle_regular_response(
+                    response_data["response"], websocket, ws_manager
+                )
 
     except WebSocketDisconnect:
         ws_manager.disconnect(websocket)

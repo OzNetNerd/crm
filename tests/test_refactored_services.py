@@ -1,12 +1,13 @@
 """Test suite for refactored services following CLAUDE.MD principles."""
+
 import pytest
 from app.models import db
 from app.main import create_app
-from app.services import DisplayService, SearchService, SerializationService, MetadataService
+from app.services import DisplayService, SerializationService, MetadataService
 from app.models.task import Task
 from app.models.opportunity import Opportunity
 from app.models.enums import TaskStatus, Priority, OpportunityStage
-from app.utils.task_utils import can_task_start, get_completion_percentage
+from app.utils.task_utils import can_task_start
 from app.utils.opportunity_utils import calculate_priority_by_value, get_stage_choices
 from app.exceptions import ValidationError, NotFoundError
 
@@ -15,8 +16,8 @@ from app.exceptions import ValidationError, NotFoundError
 def app():
     """Create app for testing."""
     app = create_app()
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config["TESTING"] = True
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
 
     with app.app_context():
         db.create_all()
@@ -76,11 +77,11 @@ class TestUtils:
         with app.app_context():
             # Single task can always start
             single_task = Task(task_type="single")
-            assert can_task_start(single_task) == True
+            assert can_task_start(single_task) is True
 
             # Child task with parallel dependency can start
             child_task = Task(task_type="child", dependency_type="parallel")
-            assert can_task_start(child_task) == True
+            assert can_task_start(child_task) is True
 
 
 class TestServices:
@@ -120,16 +121,18 @@ class TestModelRefactoring:
         """Verify Task model is under 200 lines."""
         import inspect
         import app.models.task as task_module
+
         source = inspect.getsource(task_module.Task)
-        lines = source.count('\n')
+        lines = source.count("\n")
         assert lines < 200, f"Task model is {lines} lines (should be < 200)"
 
     def test_opportunity_model_size(self):
         """Verify Opportunity model is under 150 lines."""
         import inspect
         import app.models.opportunity as opp_module
+
         source = inspect.getsource(opp_module.Opportunity)
-        lines = source.count('\n')
+        lines = source.count("\n")
         assert lines < 150, f"Opportunity model is {lines} lines (should be < 150)"
 
     def test_models_have_no_business_logic(self, app):
@@ -137,13 +140,13 @@ class TestModelRefactoring:
         with app.app_context():
             task = Task(description="Test")
             # These should delegate to utils
-            assert hasattr(task, 'can_start')
-            assert hasattr(task, 'completion_percentage')
+            assert hasattr(task, "can_start")
+            assert hasattr(task, "completion_percentage")
 
             opp = Opportunity(name="Test", value=10000)
             # These should delegate to utils
-            assert hasattr(opp, 'calculated_priority')
-            assert hasattr(opp, 'deal_age')
+            assert hasattr(opp, "calculated_priority")
+            assert hasattr(opp, "deal_age")
 
 
 class TestCLAUDEMDCompliance:
@@ -160,10 +163,18 @@ class TestCLAUDEMDCompliance:
             for name, func in inspect.getmembers(module, inspect.isfunction):
                 sig = inspect.signature(func)
                 for param in sig.parameters.values():
-                    if param.default not in (inspect.Parameter.empty, None, 0, "", False, True):
+                    if param.default not in (
+                        inspect.Parameter.empty,
+                        None,
+                        0,
+                        "",
+                        False,
+                        True,
+                    ):
                         # Check if default is mutable
-                        assert not isinstance(param.default, (list, dict, set)), \
-                            f"{name} has mutable default: {param.default}"
+                        assert not isinstance(
+                            param.default, (list, dict, set)
+                        ), f"{name} has mutable default: {param.default}"
 
     def test_functions_under_50_lines(self):
         """Verify all functions are under 50 lines."""
@@ -174,7 +185,7 @@ class TestCLAUDEMDCompliance:
         for module in [task_utils, opp_utils]:
             for name, func in inspect.getmembers(module, inspect.isfunction):
                 source = inspect.getsource(func)
-                lines = source.count('\n')
+                lines = source.count("\n")
                 assert lines < 50, f"{name} is {lines} lines (should be < 50)"
 
     def test_single_responsibility(self):
@@ -183,16 +194,18 @@ class TestCLAUDEMDCompliance:
         from app.services.search_service import SearchService
 
         # DisplayService should only handle display
-        display_methods = [m for m in dir(DisplayService) if not m.startswith('_')]
+        display_methods = [m for m in dir(DisplayService) if not m.startswith("_")]
         for method in display_methods:
-            assert 'display' in method.lower() or 'name' in method.lower(), \
-                f"DisplayService.{method} violates single responsibility"
+            assert (
+                "display" in method.lower() or "name" in method.lower()
+            ), f"DisplayService.{method} violates single responsibility"
 
         # SearchService should only handle search
-        search_methods = [m for m in dir(SearchService) if not m.startswith('_')]
+        search_methods = [m for m in dir(SearchService) if not m.startswith("_")]
         for method in search_methods:
-            assert 'search' in method.lower() or 'format' in method.lower(), \
-                f"SearchService.{method} violates single responsibility"
+            assert (
+                "search" in method.lower() or "format" in method.lower()
+            ), f"SearchService.{method} violates single responsibility"
 
 
 class TestExceptionHandling:
@@ -201,8 +214,11 @@ class TestExceptionHandling:
     def test_custom_exceptions_exist(self):
         """Verify custom exceptions are defined."""
         from app.exceptions import (
-            CRMException, ValidationError, NotFoundError,
-            DuplicateError, InvalidStateError
+            CRMException,
+            ValidationError,
+            NotFoundError,
+            DuplicateError,
+            InvalidStateError,
         )
 
         # All should inherit from CRMException

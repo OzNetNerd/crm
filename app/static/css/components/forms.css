@@ -115,6 +115,10 @@
     display: inline-block;
 }
 
+.form-date-countdown.hidden {
+    display: none;
+}
+
 .form-date-countdown.countdown-today {
     background-color: #dbeafe;
     color: #1e40af;
@@ -133,6 +137,29 @@
 .form-date-countdown.countdown-overdue {
     background-color: #fee2e2;
     color: #991b1b;
+}
+
+/* ============================================
+   FIELD STATUS INDICATORS
+   ============================================ */
+
+.field-check-icon {
+    display: none;
+    margin-left: 4px;
+    font-size: 1.1em;
+}
+
+.field-check-icon.shown {
+    display: inline;
+}
+
+/* Dropdown selected text display */
+.dropdown-selected-text {
+    display: none;
+}
+
+.dropdown-selected-text.shown {
+    display: block;
 }
 
 /* ============================================
