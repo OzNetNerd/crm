@@ -234,7 +234,8 @@ def delete_entity(model_name, entity_id):
     return render_template(
         "components/modals/form_success.html",
         message=f"{model_name.title()} deleted successfully{cascade_info}",
-        refresh_url=refresh_url
+        refresh_url=refresh_url,
+        deleted_entity_id=f"entity-{model_name}-{entity_id}"
     )
 
 
