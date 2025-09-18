@@ -207,16 +207,29 @@ def update_entity(model_name, entity_id):
 @modals_bp.route("/<model_name>/<int:entity_id>/delete", methods=["POST"])
 @handle_errors
 def delete_entity(model_name, entity_id):
-    """Delete entity - POST handler."""
+    """Delete entity with modern safety checks."""
     model, _ = get_model_and_form(model_name)
     entity = model.query.get_or_404(entity_id)
 
-    db.session.delete(entity)
-    db.session.commit()
+    # Use modern deletion with safety checks
+    result = entity.delete_safely()
+
+    if not result["success"]:
+        return render_template(
+            "components/modals/form_error.html",
+            error=result["error"],
+            impact=result.get("impact")
+        ), 400
+
+    # Show impact information on successful deletion
+    cascade_info = ""
+    if result["impact"]["will_cascade"]:
+        cascade_count = sum(item["count"] for item in result["impact"]["will_cascade"])
+        cascade_info = f" ({cascade_count} related items also deleted)"
 
     return render_template(
         "components/modals/form_success.html",
-        message=f"{model_name.title()} deleted successfully"
+        message=f"{model_name.title()} deleted successfully{cascade_info}"
     )
 
 

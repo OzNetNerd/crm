@@ -53,7 +53,7 @@ class Opportunity(BaseModel):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
-    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"), info={"display_label": "Company", "form_include": True, "required": True})
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.id", ondelete="CASCADE"), info={"display_label": "Company", "form_include": True, "required": True})
     company = db.relationship("Company", back_populates="opportunities")
 
     comments = db.Column(db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3})

@@ -114,7 +114,7 @@ def update_task(entity_id):
 
 @api_entities_bp.route("/tasks/<int:entity_id>", methods=["DELETE"])
 def delete_task(entity_id):
-    """Delete task."""
+    """Delete task with modern safety checks."""
     return jsonify(delete_entity(Task, entity_id))
 
 

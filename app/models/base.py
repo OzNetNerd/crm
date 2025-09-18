@@ -130,6 +130,21 @@ class BaseModel(db.Model):
         entity_type = DisplayService.get_entity_type_from_model(self.__class__)
         return f"/modals/{entity_type}/{self.id}/delete"
 
+    def get_deletion_impact(self) -> Dict[str, Any]:
+        """Get deletion impact analysis for this entity."""
+        from app.utils.entity_crud import get_deletion_impact
+        return get_deletion_impact(self.__class__, self.id)
+
+    def can_be_deleted(self) -> bool:
+        """Check if entity can be safely deleted."""
+        impact = self.get_deletion_impact()
+        return impact["safe_to_delete"]
+
+    def delete_safely(self) -> Dict[str, Any]:
+        """Delete entity with safety checks and impact analysis."""
+        from app.utils.entity_crud import delete_entity_safe
+        return delete_entity_safe(self.__class__, self.id)
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert model to dictionary via SerializationService."""
         from app.services import SerializationService
