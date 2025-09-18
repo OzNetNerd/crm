@@ -67,6 +67,40 @@ def render_modal(model_name, form, mode="create", entity=None):
     return render_template("components/modals/wtforms_modal.html", **params)
 
 
+def handle_stakeholder_meddpic_roles(entity, form, is_new):
+    """Handle stakeholder MEDDPIC roles assignment."""
+    try:
+        roles_data = form.meddpicc_roles.data
+        if not roles_data:
+            return
+
+        # Parse the roles data
+        roles = json.loads(roles_data) if isinstance(roles_data, str) else roles_data
+        if not isinstance(roles, list):
+            return
+
+        # For existing entities, clear current roles first
+        if not is_new:
+            db.session.flush()  # Ensure entity has ID
+            # Remove all existing roles
+            from app.models.stakeholder import stakeholder_meddpicc_roles
+            delete_stmt = stakeholder_meddpicc_roles.delete().where(
+                stakeholder_meddpicc_roles.c.stakeholder_id == entity.id
+            )
+            db.session.execute(delete_stmt)
+
+        # Add new roles
+        db.session.flush()  # Ensure entity has ID for new entities
+        for role in roles:
+            if isinstance(role, dict) and 'id' in role:
+                entity.add_meddpicc_role(role['id'])
+            elif isinstance(role, str):
+                entity.add_meddpicc_role(role)
+
+    except (json.JSONDecodeError, TypeError, AttributeError):
+        pass  # Ignore invalid data
+
+
 def handle_task_relationships(entity, form, action):
     """Handle special Task entity relationships."""
     if not (hasattr(entity, "set_linked_entities") and hasattr(form, "entity")):
@@ -119,6 +153,10 @@ def process_form_submission(model_name, model, form, entity=None):
     else:
         form.populate_obj(entity)
 
+    # Special handling for stakeholder MEDDPIC roles
+    if model_name.lower() == "stakeholder" and hasattr(form, "meddpicc_roles"):
+        handle_stakeholder_meddpic_roles(entity, form, is_new)
+
     # Special handling for tasks
     if model_name.lower() == "task":
         handle_task_relationships(entity, form, "created" if is_new else "updated")
@@ -130,6 +168,30 @@ def process_form_submission(model_name, model, form, entity=None):
         message=f"{model_name} {'created' if is_new else 'updated'} successfully",
         entity=entity
     )
+
+
+def populate_stakeholder_meddpic_roles(entity, form, mode):
+    """Populate stakeholder form with MEDDPIC roles data."""
+    if not hasattr(form, "meddpicc_roles"):
+        return
+
+    # Get current roles
+    current_roles = entity.get_meddpicc_role_names()
+    if not current_roles:
+        return
+
+    if mode == "edit":
+        # Convert role names to the expected entity format
+        roles_data = [{"id": role, "name": role.replace("_", " ").title(), "type": "choice"} for role in current_roles]
+        form.meddpicc_roles.data = json.dumps(roles_data)
+    else:  # view mode
+        # For view mode, show as readable text
+        role_labels = []
+        from app.models.stakeholder import Stakeholder
+        choices_dict = dict(Stakeholder.get_field_choices("meddpicc_role"))
+        for role in current_roles:
+            role_labels.append(choices_dict.get(role, role))
+        form.meddpicc_roles.data = ", ".join(role_labels)
 
 
 def populate_task_form_data(entity, form, mode):
@@ -183,6 +245,10 @@ def entity_modal(model_name, entity_id, mode):
     # Handle task relationships
     if model_name.lower() == "task":
         populate_task_form_data(entity, form, mode)
+
+    # Handle stakeholder MEDDPIC roles
+    if model_name.lower() == "stakeholder":
+        populate_stakeholder_meddpic_roles(entity, form, mode)
 
     return render_modal(model_name, form, mode, entity)
 

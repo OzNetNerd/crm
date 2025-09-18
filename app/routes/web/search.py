@@ -270,8 +270,12 @@ def _handle_choice_search(query, choice_field, mode, field_name):
     """Handle choice field search by converting choices to search results."""
     from app.forms import get_field_choices
 
-    # Get choices for the field
-    choices = get_field_choices(choice_field)
+    # Special handling for meddpicc_roles
+    if choice_field == "meddpicc_roles":
+        choices = _get_meddpicc_choices()
+    else:
+        choices = get_field_choices(choice_field)
+
     if not choices:
         return render_template(
             "components/search/results.html",
@@ -317,5 +321,24 @@ def _handle_choice_search(query, choice_field, mode, field_name):
         mode=mode,
         field_name=field_name,
     )
+
+
+def _get_meddpicc_choices():
+    """Get MEDDPIC role choices from stakeholder model."""
+    from app.models.stakeholder import Stakeholder
+
+    # Get choices from model metadata
+    choices = Stakeholder.get_field_choices("meddpicc_role")
+
+    # Convert to the expected format
+    choice_dict = {}
+    for value, label in choices:
+        if value:  # Skip empty values
+            choice_dict[value] = {
+                "label": label,
+                "description": ""
+            }
+
+    return choice_dict
 
 

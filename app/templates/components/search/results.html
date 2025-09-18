@@ -7,6 +7,8 @@
   Variables:
   - results: List of search result objects with id, type, title, subtitle, url
   - query: The search query string
+  - mode: 'modal' for opening modals, 'select' for selecting entities
+  - field_name: Name of the field for selection mode
 #}
 {% from 'macros/ui.html' import icon, entity_badge %}
 
@@ -21,17 +23,18 @@
     <div class="border-b border-gray-100 last:border-b-0 py-1" data-search-result="{{ result.type }}">
         <a href="#"
            {% if mode == 'select' %}
-           data-entity-select="{{ field_name if field_name else field_id }}"
-           data-entity-id="{{ result.id }}"
-           data-entity-title="{{ result.title }}"
-           data-entity-type="{{ result.type }}"
+               {% if result.type == 'choice' %}
+                   onclick="selectChoice('{{ field_name }}', '{{ result.id }}', '{{ result.title }}'); return false;"
+               {% else %}
+                   onclick="selectEntity('{{ field_name }}', '{{ result.id }}', '{{ result.title }}', '{{ result.type }}'); return false;"
+               {% endif %}
            {% else %}
-           hx-get="{{ url_for('modals.entity_modal', model_name=result.type, entity_id=result.id, mode='view') }}"
-           hx-target="#modal-container"
-           hx-swap="innerHTML"
+               hx-get="{{ url_for('modals.entity_modal', model_name=result.type, entity_id=result.id, mode='view') }}"
+               hx-target="#modal-container"
+               hx-swap="innerHTML"
            {% endif %}
            class="flex items-center space-x-3 px-4 py-3 block hover:bg-blue-50 transition-colors duration-150"
-           data-entity-type="{{ result.model_type }}"
+           data-entity-type="{{ result.model_type if result.model_type else result.type }}"
            data-entity-id="{{ result.id }}">
             <!-- Type icon -->
             <div class="flex-shrink-0">
@@ -42,6 +45,7 @@
                     {% elif result.type == 'task' %}bg-orange-100 text-orange-600
                     {% elif result.type == 'user' %}bg-indigo-100 text-indigo-600
                     {% elif result.type == 'note' %}bg-yellow-100 text-yellow-600
+                    {% elif result.type == 'choice' %}bg-gray-100 text-gray-600
                     {% else %}bg-gray-100 text-gray-600{% endif %}">
                     {{ result.icon if result.icon else '📄' }}
                 </span>
@@ -52,16 +56,22 @@
                 <div class="text-sm font-semibold text-gray-900 break-words hover:text-blue-700 transition-colors">
                     {{ result.title }}
                 </div>
-                {% if result.subtitle %}
+                {% if result.subtitle or result.description %}
                 <div class="text-xs text-gray-500 break-words mt-1">
-                    {{ result.subtitle }}
+                    {{ result.subtitle if result.subtitle else result.description }}
                 </div>
                 {% endif %}
             </div>
 
             <!-- Type label -->
             <div class="flex-shrink-0">
-                {{ entity_badge(result.type) }}
+                {% if result.type != 'choice' %}
+                    {{ entity_badge(result.type) }}
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                        choice
+                    </span>
+                {% endif %}
             </div>
         </a>
     </div>
