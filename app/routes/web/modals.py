@@ -227,9 +227,14 @@ def delete_entity(model_name, entity_id):
         cascade_count = sum(item["count"] for item in result["impact"]["will_cascade"])
         cascade_info = f" ({cascade_count} related items also deleted)"
 
+    # Determine the correct refresh URL for this entity type using proper table name
+    table_name = model.__tablename__
+    refresh_url = f"/{table_name}/content"
+
     return render_template(
         "components/modals/form_success.html",
-        message=f"{model_name.title()} deleted successfully{cascade_info}"
+        message=f"{model_name.title()} deleted successfully{cascade_info}",
+        refresh_url=refresh_url
     )
 
 
