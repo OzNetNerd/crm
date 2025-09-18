@@ -91,9 +91,17 @@
             {% endif %}
 
             {% if field.type == 'StringField' or field.type == 'PasswordField' or field.type == 'EmailField' %}
-                {{ field(class="form-input" + (" error" if field.errors else "")) }}
+                {% if field.flags.required %}
+                    {{ field(class="form-input" + (" error" if field.errors else ""), required=true) }}
+                {% else %}
+                    {{ field(class="form-input" + (" error" if field.errors else "")) }}
+                {% endif %}
             {% elif field.type == 'TextAreaField' %}
-                {{ field(class="form-textarea" + (" error" if field.errors else "")) }}
+                {% if field.flags.required %}
+                    {{ field(class="form-textarea" + (" error" if field.errors else ""), required=true) }}
+                {% else %}
+                    {{ field(class="form-textarea" + (" error" if field.errors else "")) }}
+                {% endif %}
             {% elif field.type == 'SelectField' %}
                 {% if field.flags.required %}
                     {{ field(class="form-select" + (" error" if field.errors else ""), required=true) }}
@@ -195,9 +203,17 @@
             {% endif %}
 
             {% if field.type == 'StringField' or field.type == 'PasswordField' or field.type == 'EmailField' %}
-                {{ field(class="form-input" + (" error" if field.errors else "")) }}
+                {% if field.flags.required %}
+                    {{ field(class="form-input" + (" error" if field.errors else ""), required=true) }}
+                {% else %}
+                    {{ field(class="form-input" + (" error" if field.errors else "")) }}
+                {% endif %}
             {% elif field.type == 'TextAreaField' %}
-                {{ field(class="form-textarea" + (" error" if field.errors else "")) }}
+                {% if field.flags.required %}
+                    {{ field(class="form-textarea" + (" error" if field.errors else ""), required=true) }}
+                {% else %}
+                    {{ field(class="form-textarea" + (" error" if field.errors else "")) }}
+                {% endif %}
             {% elif field.type == 'SelectField' %}
                 {% if field.flags.required %}
                     {{ field(class="form-select" + (" error" if field.errors else ""), required=true) }}
@@ -269,7 +285,6 @@
             <div id="{{ field.id }}_results"
                  class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
                  style="display: none;"></div>
-            <div id="{{ field.id }}_selected" class="mt-1 text-sm text-gray-600"></div>
         </div>
         {% if field.errors %}
             {% for error in field.errors %}

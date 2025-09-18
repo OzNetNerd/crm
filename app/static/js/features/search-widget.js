@@ -134,7 +134,6 @@ window.selectEntity = function(fieldId, entityId, entityName, entityType) {
     const multipleDataField = document.getElementById(fieldId + '-data');  // Note: -data suffix for multi-select
     const singleDataField = document.getElementById(fieldId);  // No suffix for single-select
     const badgesDiv = document.getElementById(fieldId + '-badges');
-    const selectedDiv = document.getElementById(fieldId + '_selected');
     const resultsDiv = document.getElementById(fieldId + '_results');
 
     // Determine if this is multiple or single selection mode
@@ -192,12 +191,6 @@ window.selectEntity = function(fieldId, entityId, entityName, entityType) {
             searchField.value = entityName;
         }
 
-        // Show selected entity info below the field
-        if (selectedDiv) {
-            selectedDiv.innerHTML = `Selected: ${entityName}`;
-            selectedDiv.classList.remove('hidden');
-        }
-
         // Hide the results dropdown for single select
         if (resultsDiv) {
             hideElement(resultsDiv);
@@ -211,7 +204,6 @@ window.selectChoice = function(fieldName, choiceKey, choiceLabel) {
     const multipleDataField = document.getElementById(fieldName + '-data');  // Multi-select choice field
     const singleHiddenField = document.getElementById(fieldName);  // Single-select choice field
     const badgesDiv = document.getElementById(fieldName + '-badges');
-    const selectedDiv = document.getElementById(fieldName + '_selected');
     const resultsDiv = document.getElementById(fieldName + '_results');
 
     // Determine if this is multiple or single selection mode
@@ -264,22 +256,12 @@ window.selectChoice = function(fieldName, choiceKey, choiceLabel) {
         // Set the hidden field value
         singleHiddenField.value = choiceKey;
 
-        // Update the selected display
-        if (selectedDiv) {
-            selectedDiv.innerHTML = `
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    ${choiceLabel}
-                </span>
-            `;
-            selectedDiv.classList.remove('hidden');
+        // Show the choice label in the search field
+        if (searchField) {
+            searchField.value = choiceLabel;
         }
 
-        // Clear search and hide results for single select
-        if (searchField) {
-            searchField.value = '';
-            // Trigger input event to ensure HTMX clears results
-            searchField.dispatchEvent(new Event('input', { bubbles: true }));
-        }
+        // Hide results for single select
         if (resultsDiv) {
             hideElement(resultsDiv);
         }
