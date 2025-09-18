@@ -318,9 +318,13 @@
             {# Skip - already rendered in inline group #}
         {# Handle name and due_date side by side - more space for name #}
         {% elif field_name == 'name' %}
-            <div class="grid grid-cols-3 gap-4">
-                {{ render_field(field, 'col-span-2') }}
-                {{ render_enhanced_date_field(form.due_date, 'col-span-1') }}
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    {{ render_field(field) }}
+                </div>
+                <div class="w-48">
+                    {{ render_enhanced_date_field(form.due_date) }}
+                </div>
             </div>
         {% elif field_name == 'due_date' %}
             {# Skip - already rendered with name #}
