@@ -6,6 +6,40 @@
  */
 
 /* ============================================
+   RADIO BUTTON GROUPS
+   ============================================ */
+
+.form-radio-group {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.form-radio {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.form-radio input[type="radio"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+}
+
+.form-radio span {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Conditional field transitions */
+.conditional-field {
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* ============================================
    INLINE FIELD GROUPS
    ============================================ */
 

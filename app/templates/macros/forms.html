@@ -111,6 +111,17 @@
                     {{ field }}
                     <span>{{ field.label.text }}</span>
                 </label>
+            {% elif field.type == 'RadioField' %}
+                <div class="form-radio-group">
+                    {% for value, label in field.choices %}
+                        <label class="form-radio">
+                            <input type="radio" name="{{ field.name }}" value="{{ value }}"
+                                   {% if field.data == value %}checked{% endif %}
+                                   {% if field.name == 'task_category' %}@change="updateTaskFields($event.target.value)"{% endif %}>
+                            <span>{{ label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
             {% else %}
                 {{ field(class="form-input") }}
             {% endif %}
@@ -204,6 +215,17 @@
                     {{ field }}
                     <span>{{ field.label.text }}</span>
                 </label>
+            {% elif field.type == 'RadioField' %}
+                <div class="form-radio-group">
+                    {% for value, label in field.choices %}
+                        <label class="form-radio">
+                            <input type="radio" name="{{ field.name }}" value="{{ value }}"
+                                   {% if field.data == value %}checked{% endif %}
+                                   {% if field.name == 'task_category' %}@change="updateTaskFields($event.target.value)"{% endif %}>
+                            <span>{{ label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
             {% else %}
                 {{ field(class="form-input") }}
             {% endif %}
@@ -227,21 +249,69 @@
 {% endmacro %}
 
 {# ============================================
+   DYNAMIC SEARCH FIELD RENDERING
+   ============================================ #}
+{% macro render_dynamic_search_field(field, additional_classes='') %}
+    <div class="form-field-group {{ additional_classes }}">
+        <label for="{{ field.id }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
+            {{ field.label.text }}
+        </label>
+        <div class="relative">
+            <input type="text"
+                   id="{{ field.id }}_search"
+                   name="q"
+                   class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="{{ field.render_kw.placeholder if field.render_kw and field.render_kw.placeholder else 'Search...' }}"
+                   autocomplete="off"
+                   hx-get="{{ url_for('search.htmx_search') }}"
+                   hx-trigger="input changed delay:300ms, focus"
+                   hx-target="#{{ field.id }}_results"
+                   hx-swap="innerHTML"
+                   hx-vals='{"mode": "select", "type": "{{ field.render_kw.get('data-search-type', 'task_field') if field.render_kw else 'task_field' }}", "field_name": "{{ field.name }}"}'>
+            <button type="button" class="absolute right-2 top-2 text-gray-400 hover:text-gray-600">
+                {{ icon('magnifying-glass') }}
+            </button>
+            <input type="hidden" name="{{ field.name }}" id="{{ field.id }}" value="{{ field.data or '' }}">
+            <div id="{{ field.id }}_results"
+                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                 style="display: none;"></div>
+            <div id="{{ field.id }}_selected" class="mt-1 text-sm text-gray-600"></div>
+        </div>
+        {% if field.errors %}
+            {% for error in field.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{# ============================================
    TASK FORM SPECIAL RENDERING
    ============================================ #}
 {% macro render_task_form_fields(form, allowed_fields) %}
     {% for field_name in allowed_fields %}
         {% set field = form[field_name] %}
 
+        {# Handle conditional fields based on task category #}
+        {% if field_name == 'company_id' %}
+            <div x-show="taskCategory === 'opportunity'" class="conditional-field">
+                {{ render_field(field) }}
+            </div>
+        {% elif field_name == 'opportunity_id' %}
+            <div x-show="taskCategory === 'opportunity'" class="conditional-field">
+                {{ render_field(field) }}
+            </div>
         {# Handle inline group: task_type, priority, status with proper structure #}
-        {% if field_name == 'task_type' %}
+        {% elif field_name == 'task_type' %}
             <div class="form-fields-inline-container">
-                {{ render_field_with_class(form.task_type, 'form-field-inline-item') }}
-                {{ render_field_with_class(form.priority, 'form-field-inline-item') }}
-                {{ render_field_with_class(form.status, 'form-field-inline-item') }}
+                {{ render_dynamic_search_field(form.task_type, 'form-field-inline-item') }}
+                {{ render_dynamic_search_field(form.priority, 'form-field-inline-item') }}
+                {{ render_dynamic_search_field(form.status, 'form-field-inline-item') }}
             </div>
         {% elif field_name == 'priority' or field_name == 'status' %}
             {# Skip - already rendered in inline group #}
+        {% elif field_name == 'assigned_to_id' %}
+            {{ render_dynamic_search_field(field) }}
         {% elif field_name == 'due_date' %}
             {{ render_enhanced_date_field(field) }}
         {% else %}

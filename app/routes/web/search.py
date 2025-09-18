@@ -96,6 +96,112 @@ def autocomplete():
     return jsonify(suggestions)
 
 
+def get_task_field_options(field_type, query=""):
+    """Get task field options for dynamic search."""
+    from app.models.task import Task
+
+    # Define the available options for each field type
+    field_options = {
+        'task_type': [
+            {'value': 'follow_up', 'label': 'Follow Up'},
+            {'value': 'meeting', 'label': 'Meeting'},
+            {'value': 'call', 'label': 'Phone Call'},
+            {'value': 'email', 'label': 'Email'},
+            {'value': 'proposal', 'label': 'Proposal'},
+            {'value': 'demo', 'label': 'Demo'},
+            {'value': 'review', 'label': 'Review'},
+            {'value': 'other', 'label': 'Other'},
+        ],
+        'task_status': [
+            {'value': 'pending', 'label': 'Pending'},
+            {'value': 'in_progress', 'label': 'In Progress'},
+            {'value': 'completed', 'label': 'Completed'},
+            {'value': 'cancelled', 'label': 'Cancelled'},
+        ],
+        'task_priority': [
+            {'value': 'low', 'label': 'Low'},
+            {'value': 'medium', 'label': 'Medium'},
+            {'value': 'high', 'label': 'High'},
+            {'value': 'urgent', 'label': 'Urgent'},
+        ]
+    }
+
+    options = field_options.get(field_type, [])
+
+    # Filter options based on query
+    if query:
+        query_lower = query.lower()
+        options = [opt for opt in options if query_lower in opt['label'].lower()]
+
+    # Convert to search result format
+    results = []
+    for opt in options:
+        results.append({
+            'id': opt['value'],
+            'title': opt['label'],
+            'subtitle': '',
+            'type': 'task_field',
+            'icon': '📋',
+            'model_type': 'task_field'
+        })
+
+    return results
+
+
+def get_assignment_options(query=""):
+    """Get assignment options including 'me', users, stakeholders, and account team."""
+    from app.models.user import User
+    from app.models.stakeholder import Stakeholder
+    from flask import session
+
+    results = []
+
+    # Add "Me" option first
+    if not query or 'me' in query.lower():
+        results.append({
+            'id': 'me',
+            'title': 'Me (Current User)',
+            'subtitle': 'Assign to yourself',
+            'type': 'assignment',
+            'icon': '👤',
+            'model_type': 'assignment'
+        })
+
+    # Add users (team members)
+    if query:
+        users = User.query.filter(User.name.ilike(f'%{query}%')).limit(10).all()
+    else:
+        users = User.query.limit(10).all()
+
+    for user in users:
+        results.append({
+            'id': f'user_{user.id}',
+            'title': user.name,
+            'subtitle': f'{user.job_title} - Team Member' if user.job_title else 'Team Member',
+            'type': 'assignment',
+            'icon': '👥',
+            'model_type': 'assignment'
+        })
+
+    # Add stakeholders (external contacts)
+    if query:
+        stakeholders = Stakeholder.query.filter(Stakeholder.name.ilike(f'%{query}%')).limit(5).all()
+    else:
+        stakeholders = Stakeholder.query.limit(5).all()
+
+    for stakeholder in stakeholders:
+        results.append({
+            'id': f'stakeholder_{stakeholder.id}',
+            'title': stakeholder.name,
+            'subtitle': f'{stakeholder.job_title} - Stakeholder' if stakeholder.job_title else 'Stakeholder',
+            'type': 'assignment',
+            'icon': '🤝',
+            'model_type': 'assignment'
+        })
+
+    return results
+
+
 @search_bp.route("/htmx/search")
 def htmx_search():
     """HTMX endpoint for live search - returns HTML instead of JSON."""
@@ -112,37 +218,43 @@ def htmx_search():
         choice_field = entity_type.split(":", 1)[1]
         return _handle_choice_search(query, choice_field, mode, field_name)
 
-    # Reuse the main search logic for entity searches
-    if entity_type == "all":
-        models_to_search = MODEL_REGISTRY.values()
+    # Handle special task field searches
+    if entity_type in ['task_type', 'task_status', 'task_priority']:
+        results = get_task_field_options(entity_type, query)
+    elif entity_type == 'assignment':
+        results = get_assignment_options(query)
     else:
-        type_list = [t.strip() for t in entity_type.split(",")]
-        models_to_search = [
-            MODEL_REGISTRY.get(t) for t in type_list if t in MODEL_REGISTRY
-        ]
-        models_to_search = [m for m in models_to_search if m]
+        # Reuse the main search logic for entity searches
+        if entity_type == "all":
+            models_to_search = MODEL_REGISTRY.values()
+        else:
+            type_list = [t.strip() for t in entity_type.split(",")]
+            models_to_search = [
+                MODEL_REGISTRY.get(t) for t in type_list if t in MODEL_REGISTRY
+            ]
+            models_to_search = [m for m in models_to_search if m]
 
-    # Collect results
-    results = []
+        # Collect results
+        results = []
 
-    # Distribute results across entity types for better diversity
-    items_per_type = (
-        max(1, limit // len(models_to_search)) if models_to_search else limit
-    )
+        # Distribute results across entity types for better diversity
+        items_per_type = (
+            max(1, limit // len(models_to_search)) if models_to_search else limit
+        )
 
-    for model in models_to_search:
-        try:
-            entities = model.search(query, items_per_type)
-            results.extend([e.to_search_result() for e in entities])
-        except Exception:
-            continue
+        for model in models_to_search:
+            try:
+                entities = model.search(query, items_per_type)
+                results.extend([e.to_search_result() for e in entities])
+            except Exception:
+                continue
 
-    # Sort and limit
-    type_order = {name: i for i, name in enumerate(MODEL_REGISTRY.keys())}
-    results.sort(
-        key=lambda x: (type_order.get(x["type"], 99), x.get("title", "").lower())
-    )
-    results = results[:limit]
+        # Sort and limit
+        type_order = {name: i for i, name in enumerate(MODEL_REGISTRY.keys())}
+        results.sort(
+            key=lambda x: (type_order.get(x["type"], 99), x.get("title", "").lower())
+        )
+        results = results[:limit]
 
     return render_template(
         "components/search/results.html",

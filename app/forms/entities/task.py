@@ -3,13 +3,24 @@ Task form - For creating and editing tasks.
 """
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SelectField, DateField, HiddenField
+from wtforms import StringField, TextAreaField, SelectField, DateField, HiddenField, RadioField, ValidationError
 from wtforms.validators import DataRequired, Optional, Length
 from app.models import Task, User, Company, Opportunity
 
 
 class TaskForm(FlaskForm):
     """Form for creating/editing tasks."""
+
+    # Task category selector
+    task_category = RadioField(
+        'Task Category',
+        choices=[
+            ('opportunity', 'Opportunity'),
+            ('internal', 'Internal')
+        ],
+        default='opportunity',
+        validators=[DataRequired()]
+    )
 
     name = StringField(
         'Task Name',
@@ -23,44 +34,36 @@ class TaskForm(FlaskForm):
         render_kw={"placeholder": "Task description", "rows": 4}
     )
 
-    task_type = SelectField(
+    task_type = StringField(
         'Task Type',
-        choices=[
-            ('', 'Select Type'),
-            ('follow_up', 'Follow Up'),
-            ('meeting', 'Meeting'),
-            ('call', 'Phone Call'),
-            ('email', 'Email'),
-            ('proposal', 'Proposal'),
-            ('demo', 'Demo'),
-            ('review', 'Review'),
-            ('other', 'Other')
-        ],
-        validators=[DataRequired()]
+        validators=[DataRequired()],
+        render_kw={
+            "data-search-type": "task_type",
+            "placeholder": "Search task types...",
+            "autocomplete": "off"
+        }
     )
 
-    status = SelectField(
+    status = StringField(
         'Status',
-        choices=[
-            ('pending', 'Pending'),
-            ('in_progress', 'In Progress'),
-            ('completed', 'Completed'),
-            ('cancelled', 'Cancelled')
-        ],
-        default='pending',
-        validators=[DataRequired()]
+        validators=[DataRequired()],
+        render_kw={
+            "data-search-type": "task_status",
+            "placeholder": "Search status...",
+            "autocomplete": "off",
+            "data-default": "pending"
+        }
     )
 
-    priority = SelectField(
+    priority = StringField(
         'Priority',
-        choices=[
-            ('low', 'Low'),
-            ('medium', 'Medium'),
-            ('high', 'High'),
-            ('urgent', 'Urgent')
-        ],
-        default='medium',
-        validators=[DataRequired()]
+        validators=[DataRequired()],
+        render_kw={
+            "data-search-type": "task_priority",
+            "placeholder": "Search priority...",
+            "autocomplete": "off",
+            "data-default": "medium"
+        }
     )
 
     due_date = DateField(
@@ -70,10 +73,14 @@ class TaskForm(FlaskForm):
     )
 
     # Related entities
-    assigned_to_id = SelectField(
+    assigned_to_id = StringField(
         'Assigned To',
-        coerce=int,
-        validators=[Optional()]
+        validators=[Optional()],
+        render_kw={
+            "data-search-type": "assignment",
+            "placeholder": "Search assignees...",
+            "autocomplete": "off"
+        }
     )
 
     company_id = SelectField(
@@ -94,12 +101,6 @@ class TaskForm(FlaskForm):
         """Initialize form with dynamic choices."""
         super().__init__(*args, **kwargs)
 
-        # Populate user choices
-        users = User.query.order_by(User.name).all()
-        self.assigned_to_id.choices = [(0, 'Unassigned')] + [
-            (u.id, u.name) for u in users
-        ]
-
         # Populate company choices
         companies = Company.query.order_by(Company.name).all()
         self.company_id.choices = [(0, 'No Company')] + [
@@ -112,11 +113,17 @@ class TaskForm(FlaskForm):
             (o.id, o.name) for o in opportunities
         ]
 
+    def validate_company_id(self, field):
+        """Validate that Company is required for Opportunity tasks."""
+        if self.task_category.data == 'opportunity' and (not field.data or field.data == 0):
+            raise ValidationError('Company is required for Opportunity tasks.')
+
     def get_display_fields(self):
         """Define field order for modal display."""
         return [
-            'company_id',           # Company at top
-            'opportunity_id',       # Opportunity below Company
+            'task_category',        # Radio buttons at top
+            'company_id',           # Company (conditional)
+            'opportunity_id',       # Opportunity (conditional)
             'name',                 # Task Name
             'description',          # Description
             'task_type',           # Task Type (first in inline group)

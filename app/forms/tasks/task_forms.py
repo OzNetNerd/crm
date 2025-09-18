@@ -13,6 +13,8 @@ from wtforms import (
     SelectField,
     FieldList,
     FormField,
+    RadioField,
+    ValidationError,
 )
 from wtforms.validators import (
     DataRequired,
@@ -26,14 +28,86 @@ from ..base.base_forms import BaseForm
 class TaskForm(BaseForm):
     """Complete task form with all available fields"""
 
+    # Task category selector
+    task_category = RadioField(
+        'Task Category',
+        choices=[
+            ('opportunity', 'Opportunity'),
+            ('internal', 'Internal')
+        ],
+        default='opportunity',
+        validators=[DataRequired()]
+    )
+
+    name = StringField(
+        'Task Name',
+        validators=[DataRequired(), Length(min=1, max=200)],
+        render_kw={"placeholder": "Enter task name"}
+    )
+
     description = TextAreaField(
         "Description",
-        validators=[DataRequired()],
-        render_kw={"placeholder": "What needs to be done?", "rows": 3},
+        validators=[OptionalValidator()],
+        render_kw={"placeholder": "Task description", "rows": 4},
     )
+
+    task_type = StringField(
+        'Task Type',
+        validators=[DataRequired()],
+        render_kw={
+            "data-search-type": "task_type",
+            "placeholder": "Search task types...",
+            "autocomplete": "off"
+        }
+    )
+
+    status = StringField(
+        'Status',
+        validators=[DataRequired()],
+        render_kw={
+            "data-search-type": "task_status",
+            "placeholder": "Search status...",
+            "autocomplete": "off",
+            "data-default": "pending"
+        }
+    )
+
+    priority = StringField(
+        'Priority',
+        validators=[DataRequired()],
+        render_kw={
+            "data-search-type": "task_priority",
+            "placeholder": "Search priority...",
+            "autocomplete": "off",
+            "data-default": "medium"
+        }
+    )
+
     due_date = DateField("Due Date", validators=[OptionalValidator()])
-    priority = SelectField("Priority", validators=[OptionalValidator()], choices=[])
-    status = SelectField("Status", validators=[OptionalValidator()], choices=[])
+
+    # Related entities
+    assigned_to_id = StringField(
+        'Assigned To',
+        validators=[OptionalValidator()],
+        render_kw={
+            "data-search-type": "assignment",
+            "placeholder": "Search assignees...",
+            "autocomplete": "off"
+        }
+    )
+
+    company_id = SelectField(
+        'Company',
+        coerce=int,
+        validators=[OptionalValidator()]
+    )
+
+    opportunity_id = SelectField(
+        'Opportunity',
+        coerce=int,
+        validators=[OptionalValidator()]
+    )
+
     next_step_type = SelectField(
         "Next Step Type", validators=[OptionalValidator()], choices=[]
     )
@@ -45,7 +119,6 @@ class TaskForm(BaseForm):
             "placeholder": "Select companies, contacts, or opportunities",
         },
     )
-    task_type = SelectField("Task Type", validators=[OptionalValidator()], choices=[])
     parent_task_id = IntegerField(
         "Parent Task", validators=[OptionalValidator(), NumberRange(min=1)]
     )
@@ -62,20 +135,48 @@ class TaskForm(BaseForm):
         super().__init__(*args, **kwargs)
         # Populate choices from model
         from app.models.task import Task
+        from app.models.company import Company
+        from app.models.opportunity import Opportunity
 
-        self.priority.choices = [("", "Select priority")] + Task.get_field_choices(
-            "priority"
-        )
-        self.status.choices = [("", "Select status")] + Task.get_field_choices("status")
+        # Populate company choices
+        companies = Company.query.order_by(Company.name).all()
+        self.company_id.choices = [(0, 'No Company')] + [
+            (c.id, c.name) for c in companies
+        ]
+
+        # Populate opportunity choices
+        opportunities = Opportunity.query.order_by(Opportunity.name).all()
+        self.opportunity_id.choices = [(0, 'No Opportunity')] + [
+            (o.id, o.name) for o in opportunities
+        ]
+
+        # Populate remaining SelectField choices
         self.next_step_type.choices = [
             ("", "Select next step type")
         ] + Task.get_field_choices("next_step_type")
-        self.task_type.choices = [("", "Select task type")] + Task.get_field_choices(
-            "task_type"
-        )
         self.dependency_type.choices = [
             ("", "Select dependency type")
         ] + Task.get_field_choices("dependency_type")
+
+    def validate_company_id(self, field):
+        """Validate that Company is required for Opportunity tasks."""
+        if self.task_category.data == 'opportunity' and (not field.data or field.data == 0):
+            raise ValidationError('Company is required for Opportunity tasks.')
+
+    def get_display_fields(self):
+        """Define field order for modal display."""
+        return [
+            'task_category',        # Radio buttons at top
+            'company_id',           # Company (conditional)
+            'opportunity_id',       # Opportunity (conditional)
+            'name',                 # Task Name
+            'description',          # Description
+            'task_type',           # Task Type (first in inline group)
+            'priority',            # Priority (second in inline group)
+            'status',              # Status (third in inline group)
+            'due_date',            # Due Date with enhancements
+            'assigned_to_id'       # Assigned To
+        ]
 
     def validate(self, extra_validators=None):
         """Validation using base class methods"""
