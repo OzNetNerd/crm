@@ -71,9 +71,10 @@
 
 /* Button sizes - dynamically generated as btn-{size} */
 .btn-xs {
-    padding: 0.0625rem 0.25rem;
-    font-size: 0.75rem; /* text-xs - matches entity-card-meta */
-    line-height: 1.2;
+    padding: 0rem 0.125rem;
+    font-size: 0.625rem; /* Even smaller - 10px */
+    line-height: 1;
+    min-height: auto;
 }
 
 .btn-sm {
