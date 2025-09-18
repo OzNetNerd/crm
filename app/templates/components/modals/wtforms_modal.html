@@ -13,6 +13,10 @@ Direct modal rendering without wrapper nonsense
          validationErrors: {},
          validationTimer: null,
          isValidating: false,
+         taskCategory: 'opportunity',
+         updateTaskFields(category) {
+             this.taskCategory = category;
+         },
          async validateField(fieldName, value) {
              // Clear previous timer
              if (this.validationTimer) {
