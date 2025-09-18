@@ -159,7 +159,7 @@ class Stakeholder(BaseModel):
     # Foreign key to company
     company_id = db.Column(
         db.Integer,
-        db.ForeignKey("companies.id"),
+        db.ForeignKey("companies.id", ondelete="CASCADE"),
         nullable=False,
         info={
             "display_label": "Company",
