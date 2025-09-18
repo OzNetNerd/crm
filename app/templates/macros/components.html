@@ -33,7 +33,7 @@
    MODAL
    ============================================ #}
 {% macro modal(id='modal', title='', size='md', closable=true) %}
-    <div id="{{ id }}" class="modal" style="display: none;">
+    <div id="{{ id }}" class="modal modal-hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-content modal-content-{{ size }}">
             <div class="modal-header">
@@ -55,7 +55,7 @@
    CONFIRMATION MODAL
    ============================================ #}
 {% macro confirmation_modal(id='confirm-modal', title='Confirm Action', type='warning') %}
-    <div id="{{ id }}" class="modal" style="display: none;">
+    <div id="{{ id }}" class="modal modal-hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-content modal-confirmation">
             <div class="modal-confirmation-content">
@@ -121,7 +121,7 @@
                placeholder="{{ placeholder }}"
                autocomplete="off"
                hx-get="{{ url_for('search.htmx_search') }}"
-               hx-trigger="input changed delay:300ms, focus"
+               hx-trigger="focus, input changed delay:300ms"
                hx-target="#{{ id }}-results"
                hx-include="this"
                hx-vals='{"mode": "{{ mode }}"}'>
@@ -151,7 +151,7 @@
                    placeholder="{{ placeholder }}"
                    autocomplete="off"
                    hx-get="{{ url_for('search.htmx_search') }}"
-                   hx-trigger="input changed delay:300ms, focus"
+                   hx-trigger="focus, input changed delay:300ms"
                    hx-target="#{{ name }}_results"
                    hx-swap="innerHTML"
                    hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}"}'>
@@ -192,7 +192,7 @@
                    placeholder="{{ placeholder }}"
                    autocomplete="off"
                    hx-get="{{ url_for('search.htmx_search') }}"
-                   hx-trigger="input changed delay:300ms, focus"
+                   hx-trigger="focus, input changed delay:300ms"
                    hx-target="#{{ name }}_results"
                    hx-swap="innerHTML"
                    hx-vals='{"mode": "select", "type": "choice:{{ name }}", "field_name": "{{ name }}"}'
@@ -211,28 +211,73 @@
 {% endmacro %}
 
 {# ============================================
+   SEARCHABLE DROPDOWN - Dynamic dropdown with search
+   ============================================ #}
+{% macro searchable_dropdown(name, options, current_value='', label='', placeholder='Search...', dropdown_type='', entity_type='') %}
+    {# Find the current label for the selected value #}
+    {% set current_label = '' %}
+    {% for option in options %}
+        {% if option.value == current_value %}
+            {% set current_label = option.label %}
+        {% endif %}
+    {% endfor %}
+
+    <div class="relative">
+        <input type="text"
+               id="{{ name }}_search"
+               name="q"
+               class="search-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+               placeholder="{{ placeholder }}"
+               autocomplete="off"
+               hx-get="{{ url_for('search.htmx_search') }}"
+               hx-trigger="focus, input changed delay:300ms"
+               hx-target="#{{ name }}_results"
+               hx-swap="innerHTML"
+               hx-vals='{"mode": "select", "type": "dropdown:{{ dropdown_type or name }}", "field_name": "{{ name }}"}'
+               value="{{ current_label }}">
+        <input type="hidden" name="{{ name }}" id="{{ name }}" value="{{ current_value }}">
+        <div id="{{ name }}_results"
+             class="search-results absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
+             hidden></div>
+    </div>
+{% endmacro %}
+
+{# ============================================
    ENTITY DROPDOWN CONTROLS - Simple HTML Select
    ============================================ #}
-{% macro entity_dropdown_controls(dropdowns={}) %}
+{% macro entity_dropdown_controls(dropdowns={}, entity_type='') %}
     <div class="flex flex-wrap gap-3 items-center">
         {% for dropdown_key, config in dropdowns.items() %}
             {% if config.options %}
                 <div class="min-w-48">
-                    {% if config.label is defined %}
+                    {% if config.label %}
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             {{ config.label }}
                         </label>
                     {% endif %}
 
-                    <select name="{{ config.name or dropdown_key }}"
-                            class="dropdown-select block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        {% for option in config.options %}
-                            <option value="{{ option.value }}"
-                                    {% if option.value == config.current_value %}selected{% endif %}>
-                                {{ option.label }}
-                            </option>
-                        {% endfor %}
-                    </select>
+                    {% if config.searchable %}
+                        {# Use searchable dropdown for dynamic search #}
+                        {{ searchable_dropdown(
+                            name=config.name or dropdown_key,
+                            options=config.options,
+                            current_value=config.current_value,
+                            placeholder=config.placeholder or 'Search...',
+                            dropdown_type=dropdown_key,
+                            entity_type=entity_type
+                        ) }}
+                    {% else %}
+                        {# Use regular select for non-searchable #}
+                        <select name="{{ config.name or dropdown_key }}"
+                                class="dropdown-select block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            {% for option in config.options %}
+                                <option value="{{ option.value }}"
+                                        {% if option.value == config.current_value %}selected{% endif %}>
+                                    {{ option.label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
                 </div>
             {% endif %}
         {% endfor %}
