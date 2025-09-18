@@ -280,7 +280,9 @@ def update_entity(model_name, entity_id):
     """Update existing entity - POST handler."""
     model, form_class = get_model_and_form(model_name)
     entity = model.query.get_or_404(entity_id)
-    return process_form_submission(model_name, model, form_class(obj=entity), entity)
+    form = form_class(obj=entity)
+    form._obj = entity  # Set _obj for validation to recognize we're editing this entity
+    return process_form_submission(model_name, model, form, entity)
 
 
 @modals_bp.route("/<model_name>/<int:entity_id>/delete", methods=["POST"])
