@@ -45,6 +45,15 @@ function positionDropdown(inputElement, dropdownElement) {
     dropdownElement.style.zIndex = '99999';  // Ensure it's above everything
 }
 
+// Hide all other dropdowns except the specified one
+function hideOtherDropdowns(exceptDropdown) {
+    document.querySelectorAll('.search-results').forEach(dropdown => {
+        if (dropdown !== exceptDropdown) {
+            hideElement(dropdown);
+        }
+    });
+}
+
 function initializeSearchWidgets() {
     // Find all search inputs - now unified with .search-input class
     const searchInputs = document.querySelectorAll('.search-input');
@@ -98,6 +107,7 @@ function initializeSearchWidgets() {
         input.addEventListener('htmx:afterSwap', function() {
             // Always show results if there's content
             if (resultsDiv.children.length > 0) {
+                hideOtherDropdowns(resultsDiv);  // Hide all other dropdowns first
                 positionDropdown(this, resultsDiv);
                 showElement(resultsDiv);
             }
@@ -107,6 +117,7 @@ function initializeSearchWidgets() {
         input.addEventListener('htmx:afterSettle', function() {
             // Always show results if there's content
             if (resultsDiv.children.length > 0) {
+                hideOtherDropdowns(resultsDiv);  // Hide all other dropdowns first
                 positionDropdown(this, resultsDiv);
                 showElement(resultsDiv);
             }
@@ -122,6 +133,7 @@ function initializeSearchWidgets() {
         input.addEventListener('htmx:afterOnLoad', function() {
             // If we were loading and got content, show it
             if (this.dataset.loadingResults === 'true' && resultsDiv.children.length > 0) {
+                hideOtherDropdowns(resultsDiv);  // Hide all other dropdowns first
                 positionDropdown(this, resultsDiv);
                 showElement(resultsDiv);
                 this.dataset.loadingResults = 'false';
@@ -138,6 +150,7 @@ function initializeSearchWidgets() {
         // Show results when focusing input if there's content
         input.addEventListener('focus', function() {
             if (resultsDiv.children.length > 0) {
+                hideOtherDropdowns(resultsDiv);  // Hide all other dropdowns first
                 positionDropdown(this, resultsDiv);
                 showElement(resultsDiv);
             }
