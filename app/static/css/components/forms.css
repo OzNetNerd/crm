@@ -108,11 +108,12 @@
    ============================================ */
 
 .form-date-countdown {
-    font-size: 0.875rem;
+    font-size: 0.7rem;
     font-weight: 500;
-    padding: 0.25rem 0.5rem;
+    padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
     display: inline-block;
+    white-space: nowrap;
 }
 
 .form-date-countdown.hidden {

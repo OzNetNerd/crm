@@ -343,15 +343,17 @@
         <div class="form-date-enhanced">
             <div class="form-date-input-container">
                 {{ field(class="form-input form-date-compact" + (" error" if field.errors else "")) }}
-                <div class="form-date-buttons grid grid-cols-2 gap-1">
-                    <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', 1)">+1d</button>
-                    <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', 7)">+1w</button>
-                    <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', -1)">-1d</button>
-                    <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', -7)">-1w</button>
+                <div class="flex items-center gap-2 mt-1">
+                    <div class="form-date-buttons grid grid-cols-2 gap-1 flex-shrink-0">
+                        <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', 1)">+1d</button>
+                        <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', 7)">+1w</button>
+                        <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', -1)">-1d</button>
+                        <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', -7)">-1w</button>
+                    </div>
+                    <div class="form-date-countdown hidden text-xs" id="{{ field.id }}_countdown">
+                        <span class="countdown-text"></span>
+                    </div>
                 </div>
-            </div>
-            <div class="form-date-countdown hidden" id="{{ field.id }}_countdown">
-                <span class="countdown-text"></span>
             </div>
         </div>
 
