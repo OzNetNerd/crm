@@ -22,6 +22,7 @@ def get_field_choices(field_name):
         "industry": "Company",
         "size": "Company",
         "status": "Opportunity",
+        "stage": "Opportunity",
         "priority": "Task",
         "type": "Stakeholder"
     }
