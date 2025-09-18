@@ -78,9 +78,11 @@
    ============================================ */
 
 .form-date-enhanced {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    /* Tailwind handles: flex items-center gap-2 */
+    /* Ensure everything stays on one line and doesn't overflow */
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .form-date-input-container {
@@ -90,17 +92,17 @@
 }
 
 .form-date-compact {
-    max-width: 20rem;
+    /* Don't let it expand */
+    flex: 0 0 auto;
+    width: auto;
 }
 
 .form-date-buttons {
-    display: flex;
-    gap: 0.25rem;
-}
-
-.form-date-buttons .btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
+    /* Tailwind handles: grid grid-cols-2 gap-1 flex-shrink-0 */
+    /* Make buttons compact and stack in 2x2 grid */
+    width: auto;
+    height: fit-content;
+    align-self: center;
 }
 
 /* ============================================
@@ -108,11 +110,15 @@
    ============================================ */
 
 .form-date-countdown {
-    font-size: 0.875rem;
-    font-weight: 500;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
+    font-size: 0.625rem; /* Matching button size - 10px */
+    font-weight: 400;
+    padding: 0rem 0.125rem;
     display: inline-block;
+    white-space: nowrap;
+    color: #6b7280; /* text-gray-500 - default */
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .form-date-countdown.hidden {
@@ -120,23 +126,19 @@
 }
 
 .form-date-countdown.countdown-today {
-    background-color: #dbeafe;
-    color: #1e40af;
+    color: #1e40af; /* blue */
 }
 
 .form-date-countdown.countdown-soon {
-    background-color: #fef3c7;
-    color: #92400e;
+    color: #92400e; /* amber */
 }
 
 .form-date-countdown.countdown-future {
-    background-color: #d1fae5;
-    color: #065f46;
+    color: #065f46; /* green */
 }
 
 .form-date-countdown.countdown-overdue {
-    background-color: #fee2e2;
-    color: #991b1b;
+    color: #dc2626; /* red-600 */
 }
 
 /* ============================================

@@ -8,7 +8,7 @@ Simple confirmation dialog following existing modal patterns
      x-data="{
          open: true,
          close() {
-             htmx.ajax('GET', '/modals/close', {target: '#{{ model_name }}-delete-modal', swap: 'outerHTML'});
+             htmx.ajax('GET', '/modals/close', {target: '#modal-container', swap: 'innerHTML'});
          }
      }"
      x-show="open"
@@ -27,8 +27,8 @@ Simple confirmation dialog following existing modal patterns
             <button type="button"
                     class="modal-close"
                     hx-get="/modals/close"
-                    hx-swap="outerHTML"
-                    hx-target="#{{ model_name }}-delete-modal">
+                    hx-swap="innerHTML"
+                    hx-target="#modal-container">
                 {{ icon('x-mark') }}
             </button>
         </div>
@@ -51,15 +51,15 @@ Simple confirmation dialog following existing modal patterns
             <button type="button"
                     class="btn btn-secondary"
                     hx-get="/modals/close"
-                    hx-swap="outerHTML"
-                    hx-target="#{{ model_name }}-delete-modal">
+                    hx-swap="innerHTML"
+                    hx-target="#modal-container">
                 Cancel
             </button>
             <button type="button"
                     class="btn btn-danger"
                     hx-post="/modals/{{ model_name }}/{{ entity_id }}/delete"
-                    hx-swap="outerHTML"
-                    hx-target="#{{ model_name }}-delete-modal">
+                    hx-swap="innerHTML"
+                    hx-target="#modal-container">
                 {{ icon('trash', size='4', class='inline-block mr-2') }}
                 Delete
             </button>

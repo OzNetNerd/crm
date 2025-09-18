@@ -8,7 +8,7 @@ def get_linked_entities(task_id: int) -> List[Dict[str, Any]]:
     if not task_id:
         return []
 
-    from app import db
+    from app.models import db
     from app.models.task import task_entities
 
     linked = (
@@ -128,7 +128,7 @@ def get_next_available_child(task):
 
 def add_linked_entity(task_id: int, entity_type: str, entity_id: int) -> None:
     """Add a linked entity to a task."""
-    from app import db
+    from app.models import db
     from app.models.task import task_entities
     from datetime import datetime
 
@@ -156,7 +156,7 @@ def add_linked_entity(task_id: int, entity_type: str, entity_id: int) -> None:
 
 def remove_linked_entity(task_id: int, entity_type: str, entity_id: int) -> None:
     """Remove a linked entity from a task."""
-    from app import db
+    from app.models import db
     from app.models.task import task_entities
 
     db.session.execute(
@@ -171,7 +171,7 @@ def remove_linked_entity(task_id: int, entity_type: str, entity_id: int) -> None
 
 def set_linked_entities(task_id: int, entities: List[Dict[str, Any]]) -> None:
     """Set the linked entities for a task (replaces all existing links)."""
-    from app import db
+    from app.models import db
     from app.models.task import task_entities
     from datetime import datetime
 

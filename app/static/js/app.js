@@ -152,21 +152,55 @@ function confirmAction(modalId) {
 }
 
 // Entity selection function
-function selectEntity(fieldId, entityId, entityName, entityType) {
-    const field = document.getElementById(fieldId);
+function selectEntity(fieldName, entityId, entityName, entityType) {
+    // Get the hidden field that stores the actual value
+    const field = document.getElementById(fieldName);
+    // Get the search/display field
+    const searchField = document.getElementById(fieldName + '_search');
+
     if (field) {
-        field.value = entityName || '';
+        // Update hidden field with entity ID
+        field.value = entityId || '';
         field.dataset.entityId = entityId || '';
         field.dataset.entityType = entityType || '';
+    }
 
-        // Close any open search results
-        const searchWidget = field.closest('.search-widget');
-        if (searchWidget) {
-            const results = searchWidget.querySelector('.search-results');
-            if (results) {
-                results.innerHTML = '';
-            }
-        }
+    if (searchField) {
+        // Update display field with entity name
+        searchField.value = entityName || '';
+    }
+
+    // Close the search results dropdown
+    const resultsContainer = document.getElementById(fieldName + '_results');
+    if (resultsContainer) {
+        resultsContainer.innerHTML = '';
+        resultsContainer.classList.add('hidden');
+        resultsContainer.style.display = 'none';
+    }
+}
+
+// Choice selection function (for dropdowns with string values)
+function selectChoice(fieldName, choiceId, choiceTitle) {
+    // Get the hidden field and search field
+    const field = document.getElementById(fieldName);
+    const searchField = document.getElementById(fieldName + '_search');
+
+    if (field) {
+        // For choices, store the title as the value
+        field.value = choiceTitle || '';
+        field.dataset.choiceId = choiceId || '';
+    }
+
+    if (searchField) {
+        searchField.value = choiceTitle || '';
+    }
+
+    // Close the search results dropdown
+    const resultsContainer = document.getElementById(fieldName + '_results');
+    if (resultsContainer) {
+        resultsContainer.innerHTML = '';
+        resultsContainer.classList.add('hidden');
+        resultsContainer.style.display = 'none';
     }
 }
 
@@ -175,5 +209,6 @@ window.openModal = openModal;
 window.closeModal = closeModal;
 window.toggleDropdown = toggleDropdown;
 window.selectEntity = selectEntity;
+window.selectChoice = selectChoice;
 window.closeAdvancedSearchModal = closeAdvancedSearchModal;
 window.confirmAction = confirmAction;

@@ -278,13 +278,9 @@
                    hx-target="#{{ field.id }}_results"
                    hx-swap="innerHTML"
                    hx-vals='{"mode": "select", "type": "{{ field.render_kw.get('data-search-type', 'task_field') if field.render_kw else 'task_field' }}", "field_name": "{{ field.name }}"}'>
-            <button type="button" class="absolute right-2 top-2 text-gray-400 hover:text-gray-600">
-                {{ icon('magnifying-glass') }}
-            </button>
             <input type="hidden" name="{{ field.name }}" id="{{ field.id }}" value="{{ field.data or '' }}">
             <div id="{{ field.id }}_results"
-                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
-                 class="dropdown-selected-text"></div>
+                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto hidden"></div>
         </div>
         {% if field.errors %}
             {% for error in field.errors %}
@@ -304,12 +300,13 @@
         {# Handle conditional fields based on task category #}
         {% if field_name == 'company_id' %}
             <div x-show="taskCategory === 'opportunity'" class="conditional-field">
-                {{ render_dynamic_search_field(field) }}
+                <div class="grid grid-cols-2 gap-4">
+                    {{ render_dynamic_search_field(field, 'col-span-1') }}
+                    {{ render_dynamic_search_field(form.opportunity_id, 'col-span-1') }}
+                </div>
             </div>
         {% elif field_name == 'opportunity_id' %}
-            <div x-show="taskCategory === 'opportunity'" class="conditional-field">
-                {{ render_dynamic_search_field(field) }}
-            </div>
+            {# Skip - already rendered with company_id #}
         {# Handle inline group: task_type, priority, status with proper structure #}
         {% elif field_name == 'task_type' %}
             <div class="form-fields-inline-container">
@@ -319,10 +316,20 @@
             </div>
         {% elif field_name == 'priority' or field_name == 'status' %}
             {# Skip - already rendered in inline group #}
+        {# Handle name and due_date side by side - more space for name #}
+        {% elif field_name == 'name' %}
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    {{ render_field(field) }}
+                </div>
+                <div class="flex-shrink-0" style="width: auto; max-width: 50%;">
+                    {{ render_enhanced_date_field(form.due_date) }}
+                </div>
+            </div>
+        {% elif field_name == 'due_date' %}
+            {# Skip - already rendered with name #}
         {% elif field_name == 'assigned_to_id' %}
             {{ render_dynamic_search_field(field) }}
-        {% elif field_name == 'due_date' %}
-            {{ render_enhanced_date_field(field) }}
         {% else %}
             {{ render_field(field) }}
         {% endif %}
@@ -332,18 +339,18 @@
 {# ============================================
    ENHANCED DATE FIELD
    ============================================ #}
-{% macro render_enhanced_date_field(field) %}
-    <div class="form-field-group">
+{% macro render_enhanced_date_field(field, additional_classes='') %}
+    <div class="form-field-group {{ additional_classes }}">
         <label for="{{ field.id }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
             {{ field.label.text }}
         </label>
-        <div class="form-date-enhanced">
-            <div class="form-date-input-container">
-                {{ field(class="form-input form-date-compact" + (" error" if field.errors else "")) }}
-                <div class="form-date-buttons">
-                    <button type="button" class="btn btn-sm btn-secondary" onclick="addDaysToDate('{{ field.id }}', 1)">+1 Day</button>
-                    <button type="button" class="btn btn-sm btn-secondary" onclick="addDaysToDate('{{ field.id }}', 7)">+1 Week</button>
-                </div>
+        <div class="form-date-enhanced flex items-center gap-2">
+            {{ field(class="form-input form-date-compact" + (" error" if field.errors else "")) }}
+            <div class="form-date-buttons grid grid-cols-2 gap-1 flex-shrink-0">
+                <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', 1)">+1d</button>
+                <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', 7)">+1w</button>
+                <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', -1)">-1d</button>
+                <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', -7)">-1w</button>
             </div>
             <div class="form-date-countdown hidden" id="{{ field.id }}_countdown">
                 <span class="countdown-text"></span>

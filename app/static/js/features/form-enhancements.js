@@ -50,6 +50,7 @@ function updateDateCountdown(fieldId) {
     const dateValue = field.value;
     if (!dateValue) {
         countdownDiv.style.display = 'none';
+        countdownDiv.classList.add('hidden');
         return;
     }
 
@@ -70,25 +71,26 @@ function updateDateCountdown(fieldId) {
     let className = '';
 
     if (daysDiff === 0) {
-        message = '(Today)';
+        message = 'Today';
         className = 'countdown-today';
     } else if (daysDiff === 1) {
-        message = '(Tomorrow)';
+        message = 'Tomorrow';
         className = 'countdown-soon';
     } else if (daysDiff === -1) {
-        message = '(Yesterday)';
+        message = 'Yesterday';
         className = 'countdown-overdue';
     } else if (daysDiff > 1) {
-        message = `(${daysDiff} days to go)`;
+        message = `${daysDiff} days to go`;
         className = daysDiff <= 7 ? 'countdown-soon' : 'countdown-future';
     } else {
-        message = `(${Math.abs(daysDiff)} days overdue)`;
+        message = `${Math.abs(daysDiff)} days ago`;
         className = 'countdown-overdue';
     }
 
     countdownText.textContent = message;
     countdownDiv.className = `form-date-countdown ${className}`;
-    countdownDiv.style.display = 'block';
+    countdownDiv.style.display = 'inline-block';
+    countdownDiv.classList.remove('hidden');
 }
 
 /**
