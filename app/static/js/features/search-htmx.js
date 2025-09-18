@@ -13,7 +13,8 @@ function positionDropdownForModal(dropdown, inputElement) {
         dropdown.style.position = 'fixed';
         dropdown.style.left = rect.left + 'px';
         dropdown.style.top = (rect.bottom + 2) + 'px';
-        dropdown.style.width = rect.width + 'px';
+        // Set minimum width to 350px or input width, whichever is larger
+        dropdown.style.width = Math.max(350, rect.width) + 'px';
         dropdown.style.zIndex = '100001';
         return true;
     }
@@ -127,7 +128,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             resultsDiv.style.position = 'fixed';
                             resultsDiv.style.left = rect.left + 'px';
                             resultsDiv.style.top = (rect.bottom + 2) + 'px';
-                            resultsDiv.style.width = rect.width + 'px';
+                            // Set minimum width to 350px or input width, whichever is larger
+                            resultsDiv.style.width = Math.max(350, rect.width) + 'px';
                             resultsDiv.style.zIndex = '100001';
                         }
                         resultsDiv.style.display = 'block';
@@ -154,7 +156,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         resultsDiv.style.position = 'fixed';
                         resultsDiv.style.left = rect.left + 'px';
                         resultsDiv.style.top = (rect.bottom + 2) + 'px';
-                        resultsDiv.style.width = rect.width + 'px';
+                        // Set minimum width to 350px or input width, whichever is larger
+                        resultsDiv.style.width = Math.max(350, rect.width) + 'px';
                         resultsDiv.style.zIndex = '100001';
                     }
                     resultsDiv.style.display = 'block';
@@ -227,6 +230,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         }
+
+        // Handle Company-Opportunity linking logic for Task forms
+        handleCompanyOpportunityLinking(fieldName, entityId, entityTitle, entityType);
     });
 
     // Clear selection when search input is cleared
@@ -278,3 +284,63 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+/**
+ * Handle Company-Opportunity linking logic for Task forms
+ */
+function handleCompanyOpportunityLinking(fieldName, entityId, entityTitle, entityType) {
+    // Only handle linking logic for company_id and opportunity_id fields
+    if (fieldName !== 'company_id' && fieldName !== 'opportunity_id') return;
+
+    const companySearchInput = document.getElementById('company_id_search');
+    const companyHiddenField = document.getElementById('company_id');
+    const companySelectedDiv = document.getElementById('company_id_selected');
+
+    const opportunitySearchInput = document.getElementById('opportunity_id_search');
+    const opportunityHiddenField = document.getElementById('opportunity_id');
+    const opportunitySelectedDiv = document.getElementById('opportunity_id_selected');
+
+    // If a company was selected, update opportunity search to filter by this company
+    if (fieldName === 'company_id' && entityType === 'company') {
+        if (opportunitySearchInput) {
+            // Clear current opportunity selection
+            if (opportunityHiddenField) opportunityHiddenField.value = '';
+            if (opportunitySearchInput) opportunitySearchInput.value = '';
+            if (opportunitySelectedDiv) opportunitySelectedDiv.innerHTML = '';
+
+            // Update the opportunity search to include company filter
+            const currentHxVals = opportunitySearchInput.getAttribute('hx-vals');
+            let hxValsObj;
+            try {
+                hxValsObj = JSON.parse(currentHxVals);
+            } catch (e) {
+                hxValsObj = {};
+            }
+
+            // Add company filter to opportunity search
+            hxValsObj.company_id = entityId;
+            opportunitySearchInput.setAttribute('hx-vals', JSON.stringify(hxValsObj));
+        }
+    }
+
+    // If an opportunity was selected, auto-populate the company field
+    if (fieldName === 'opportunity_id' && entityType === 'opportunity') {
+        // Fetch the opportunity details to get the company info
+        fetch(`/api/opportunities/${entityId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.company && data.company.id) {
+                    // Auto-populate company field
+                    if (companyHiddenField) companyHiddenField.value = data.company.id;
+                    if (companySearchInput) companySearchInput.value = data.company.name;
+                    if (companySelectedDiv) {
+                        companySelectedDiv.innerHTML = `Selected: ${data.company.name}`;
+                        companySelectedDiv.classList.remove('hidden');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching opportunity details:', error);
+            });
+    }
+}

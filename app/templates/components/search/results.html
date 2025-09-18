@@ -26,7 +26,7 @@
            data-entity-title="{{ result.title }}"
            data-entity-type="{{ result.type }}"
            {% else %}
-           hx-get="{{ url_for('modals.view_modal', model_name=result.type, entity_id=result.id) }}"
+           hx-get="{{ url_for('modals.entity_modal', model_name=result.type, entity_id=result.id, mode='view') }}"
            hx-target="#modal-container"
            hx-swap="innerHTML"
            {% endif %}

@@ -70,7 +70,7 @@ class OpportunityForm(BaseForm):
 
     stage = SelectField(
         "Pipeline Stage",
-        validators=[Optional()],
+        validators=[DataRequired()],
         choices=[],  # Will be populated in __init__
         default="prospect",
     )
@@ -80,4 +80,4 @@ class OpportunityForm(BaseForm):
 
     def get_display_fields(self):
         """Return field names to display in modal, in this exact order"""
-        return ["company", "name", "value", "stage"]
+        return ["company", "name", "stage", "value"]
