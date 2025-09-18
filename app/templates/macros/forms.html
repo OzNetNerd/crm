@@ -316,10 +316,16 @@
             </div>
         {% elif field_name == 'priority' or field_name == 'status' %}
             {# Skip - already rendered in inline group #}
+        {# Handle name and due_date side by side #}
+        {% elif field_name == 'name' %}
+            <div class="grid grid-cols-2 gap-4">
+                {{ render_field(field, 'col-span-1') }}
+                {{ render_enhanced_date_field(form.due_date, 'col-span-1') }}
+            </div>
+        {% elif field_name == 'due_date' %}
+            {# Skip - already rendered with name #}
         {% elif field_name == 'assigned_to_id' %}
             {{ render_dynamic_search_field(field) }}
-        {% elif field_name == 'due_date' %}
-            {{ render_enhanced_date_field(field) }}
         {% else %}
             {{ render_field(field) }}
         {% endif %}
@@ -329,17 +335,19 @@
 {# ============================================
    ENHANCED DATE FIELD
    ============================================ #}
-{% macro render_enhanced_date_field(field) %}
-    <div class="form-field-group">
+{% macro render_enhanced_date_field(field, additional_classes='') %}
+    <div class="form-field-group {{ additional_classes }}">
         <label for="{{ field.id }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
             {{ field.label.text }}
         </label>
         <div class="form-date-enhanced">
             <div class="form-date-input-container">
                 {{ field(class="form-input form-date-compact" + (" error" if field.errors else "")) }}
-                <div class="form-date-buttons">
-                    <button type="button" class="btn btn-sm btn-secondary" onclick="addDaysToDate('{{ field.id }}', 1)">+1 Day</button>
-                    <button type="button" class="btn btn-sm btn-secondary" onclick="addDaysToDate('{{ field.id }}', 7)">+1 Week</button>
+                <div class="form-date-buttons grid grid-cols-2 gap-1">
+                    <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', 1)">+1d</button>
+                    <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', 7)">+1w</button>
+                    <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', -1)">-1d</button>
+                    <button type="button" class="btn btn-xs btn-secondary" onclick="addDaysToDate('{{ field.id }}', -7)">-1w</button>
                 </div>
             </div>
             <div class="form-date-countdown hidden" id="{{ field.id }}_countdown">
