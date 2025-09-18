@@ -74,7 +74,7 @@ def get_stakeholders(opportunity_id: int) -> List[Dict[str, Any]]:
         return []
 
     # Import here to avoid circular imports
-    from app import db
+    from app.models import db
     from app.models.stakeholder import stakeholder_opportunities
 
     # Query the junction table

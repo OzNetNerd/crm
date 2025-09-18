@@ -278,9 +278,6 @@
                    hx-target="#{{ field.id }}_results"
                    hx-swap="innerHTML"
                    hx-vals='{"mode": "select", "type": "{{ field.render_kw.get('data-search-type', 'task_field') if field.render_kw else 'task_field' }}", "field_name": "{{ field.name }}"}'>
-            <button type="button" class="absolute right-2 top-2 text-gray-400 hover:text-gray-600">
-                {{ icon('magnifying-glass') }}
-            </button>
             <input type="hidden" name="{{ field.name }}" id="{{ field.id }}" value="{{ field.data or '' }}">
             <div id="{{ field.id }}_results"
                  class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
