@@ -88,7 +88,7 @@ function updateDateCountdown(fieldId) {
     }
 
     countdownText.textContent = message;
-    countdownDiv.className = `form-date-countdown text-xs ${className}`;
+    countdownDiv.className = `form-date-countdown ${className}`;
     countdownDiv.style.display = 'inline-block';
     countdownDiv.classList.remove('hidden');
 }

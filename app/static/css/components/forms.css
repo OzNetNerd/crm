@@ -108,12 +108,13 @@
    ============================================ */
 
 .form-date-countdown {
-    font-size: 0.7rem;
-    font-weight: 500;
-    padding: 0.125rem 0.375rem;
+    font-size: 0.75rem; /* text-xs - matches entity-card-meta */
+    font-weight: 400;
+    padding: 0.0625rem 0.25rem;
     border-radius: 0.25rem;
     display: inline-block;
     white-space: nowrap;
+    color: #6b7280; /* text-gray-500 - matches entity-card-meta */
 }
 
 .form-date-countdown.hidden {
