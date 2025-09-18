@@ -295,11 +295,11 @@
         {# Handle conditional fields based on task category #}
         {% if field_name == 'company_id' %}
             <div x-show="taskCategory === 'opportunity'" class="conditional-field">
-                {{ render_field(field) }}
+                {{ render_dynamic_search_field(field) }}
             </div>
         {% elif field_name == 'opportunity_id' %}
             <div x-show="taskCategory === 'opportunity'" class="conditional-field">
-                {{ render_field(field) }}
+                {{ render_dynamic_search_field(field) }}
             </div>
         {# Handle inline group: task_type, priority, status with proper structure #}
         {% elif field_name == 'task_type' %}

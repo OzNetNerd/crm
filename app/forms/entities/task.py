@@ -83,39 +83,31 @@ class TaskForm(FlaskForm):
         }
     )
 
-    company_id = SelectField(
+    company_id = StringField(
         'Company',
-        coerce=int,
-        validators=[Optional()]
+        validators=[Optional()],
+        render_kw={
+            "data-search-type": "company",
+            "placeholder": "Search companies...",
+            "autocomplete": "off"
+        }
     )
 
-    opportunity_id = SelectField(
+    opportunity_id = StringField(
         'Opportunity',
-        coerce=int,
-        validators=[Optional()]
+        validators=[Optional()],
+        render_kw={
+            "data-search-type": "opportunity",
+            "placeholder": "Search opportunities...",
+            "autocomplete": "off"
+        }
     )
 
     parent_task_id = HiddenField('Parent Task ID')
 
-    def __init__(self, *args, **kwargs):
-        """Initialize form with dynamic choices."""
-        super().__init__(*args, **kwargs)
-
-        # Populate company choices
-        companies = Company.query.order_by(Company.name).all()
-        self.company_id.choices = [(0, 'No Company')] + [
-            (c.id, c.name) for c in companies
-        ]
-
-        # Populate opportunity choices
-        opportunities = Opportunity.query.order_by(Opportunity.name).all()
-        self.opportunity_id.choices = [(0, 'No Opportunity')] + [
-            (o.id, o.name) for o in opportunities
-        ]
-
     def validate_company_id(self, field):
         """Validate that Company is required for Opportunity tasks."""
-        if self.task_category.data == 'opportunity' and (not field.data or field.data == 0):
+        if self.task_category.data == 'opportunity' and not field.data:
             raise ValidationError('Company is required for Opportunity tasks.')
 
     def get_display_fields(self):

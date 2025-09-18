@@ -52,6 +52,12 @@
     min-width: 0; /* Prevent grid overflow */
 }
 
+/* Ensure dynamic search fields in inline container have proper width */
+.form-fields-inline-container .form-input {
+    min-width: 120px;
+    width: 100%;
+}
+
 /* Individual inline fields */
 .form-field-inline-item {
     margin-bottom: 0;
