@@ -1,5 +1,47 @@
 # CRM Application - Claude Code Instructions
 
+## 🚨 CRITICAL: MANDATORY DUPLICATE DETECTION BEFORE ANY IMPLEMENTATION
+
+**YOU MUST CHECK FOR DUPLICATES BEFORE WRITING ANY CODE**
+
+### Before Creating ANY New Function/Pattern:
+
+1. **SEARCH for existing implementations:**
+   ```bash
+   # For JavaScript functions
+   grep -r "function.*selectEntity\|selectItem\|selectChoice" --include="*.js"
+
+   # For Python functions
+   grep -r "def.*search\|def.*select\|def.*filter" --include="*.py"
+
+   # For API endpoints
+   grep -r "@.*route\|@app\." --include="*.py"
+   ```
+
+2. **VERIFY no similar patterns exist:**
+   - If you find ANYTHING similar, you MUST extend it, not create new
+   - Document WHY existing patterns don't work if creating new
+
+3. **RUN compliance check (when in ClawDebt):**
+   ```bash
+   /compliance-check javascript  # or python, all, etc.
+   ```
+
+### ❌ NEVER Create These Duplicates:
+- `selectEntity()` AND `selectChoice()` - use ONE universal function
+- Multiple event handlers for same action
+- Similar API endpoints with slight variations
+- Parallel validation systems
+- Multiple search implementations
+
+### ✅ ALWAYS:
+- Extend existing patterns with parameters
+- Use single source of truth
+- Consolidate similar functionality
+- Check ADR-009 for Zero Duplicate Systems Policy
+
+**BLOCKING: Code with duplicates will be rejected**
+
 ## Running the Application
 
 ### Auto Port Detection (Recommended)
