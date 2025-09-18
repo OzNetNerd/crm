@@ -11,8 +11,10 @@ Shows success and auto-closes or allows manual close
              this.open = false;
              // Close the modal
              htmx.ajax('GET', '/modals/close', {target: '#success-modal', swap: 'outerHTML'});
-             // Refresh the content to show the new company
-             htmx.ajax('GET', '/companies/content', {target: '#entity-content', swap: 'innerHTML'});
+             // Refresh the content to show updated entities
+             {% if refresh_url %}
+             htmx.ajax('GET', '{{ refresh_url }}', {target: '#entity-content', swap: 'innerHTML'});
+             {% endif %}
          }
      }"
      x-show="open"

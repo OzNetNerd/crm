@@ -192,7 +192,7 @@ class DisplayService:
             "content_endpoint": f"entities.{table_name}_content",
             "entity_buttons": [
                 {
-                    "title": f"New {cls.get_display_name(model_class)}",
+                    "title": f"Add {cls.get_display_name(model_class)}",
                     "url": f"/modals/{entity_type}/create",
                 }
             ],
