@@ -316,10 +316,10 @@
             </div>
         {% elif field_name == 'priority' or field_name == 'status' %}
             {# Skip - already rendered in inline group #}
-        {# Handle name and due_date side by side #}
+        {# Handle name and due_date side by side - more space for name #}
         {% elif field_name == 'name' %}
-            <div class="grid grid-cols-2 gap-4">
-                {{ render_field(field, 'col-span-1') }}
+            <div class="grid grid-cols-3 gap-4">
+                {{ render_field(field, 'col-span-2') }}
                 {{ render_enhanced_date_field(form.due_date, 'col-span-1') }}
             </div>
         {% elif field_name == 'due_date' %}
