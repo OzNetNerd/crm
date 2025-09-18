@@ -71,10 +71,11 @@
 
 /* Button sizes - dynamically generated as btn-{size} */
 .btn-xs {
-    padding: 0.2rem 0.2rem;
+    padding: 0.125rem 0.25rem;
     font-size: 0.6rem;
-    line-height: 1;
+    line-height: 0.75rem;
     min-height: auto;
+    height: auto;
 }
 
 .btn-sm {

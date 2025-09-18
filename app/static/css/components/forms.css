@@ -78,9 +78,11 @@
    ============================================ */
 
 .form-date-enhanced {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    /* Tailwind handles: flex items-center gap-2 */
+    /* Ensure everything stays on one line and doesn't overflow */
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .form-date-input-container {
@@ -90,12 +92,17 @@
 }
 
 .form-date-compact {
-    max-width: 20rem;
+    /* Don't let it expand */
+    flex: 0 0 auto;
+    width: auto;
 }
 
 .form-date-buttons {
-    display: flex;
-    gap: 0.25rem;
+    /* Tailwind handles: grid grid-cols-2 gap-1 flex-shrink-0 */
+    /* Make buttons compact and stack in 2x2 grid */
+    width: auto;
+    height: fit-content;
+    align-self: center;
 }
 
 /* ============================================
@@ -109,6 +116,9 @@
     display: inline-block;
     white-space: nowrap;
     color: #6b7280; /* text-gray-500 - default */
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .form-date-countdown.hidden {
