@@ -163,6 +163,10 @@ function selectEntity(fieldName, entityId, entityName, entityType) {
         field.value = entityId || '';
         field.dataset.entityId = entityId || '';
         field.dataset.entityType = entityType || '';
+
+        // Trigger change and input events to update Alpine.js state
+        field.dispatchEvent(new Event('change', { bubbles: true }));
+        field.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     if (searchField) {
@@ -186,9 +190,13 @@ function selectChoice(fieldName, choiceId, choiceTitle) {
     const searchField = document.getElementById(fieldName + '_search');
 
     if (field) {
-        // For choices, store the title as the value
-        field.value = choiceTitle || '';
+        // For choices, store the ID as the value (not the title)
+        field.value = choiceId || '';
         field.dataset.choiceId = choiceId || '';
+
+        // Trigger change and input events to update Alpine.js state
+        field.dispatchEvent(new Event('change', { bubbles: true }));
+        field.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     if (searchField) {
