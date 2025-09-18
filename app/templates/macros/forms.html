@@ -67,6 +67,27 @@
                 <p class="form-error">{{ error }}</p>
             {% endfor %}
         {% endif %}
+    {# Special handling for MEDDPICC role fields with choice search #}
+    {% elif field.name == 'meddpicc_role' and field.type == 'SelectField' %}
+        {% set meddpicc_choices = {} %}
+        {% for value, label in field.choices %}
+            {% if value %}
+                {% set _ = meddpicc_choices.update({value: {'label': label, 'description': ''}}) %}
+            {% endif %}
+        {% endfor %}
+        {{ choice_search_dropdown(
+            name=field.name,
+            choices=meddpicc_choices,
+            value=field.data or '',
+            label=field.label.text if show_label else '',
+            required=field.flags.required,
+            placeholder='Search MEDDPICC roles...'
+        ) }}
+        {% if show_errors and field.errors %}
+            {% for error in field.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
     {% else %}
         <div class="form-field-group">
             {% if show_label and field.label.text %}

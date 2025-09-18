@@ -4,7 +4,7 @@ Stakeholder Forms
 Simple stakeholder form using WTForms with model introspection.
 """
 
-from wtforms import StringField, SelectField
+from wtforms import StringField, SelectField, TextAreaField
 from wtforms.validators import DataRequired, Optional, Email, Length
 from ..base.base_forms import BaseForm
 
@@ -45,14 +45,20 @@ class StakeholderForm(BaseForm):
         render_kw={"placeholder": "Enter phone number..."},
     )
 
+    company = StringField("Company", validators=[DataRequired()])
+
     meddpicc_role = SelectField(
         "MEDDPICC Role",
         validators=[Optional()],
         choices=[],  # Will be populated in __init__
     )
 
-    company = StringField("Company", validators=[DataRequired()])
+    comments = TextAreaField(
+        "Comments",
+        validators=[Optional()],
+        render_kw={"placeholder": "Additional notes about this stakeholder...", "rows": 3},
+    )
 
     def get_display_fields(self):
         """Return field names to display in modal, in this exact order"""
-        return ["name", "company"]
+        return ["name", "job_title", "email", "phone", "company", "meddpicc_role", "comments"]
