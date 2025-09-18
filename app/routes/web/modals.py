@@ -14,6 +14,7 @@ modals_bp = Blueprint("modals", __name__, url_prefix="/modals")
 
 def handle_errors(f):
     """Decorator for consistent error handling."""
+
     @wraps(f)
     def wrapper(*args, **kwargs):
         try:
@@ -21,6 +22,7 @@ def handle_errors(f):
         except Exception as e:
             db.session.rollback()
             return render_template("components/modals/form_error.html", error=str(e))
+
     return wrapper
 
 
@@ -51,7 +53,7 @@ def render_modal(model_name, form, mode="create", entity=None):
         "modal_title": f"{mode.title()} {model_name.title()}",
         "mode": mode,
         "is_view": mode == "view",
-        "is_edit": mode == "edit"
+        "is_edit": mode == "edit",
     }
 
     if entity:
@@ -84,6 +86,7 @@ def handle_stakeholder_meddpic_roles(entity, form, is_new):
             db.session.flush()  # Ensure entity has ID
             # Remove all existing roles
             from app.models.stakeholder import stakeholder_meddpicc_roles
+
             delete_stmt = stakeholder_meddpicc_roles.delete().where(
                 stakeholder_meddpicc_roles.c.stakeholder_id == entity.id
             )
@@ -92,8 +95,8 @@ def handle_stakeholder_meddpic_roles(entity, form, is_new):
         # Add new roles
         db.session.flush()  # Ensure entity has ID for new entities
         for role in roles:
-            if isinstance(role, dict) and 'id' in role:
-                entity.add_meddpicc_role(role['id'])
+            if isinstance(role, dict) and "id" in role:
+                entity.add_meddpicc_role(role["id"])
             elif isinstance(role, str):
                 entity.add_meddpicc_role(role)
 
@@ -130,7 +133,9 @@ def process_form_submission(model_name, model, form, entity=None):
         db.session.add(entity)
 
     # Special handling for stakeholder and opportunity company field
-    if model_name.lower() in ["stakeholder", "opportunity"] and hasattr(form, "company"):
+    if model_name.lower() in ["stakeholder", "opportunity"] and hasattr(
+        form, "company"
+    ):
         # Store company value before populate_obj
         company_value = form.company.data
         # Remove company from form to avoid populate_obj error
@@ -141,6 +146,7 @@ def process_form_submission(model_name, model, form, entity=None):
             try:
                 # Extract company ID from the string (format: "TechCorp Solutions" or ID)
                 from app.models import Company
+
                 if company_value.isdigit():
                     entity.company_id = int(company_value)
                 else:
@@ -166,7 +172,7 @@ def process_form_submission(model_name, model, form, entity=None):
     return render_template(
         "components/modals/form_success.html",
         message=f"{model_name} {'created' if is_new else 'updated'} successfully",
-        entity=entity
+        entity=entity,
     )
 
 
@@ -182,12 +188,16 @@ def populate_stakeholder_meddpic_roles(entity, form, mode):
 
     if mode == "edit":
         # Convert role names to the expected entity format
-        roles_data = [{"id": role, "name": role.replace("_", " ").title(), "type": "choice"} for role in current_roles]
+        roles_data = [
+            {"id": role, "name": role.replace("_", " ").title(), "type": "choice"}
+            for role in current_roles
+        ]
         form.meddpicc_roles.data = json.dumps(roles_data)
     else:  # view mode
         # For view mode, show as readable text
         role_labels = []
         from app.models.stakeholder import Stakeholder
+
         choices_dict = dict(Stakeholder.get_field_choices("meddpicc_role"))
         for role in current_roles:
             role_labels.append(choices_dict.get(role, role))
@@ -204,7 +214,9 @@ def populate_task_form_data(entity, form, mode):
         return
 
     if mode == "edit":
-        entities_data = [{"id": e["id"], "name": e["name"], "type": e["type"]} for e in linked]
+        entities_data = [
+            {"id": e["id"], "name": e["name"], "type": e["type"]} for e in linked
+        ]
         form.entity.data = json.dumps(entities_data)
     else:  # view mode
         entity_names = [f"{e['name']} ({e['type']})" for e in linked]
@@ -212,6 +224,7 @@ def populate_task_form_data(entity, form, mode):
 
 
 # ============= ROUTE HANDLERS - DRY CONSOLIDATED =============
+
 
 @modals_bp.route("/<model_name>/create")
 @handle_errors
@@ -237,7 +250,7 @@ def entity_modal(model_name, entity_id, mode):
             model_name=model_name,
             entity=entity,
             entity_id=entity_id,
-            modal_title=f"Delete {model_name.title()}"
+            modal_title=f"Delete {model_name.title()}",
         )
 
     form = form_class(obj=entity)
@@ -281,11 +294,14 @@ def delete_entity(model_name, entity_id):
     result = entity.delete_safely()
 
     if not result["success"]:
-        return render_template(
-            "components/modals/form_error.html",
-            error=result["error"],
-            impact=result.get("impact")
-        ), 400
+        return (
+            render_template(
+                "components/modals/form_error.html",
+                error=result["error"],
+                impact=result.get("impact"),
+            ),
+            400,
+        )
 
     # Show impact information on successful deletion
     cascade_info = ""
@@ -301,7 +317,7 @@ def delete_entity(model_name, entity_id):
         "components/modals/form_success.html",
         message=f"{model_name.title()} deleted successfully{cascade_info}",
         refresh_url=refresh_url,
-        deleted_entity_id=f"entity-{model_name}-{entity_id}"
+        deleted_entity_id=f"entity-{model_name}-{entity_id}",
     )
 
 

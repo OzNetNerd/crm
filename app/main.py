@@ -18,11 +18,13 @@ def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
 
     # Apply configuration
-    app.config.update({
-        'SECRET_KEY': config.SECRET_KEY,
-        'SQLALCHEMY_DATABASE_URI': config.SQLALCHEMY_DATABASE_URI,
-        'SQLALCHEMY_TRACK_MODIFICATIONS': config.SQLALCHEMY_TRACK_MODIFICATIONS,
-    })
+    app.config.update(
+        {
+            "SECRET_KEY": config.SECRET_KEY,
+            "SQLALCHEMY_DATABASE_URI": config.SQLALCHEMY_DATABASE_URI,
+            "SQLALCHEMY_TRACK_MODIFICATIONS": config.SQLALCHEMY_TRACK_MODIFICATIONS,
+        }
+    )
 
     # Global configuration
     app.url_map.strict_slashes = False
@@ -31,19 +33,21 @@ def create_app():
     # Template globals and filters
     def entity_url(entity, entity_type, action):
         """Generate URLs for entity operations (view, edit, delete)."""
-        if action in ['view', 'edit', 'delete']:
+        if action in ["view", "edit", "delete"]:
             return f"/modals/{entity_type}/{entity.id}/{action}"
-        elif action == 'create':
+        elif action == "create":
             return f"/modals/{entity_type}/create"
         raise ValueError(f"Unknown action: {action}")
 
-    app.jinja_env.globals.update({
-        'get_dashboard_action_buttons': get_dashboard_action_buttons,
-        'entity_url': entity_url,
-        'getattr': getattr,
-        'hasattr': hasattr,
-    })
-    app.jinja_env.filters['badge_class'] = badge_class
+    app.jinja_env.globals.update(
+        {
+            "get_dashboard_action_buttons": get_dashboard_action_buttons,
+            "entity_url": entity_url,
+            "getattr": getattr,
+            "hasattr": hasattr,
+        }
+    )
+    app.jinja_env.filters["badge_class"] = badge_class
 
     # Basic logging
     if os.environ.get("WERKZEUG_RUN_MAIN"):
@@ -65,7 +69,9 @@ def create_app():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the CRM Flask application")
-    parser.add_argument("--port", type=int, required=True, help="Port number to run the application on")
+    parser.add_argument(
+        "--port", type=int, required=True, help="Port number to run the application on"
+    )
     args = parser.parse_args()
 
     app = create_app()

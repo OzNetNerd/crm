@@ -91,9 +91,17 @@
             {% endif %}
 
             {% if field.type == 'StringField' or field.type == 'PasswordField' or field.type == 'EmailField' %}
-                {{ field(class="form-input" + (" error" if field.errors else "")) }}
+                {% if field.flags.required %}
+                    {{ field(class="form-input" + (" error" if field.errors else ""), required=true) }}
+                {% else %}
+                    {{ field(class="form-input" + (" error" if field.errors else "")) }}
+                {% endif %}
             {% elif field.type == 'TextAreaField' %}
-                {{ field(class="form-textarea" + (" error" if field.errors else "")) }}
+                {% if field.flags.required %}
+                    {{ field(class="form-textarea" + (" error" if field.errors else ""), required=true) }}
+                {% else %}
+                    {{ field(class="form-textarea" + (" error" if field.errors else "")) }}
+                {% endif %}
             {% elif field.type == 'SelectField' %}
                 {% if field.flags.required %}
                     {{ field(class="form-select" + (" error" if field.errors else ""), required=true) }}
@@ -130,7 +138,7 @@
             {% if field.name == 'name' %}
                 <p x-show="validationErrors.name"
                    class="form-error form-error-enhanced"
-                   style="display: none; margin-left: 4px; font-size: 1.1em;">
+                   class="field-check-icon">
                     <strong>Error:</strong> <span x-text="validationErrors.name"></span>
                 </p>
             {% endif %}
@@ -195,9 +203,17 @@
             {% endif %}
 
             {% if field.type == 'StringField' or field.type == 'PasswordField' or field.type == 'EmailField' %}
-                {{ field(class="form-input" + (" error" if field.errors else "")) }}
+                {% if field.flags.required %}
+                    {{ field(class="form-input" + (" error" if field.errors else ""), required=true) }}
+                {% else %}
+                    {{ field(class="form-input" + (" error" if field.errors else "")) }}
+                {% endif %}
             {% elif field.type == 'TextAreaField' %}
-                {{ field(class="form-textarea" + (" error" if field.errors else "")) }}
+                {% if field.flags.required %}
+                    {{ field(class="form-textarea" + (" error" if field.errors else ""), required=true) }}
+                {% else %}
+                    {{ field(class="form-textarea" + (" error" if field.errors else "")) }}
+                {% endif %}
             {% elif field.type == 'SelectField' %}
                 {% if field.flags.required %}
                     {{ field(class="form-select" + (" error" if field.errors else ""), required=true) }}
@@ -234,7 +250,7 @@
             {% if field.name == 'name' %}
                 <p x-show="validationErrors.name"
                    class="form-error form-error-enhanced"
-                   style="display: none; margin-left: 4px; font-size: 1.1em;">
+                   class="field-check-icon">
                     <strong>Error:</strong> <span x-text="validationErrors.name"></span>
                 </p>
             {% endif %}
@@ -268,8 +284,7 @@
             <input type="hidden" name="{{ field.name }}" id="{{ field.id }}" value="{{ field.data or '' }}">
             <div id="{{ field.id }}_results"
                  class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
-                 style="display: none;"></div>
-            <div id="{{ field.id }}_selected" class="mt-1 text-sm text-gray-600"></div>
+                 class="dropdown-selected-text"></div>
         </div>
         {% if field.errors %}
             {% for error in field.errors %}
@@ -330,7 +345,7 @@
                     <button type="button" class="btn btn-sm btn-secondary" onclick="addDaysToDate('{{ field.id }}', 7)">+1 Week</button>
                 </div>
             </div>
-            <div class="form-date-countdown" id="{{ field.id }}_countdown" style="display: none;">
+            <div class="form-date-countdown hidden" id="{{ field.id }}_countdown">
                 <span class="countdown-text"></span>
             </div>
         </div>

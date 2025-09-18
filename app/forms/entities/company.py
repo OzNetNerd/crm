@@ -52,7 +52,9 @@ class CompanyForm(BaseForm):
     name = StringField("Company Name", validators=[DataRequired(), Length(max=255)])
 
     industry = SelectField(
-        "Industry", validators=[DataRequired()], choices=[]  # Will be populated in __init__
+        "Industry",
+        validators=[DataRequired()],
+        choices=[],  # Will be populated in __init__
     )
 
     website = StringField("Website", validators=[Optional(), URL()])

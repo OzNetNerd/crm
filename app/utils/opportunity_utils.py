@@ -1,4 +1,5 @@
 """Simple opportunity utilities - business logic extracted from model."""
+
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 
@@ -32,7 +33,9 @@ def get_pipeline_value(opportunity_model_class, stage: Optional[str] = None) -> 
 def get_pipeline_breakdown(opportunity_model_class) -> Dict[str, float]:
     """Get pipeline value breakdown by stage."""
     stages = get_stage_choices()
-    breakdown = {stage: get_pipeline_value(opportunity_model_class, stage) for stage in stages}
+    breakdown = {
+        stage: get_pipeline_value(opportunity_model_class, stage) for stage in stages
+    }
     breakdown["total"] = get_pipeline_value(opportunity_model_class)
     return breakdown
 
@@ -40,13 +43,17 @@ def get_pipeline_breakdown(opportunity_model_class) -> Dict[str, float]:
 def get_closing_soon(opportunity_model_class, days: int = 7, limit: int = 5) -> List:
     """Get opportunities closing soon."""
     from datetime import date, timedelta
+
     cutoff_date = date.today() + timedelta(days=days)
-    return (opportunity_model_class.query
-            .filter(opportunity_model_class.expected_close_date <= cutoff_date)
-            .filter(opportunity_model_class.expected_close_date >= date.today())
-            .order_by(opportunity_model_class.expected_close_date)
-            .limit(limit)
-            .all())
+    return (
+        opportunity_model_class.query.filter(
+            opportunity_model_class.expected_close_date <= cutoff_date
+        )
+        .filter(opportunity_model_class.expected_close_date >= date.today())
+        .order_by(opportunity_model_class.expected_close_date)
+        .limit(limit)
+        .all()
+    )
 
 
 def get_stage_choices() -> Dict[str, Dict[str, str]]:
@@ -71,22 +78,27 @@ def get_stakeholders(opportunity_id: int) -> List[Dict[str, Any]]:
     from app.models.stakeholder import stakeholder_opportunities
 
     # Query the junction table
-    linked = (db.session.query(stakeholder_opportunities.c.stakeholder_id)
-              .filter(stakeholder_opportunities.c.opportunity_id == opportunity_id)
-              .all())
+    linked = (
+        db.session.query(stakeholder_opportunities.c.stakeholder_id)
+        .filter(stakeholder_opportunities.c.opportunity_id == opportunity_id)
+        .all()
+    )
 
     stakeholders = []
     for (stakeholder_id,) in linked:
         from app.models.stakeholder import Stakeholder
+
         stakeholder = Stakeholder.query.get(stakeholder_id)
         if stakeholder:
-            stakeholders.append({
-                "id": stakeholder.id,
-                "name": stakeholder.name,
-                "job_title": stakeholder.job_title,
-                "email": stakeholder.email,
-                "meddpicc_roles": stakeholder.meddpicc_roles,
-            })
+            stakeholders.append(
+                {
+                    "id": stakeholder.id,
+                    "name": stakeholder.name,
+                    "job_title": stakeholder.job_title,
+                    "email": stakeholder.email,
+                    "meddpicc_roles": stakeholder.meddpicc_roles,
+                }
+            )
 
     return stakeholders
 
@@ -101,6 +113,7 @@ def get_full_account_team(opportunity_id: int) -> List[Dict[str, Any]]:
         return stakeholders
 
     from app.models.opportunity import Opportunity
+
     opportunity = Opportunity.query.get(opportunity_id)
     if not opportunity or not opportunity.company:
         return stakeholders
@@ -110,13 +123,15 @@ def get_full_account_team(opportunity_id: int) -> List[Dict[str, Any]]:
     for stakeholder in company_stakeholders:
         # Avoid duplicates
         if not any(s["id"] == stakeholder.id for s in stakeholders):
-            stakeholders.append({
-                "id": stakeholder.id,
-                "name": stakeholder.name,
-                "job_title": stakeholder.job_title,
-                "email": stakeholder.email,
-                "meddpicc_roles": stakeholder.meddpicc_roles,
-                "source": "company",
-            })
+            stakeholders.append(
+                {
+                    "id": stakeholder.id,
+                    "name": stakeholder.name,
+                    "job_title": stakeholder.job_title,
+                    "email": stakeholder.email,
+                    "meddpicc_roles": stakeholder.meddpicc_roles,
+                    "source": "company",
+                }
+            )
 
     return stakeholders

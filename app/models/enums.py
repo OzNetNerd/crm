@@ -1,9 +1,11 @@
 """Enums for model fields - eliminating magic strings."""
+
 from enum import Enum
 
 
 class TaskStatus(str, Enum):
     """Task status values."""
+
     TODO = "todo"
     IN_PROGRESS = "in-progress"
     COMPLETE = "complete"
@@ -11,6 +13,7 @@ class TaskStatus(str, Enum):
 
 class Priority(str, Enum):
     """Priority levels."""
+
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
@@ -18,6 +21,7 @@ class Priority(str, Enum):
 
 class TaskType(str, Enum):
     """Task hierarchy types."""
+
     SINGLE = "single"
     PARENT = "parent"
     CHILD = "child"
@@ -25,12 +29,14 @@ class TaskType(str, Enum):
 
 class DependencyType(str, Enum):
     """Task dependency types."""
+
     SEQUENTIAL = "sequential"
     PARALLEL = "parallel"
 
 
 class NextStepType(str, Enum):
     """Next step types for tasks."""
+
     CALL = "call"
     EMAIL = "email"
     MEETING = "meeting"
@@ -39,6 +45,7 @@ class NextStepType(str, Enum):
 
 class OpportunityStage(str, Enum):
     """Opportunity pipeline stages."""
+
     PROSPECT = "prospect"
     QUALIFIED = "qualified"
     PROPOSAL = "proposal"
@@ -49,6 +56,7 @@ class OpportunityStage(str, Enum):
 
 class EntityType(str, Enum):
     """Entity types for relationships."""
+
     COMPANY = "company"
     OPPORTUNITY = "opportunity"
     STAKEHOLDER = "stakeholder"
@@ -58,6 +66,7 @@ class EntityType(str, Enum):
 
 class MeddpiccRole(str, Enum):
     """MEDDPICC sales methodology roles."""
+
     METRIC = "metric"
     ECONOMIC_BUYER = "economic_buyer"
     DECISION_CRITERIA = "decision_criteria"

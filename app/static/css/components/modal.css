@@ -20,6 +20,11 @@
     overflow: auto;
 }
 
+/* Hidden modal state */
+.modal-hidden {
+    display: none;
+}
+
 /* Body scroll lock */
 body.modal-open {
     overflow: hidden;

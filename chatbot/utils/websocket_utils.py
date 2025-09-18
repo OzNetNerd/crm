@@ -1,4 +1,5 @@
 """Simple websocket utilities - single responsibility functions."""
+
 import json
 from typing import List, Dict
 from fastapi import WebSocket
@@ -6,6 +7,7 @@ from fastapi import WebSocket
 
 class WebSocketManager:
     """Manages WebSocket connections only."""
+
     def __init__(self):
         self.active_connections: List[WebSocket] = []
 
@@ -23,6 +25,7 @@ class WebSocketManager:
 
 class SessionManager:
     """Manages session tracking only."""
+
     def __init__(self):
         self.user_sessions: Dict[str, str] = {}  # websocket_id -> session_id
 

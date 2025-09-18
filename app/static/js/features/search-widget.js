@@ -21,11 +21,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // Helper functions for robust visibility control
 function showElement(element) {
     element.classList.remove('hidden');
+    element.removeAttribute('hidden');  // Remove HTML hidden attribute
     element.style.display = '';
 }
 
 function hideElement(element) {
     element.classList.add('hidden');
+    element.setAttribute('hidden', '');  // Add HTML hidden attribute
     element.style.display = 'none';
 }
 
@@ -44,6 +46,7 @@ function initializeSearchWidgets() {
 
         // Mark as initialized
         input.dataset.searchInitialized = 'true';
+
 
         // Add event to include selected items in HTMX request
         input.addEventListener('htmx:configRequest', function(event) {
@@ -70,12 +73,41 @@ function initializeSearchWidgets() {
                     // If not JSON, might be single-select, ignore
                 }
             }
+
+            // Include entity type if available (for dropdown searches)
+            if (this.dataset.entityType) {
+                event.detail.parameters.entity_type = this.dataset.entityType;
+            }
         });
 
         // Show results when HTMX loads content
         input.addEventListener('htmx:afterSwap', function() {
+            // Always show results if there's content
             if (resultsDiv.children.length > 0) {
                 showElement(resultsDiv);
+            }
+        });
+
+        // Also listen for HTMX afterSettle to ensure dropdown shows
+        input.addEventListener('htmx:afterSettle', function() {
+            // Always show results if there's content
+            if (resultsDiv.children.length > 0) {
+                showElement(resultsDiv);
+            }
+        });
+
+        // Listen for HTMX beforeRequest to track that we're loading
+        input.addEventListener('htmx:beforeRequest', function() {
+            // Mark that we're expecting results
+            this.dataset.loadingResults = 'true';
+        });
+
+        // After content loads, check if we should show
+        input.addEventListener('htmx:afterOnLoad', function() {
+            // If we were loading and got content, show it
+            if (this.dataset.loadingResults === 'true' && resultsDiv.children.length > 0) {
+                showElement(resultsDiv);
+                this.dataset.loadingResults = 'false';
             }
         });
 
@@ -91,6 +123,7 @@ function initializeSearchWidgets() {
             if (resultsDiv.children.length > 0) {
                 showElement(resultsDiv);
             }
+            // HTMX will trigger on focus and load content
         });
     });
 
@@ -102,10 +135,12 @@ function initializeSearchWidgets() {
         }
 
         // Close all search dropdowns when clicking outside
-        document.querySelectorAll('.search-results').forEach(resultsDiv => {
-            const container = resultsDiv.closest('.search-container');
+        // Find all results divs by looking for the hx-target attribute pattern
+        document.querySelectorAll('[id$="_results"]').forEach(resultsDiv => {
+            // Get the parent relative container
+            const container = resultsDiv.parentElement;
 
-            // Check if click is outside the search container
+            // Check if click is outside the container
             if (container && !container.contains(event.target)) {
                 hideElement(resultsDiv);
             }
@@ -134,7 +169,6 @@ window.selectEntity = function(fieldId, entityId, entityName, entityType) {
     const multipleDataField = document.getElementById(fieldId + '-data');  // Note: -data suffix for multi-select
     const singleDataField = document.getElementById(fieldId);  // No suffix for single-select
     const badgesDiv = document.getElementById(fieldId + '-badges');
-    const selectedDiv = document.getElementById(fieldId + '_selected');
     const resultsDiv = document.getElementById(fieldId + '_results');
 
     // Determine if this is multiple or single selection mode
@@ -192,12 +226,6 @@ window.selectEntity = function(fieldId, entityId, entityName, entityType) {
             searchField.value = entityName;
         }
 
-        // Show selected entity info below the field
-        if (selectedDiv) {
-            selectedDiv.innerHTML = `Selected: ${entityName}`;
-            selectedDiv.classList.remove('hidden');
-        }
-
         // Hide the results dropdown for single select
         if (resultsDiv) {
             hideElement(resultsDiv);
@@ -211,7 +239,6 @@ window.selectChoice = function(fieldName, choiceKey, choiceLabel) {
     const multipleDataField = document.getElementById(fieldName + '-data');  // Multi-select choice field
     const singleHiddenField = document.getElementById(fieldName);  // Single-select choice field
     const badgesDiv = document.getElementById(fieldName + '-badges');
-    const selectedDiv = document.getElementById(fieldName + '_selected');
     const resultsDiv = document.getElementById(fieldName + '_results');
 
     // Determine if this is multiple or single selection mode
@@ -264,22 +291,12 @@ window.selectChoice = function(fieldName, choiceKey, choiceLabel) {
         // Set the hidden field value
         singleHiddenField.value = choiceKey;
 
-        // Update the selected display
-        if (selectedDiv) {
-            selectedDiv.innerHTML = `
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    ${choiceLabel}
-                </span>
-            `;
-            selectedDiv.classList.remove('hidden');
+        // Show the choice label in the search field
+        if (searchField) {
+            searchField.value = choiceLabel;
         }
 
-        // Clear search and hide results for single select
-        if (searchField) {
-            searchField.value = '';
-            // Trigger input event to ensure HTMX clears results
-            searchField.dispatchEvent(new Event('input', { bubbles: true }));
-        }
+        // Hide results for single select
         if (resultsDiv) {
             hideElement(resultsDiv);
         }

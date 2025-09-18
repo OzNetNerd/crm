@@ -7,7 +7,7 @@ tasks_api_bp = Blueprint("tasks_api", __name__, url_prefix="/api/tasks")
 
 def _error_response(message, code=400):
     """Consistent error response format"""
-    return jsonify({'error': message}), code
+    return jsonify({"error": message}), code
 
 
 @tasks_api_bp.route("/<int:task_id>")

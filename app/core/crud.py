@@ -19,10 +19,11 @@ class RouteConfig:
         handler: The callable that handles the route.
         methods: List of HTTP methods allowed for the route.
     """
+
     url: str
     endpoint: str
     handler: Callable
-    methods: List[str] = field(default_factory=lambda: ['GET'])
+    methods: List[str] = field(default_factory=lambda: ["GET"])
 
 
 @dataclass
@@ -35,6 +36,7 @@ class Templates:
         edit: Template path for edit form.
         view: Template path for view details.
     """
+
     list: str
     add: str
     edit: str
@@ -51,10 +53,10 @@ class Templates:
             Templates instance with default paths for the model.
         """
         return cls(
-            list=f'crm/{model_name}_list.html',
-            add=f'crm/add_{model_name}.html',
-            edit=f'crm/edit_{model_name}.html',
-            view=f'crm/view_{model_name}.html'
+            list=f"crm/{model_name}_list.html",
+            add=f"crm/add_{model_name}.html",
+            edit=f"crm/edit_{model_name}.html",
+            view=f"crm/view_{model_name}.html",
         )
 
 
@@ -66,14 +68,14 @@ def handle_form_errors(form: Any) -> None:
     """
     for field_name, errors in form.errors.items():
         for error in errors:
-            flash(f'{field_name}: {error}', 'error')
+            flash(f"{field_name}: {error}", "error")
 
 
 def crud_response(
     success: bool = True,
     message: Optional[str] = None,
     data: Optional[Dict[str, Any]] = None,
-    redirect_url: Optional[str] = None
+    redirect_url: Optional[str] = None,
 ) -> Union[Response, WerkzeugResponse]:
     """Generate standardized response for CRUD operations.
 
@@ -87,10 +89,10 @@ def crud_response(
         JSON response for API calls or redirect for web requests.
     """
     if request.is_json:
-        return jsonify({'success': success, 'message': message, 'data': data})
+        return jsonify({"success": success, "message": message, "data": data})
 
     if message:
-        flash(message, 'success' if success else 'error')
+        flash(message, "success" if success else "error")
 
     return redirect(redirect_url) if redirect_url else redirect(request.url)
 
@@ -104,6 +106,7 @@ def error_handler(f: Callable) -> Callable:
     Returns:
         Wrapped function with error handling.
     """
+
     @wraps(f)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
@@ -112,7 +115,10 @@ def error_handler(f: Callable) -> Callable:
             return crud_response(False, str(e), redirect_url=request.url)
         except Exception:
             db.session.rollback()
-            return crud_response(False, 'An error occurred', redirect_url=url_for('main.index'))
+            return crud_response(
+                False, "An error occurred", redirect_url=url_for("main.index")
+            )
+
     return wrapper
 
 
@@ -127,10 +133,7 @@ class CRUDHandler:
     """
 
     def __init__(
-        self,
-        model_class: type,
-        form_class: type,
-        templates: Optional[Templates] = None
+        self, model_class: type, form_class: type, templates: Optional[Templates] = None
     ) -> None:
         """Initialize CRUD handler.
 
@@ -153,7 +156,7 @@ class CRUDHandler:
             Template render for GET, redirect for successful POST,
             or template with errors for failed POST.
         """
-        if request.method != 'POST':
+        if request.method != "POST":
             return render_template(self.templates.add, form=self.form_class())
 
         form = self.form_class()
@@ -167,8 +170,8 @@ class CRUDHandler:
 
         return crud_response(
             success=True,
-            message=f'{self.model.__name__} created successfully!',
-            redirect_url=url_for(f'crm.{self.name}_list')
+            message=f"{self.model.__name__} created successfully!",
+            redirect_url=url_for(f"crm.{self.name}_list"),
         )
 
     @login_required
@@ -184,11 +187,10 @@ class CRUDHandler:
             or template with errors for failed POST.
         """
         entity = self.model.query.filter_by(
-            id=entity_id,
-            user_id=current_user.id
+            id=entity_id, user_id=current_user.id
         ).first_or_404()
 
-        if request.method != 'POST':
+        if request.method != "POST":
             form = self.form_class(obj=entity)
             return render_template(self.templates.edit, form=form, entity=entity)
 
@@ -202,8 +204,8 @@ class CRUDHandler:
 
         return crud_response(
             success=True,
-            message=f'{self.model.__name__} updated successfully!',
-            redirect_url=url_for(f'crm.{self.name}_list')
+            message=f"{self.model.__name__} updated successfully!",
+            redirect_url=url_for(f"crm.{self.name}_list"),
         )
 
     @login_required
@@ -218,8 +220,7 @@ class CRUDHandler:
             Redirect to list view after successful deletion.
         """
         entity = self.model.query.filter_by(
-            id=entity_id,
-            user_id=current_user.id
+            id=entity_id, user_id=current_user.id
         ).first_or_404()
 
         db.session.delete(entity)
@@ -227,8 +228,8 @@ class CRUDHandler:
 
         return crud_response(
             success=True,
-            message=f'{self.model.__name__} deleted successfully!',
-            redirect_url=url_for(f'crm.{self.name}_list')
+            message=f"{self.model.__name__} deleted successfully!",
+            redirect_url=url_for(f"crm.{self.name}_list"),
         )
 
     @login_required
@@ -238,7 +239,7 @@ class CRUDHandler:
         Returns:
             Rendered template with paginated entity list.
         """
-        page = request.args.get('page', 1, type=int)
+        page = request.args.get("page", 1, type=int)
         query = self.model.query.filter_by(user_id=current_user.id)
 
         # Apply filters from request args
@@ -260,13 +261,12 @@ class CRUDHandler:
             Rendered template with entity details.
         """
         entity = self.model.query.filter_by(
-            id=entity_id,
-            user_id=current_user.id
+            id=entity_id, user_id=current_user.id
         ).first_or_404()
 
         return render_template(self.templates.view, entity=entity)
 
-    def get_routes(self, url_prefix: str = '') -> List[RouteConfig]:
+    def get_routes(self, url_prefix: str = "") -> List[RouteConfig]:
         """Generate route configurations for this handler.
 
         Args:
@@ -276,14 +276,26 @@ class CRUDHandler:
             List of RouteConfig instances for registration.
         """
         name = self.name
-        prefix = f'{url_prefix}/{name}' if url_prefix else name
+        prefix = f"{url_prefix}/{name}" if url_prefix else name
 
         return [
-            RouteConfig(f'{prefix}/add', f'add_{name}', self.create, ['GET', 'POST']),
-            RouteConfig(f'{prefix}/<int:entity_id>/edit', f'edit_{name}', self.update, ['GET', 'POST']),
-            RouteConfig(f'{prefix}/<int:entity_id>/delete', f'delete_{name}', self.delete, ['POST']),
-            RouteConfig(f'{prefix}', f'{name}_list', self.list, ['GET']),
-            RouteConfig(f'{prefix}/<int:entity_id>', f'view_{name}', self.view, ['GET']),
+            RouteConfig(f"{prefix}/add", f"add_{name}", self.create, ["GET", "POST"]),
+            RouteConfig(
+                f"{prefix}/<int:entity_id>/edit",
+                f"edit_{name}",
+                self.update,
+                ["GET", "POST"],
+            ),
+            RouteConfig(
+                f"{prefix}/<int:entity_id>/delete",
+                f"delete_{name}",
+                self.delete,
+                ["POST"],
+            ),
+            RouteConfig(f"{prefix}", f"{name}_list", self.list, ["GET"]),
+            RouteConfig(
+                f"{prefix}/<int:entity_id>", f"view_{name}", self.view, ["GET"]
+            ),
         ]
 
 
@@ -291,8 +303,8 @@ def register_crud_routes(
     blueprint: Any,
     model_class: type,
     form_class: type,
-    url_prefix: str = '',
-    templates: Optional[Templates] = None
+    url_prefix: str = "",
+    templates: Optional[Templates] = None,
 ) -> None:
     """Register all CRUD routes for a model.
 
@@ -307,8 +319,5 @@ def register_crud_routes(
 
     for route in handler.get_routes(url_prefix):
         blueprint.add_url_rule(
-            route.url,
-            route.endpoint,
-            route.handler,
-            methods=route.methods
+            route.url, route.endpoint, route.handler, methods=route.methods
         )

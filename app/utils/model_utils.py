@@ -1,4 +1,5 @@
 """Simple model utilities - business logic extracted from BaseModel."""
+
 from typing import List, Dict, Any
 from datetime import date
 
@@ -6,7 +7,9 @@ from datetime import date
 def get_recent_items(model_class, limit: int = 5) -> List:
     """Get recent entities - uniform interface for all models."""
     if hasattr(model_class, "created_at"):
-        return model_class.query.order_by(model_class.created_at.desc()).limit(limit).all()
+        return (
+            model_class.query.order_by(model_class.created_at.desc()).limit(limit).all()
+        )
     return model_class.query.order_by(model_class.id.desc()).limit(limit).all()
 
 
@@ -14,7 +17,9 @@ def get_overdue_items(model_class, limit: int = 5) -> List:
     """Get overdue items - only for models with due_date."""
     if hasattr(model_class, "due_date") and hasattr(model_class, "status"):
         return (
-            model_class.query.filter(model_class.due_date < date.today(), model_class.status != "complete")
+            model_class.query.filter(
+                model_class.due_date < date.today(), model_class.status != "complete"
+            )
             .limit(limit)
             .all()
         )

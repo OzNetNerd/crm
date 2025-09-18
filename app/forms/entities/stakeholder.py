@@ -27,7 +27,6 @@ class StakeholderForm(BaseForm):
         render_kw={"placeholder": "Enter job title..."},
     )
 
-
     company = StringField("Company", validators=[DataRequired()])
 
     meddpicc_roles = HiddenField("MEDDPICC Roles")
@@ -35,7 +34,10 @@ class StakeholderForm(BaseForm):
     comments = TextAreaField(
         "Comments",
         validators=[Optional()],
-        render_kw={"placeholder": "Additional notes about this stakeholder...", "rows": 3},
+        render_kw={
+            "placeholder": "Additional notes about this stakeholder...",
+            "rows": 3,
+        },
     )
 
     def get_display_fields(self):

@@ -16,6 +16,7 @@ class Stat:
         value: The computed value or callable to compute it.
         formatter: Optional formatter for the value.
     """
+
     label: str
     value: Any
     formatter: Optional[Callable[[Any], str]] = None
@@ -87,11 +88,11 @@ class StatsGenerator:
 
         # Route to specific stat generators
         generators = {
-            'companies': self._company_stats,
-            'stakeholders': self._stakeholder_stats,
-            'opportunities': self._opportunity_stats,
-            'tasks': self._task_stats,
-            'users': self._user_stats
+            "companies": self._company_stats,
+            "stakeholders": self._stakeholder_stats,
+            "opportunities": self._opportunity_stats,
+            "tasks": self._task_stats,
+            "users": self._user_stats,
         }
 
         if generator := generators.get(self.table_name):
@@ -120,8 +121,12 @@ class StatsGenerator:
         stats = []
 
         # Active companies
-        active = db.session.query(func.count(func.distinct(self.model.id)))\
-            .join(Opportunity).scalar() or 0
+        active = (
+            db.session.query(func.count(func.distinct(self.model.id)))
+            .join(Opportunity)
+            .scalar()
+            or 0
+        )
         stats.append(Stat(label="Active Companies", value=active))
 
         # Total opportunities
@@ -129,17 +134,18 @@ class StatsGenerator:
         stats.append(Stat(label="Total Opportunities", value=total_opps))
 
         # Top industry
-        top_industry = db.session.query(self.model.industry, func.count(self.model.id))\
-            .filter(self.model.industry.isnot(None))\
-            .group_by(self.model.industry)\
-            .order_by(func.count(self.model.id).desc())\
+        top_industry = (
+            db.session.query(self.model.industry, func.count(self.model.id))
+            .filter(self.model.industry.isnot(None))
+            .group_by(self.model.industry)
+            .order_by(func.count(self.model.id).desc())
             .first()
+        )
 
         if top_industry:
-            stats.append(Stat(
-                label=f"In {top_industry[0].title()}",
-                value=top_industry[1]
-            ))
+            stats.append(
+                Stat(label=f"In {top_industry[0].title()}", value=top_industry[1])
+            )
 
         return stats
 
@@ -152,8 +158,15 @@ class StatsGenerator:
         stats = []
 
         # Decision makers
-        decision_titles = ['%CEO%', '%CTO%', '%CFO%', '%President%',
-                          '%VP%', '%Director%', '%Vice President%']
+        decision_titles = [
+            "%CEO%",
+            "%CTO%",
+            "%CFO%",
+            "%President%",
+            "%VP%",
+            "%Director%",
+            "%Vice President%",
+        ]
         conditions = [self.model.job_title.ilike(title) for title in decision_titles]
         decision_makers = self.model.query.filter(db.or_(*conditions)).count()
         stats.append(Stat(label="Decision Makers", value=decision_makers))
@@ -163,7 +176,10 @@ class StatsGenerator:
         stats.append(Stat(label="With Email", value=with_email))
 
         # Companies represented
-        companies = db.session.query(func.count(func.distinct(self.model.company_id))).scalar() or 0
+        companies = (
+            db.session.query(func.count(func.distinct(self.model.company_id))).scalar()
+            or 0
+        )
         stats.append(Stat(label="Companies", value=companies))
 
         return stats
@@ -178,32 +194,26 @@ class StatsGenerator:
 
         # Pipeline value
         total_value = db.session.query(func.sum(self.model.value)).scalar() or 0
-        stats.append(Stat(
-            label="Pipeline Value",
-            value=total_value,
-            formatter=format_currency
-        ))
+        stats.append(
+            Stat(label="Pipeline Value", value=total_value, formatter=format_currency)
+        )
 
         # Average deal size
         avg_value = db.session.query(func.avg(self.model.value)).scalar() or 0
-        stats.append(Stat(
-            label="Avg Deal Size",
-            value=avg_value,
-            formatter=format_currency
-        ))
+        stats.append(
+            Stat(label="Avg Deal Size", value=avg_value, formatter=format_currency)
+        )
 
         # Win rate
-        closed_won = self.model.query.filter_by(stage='closed_won').count()
-        closed_lost = self.model.query.filter_by(stage='closed_lost').count()
+        closed_won = self.model.query.filter_by(stage="closed_won").count()
+        closed_lost = self.model.query.filter_by(stage="closed_lost").count()
         total_closed = closed_won + closed_lost
 
         if total_closed > 0:
             win_rate = (closed_won / total_closed) * 100
-            stats.append(Stat(
-                label="Win Rate",
-                value=win_rate,
-                formatter=format_percentage
-            ))
+            stats.append(
+                Stat(label="Win Rate", value=win_rate, formatter=format_percentage)
+            )
         else:
             stats.append(Stat(label="Win Rate", value="N/A"))
 
@@ -220,21 +230,19 @@ class StatsGenerator:
 
         # Overdue
         overdue = self.model.query.filter(
-            self.model.due_date < now,
-            self.model.status != 'completed'
+            self.model.due_date < now, self.model.status != "completed"
         ).count()
         stats.append(Stat(label="Overdue", value=overdue))
 
         # Due this week
         week_end = now + timedelta(days=7)
         due_week = self.model.query.filter(
-            self.model.due_date.between(now, week_end),
-            self.model.status != 'completed'
+            self.model.due_date.between(now, week_end), self.model.status != "completed"
         ).count()
         stats.append(Stat(label="Due This Week", value=due_week))
 
         # Completed
-        completed = self.model.query.filter_by(status='completed').count()
+        completed = self.model.query.filter_by(status="completed").count()
         stats.append(Stat(label="Completed", value=completed))
 
         return stats
@@ -250,7 +258,10 @@ class StatsGenerator:
         stats = []
 
         # Active users
-        active = db.session.query(func.count(func.distinct(Task.assigned_to_id))).scalar() or 0
+        active = (
+            db.session.query(func.count(func.distinct(Task.assigned_to_id))).scalar()
+            or 0
+        )
         stats.append(Stat(label="Active Members", value=active))
 
         # Opportunities owned
@@ -258,7 +269,7 @@ class StatsGenerator:
         stats.append(Stat(label="Opportunities Owned", value=opps_owned))
 
         # Open tasks
-        open_tasks = Task.query.filter(Task.status != 'completed').count()
+        open_tasks = Task.query.filter(Task.status != "completed").count()
         stats.append(Stat(label="Open Tasks", value=open_tasks))
 
         return stats

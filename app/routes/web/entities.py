@@ -35,39 +35,35 @@ def create_routes() -> None:
         def make_index(model, table_name):
             def handler():
                 return entity_index(model, table_name)
+
             handler.__name__ = f"{table_name}_index"
             return handler
 
         def make_content(model, table_name):
             def handler():
                 return entity_content(model, table_name)
+
             handler.__name__ = f"{table_name}_content"
             return handler
 
         # Register routes
         entities_web_bp.add_url_rule(
-            f"/{table_name}",
-            f"{table_name}_index",
-            make_index(model, table_name)
+            f"/{table_name}", f"{table_name}_index", make_index(model, table_name)
         )
 
         entities_web_bp.add_url_rule(
             f"/{table_name}/content",
             f"{table_name}_content",
-            make_content(model, table_name)
+            make_content(model, table_name),
         )
 
         # Add alternate routes for users -> teams
         if entity_type == "user":
             entities_web_bp.add_url_rule(
-                "/teams",
-                "teams_index",
-                make_index(model, "users")
+                "/teams", "teams_index", make_index(model, "users")
             )
             entities_web_bp.add_url_rule(
-                "/teams/content",
-                "teams_content",
-                make_content(model, "users")
+                "/teams/content", "teams_content", make_content(model, "users")
             )
 
 
@@ -92,12 +88,13 @@ def entity_index(model: type, table_name: str) -> str:
     context = {
         "entity_config": {
             "entity_name": model.get_display_name_plural(),
+            "entity_type": model.__name__.lower(),
             "entity_description": f"Manage your {model.get_display_name_plural().lower()}",
             "entity_buttons": [
                 {
                     "title": f"Add {model.get_display_name()}",
                     "url": f"/modals/{model.__name__.lower()}/create",
-                    "variant": "primary"
+                    "variant": "primary",
                 }
             ],
             "content_endpoint": f"entities.{table_name}_content",
@@ -125,8 +122,9 @@ def entity_content(model: type, table_name: str) -> str:
     group_by = request.args.get("group_by")
     sort_by = request.args.get("sort_by", "id")
     sort_direction = request.args.get("sort_direction", "asc")
-    filters = {k: v for k, v in request.args.items()
-               if not k.startswith(("group_by", "sort_"))}
+    filters = {
+        k: v for k, v in request.args.items() if not k.startswith(("group_by", "sort_"))
+    }
 
     # Build and execute query
     query = QueryService.build_filtered_query(model, filters)
@@ -167,7 +165,7 @@ def entity_content(model: type, table_name: str) -> str:
         {
             "key": "all",
             "label": f"All {get_plural_name(model.__name__)}",
-            "entities": entities
+            "entities": entities,
         }
     ]
 

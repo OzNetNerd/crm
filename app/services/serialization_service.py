@@ -6,7 +6,7 @@ responsibility principle. Handles to_dict conversion, property inclusion,
 and relationship transformations.
 """
 
-from typing import Dict, Any, List, Callable
+from typing import Dict, Any, List
 from datetime import datetime, date
 
 
@@ -87,7 +87,14 @@ class SerializationService:
         result = cls.serialize_model(instance)
 
         # Add display-friendly versions of choice fields
-        choice_fields = ["status", "priority", "stage", "next_step_type", "task_type", "dependency_type"]
+        choice_fields = [
+            "status",
+            "priority",
+            "stage",
+            "next_step_type",
+            "task_type",
+            "dependency_type",
+        ]
 
         for field in choice_fields:
             if hasattr(instance, field):
@@ -114,7 +121,9 @@ class SerializationService:
         return value.replace("-", " ").replace("_", " ").title()
 
     @classmethod
-    def serialize_relationship(cls, related_instances: List[Any], fields: List[str]) -> List[Dict[str, Any]]:
+    def serialize_relationship(
+        cls, related_instances: List[Any], fields: List[str]
+    ) -> List[Dict[str, Any]]:
         """
         Serialize related model instances with specific fields.
 
@@ -148,5 +157,7 @@ class SerializationService:
         """
         return {
             "include_properties": getattr(model_class, "__include_properties__", []),
-            "relationship_transforms": getattr(model_class, "__relationship_transforms__", {}),
+            "relationship_transforms": getattr(
+                model_class, "__relationship_transforms__", {}
+            ),
         }

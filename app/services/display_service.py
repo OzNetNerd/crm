@@ -43,7 +43,10 @@ class DisplayService:
         Raises:
             NotImplementedError: If model doesn't define __display_name__
         """
-        if not hasattr(model_class, "__display_name__") or not model_class.__display_name__:
+        if (
+            not hasattr(model_class, "__display_name__")
+            or not model_class.__display_name__
+        ):
             raise NotImplementedError(
                 f"{model_class.__name__} must define __display_name__"
             )
@@ -60,7 +63,10 @@ class DisplayService:
         Returns:
             Plural display name string
         """
-        if hasattr(model_class, "__display_name_plural__") and model_class.__display_name_plural__:
+        if (
+            hasattr(model_class, "__display_name_plural__")
+            and model_class.__display_name_plural__
+        ):
             return model_class.__display_name_plural__
 
         # Default to titleized table name (tables are already plural)

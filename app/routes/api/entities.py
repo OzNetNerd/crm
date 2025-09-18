@@ -147,9 +147,22 @@ def validate_field(entity_type, field_name):
 
             # Custom message for company names
             if entity_type == "companies" and field_name == "name":
-                return jsonify({"valid": False, "message": "A company with this name already exists."}), 200
+                return (
+                    jsonify(
+                        {
+                            "valid": False,
+                            "message": "A company with this name already exists.",
+                        }
+                    ),
+                    200,
+                )
             else:
-                return jsonify({"valid": False, "message": f"{field_name} already exists"}), 200
+                return (
+                    jsonify(
+                        {"valid": False, "message": f"{field_name} already exists"}
+                    ),
+                    200,
+                )
 
     return jsonify({"valid": True})
 

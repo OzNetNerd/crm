@@ -31,32 +31,90 @@ class Opportunity(BaseModel):
     }
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False, info={"display_label": "Opportunity Name", "required": True, "form_include": True})
-    value = db.Column(db.Integer, info={
-        "display_label": "Deal Value", "groupable": True, "sortable": True, "form_include": True, "required": True,
-        "priority_ranges": [(50000, "high", "High Value ($50K+)"), (10000, "medium", "Medium Value ($10K-$50K)"), (0, "low", "Low Value (<$10K)")],
-    })
-    probability = db.Column(db.Integer, default=0, info={"display_label": "Win Probability", "groupable": True, "sortable": True, "unit": "%", "min_value": 0, "max_value": 100})
-    priority = db.Column(db.String(50), info={
-        "display_label": "Priority",
-        "choices": {
-            "low": {"label": "Low", "description": "Low priority opportunity"},
-            "medium": {"label": "Medium", "description": "Medium priority opportunity"},
-            "high": {"label": "High", "description": "High priority opportunity"},
+    name = db.Column(
+        db.String(255),
+        nullable=False,
+        info={
+            "display_label": "Opportunity Name",
+            "required": True,
+            "form_include": True,
         },
-    })
-    expected_close_date = db.Column(db.Date, info={"display_label": "Expected Close Date", "groupable": True, "sortable": True, "form_include": True})
-    stage = db.Column(db.String(50), default="prospect", info={
-        "display_label": "Stage", "groupable": True, "sortable": True, "form_include": True, "required": True,
-        "choices": get_stage_choices(),
-    })
+    )
+    value = db.Column(
+        db.Integer,
+        info={
+            "display_label": "Deal Value",
+            "groupable": True,
+            "sortable": True,
+            "form_include": True,
+            "required": True,
+            "priority_ranges": [
+                (50000, "high", "High Value ($50K+)"),
+                (10000, "medium", "Medium Value ($10K-$50K)"),
+                (0, "low", "Low Value (<$10K)"),
+            ],
+        },
+    )
+    probability = db.Column(
+        db.Integer,
+        default=0,
+        info={
+            "display_label": "Win Probability",
+            "groupable": True,
+            "sortable": True,
+            "unit": "%",
+            "min_value": 0,
+            "max_value": 100,
+        },
+    )
+    priority = db.Column(
+        db.String(50),
+        info={
+            "display_label": "Priority",
+            "choices": {
+                "low": {"label": "Low", "description": "Low priority opportunity"},
+                "medium": {
+                    "label": "Medium",
+                    "description": "Medium priority opportunity",
+                },
+                "high": {"label": "High", "description": "High priority opportunity"},
+            },
+        },
+    )
+    expected_close_date = db.Column(
+        db.Date,
+        info={
+            "display_label": "Expected Close Date",
+            "groupable": True,
+            "sortable": True,
+            "form_include": True,
+        },
+    )
+    stage = db.Column(
+        db.String(50),
+        default="prospect",
+        info={
+            "display_label": "Stage",
+            "groupable": True,
+            "sortable": True,
+            "form_include": True,
+            "required": True,
+            "choices": get_stage_choices(),
+        },
+    )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
-    company_id = db.Column(db.Integer, db.ForeignKey("companies.id", ondelete="CASCADE"), info={"display_label": "Company", "form_include": True, "required": True})
+    company_id = db.Column(
+        db.Integer,
+        db.ForeignKey("companies.id", ondelete="CASCADE"),
+        info={"display_label": "Company", "form_include": True, "required": True},
+    )
     company = db.relationship("Company", back_populates="opportunities")
 
-    comments = db.Column(db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3})
+    comments = db.Column(
+        db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3}
+    )
 
     # Properties using utility functions
     deal_age = property(lambda self: calculate_deal_age(self.created_at))
@@ -99,7 +157,9 @@ class Opportunity(BaseModel):
         display_fields = ["stage", "priority"]
         for field in display_fields:
             value = getattr(self, field, None)
-            result[f"{field}_display"] = value.replace("-", " ").replace("_", " ").title() if value else ""
+            result[f"{field}_display"] = (
+                value.replace("-", " ").replace("_", " ").title() if value else ""
+            )
 
         return result
 
