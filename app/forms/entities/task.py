@@ -73,7 +73,7 @@ class TaskForm(FlaskForm):
 
     # Related entities
     assigned_to_id = StringField(
-        "Assigned To",
+        "Assignees",
         validators=[Optional()],
         render_kw={
             "data-search-type": "assignment",
@@ -115,12 +115,12 @@ class TaskForm(FlaskForm):
             "task_category",  # Radio buttons at top
             "company_id",  # Company (conditional)
             "opportunity_id",  # Opportunity (conditional)
+            "assigned_to_id",  # Assignees
             "name",  # Task Name
-            "description",  # Description
             "task_type",  # Task Type (first in inline group)
             "priority",  # Priority (second in inline group)
             "status",  # Status (third in inline group)
+            "description",  # Description
             "due_date",  # Due Date with enhancements
-            "assigned_to_id",  # Assigned To
             # Note: parent_task_id is excluded (HiddenField should not display)
         ]
