@@ -168,8 +168,8 @@
                    hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}"}'>
             <input type="hidden" name="{{ name }}" id="{{ name }}" value="{{ value }}"{% if required %} required{% endif %}>
             <div id="{{ name }}_results"
-                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
-                 hidden></div>
+                 class="search-results bg-white border border-gray-200 rounded-md shadow-lg"
+                 style="display: none;"></div>
         </div>
 
         {% if multi_select %}

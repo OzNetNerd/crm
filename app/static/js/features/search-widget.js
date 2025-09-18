@@ -31,6 +31,20 @@ function hideElement(element) {
     element.style.display = 'none';
 }
 
+// Position dropdown using fixed positioning to escape stacking contexts
+function positionDropdown(inputElement, dropdownElement) {
+    const rect = inputElement.getBoundingClientRect();
+
+    // Set fixed positioning
+    dropdownElement.style.position = 'fixed';
+    dropdownElement.style.top = (rect.bottom + 2) + 'px';  // 2px gap below input
+    dropdownElement.style.left = rect.left + 'px';
+    dropdownElement.style.width = rect.width + 'px';
+    dropdownElement.style.maxHeight = '240px';  // Same as max-h-60 in Tailwind
+    dropdownElement.style.overflowY = 'auto';
+    dropdownElement.style.zIndex = '99999';  // Ensure it's above everything
+}
+
 function initializeSearchWidgets() {
     // Find all search inputs - now unified with .search-input class
     const searchInputs = document.querySelectorAll('.search-input');
@@ -84,6 +98,7 @@ function initializeSearchWidgets() {
         input.addEventListener('htmx:afterSwap', function() {
             // Always show results if there's content
             if (resultsDiv.children.length > 0) {
+                positionDropdown(this, resultsDiv);
                 showElement(resultsDiv);
             }
         });
@@ -92,6 +107,7 @@ function initializeSearchWidgets() {
         input.addEventListener('htmx:afterSettle', function() {
             // Always show results if there's content
             if (resultsDiv.children.length > 0) {
+                positionDropdown(this, resultsDiv);
                 showElement(resultsDiv);
             }
         });
@@ -106,6 +122,7 @@ function initializeSearchWidgets() {
         input.addEventListener('htmx:afterOnLoad', function() {
             // If we were loading and got content, show it
             if (this.dataset.loadingResults === 'true' && resultsDiv.children.length > 0) {
+                positionDropdown(this, resultsDiv);
                 showElement(resultsDiv);
                 this.dataset.loadingResults = 'false';
             }
@@ -121,6 +138,7 @@ function initializeSearchWidgets() {
         // Show results when focusing input if there's content
         input.addEventListener('focus', function() {
             if (resultsDiv.children.length > 0) {
+                positionDropdown(this, resultsDiv);
                 showElement(resultsDiv);
             }
             // HTMX will trigger on focus and load content
@@ -161,6 +179,24 @@ function initializeSearchWidgets() {
             });
         }
     });
+
+    // Reposition dropdowns on scroll/resize
+    let repositionTimeout;
+    function handleRepositioning() {
+        clearTimeout(repositionTimeout);
+        repositionTimeout = setTimeout(() => {
+            document.querySelectorAll('.search-results:not(.hidden)').forEach(resultsDiv => {
+                const inputId = resultsDiv.id.replace('_results', '_search');
+                const input = document.getElementById(inputId);
+                if (input) {
+                    positionDropdown(input, resultsDiv);
+                }
+            });
+        }, 10);
+    }
+
+    window.addEventListener('scroll', handleRepositioning, true);
+    window.addEventListener('resize', handleRepositioning);
 }
 
 // Universal selection function for ALL dropdowns (entities, choices, etc.)
