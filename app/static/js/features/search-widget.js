@@ -45,6 +45,33 @@ function initializeSearchWidgets() {
         // Mark as initialized
         input.dataset.searchInitialized = 'true';
 
+        // Add event to include selected items in HTMX request
+        input.addEventListener('htmx:configRequest', function(event) {
+            // Get the field name from the search input ID (remove '_search' suffix)
+            const fieldId = this.id.replace('_search', '');
+
+            // Check for multi-select data field
+            const dataField = document.getElementById(fieldId + '-data');
+            const selectedField = document.getElementById(fieldId + '-selected');
+
+            if (dataField && dataField.value) {
+                try {
+                    const selectedItems = JSON.parse(dataField.value);
+                    // Add selected item IDs to the request
+                    if (selectedItems.length > 0) {
+                        const selectedIds = selectedItems.map(item => item.id).join(',');
+                        event.detail.parameters.selected = selectedIds;
+                        // Also update the hidden field for HTMX to pick up
+                        if (selectedField) {
+                            selectedField.value = selectedIds;
+                        }
+                    }
+                } catch (e) {
+                    // If not JSON, might be single-select, ignore
+                }
+            }
+        });
+
         // Show results when HTMX loads content
         input.addEventListener('htmx:afterSwap', function() {
             if (resultsDiv.children.length > 0) {
@@ -138,6 +165,12 @@ window.selectEntity = function(fieldId, entityId, entityName, entityType) {
         // Update hidden field
         multipleDataField.value = JSON.stringify(entities);
 
+        // Update selected field for HTMX
+        const selectedField = document.getElementById(fieldId + '-selected');
+        if (selectedField) {
+            selectedField.value = entities.map(e => e.id).join(',');
+        }
+
         // Create badge
         createEntityBadge(fieldId, entityId, entityName, entityType);
 
@@ -208,6 +241,12 @@ window.selectChoice = function(fieldName, choiceKey, choiceLabel) {
 
         // Update hidden field
         multipleDataField.value = JSON.stringify(choices);
+
+        // Update selected field for HTMX
+        const selectedField = document.getElementById(fieldName + '-selected');
+        if (selectedField) {
+            selectedField.value = choices.map(c => c.id).join(',');
+        }
 
         // Create badge for choice
         createChoiceBadge(fieldName, choiceKey, choiceLabel);
@@ -312,6 +351,7 @@ window.createChoiceBadge = function(fieldName, choiceKey, choiceLabel) {
 window.removeEntityBadge = function(fieldId, entityId, entityType) {
     const dataField = document.getElementById(fieldId + '-data');
     const badgesDiv = document.getElementById(fieldId + '-badges');
+    const searchField = document.getElementById(fieldId + '_search');
 
     if (!dataField || !badgesDiv) return;
 
@@ -326,14 +366,27 @@ window.removeEntityBadge = function(fieldId, entityId, entityType) {
     entities = entities.filter(e => !(e.id == entityId && e.type === entityType));
     dataField.value = JSON.stringify(entities);
 
+    // Update selected field for HTMX
+    const selectedField = document.getElementById(fieldId + '-selected');
+    if (selectedField) {
+        selectedField.value = entities.map(e => e.id).join(',');
+    }
+
     // Remove badge from display
     const badge = badgesDiv.querySelector(`[data-entity-id="${entityId}"][data-entity-type="${entityType}"]`);
     if (badge) badge.remove();
+
+    // Trigger search refresh if search field is focused or has value
+    if (searchField && (document.activeElement === searchField || searchField.value)) {
+        // Trigger HTMX to refresh the results
+        htmx.trigger(searchField, 'input');
+    }
 };
 
 window.removeChoiceBadge = function(fieldName, choiceKey) {
     const dataField = document.getElementById(fieldName + '-data');
     const badgesDiv = document.getElementById(fieldName + '-badges');
+    const searchField = document.getElementById(fieldName + '_search');
 
     if (!dataField || !badgesDiv) return;
 
@@ -348,9 +401,21 @@ window.removeChoiceBadge = function(fieldName, choiceKey) {
     choices = choices.filter(c => c.id !== choiceKey);
     dataField.value = JSON.stringify(choices);
 
+    // Update selected field for HTMX
+    const selectedField = document.getElementById(fieldName + '-selected');
+    if (selectedField) {
+        selectedField.value = choices.map(c => c.id).join(',');
+    }
+
     // Remove badge from display
     const badge = badgesDiv.querySelector(`[data-choice-key="${choiceKey}"]`);
     if (badge) badge.remove();
+
+    // Trigger search refresh if search field is focused or has value
+    if (searchField && (document.activeElement === searchField || searchField.value)) {
+        // Trigger HTMX to refresh the results
+        htmx.trigger(searchField, 'input');
+    }
 };
 
 // Initialize any existing entity data on page load

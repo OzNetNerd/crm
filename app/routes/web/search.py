@@ -213,6 +213,10 @@ def htmx_search():
     field_id = request.args.get("field_id", "")
     field_name = request.args.get("field_name", "")
 
+    # Get selected items to filter out (for multi-select)
+    selected_ids = request.args.get("selected", "").split(",")
+    selected_ids = [sid.strip() for sid in selected_ids if sid.strip()]
+
     # Handle choice fields as virtual entities
     if entity_type.startswith("choice:"):
         choice_field = entity_type.split(":", 1)[1]
@@ -249,6 +253,10 @@ def htmx_search():
             except Exception:
                 continue
 
+        # Filter out already selected items (for multi-select)
+        if selected_ids:
+            results = [r for r in results if str(r.get("id", "")) not in selected_ids]
+
         # Sort and limit
         type_order = {name: i for i, name in enumerate(MODEL_REGISTRY.keys())}
         results.sort(
@@ -270,6 +278,10 @@ def _handle_choice_search(query, choice_field, mode, field_name):
     """Handle choice field search by converting choices to search results."""
     from app.forms import get_field_choices
 
+    # Get selected items to filter out
+    selected_ids = request.args.get("selected", "").split(",")
+    selected_ids = [sid.strip() for sid in selected_ids if sid.strip()]
+
     # Special handling for meddpicc_roles
     if choice_field == "meddpicc_roles":
         choices = _get_meddpicc_choices()
@@ -290,6 +302,10 @@ def _handle_choice_search(query, choice_field, mode, field_name):
     query_lower = query.lower()
 
     for key, choice_data in choices.items():
+        # Skip if already selected
+        if key in selected_ids:
+            continue
+
         label = choice_data.get("label", "")
         description = choice_data.get("description", "")
 

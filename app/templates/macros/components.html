@@ -196,10 +196,12 @@
                    hx-trigger="input changed delay:300ms, focus"
                    hx-target="#{{ name }}_results"
                    hx-swap="innerHTML"
-                   hx-vals='{"mode": "select", "type": "choice:{{ name }}", "field_name": "{{ name }}"}'>
+                   hx-vals='{"mode": "select", "type": "choice:{{ name }}", "field_name": "{{ name }}"}'
+                   hx-include="#{{ name }}-selected">
             <button type="button" class="absolute right-2 top-2 text-gray-400 hover:text-gray-600">
                 {{ icon('magnifying-glass') }}
             </button>
+            <input type="hidden" name="selected" id="{{ name }}-selected" value="">
             <input type="hidden" name="{{ name }}" id="{{ name }}-data" value="{{ value }}"{% if required %} required{% endif %}>
             <div id="{{ name }}_results"
                  class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto search-results"
