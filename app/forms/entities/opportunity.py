@@ -19,25 +19,9 @@ class OpportunityForm(BaseForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Process fields that use model classes as labels
-        if hasattr(self.company.label, "text") and hasattr(
-            self.company.label.text, "__tablename__"
-        ):
-            model_class = self.company.label.text
-            self.company.label.text = model_class.get_display_name()
-            if not self.company.render_kw:
-                self.company.render_kw = {}
-            self.company.render_kw["placeholder"] = (
-                f"Search {model_class.get_display_name_plural().lower()}..."
-            )
-
         # Set priority choices from model metadata
         priority_choices = self.model.get_field_choices("priority")
         self.priority.choices = [("", "Select priority")] + priority_choices
-
-        # Set stage choices from model metadata
-        stage_choices = self.model.get_field_choices("stage")
-        self.stage.choices = [("", "Select stage")] + stage_choices
 
     name = StringField(
         "Opportunity Name",
@@ -68,15 +52,27 @@ class OpportunityForm(BaseForm):
         render_kw={"placeholder": "Select date..."},
     )
 
-    stage = SelectField(
+    stage = StringField(
         "Pipeline Stage",
         validators=[DataRequired()],
-        choices=[],  # Will be populated in __init__
+        render_kw={
+            "data-search-type": "choice:stage",
+            "placeholder": "Search pipeline stages...",
+            "autocomplete": "off",
+        },
         default="prospect",
     )
 
     # Field from Company model - uses search instead of dropdown
-    company = StringField(Company, validators=[DataRequired()])
+    company = StringField(
+        "Company",
+        validators=[DataRequired()],
+        render_kw={
+            "data-search-type": "company",
+            "placeholder": "Search companies...",
+            "autocomplete": "off",
+        },
+    )
 
     def get_display_fields(self):
         """Return field names to display in modal, in this exact order"""

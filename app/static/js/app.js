@@ -117,24 +117,7 @@ function performSearch(query, resultsContainer) {
     console.log('Searching for:', query);
 }
 
-// Entity Selection (for search results)
-document.addEventListener('click', (e) => {
-    if (e.target.dataset.entitySelect) {
-        e.preventDefault();
-        const fieldId = e.target.dataset.entitySelect;
-        const field = document.getElementById(fieldId);
-        if (field) {
-            field.value = e.target.dataset.entityTitle;
-            field.dataset.entityId = e.target.dataset.entityId;
-            field.dataset.entityType = e.target.dataset.entityType;
-        }
-        // Close search results
-        const results = field?.closest('.search-widget')?.querySelector('.search-results');
-        if (results) {
-            results.innerHTML = '';
-        }
-    }
-});
+// Entity selection handled by search-widget.js selectItem() function
 
 // Advanced Search Modal
 function closeAdvancedSearchModal() {

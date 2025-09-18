@@ -4,79 +4,15 @@
 #}
 
 {% from 'macros/ui.html' import icon %}
-{% from 'macros/components.html' import entity_search_dropdown, choice_search_dropdown, multiple_choice_search_dropdown %}
+{% from 'macros/components.html' import search_dropdown, entity_search_dropdown, choice_search_dropdown, multiple_choice_search_dropdown %}
 
 {# ============================================
    WTFORMS FIELD RENDERING
    ============================================ #}
 {% macro render_field(field, show_label=true, show_errors=true) %}
-    {# Special handling for company fields #}
-    {% if field.name == 'company' and field.type == 'StringField' %}
-        {{ entity_search_dropdown(
-            name=field.name,
-            entity_type='company',
-            value=field.data or '',
-            label=field.label.text if show_label else '',
-            required=field.flags.required,
-            placeholder='Search companies...'
-        ) }}
-        {% if show_errors and field.errors %}
-            {% for error in field.errors %}
-                <p class="form-error">{{ error }}</p>
-            {% endfor %}
-        {% endif %}
-    {# Special handling for industry fields with choice search #}
-    {% elif field.name == 'industry' and field.type == 'SelectField' %}
-        {% set industry_choices = {} %}
-        {% for value, label in field.choices %}
-            {% if value %}
-                {% set _ = industry_choices.update({value: {'label': label, 'description': ''}}) %}
-            {% endif %}
-        {% endfor %}
-        {{ choice_search_dropdown(
-            name=field.name,
-            choices=industry_choices,
-            value=field.data or '',
-            label=field.label.text if show_label else '',
-            required=field.flags.required,
-            placeholder='Search industries...'
-        ) }}
-        {% if show_errors and field.errors %}
-            {% for error in field.errors %}
-                <p class="form-error">{{ error }}</p>
-            {% endfor %}
-        {% endif %}
-    {# Special handling for stage fields with choice search #}
-    {% elif field.name == 'stage' and field.type == 'SelectField' %}
-        {% set stage_choices = {} %}
-        {% for value, label in field.choices %}
-            {% if value %}
-                {% set _ = stage_choices.update({value: {'label': label, 'description': ''}}) %}
-            {% endif %}
-        {% endfor %}
-        {{ choice_search_dropdown(
-            name=field.name,
-            choices=stage_choices,
-            value=field.data or '',
-            label=field.label.text if show_label else '',
-            required=field.flags.required,
-            placeholder='Search pipeline stages...'
-        ) }}
-        {% if show_errors and field.errors %}
-            {% for error in field.errors %}
-                <p class="form-error">{{ error }}</p>
-            {% endfor %}
-        {% endif %}
-    {# Special handling for MEDDPIC roles with multiple choice search #}
-    {% elif field.name == 'meddpicc_roles' and field.type == 'HiddenField' %}
-        {{ multiple_choice_search_dropdown(
-            name=field.name,
-            choices={},
-            value=field.data or '[]',
-            label='MEDDPIC Roles' if show_label else '',
-            required=field.flags.required,
-            placeholder='Search MEDDPIC roles...'
-        ) }}
+    {# Use search dropdown for any field with search metadata #}
+    {% if field.render_kw and field.render_kw.get('data-search-type') %}
+        {{ search_dropdown(field) }}
         {% if show_errors and field.errors %}
             {% for error in field.errors %}
                 <p class="form-error">{{ error }}</p>

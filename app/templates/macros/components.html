@@ -133,26 +133,37 @@
 {% endmacro %}
 
 {# ============================================
-   ENTITY SEARCH DROPDOWN - For form fields
+   UNIFIED SEARCH DROPDOWN - For ALL searchable fields
+   Single source of truth for entity, choice, and dropdown searches
    ============================================ #}
-{% macro entity_search_dropdown(name, entity_type, value='', label='', required=false, placeholder='Search...') %}
-    <div class="form-group">
-        {% if label %}
-            <label for="{{ name }}" class="form-label">
-                {{ label }}
-                {% if required %}<span class="text-danger">*</span>{% endif %}
+{% macro search_dropdown(field, search_type=None, placeholder=None, multi_select=False) %}
+    {# Extract metadata from field.render_kw or use provided params #}
+    {% set search_type = search_type or (field.render_kw.get('data-search-type', field.name) if field.render_kw else field.name) %}
+    {% set placeholder = placeholder or (field.render_kw.get('placeholder', 'Search...') if field.render_kw else 'Search...') %}
+    {% set multi_select = multi_select or (field.render_kw.get('data-multi-select', False) if field.render_kw else False) %}
+    {% set field_id = field.name if field else 'search' %}
+    {% set field_label = field.label.text if field and field.label else '' %}
+    {% set field_required = field.flags.required if field and field.flags else False %}
+    {% set field_value = field.data if field else '' %}
+
+    <div class="form-group search-container" data-field-id="{{ field_id }}">
+        {% if field_label %}
+            <label for="{{ field_id }}" class="form-label">
+                {{ field_label }}
+                {% if field_required %}<span class="text-danger">*</span>{% endif %}
             </label>
         {% endif %}
         <div class="relative">
             <input type="text"
-                   id="{{ name }}_search"
+                   id="{{ field_id }}_search"
                    name="q"
-                   class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   class="search-input form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                    placeholder="{{ placeholder }}"
                    autocomplete="off"
+                   data-search-type="{{ search_type }}"
                    hx-get="{{ url_for('search.htmx_search') }}"
                    hx-trigger="focus, input changed delay:300ms"
-                   hx-target="#{{ name }}_results"
+                   hx-target="#{{ field_id }}_results"
                    hx-swap="innerHTML"
                    hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}"}'>
             <input type="hidden" name="{{ name }}" id="{{ name }}" value="{{ value }}"{% if required %} required{% endif %}>
@@ -160,19 +171,36 @@
                  class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
                  hidden></div>
         </div>
+
+        {% if multi_select %}
+            <div id="{{ field_id }}-badges" class="mt-2 flex flex-wrap gap-1"></div>
+        {% endif %}
     </div>
 {% endmacro %}
 
-{# ============================================
-   CHOICE SEARCH DROPDOWN - For searchable choice fields
-   ============================================ #}
-{% macro choice_search_dropdown(name, choices, value='', label='', required=false, placeholder='Search...') %}
-    {{ entity_search_dropdown(name, 'choice:' + name, value, label, required, placeholder) }}
+{# Legacy macros - simplified to use unified search_dropdown #}
+{% macro entity_search_dropdown(name, entity_type, value='', label='', required=false, placeholder='Search...') %}
+    {% set mock_field = {
+        'name': name,
+        'label': {'text': label} if label else none,
+        'data': value,
+        'flags': {'required': required},
+        'render_kw': {'data-search-type': entity_type, 'placeholder': placeholder}
+    } %}
+    {{ search_dropdown(mock_field) }}
 {% endmacro %}
 
-{# ============================================
-   MULTIPLE CHOICE SEARCH DROPDOWN - For multiple searchable choice fields
-   ============================================ #}
+{% macro choice_search_dropdown(name, choices, value='', label='', required=false, placeholder='Search...') %}
+    {% set mock_field = {
+        'name': name,
+        'label': {'text': label} if label else none,
+        'data': value,
+        'flags': {'required': required},
+        'render_kw': {'data-search-type': 'choice:' + name, 'placeholder': placeholder}
+    } %}
+    {{ search_dropdown(mock_field) }}
+{% endmacro %}
+
 {% macro multiple_choice_search_dropdown(name, choices, value='[]', label='', required=false, placeholder='Search...') %}
     <div class="form-group">
         {% if label %}
@@ -204,36 +232,15 @@
     </div>
 {% endmacro %}
 
-{# ============================================
-   SEARCHABLE DROPDOWN - Dynamic dropdown with search
-   ============================================ #}
 {% macro searchable_dropdown(name, options, current_value='', label='', placeholder='Search...', dropdown_type='', entity_type='') %}
-    {# Find the current label for the selected value #}
-    {% set current_label = '' %}
-    {% for option in options %}
-        {% if option.value == current_value %}
-            {% set current_label = option.label %}
-        {% endif %}
-    {% endfor %}
-
-    <div class="relative">
-        <input type="text"
-               id="{{ name }}_search"
-               name="q"
-               class="search-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-               placeholder="{{ placeholder }}"
-               autocomplete="off"
-               hx-get="{{ url_for('search.htmx_search') }}"
-               hx-trigger="focus, input changed delay:300ms"
-               hx-target="#{{ name }}_results"
-               hx-swap="innerHTML"
-               hx-vals='{"mode": "select", "type": "dropdown:{{ dropdown_type or name }}", "field_name": "{{ name }}"}'
-               value="{{ current_label }}">
-        <input type="hidden" name="{{ name }}" id="{{ name }}" value="{{ current_value }}">
-        <div id="{{ name }}_results"
-             class="search-results absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
-             hidden></div>
-    </div>
+    {% set mock_field = {
+        'name': name,
+        'label': {'text': label} if label else none,
+        'data': current_value,
+        'flags': {'required': False},
+        'render_kw': {'data-search-type': 'dropdown:' + (dropdown_type or name), 'placeholder': placeholder}
+    } %}
+    {{ search_dropdown(mock_field) }}
 {% endmacro %}
 
 {# ============================================

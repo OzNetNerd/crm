@@ -17,11 +17,8 @@ class CompanyForm(BaseForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Set choices from model metadata
+        # Set choices for non-searchable select fields
         from app.models.company import Company
-
-        industry_choices = Company.get_field_choices("industry")
-        self.industry.choices = [("", "Select industry")] + industry_choices
 
         size_choices = Company.get_field_choices("size")
         self.size.choices = [("", "Select size")] + size_choices
@@ -51,10 +48,14 @@ class CompanyForm(BaseForm):
 
     name = StringField("Company Name", validators=[DataRequired(), Length(max=255)])
 
-    industry = SelectField(
+    industry = StringField(
         "Industry",
         validators=[DataRequired()],
-        choices=[],  # Will be populated in __init__
+        render_kw={
+            "data-search-type": "choice:industry",
+            "placeholder": "Search industries...",
+            "autocomplete": "off",
+        },
     )
 
     website = StringField("Website", validators=[Optional(), URL()])
