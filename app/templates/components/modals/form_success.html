@@ -11,6 +11,19 @@ Shows success and auto-closes or allows manual close
              this.open = false;
              // Close the modal
              htmx.ajax('GET', '/modals/close', {target: '#success-modal', swap: 'outerHTML'});
+
+             {% if deleted_entity_id %}
+             // Immediately remove the deleted entity from the DOM
+             const deletedElement = document.getElementById('{{ deleted_entity_id }}');
+             if (deletedElement) {
+                 deletedElement.style.transition = 'opacity 0.3s ease-out';
+                 deletedElement.style.opacity = '0';
+                 setTimeout(() => {
+                     deletedElement.remove();
+                 }, 300);
+             }
+             {% endif %}
+
              // Refresh the content to show updated entities
              {% if refresh_url %}
              htmx.ajax('GET', '{{ refresh_url }}', {target: '#entity-content', swap: 'innerHTML'});

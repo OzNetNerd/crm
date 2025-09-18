@@ -12,6 +12,7 @@
     {# DRY: Use display config from backend, no hardcoded entity types #}
 
     <div class="entity-card-container"
+         id="entity-{{ entity_type }}-{{ entity.id }}"
          data-entity="{{ entity_type }}"
          data-entity-id="{{ entity.id }}">
         <div class="entity-card-header">
