@@ -80,7 +80,7 @@ function updateDateCountdown(fieldId) {
         message = 'Yesterday';
         className = 'countdown-overdue';
     } else if (daysDiff > 1) {
-        message = `${daysDiff} days`;
+        message = `${daysDiff} days to go`;
         className = daysDiff <= 7 ? 'countdown-soon' : 'countdown-future';
     } else {
         message = `${Math.abs(daysDiff)} days ago`;

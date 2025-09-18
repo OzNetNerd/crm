@@ -106,10 +106,9 @@
     font-size: 0.625rem; /* Matching button size - 10px */
     font-weight: 400;
     padding: 0rem 0.125rem;
-    border-radius: 0.125rem;
     display: inline-block;
     white-space: nowrap;
-    color: #6b7280; /* text-gray-500 */
+    color: #6b7280; /* text-gray-500 - default */
 }
 
 .form-date-countdown.hidden {
@@ -117,23 +116,19 @@
 }
 
 .form-date-countdown.countdown-today {
-    background-color: #dbeafe;
-    color: #1e40af;
+    color: #1e40af; /* blue */
 }
 
 .form-date-countdown.countdown-soon {
-    background-color: #fef3c7;
-    color: #92400e;
+    color: #92400e; /* amber */
 }
 
 .form-date-countdown.countdown-future {
-    background-color: #d1fae5;
-    color: #065f46;
+    color: #065f46; /* green */
 }
 
 .form-date-countdown.countdown-overdue {
-    background-color: #fee2e2;
-    color: #991b1b;
+    color: #dc2626; /* red-600 */
 }
 
 /* ============================================
