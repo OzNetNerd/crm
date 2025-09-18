@@ -175,6 +175,43 @@
 {% endmacro %}
 
 {# ============================================
+   MULTIPLE CHOICE SEARCH DROPDOWN - For multiple searchable choice fields
+   ============================================ #}
+{% macro multiple_choice_search_dropdown(name, choices, value='[]', label='', required=false, placeholder='Search...') %}
+    <div class="form-group">
+        {% if label %}
+            <label for="{{ name }}" class="form-label">
+                {{ label }}
+                {% if required %}<span class="text-danger">*</span>{% endif %}
+            </label>
+        {% endif %}
+        <div class="search-container" data-field-id="{{ name }}">
+            <input type="text"
+                   id="{{ name }}_search"
+                   name="q"
+                   class="form-input search-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="{{ placeholder }}"
+                   autocomplete="off"
+                   hx-get="{{ url_for('search.htmx_search') }}"
+                   hx-trigger="input changed delay:300ms, focus"
+                   hx-target="#{{ name }}_results"
+                   hx-swap="innerHTML"
+                   hx-vals='{"mode": "select", "type": "choice:{{ name }}", "field_name": "{{ name }}"}'
+                   hx-include="#{{ name }}-selected">
+            <button type="button" class="absolute right-2 top-2 text-gray-400 hover:text-gray-600">
+                {{ icon('magnifying-glass') }}
+            </button>
+            <input type="hidden" name="selected" id="{{ name }}-selected" value="">
+            <input type="hidden" name="{{ name }}" id="{{ name }}-data" value="{{ value }}"{% if required %} required{% endif %}>
+            <div id="{{ name }}_results"
+                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto search-results"
+                 hidden></div>
+            <div id="{{ name }}-badges" class="mt-2 flex flex-wrap gap-1"></div>
+        </div>
+    </div>
+{% endmacro %}
+
+{# ============================================
    ENTITY DROPDOWN CONTROLS - Simple HTML Select
    ============================================ #}
 {% macro entity_dropdown_controls(dropdowns={}) %}
