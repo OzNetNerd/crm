@@ -280,8 +280,7 @@
                    hx-vals='{"mode": "select", "type": "{{ field.render_kw.get('data-search-type', 'task_field') if field.render_kw else 'task_field' }}", "field_name": "{{ field.name }}"}'>
             <input type="hidden" name="{{ field.name }}" id="{{ field.id }}" value="{{ field.data or '' }}">
             <div id="{{ field.id }}_results"
-                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
-                 class="dropdown-selected-text"></div>
+                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto hidden"></div>
         </div>
         {% if field.errors %}
             {% for error in field.errors %}
@@ -301,12 +300,13 @@
         {# Handle conditional fields based on task category #}
         {% if field_name == 'company_id' %}
             <div x-show="taskCategory === 'opportunity'" class="conditional-field">
-                {{ render_dynamic_search_field(field) }}
+                <div class="grid grid-cols-2 gap-4">
+                    {{ render_dynamic_search_field(field, 'col-span-1') }}
+                    {{ render_dynamic_search_field(form.opportunity_id, 'col-span-1') }}
+                </div>
             </div>
         {% elif field_name == 'opportunity_id' %}
-            <div x-show="taskCategory === 'opportunity'" class="conditional-field">
-                {{ render_dynamic_search_field(field) }}
-            </div>
+            {# Skip - already rendered with company_id #}
         {# Handle inline group: task_type, priority, status with proper structure #}
         {% elif field_name == 'task_type' %}
             <div class="form-fields-inline-container">

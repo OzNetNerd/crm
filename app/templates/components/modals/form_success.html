@@ -10,7 +10,7 @@ Shows success and auto-closes or allows manual close
          close() {
              this.open = false;
              // Close the modal
-             htmx.ajax('GET', '/modals/close', {target: '#success-modal', swap: 'outerHTML'});
+             htmx.ajax('GET', '/modals/close', {target: '#modal-container', swap: 'innerHTML'});
 
              {% if deleted_entity_id %}
              // Immediately remove the deleted entity from the DOM
