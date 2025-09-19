@@ -82,6 +82,7 @@ class DropdownBuilder:
                 searchable=(
                     field_name == "industry" or len(options) > 8
                 ),  # Make Industry and large lists searchable
+                multiple=True,  # Enable multi-select for all filter dropdowns
             )
 
             dropdowns[f"filter_{field_name}"] = config.to_dict()
