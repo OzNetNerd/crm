@@ -193,6 +193,9 @@ def populate_stakeholder_meddpic_roles(entity, form, mode):
             for role in current_roles
         ]
         form.meddpicc_roles.data = json.dumps(roles_data)
+        # Also set the data for the SelectMultipleField
+        if hasattr(form, "meddpicc_roles_select"):
+            form.meddpicc_roles_select.data = current_roles
     else:  # view mode
         # For view mode, show as readable text
         role_labels = []
@@ -202,6 +205,9 @@ def populate_stakeholder_meddpic_roles(entity, form, mode):
         for role in current_roles:
             role_labels.append(choices_dict.get(role, role))
         form.meddpicc_roles.data = ", ".join(role_labels)
+        # Also set for the select field in view mode
+        if hasattr(form, "meddpicc_roles_select"):
+            form.meddpicc_roles_select.data = current_roles
 
 
 def populate_task_form_data(entity, form, mode):
