@@ -254,30 +254,58 @@ def populate_task_form_data(entity, form, mode):
         form.entity.data = ", ".join(entity_names)
 
 
-def populate_company_user_fields(entity, form, mode):
-    """Populate company form with Core Rep and Core SC user data."""
+def populate_entity_search_fields(entity, form, mode):
+    """Universal function to populate all entity search fields for edit mode."""
     if mode != "edit":
         return  # Only handle edit mode, view mode works fine with form_class(obj=entity)
 
-    from app.models import User
+    # Handle user reference fields (core_rep, core_sc)
+    user_fields = ['core_rep', 'core_sc']
+    for field_name in user_fields:
+        if hasattr(form, field_name) and hasattr(entity, field_name):
+            field_value = getattr(entity, field_name)
+            if field_value:
+                from app.models import User
+                user = User.query.filter_by(name=field_value).first()
+                if user:
+                    getattr(form, field_name).data = str(user.id)
+                    # Set search display value for template
+                    getattr(form, field_name).search_display_value = field_value
 
-    # Handle Core Rep field
-    if hasattr(form, "core_rep") and entity.core_rep:
-        # Find user by name and set the form field to the user ID
-        user = User.query.filter_by(name=entity.core_rep).first()
-        if user:
-            form.core_rep.data = str(user.id)
-            # Set search display value for template to populate search input
-            form.core_rep.search_display_value = entity.core_rep
+    # Handle choice fields (industry, stage, etc.)
+    choice_fields = ['industry', 'stage']
+    for field_name in choice_fields:
+        if hasattr(form, field_name) and hasattr(entity, field_name):
+            field_value = getattr(entity, field_name)
+            if field_value:
+                # For choice fields, set search display value to the human-readable label
+                field_obj = getattr(form, field_name)
+                if hasattr(field_obj, 'choices'):
+                    # Find the label for this choice value
+                    choice_label = None
+                    for choice_value, choice_text in field_obj.choices:
+                        if choice_value == field_value:
+                            choice_label = choice_text
+                            break
+                    if choice_label:
+                        field_obj.search_display_value = choice_label
+                else:
+                    # Fallback: use the value as display
+                    field_obj.search_display_value = field_value
 
-    # Handle Core SC field
-    if hasattr(form, "core_sc") and entity.core_sc:
-        # Find user by name and set the form field to the user ID
-        user = User.query.filter_by(name=entity.core_sc).first()
-        if user:
-            form.core_sc.data = str(user.id)
-            # Set search display value for template to populate search input
-            form.core_sc.search_display_value = entity.core_sc
+    # Handle entity reference fields (company)
+    entity_fields = ['company']
+    for field_name in entity_fields:
+        if hasattr(form, field_name) and hasattr(entity, f"{field_name}_id"):
+            entity_id = getattr(entity, f"{field_name}_id")
+            if entity_id:
+                # Look up the entity name by ID
+                if field_name == 'company':
+                    from app.models import Company
+                    ref_entity = Company.query.get(entity_id)
+                    if ref_entity:
+                        getattr(form, field_name).data = str(entity_id)
+                        getattr(form, field_name).search_display_value = ref_entity.name
 
 
 # ============= ROUTE HANDLERS - DRY CONSOLIDATED =============
@@ -320,9 +348,8 @@ def entity_modal(model_name, entity_id, mode):
     if model_name.lower() == "stakeholder":
         populate_stakeholder_meddpic_roles(entity, form, mode)
 
-    # Handle company Core Rep and Core SC fields
-    if model_name.lower() == "company":
-        populate_company_user_fields(entity, form, mode)
+    # Handle entity search fields for all models (universal DRY approach)
+    populate_entity_search_fields(entity, form, mode)
 
     return render_modal(model_name, form, mode, entity)
 
