@@ -48,36 +48,27 @@ class TaskForm(BaseForm):
         render_kw={"placeholder": "Task description", "rows": 4},
     )
 
-    task_type = StringField(
+    task_type = SelectField(
         "Task Type",
         validators=[DataRequired()],
-        render_kw={
-            "data-search-type": "task_type",
-            "placeholder": "Search task types...",
-            "autocomplete": "off",
-        },
+        choices=[],  # Will be populated in __init__
+        render_kw={"class": "form-select"},
     )
 
-    status = StringField(
+    status = SelectField(
         "Status",
         validators=[DataRequired()],
-        render_kw={
-            "data-search-type": "task_status",
-            "placeholder": "Search status...",
-            "autocomplete": "off",
-            "data-default": "pending",
-        },
+        choices=[],  # Will be populated in __init__
+        default="todo",
+        render_kw={"class": "form-select"},
     )
 
-    priority = StringField(
+    priority = SelectField(
         "Priority",
         validators=[DataRequired()],
-        render_kw={
-            "data-search-type": "task_priority",
-            "placeholder": "Search priority...",
-            "autocomplete": "off",
-            "data-default": "medium",
-        },
+        choices=[],  # Will be populated in __init__
+        default="medium",
+        render_kw={"class": "form-select"},
     )
 
     due_date = DateField("Due Date", validators=[OptionalValidator()])
@@ -128,6 +119,31 @@ class TaskForm(BaseForm):
         from app.models.task import Task
         from app.models.company import Company
         from app.models.opportunity import Opportunity
+        from app.services import MetadataService
+
+        # Get Task field metadata for choices
+        metadata = MetadataService.get_field_metadata(Task)
+
+        # Populate task_type choices
+        if "task_type" in metadata and metadata["task_type"].get("choices"):
+            self.task_type.choices = [
+                (key, data["label"])
+                for key, data in metadata["task_type"]["choices"].items()
+            ]
+
+        # Populate status choices
+        if "status" in metadata and metadata["status"].get("choices"):
+            self.status.choices = [
+                (key, data["label"])
+                for key, data in metadata["status"]["choices"].items()
+            ]
+
+        # Populate priority choices
+        if "priority" in metadata and metadata["priority"].get("choices"):
+            self.priority.choices = [
+                (key, data["label"])
+                for key, data in metadata["priority"]["choices"].items()
+            ]
 
         # Populate company choices
         companies = Company.query.order_by(Company.name).all()
