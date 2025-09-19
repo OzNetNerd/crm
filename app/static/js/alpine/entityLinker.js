@@ -72,8 +72,8 @@ window.entityLinker = (config) => {
             */
         },
         
-        // Selection management
-        selectEntity(entity) {
+        // Selection management - renamed to avoid confusion with global selectEntity
+        selectAlpineEntity(entity) {
             // Check if already selected
             const exists = this.selectedEntities.some(e => 
                 e.type === entity.type && e.id === entity.id

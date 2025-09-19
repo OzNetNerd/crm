@@ -357,7 +357,7 @@ def _get_account_team_members(query, company_id, limit=10):
                 "model_type": "user",
             })
 
-    except Exception as e:
+    except Exception:
         # Fall back to regular user search if anything goes wrong
         from app.models import User
         users = User.search(query, limit)

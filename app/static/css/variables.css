@@ -47,6 +47,17 @@
     --color-danger-lighter: #fef2f2; /* red-50 */
     
     /* ========================================
+     * ENTITY-SPECIFIC COLORS
+     * Border colors for entity cards
+     * ======================================== */
+
+    --color-task: #ea580c;      /* orange-600 */
+    --color-company: #2563eb;   /* blue-600 */
+    --color-opportunity: #059669; /* emerald-600 */
+    --color-stakeholder: #7c3aed; /* violet-600 */
+    --color-note: #6b7280;       /* gray-500 */
+
+    /* ========================================
      * NEUTRAL SCALE
      * Grayscale palette for text and backgrounds
      * ======================================== */
