@@ -125,8 +125,12 @@
                     {{ meta_icon('trending-up', 'Pipeline Value', meta.pipeline_value) }}
                 {% endif %}
 
-                {% if meta.team_size %}
-                    {{ meta_icon('users', 'Team Size', meta.team_size) }}
+                {% if meta.stakeholders %}
+                    {{ meta_icon('users', 'Stakeholders', meta.stakeholders) }}
+                {% endif %}
+
+                {% if meta.account_team %}
+                    {{ meta_icon('briefcase', 'Account Team', meta.account_team) }}
                 {% endif %}
 
                 {% if meta.active_opportunities %}
@@ -162,6 +166,22 @@
                     {% elif meta.task_type_display == "subtask" %}
                         {{ meta_icon('bars-3', 'Subtask') }}
                     {% endif %}
+                {% endif %}
+
+                {% if meta.assigned_companies %}
+                    {{ meta_icon('building-office', 'Companies', meta.assigned_companies) }}
+                {% endif %}
+
+                {% if meta.assigned_opportunities %}
+                    {{ meta_icon('briefcase', 'Opportunities', meta.assigned_opportunities) }}
+                {% endif %}
+
+                {% if meta.total_pipeline %}
+                    {{ meta_icon('currency-dollar', 'Total Pipeline', meta.total_pipeline) }}
+                {% endif %}
+
+                {% if meta.stakeholder_relationships %}
+                    {{ meta_icon('users', 'Stakeholder Relationships', meta.stakeholder_relationships) }}
                 {% endif %}
 
                 {% if meta.next_step %}
