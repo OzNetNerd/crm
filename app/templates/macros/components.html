@@ -133,11 +133,11 @@
 {% endmacro %}
 
 {# ============================================
-   ENTITY SEARCH DROPDOWN - For form fields
+   ENTITY SEARCH DROPDOWN - Using working global search pattern
    ============================================ #}
 {% macro entity_search_dropdown(name, entity_type, value='', search_value='', label='', required=false, placeholder='Search...') %}
     {% if label %}
-        <label for="{{ name }}" class="form-label{% if required %} form-label-required{% endif %}">
+        <label for="{{ name }}_search" class="form-label{% if required %} form-label-required{% endif %}">
             {{ label }}
         </label>
     {% endif %}
@@ -145,19 +145,17 @@
         <input type="text"
                id="{{ name }}_search"
                name="q"
-               class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               class="search-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                placeholder="{{ placeholder }}"
                value="{{ search_value }}"
                autocomplete="off"
                hx-get="{{ url_for('search.htmx_search') }}"
                hx-trigger="focus, input changed delay:300ms"
-               hx-target="#{{ name }}_results"
-               hx-swap="innerHTML"
+               hx-target="#{{ name }}_search-results"
+               hx-include="this"
                hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}"}'>
         <input type="hidden" name="{{ name }}" id="{{ name }}" value="{{ value }}"{% if required %} required{% endif %}>
-        <div id="{{ name }}_results"
-             class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
-             hidden></div>
+        <div id="{{ name }}_search-results" class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto hidden z-50"></div>
     </div>
 {% endmacro %}
 
@@ -169,62 +167,56 @@
 {% endmacro %}
 
 {# ============================================
-   MULTI-SELECT ENTITY SEARCH - DRY component for entity search with badges
+   MULTI-SELECT ENTITY SEARCH - Using working global search pattern
    ============================================ #}
 {% macro multi_entity_search_dropdown(name, entity_type, value='[]', label='', required=false, placeholder='Search...', company_id='') %}
     {% if label %}
-        <label for="{{ name }}" class="form-label{% if required %} form-label-required{% endif %}">
+        <label for="{{ name }}_search" class="form-label{% if required %} form-label-required{% endif %}">
             {{ label }}
         </label>
     {% endif %}
     <div class="relative">
         <input type="text"
                id="{{ name }}_search"
-               class="form-input"
+               name="q"
+               class="search-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                placeholder="{{ placeholder }}"
                autocomplete="off"
                hx-get="{{ url_for('search.htmx_search') }}"
-               hx-trigger="input changed delay:300ms, focus"
-               hx-target="#{{ name }}_results"
-               hx-swap="innerHTML"
-               hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}", "multiple": "true"{% if company_id %}, "company_id": "{{ company_id }}"{% endif %}}'
-               data-entity-search-initialized="true">
+               hx-trigger="focus, input changed delay:300ms"
+               hx-target="#{{ name }}_search-results"
+               hx-include="this"
+               hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}", "multiple": "true"{% if company_id %}, "company_id": "{{ company_id }}"{% endif %}}'>
         <input type="hidden" id="{{ name }}-data" name="{{ name }}" value="{{ value }}">
-        <div id="{{ name }}_results"
-             class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto hidden"
-             hidden
-             style="display: none;"></div>
+        <div id="{{ name }}_search-results" class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto hidden z-50"></div>
     </div>
     <div id="{{ name }}-badges" class="mt-2 flex flex-wrap gap-1"></div>
 {% endmacro %}
 
 {# ============================================
-   MULTIPLE CHOICE SEARCH DROPDOWN - For multiple searchable choice fields
+   MULTIPLE CHOICE SEARCH DROPDOWN - Using working global search pattern
    ============================================ #}
 {% macro multiple_choice_search_dropdown(name, choices, value='[]', label='', required=false, placeholder='Search...') %}
     {% if label %}
-        <label for="{{ name }}" class="form-label{% if required %} form-label-required{% endif %}">
+        <label for="{{ name }}_search" class="form-label{% if required %} form-label-required{% endif %}">
             {{ label }}
         </label>
     {% endif %}
-    <div class="search-container" data-field-id="{{ name }}">
+    <div class="relative">
         <input type="text"
                id="{{ name }}_search"
                name="q"
-               class="form-input search-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               class="search-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                placeholder="{{ placeholder }}"
                autocomplete="off"
                hx-get="{{ url_for('search.htmx_search') }}"
                hx-trigger="focus, input changed delay:300ms"
-               hx-target="#{{ name }}_results"
-               hx-swap="innerHTML"
-               hx-vals='{"mode": "select", "type": "choice:{{ name }}", "field_name": "{{ name }}"}'
-               hx-include="#{{ name }}-selected">
+               hx-target="#{{ name }}_search-results"
+               hx-include="this"
+               hx-vals='{"mode": "select", "type": "choice:{{ name }}", "field_name": "{{ name }}"}'>
         <input type="hidden" name="selected" id="{{ name }}-selected" value="">
         <input type="hidden" name="{{ name }}" id="{{ name }}-data" value="{{ value }}"{% if required %} required{% endif %}>
-        <div id="{{ name }}_results"
-             class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto search-results"
-             hidden></div>
+        <div id="{{ name }}_search-results" class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto hidden z-50"></div>
         <div id="{{ name }}-badges" class="mt-2 flex flex-wrap gap-1"></div>
     </div>
 {% endmacro %}

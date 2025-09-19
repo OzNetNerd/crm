@@ -213,7 +213,7 @@ window.dropdown = function(config = {}) {
 {# Application JavaScript - Load after Alpine setup #}
 <script src="{{ url_for('static', filename='js/alpine/chatWidget.js') }}"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-<script src="{{ url_for('static', filename='js/features/search-htmx.js') }}"></script>
+{# search-htmx.js functionality consolidated into search-widget.js #}
 <script src="{{ url_for('static', filename='js/features/search-widget.js') }}"></script>
 <script src="{{ url_for('static', filename='js/features/form-enhancements.js') }}"></script>
 <script src="{{ url_for('static', filename='js/core/modal-handlers.js') }}"></script>

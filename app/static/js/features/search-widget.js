@@ -6,14 +6,14 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize all search widgets on the page
-    initializeSearchWidgets();
+    // Initialize ALL search inputs using unified approach
+    initializeAllSearchInputs();
 
     // Re-initialize when new content is loaded via HTMX
     document.addEventListener('htmx:afterSwap', function(event) {
         // If a modal was loaded, initialize any search widgets in it
         if (event.target.classList.contains('modal-overlay')) {
-            initializeSearchWidgets();
+            initializeAllSearchInputs();
         }
     });
 });
@@ -31,8 +31,9 @@ function hideElement(element) {
     element.style.display = 'none';
 }
 
-function initializeSearchWidgets() {
-    // Find all search inputs - now unified with .search-input class
+// Unified function that handles ALL search inputs using global search's working pattern
+function initializeAllSearchInputs() {
+    // Find all search inputs with the .search-input class
     const searchInputs = document.querySelectorAll('.search-input');
 
     searchInputs.forEach(input => {
@@ -47,117 +48,41 @@ function initializeSearchWidgets() {
         // Mark as initialized
         input.dataset.searchInitialized = 'true';
 
-
-        // Add event to include selected items in HTMX request
-        input.addEventListener('htmx:configRequest', function(event) {
-            // Get the field name from the search input ID (remove '_search' suffix)
-            const fieldId = this.id.replace('_search', '');
-
-            // Check for multi-select data field
-            const dataField = document.getElementById(fieldId + '-data');
-            const selectedField = document.getElementById(fieldId + '-selected');
-
-            if (dataField && dataField.value) {
-                try {
-                    const selectedItems = JSON.parse(dataField.value);
-                    // Add selected item IDs to the request
-                    if (selectedItems.length > 0) {
-                        const selectedIds = selectedItems.map(item => item.id).join(',');
-                        event.detail.parameters.selected = selectedIds;
-                        // Also update the hidden field for HTMX to pick up
-                        if (selectedField) {
-                            selectedField.value = selectedIds;
-                        }
-                    }
-                } catch (e) {
-                    // If not JSON, might be single-select, ignore
+        // Set up the same pattern as global search: simple event listener
+        // Show results when HTMX content loads - this is the key that works!
+        document.addEventListener('htmx:afterSwap', function(event) {
+            if (event.target === resultsDiv) {
+                // Always show results after swap if there's content (global search pattern)
+                if (resultsDiv.children.length > 0) {
+                    resultsDiv.classList.remove('hidden');
                 }
             }
-
-            // Include entity type if available (for dropdown searches)
-            if (this.dataset.entityType) {
-                event.detail.parameters.entity_type = this.dataset.entityType;
-            }
         });
 
-        // Show results when HTMX loads content
-        input.addEventListener('htmx:afterSwap', function() {
-            // Always show results if there's content
-            if (resultsDiv.children.length > 0) {
-                showElement(resultsDiv);
-            }
-        });
-
-        // Also listen for HTMX afterSettle to ensure dropdown shows
-        input.addEventListener('htmx:afterSettle', function() {
-            // Always show results if there's content
-            if (resultsDiv.children.length > 0) {
-                showElement(resultsDiv);
-            }
-        });
-
-        // Listen for HTMX beforeRequest to track that we're loading
-        input.addEventListener('htmx:beforeRequest', function() {
-            // Mark that we're expecting results
-            this.dataset.loadingResults = 'true';
-        });
-
-        // After content loads, check if we should show
-        input.addEventListener('htmx:afterOnLoad', function() {
-            // If we were loading and got content, show it
-            if (this.dataset.loadingResults === 'true' && resultsDiv.children.length > 0) {
-                showElement(resultsDiv);
-                this.dataset.loadingResults = 'false';
-            }
-        });
-
-        // Hide results when input is cleared
+        // Hide results when input is cleared (from global search)
         input.addEventListener('input', function() {
             if (!this.value.trim()) {
-                hideElement(resultsDiv);
+                resultsDiv.classList.add('hidden');
             }
-        });
-
-        // Show results when focusing input if there's content
-        input.addEventListener('focus', function() {
-            if (resultsDiv.children.length > 0) {
-                showElement(resultsDiv);
-            }
-            // HTMX will trigger on focus and load content
         });
     });
 
-    // Handle click outside to close dropdowns (but not for multi-select)
+    // Handle clicks outside to close all dropdowns
     document.addEventListener('click', function(event) {
-        // Don't close if clicking on a search result
-        if (event.target.closest('[data-search-result]')) {
-            return;
-        }
-
-        // Close all search dropdowns when clicking outside
-        // Find all results divs by looking for the hx-target attribute pattern
-        document.querySelectorAll('[id$="_results"]').forEach(resultsDiv => {
-            // Get the parent relative container
+        // Close all search results that end with -results
+        document.querySelectorAll('[id$="-results"]').forEach(resultsDiv => {
             const container = resultsDiv.parentElement;
-
-            // Check if click is outside the container
             if (container && !container.contains(event.target)) {
-                hideElement(resultsDiv);
+                resultsDiv.classList.add('hidden');
             }
         });
     });
 
-    // Handle escape key to close dropdowns
+    // Handle escape key
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
-            document.querySelectorAll('.search-results:not(.hidden)').forEach(resultsDiv => {
-                hideElement(resultsDiv);
-                // Blur the associated input
-                const container = resultsDiv.closest('.search-container');
-                if (container) {
-                    const input = container.querySelector('.search-input');
-                    if (input) input.blur();
-                }
+            document.querySelectorAll('[id$="-results"]:not(.hidden)').forEach(resultsDiv => {
+                resultsDiv.classList.add('hidden');
             });
         }
     });
@@ -169,7 +94,7 @@ window.selectEntity = function(fieldId, entityId, entityName, entityType) {
     const multipleDataField = document.getElementById(fieldId + '-data');  // Note: -data suffix for multi-select
     const singleDataField = document.getElementById(fieldId);  // No suffix for single-select
     const badgesDiv = document.getElementById(fieldId + '-badges');
-    const resultsDiv = document.getElementById(fieldId + '_results');
+    const resultsDiv = document.getElementById(fieldId + '_search-results');
 
     // Determine if this is multiple or single selection mode
     const isMultipleSelection = multipleDataField !== null && badgesDiv !== null;
@@ -239,7 +164,7 @@ window.selectChoice = function(fieldName, choiceKey, choiceLabel) {
     const multipleDataField = document.getElementById(fieldName + '-data');  // Multi-select choice field
     const singleHiddenField = document.getElementById(fieldName);  // Single-select choice field
     const badgesDiv = document.getElementById(fieldName + '-badges');
-    const resultsDiv = document.getElementById(fieldName + '_results');
+    const resultsDiv = document.getElementById(fieldName + '_search-results');
 
     // Determine if this is multiple or single selection mode
     const isMultipleSelection = multipleDataField !== null && badgesDiv !== null;
@@ -459,5 +384,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Global Search Handler (consolidated from search-htmx.js)
+// Old initializeGlobalSearch() function deleted - now handled by unified initializeAllSearchInputs()
 
 // Function is available globally via window object
