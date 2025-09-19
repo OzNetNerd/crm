@@ -154,6 +154,7 @@ class Company(BaseModel):
             "display_label": "Core Rep",
             "form_include": True,
             "searchable": True,
+            "groupable": True,
         },
     )
 
@@ -164,6 +165,7 @@ class Company(BaseModel):
             "display_label": "Core SC",
             "form_include": True,
             "searchable": True,
+            "groupable": True,
         },
     )
 

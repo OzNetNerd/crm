@@ -138,6 +138,9 @@ def entity_content(model: type, table_name: str) -> str:
             # Special handling for probability field - use ranges
             if group_by == "probability" and hasattr(entity, "get_probability_range"):
                 group_key = entity.get_probability_range()
+            # Special handling for company_id - show company name
+            elif group_by == "company_id" and hasattr(entity, "company"):
+                group_key = entity.company.name if entity.company else "No Company"
             else:
                 group_key = getattr(entity, group_by) or "No Group"
                 if hasattr(group_key, "label"):

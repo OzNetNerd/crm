@@ -62,16 +62,37 @@ class DropdownBuilder:
         dropdowns = {}
 
         for field_name, field_info in metadata.items():
-            if not (field_info.get("filterable") and field_info.get("choices")):
+            if not field_info.get("filterable"):
                 continue
 
             options = [{"value": "", "label": f'All {field_info["label"]}'}]
-            options.extend(
-                [
-                    {"value": val, "label": data.get("label", val)}
-                    for val, data in field_info["choices"].items()
-                ]
-            )
+
+            # Handle dynamic choices from other models
+            if field_info.get("choices_source") == "users":
+                from app.models import User
+                users = User.query.order_by(User.name).all()
+                options.extend([
+                    {"value": str(user.id), "label": user.name}
+                    for user in users
+                ])
+            elif field_info.get("choices_source") == "companies":
+                from app.models import Company
+                companies = Company.query.order_by(Company.name).all()
+                options.extend([
+                    {"value": str(company.id), "label": company.name}
+                    for company in companies
+                ])
+            elif field_info.get("choices"):
+                # Static choices defined in the model
+                options.extend(
+                    [
+                        {"value": val, "label": data.get("label", val)}
+                        for val, data in field_info["choices"].items()
+                    ]
+                )
+            else:
+                # Skip fields without choices
+                continue
 
             config = DropdownConfig(
                 name=field_name,
@@ -265,14 +286,33 @@ class DropdownBuilder:
             if model:
                 metadata = MetadataService.get_field_metadata(model)
                 field_info = metadata.get(field_name)
-                if field_info and field_info.get("choices"):
+                if field_info:
                     options = [{"value": "", "label": f'All {field_info["label"]}'}]
-                    options.extend(
-                        [
-                            {"value": val, "label": data.get("label", val)}
-                            for val, data in field_info["choices"].items()
-                        ]
-                    )
-                    return options
+
+                    # Handle dynamic choices
+                    if field_info.get("choices_source") == "users":
+                        from app.models import User
+                        users = User.query.order_by(User.name).all()
+                        options.extend([
+                            {"value": str(user.id), "label": user.name}
+                            for user in users
+                        ])
+                    elif field_info.get("choices_source") == "companies":
+                        from app.models import Company
+                        companies = Company.query.order_by(Company.name).all()
+                        options.extend([
+                            {"value": str(company.id), "label": company.name}
+                            for company in companies
+                        ])
+                    elif field_info.get("choices"):
+                        options.extend(
+                            [
+                                {"value": val, "label": data.get("label", val)}
+                                for val, data in field_info["choices"].items()
+                            ]
+                        )
+
+                    if len(options) > 1:  # More than just the "All" option
+                        return options
 
         return []

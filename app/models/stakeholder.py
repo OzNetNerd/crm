@@ -164,15 +164,29 @@ class Stakeholder(BaseModel):
         info={
             "display_label": "Company",
             "groupable": True,
+            "filterable": True,
             "relationship_field": "company",
             "relationship_display_field": "name",
             "form_include": True,
             "required": True,
+            "choices_source": "companies",  # Dynamically load companies
         },
     )
 
     comments = db.Column(
         db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3, "sortable": False}
+    )
+
+    # Virtual field for filtering by relationship owner
+    # This doesn't store data but provides metadata for the filter dropdown
+    relationship_owner_id = db.Column(
+        db.Integer,
+        info={
+            "display_label": "Relationship Owner",
+            "filterable": True,
+            "virtual": True,  # Mark as virtual so it's not used in regular queries
+            "choices_source": "users",  # Dynamically load users
+        }
     )
 
     # Relationships (use back_populates to avoid conflicts)

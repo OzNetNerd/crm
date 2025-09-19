@@ -22,7 +22,27 @@ class QueryService:
         query = model.query
 
         for field, value in filters.items():
-            if value and hasattr(model, field):
+            if not value:
+                continue
+
+            # Special handling for relationship_owner_id filter in Stakeholder
+            if field == "relationship_owner_id" and model.__name__ == "Stakeholder":
+                # Parse user IDs
+                if isinstance(value, str):
+                    user_ids = [int(v.strip()) for v in value.split(",") if v.strip()]
+                elif isinstance(value, list):
+                    user_ids = [int(v) for v in value]
+                else:
+                    user_ids = [int(value)]
+
+                # Filter stakeholders by relationship owners
+                from app.models.stakeholder import stakeholder_relationship_owners
+                query = query.join(stakeholder_relationship_owners).filter(
+                    stakeholder_relationship_owners.c.user_id.in_(user_ids)
+                )
+                continue
+
+            if hasattr(model, field):
                 # Special handling for probability field with ranges
                 if field == "probability" and model.__name__ == "Opportunity":
                     # Parse probability ranges and build filter
