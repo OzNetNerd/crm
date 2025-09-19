@@ -14,6 +14,7 @@ class QueryService:
         Args:
             model: SQLAlchemy model class.
             filters: Dictionary of field:value filters.
+                     Values can be single values or lists for multi-select.
 
         Returns:
             Filtered SQLAlchemy query.
@@ -22,7 +23,18 @@ class QueryService:
 
         for field, value in filters.items():
             if value and hasattr(model, field):
-                query = query.filter(getattr(model, field) == value)
+                # Handle multi-select: convert comma-separated string to list
+                if isinstance(value, str) and "," in value:
+                    values = [v.strip() for v in value.split(",") if v.strip()]
+                    if values:
+                        query = query.filter(getattr(model, field).in_(values))
+                elif isinstance(value, list):
+                    # Handle list directly
+                    if value:
+                        query = query.filter(getattr(model, field).in_(value))
+                else:
+                    # Single value
+                    query = query.filter(getattr(model, field) == value)
 
         return query
 
