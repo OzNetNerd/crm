@@ -147,6 +147,26 @@ class Company(BaseModel):
 
     address = db.Column(db.Text, info={"display_label": "Address", "rows": 2})
 
+    core_rep = db.Column(
+        db.String(255),
+        nullable=True,
+        info={
+            "display_label": "Core Rep",
+            "form_include": True,
+            "searchable": True,
+        },
+    )
+
+    core_sc = db.Column(
+        db.String(255),
+        nullable=True,
+        info={
+            "display_label": "Core SC",
+            "form_include": True,
+            "searchable": True,
+        },
+    )
+
     comments = db.Column(
         db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3}
     )

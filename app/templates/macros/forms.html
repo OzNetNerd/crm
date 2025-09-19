@@ -4,7 +4,7 @@
 #}
 
 {% from 'macros/ui.html' import icon, priority_badge, status_badge %}
-{% from 'macros/components.html' import entity_search_dropdown, choice_search_dropdown, multiple_choice_search_dropdown %}
+{% from 'macros/components.html' import entity_search_dropdown, choice_search_dropdown, multiple_choice_search_dropdown, multi_select_dropdown %}
 
 {# ============================================
    WTFORMS FIELD RENDERING
@@ -12,56 +12,118 @@
 {% macro render_field(field, show_label=true, show_errors=true) %}
     {# Special handling for company fields #}
     {% if field.name == 'company' and field.type == 'StringField' %}
-        {{ entity_search_dropdown(
-            name=field.name,
-            entity_type='company',
-            value=field.data or '',
-            label=field.label.text if show_label else '',
-            required=field.flags.required,
-            placeholder='Search companies...'
-        ) }}
-        {% if show_errors and field.errors %}
-            {% for error in field.errors %}
-                <p class="form-error">{{ error }}</p>
-            {% endfor %}
-        {% endif %}
+        <div class="form-field-group">
+            {{ entity_search_dropdown(
+                name=field.name,
+                entity_type='company',
+                value=field.data or '',
+                label=field.label.text if show_label else '',
+                required=field.flags.required,
+                placeholder='Search companies...'
+            ) }}
+            {% if show_errors and field.errors %}
+                {% for error in field.errors %}
+                    <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
     {# Special handling for industry fields with choice search #}
     {% elif field.name == 'industry' and field.type == 'SelectField' %}
-        {% set industry_choices = {} %}
-        {% for value, label in field.choices %}
-            {% if value %}
-                {% set _ = industry_choices.update({value: {'label': label, 'description': ''}}) %}
-            {% endif %}
-        {% endfor %}
-        {{ choice_search_dropdown(
-            name=field.name,
-            choices=industry_choices,
-            value=field.data or '',
-            label=field.label.text if show_label else '',
-            required=field.flags.required,
-            placeholder='Search industries...'
-        ) }}
-        {% if show_errors and field.errors %}
-            {% for error in field.errors %}
-                <p class="form-error">{{ error }}</p>
+        <div class="form-field-group">
+            {% set industry_choices = {} %}
+            {% for value, label in field.choices %}
+                {% if value %}
+                    {% set _ = industry_choices.update({value: {'label': label, 'description': ''}}) %}
+                {% endif %}
             {% endfor %}
-        {% endif %}
+            {{ choice_search_dropdown(
+                name=field.name,
+                choices=industry_choices,
+                value=field.data or '',
+                label=field.label.text if show_label else '',
+                required=field.flags.required,
+                placeholder='Search industries...'
+            ) }}
+            {% if show_errors and field.errors %}
+                {% for error in field.errors %}
+                    <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
     {# Special handling for stage fields with choice search #}
     {% elif field.name == 'stage' and field.type == 'SelectField' %}
-        {% set stage_choices = {} %}
-        {% for value, label in field.choices %}
-            {% if value %}
-                {% set _ = stage_choices.update({value: {'label': label, 'description': ''}}) %}
+        <div class="form-field-group">
+            {% set stage_choices = {} %}
+            {% for value, label in field.choices %}
+                {% if value %}
+                    {% set _ = stage_choices.update({value: {'label': label, 'description': ''}}) %}
+                {% endif %}
+            {% endfor %}
+            {{ choice_search_dropdown(
+                name=field.name,
+                choices=stage_choices,
+                value=field.data or '',
+                label=field.label.text if show_label else '',
+                required=field.flags.required,
+                placeholder='Search pipeline stages...'
+            ) }}
+            {% if show_errors and field.errors %}
+                {% for error in field.errors %}
+                    <p class="form-error">{{ error }}</p>
+                {% endfor %}
             {% endif %}
-        {% endfor %}
-        {{ choice_search_dropdown(
-            name=field.name,
-            choices=stage_choices,
-            value=field.data or '',
-            label=field.label.text if show_label else '',
-            required=field.flags.required,
-            placeholder='Search pipeline stages...'
-        ) }}
+        </div>
+    {# Special handling for MEDDPICC roles with multi-select dropdown #}
+    {% elif field.name == 'meddpicc_roles_select' %}
+        <div class="form-field-group">
+            {% set meddpicc_choices = {
+                'economic_buyer': {'label': 'Economic Buyer', 'description': 'Person who controls the budget'},
+                'decision_maker': {'label': 'Decision Maker', 'description': 'Person who makes the final decision'},
+                'influencer': {'label': 'Influencer', 'description': 'Person who influences the decision'},
+                'champion': {'label': 'Champion', 'description': 'Internal advocate for the solution'},
+                'user': {'label': 'User', 'description': 'End user of the solution'},
+                'other': {'label': 'Other', 'description': 'Other role type'}
+            } %}
+            {# Convert the field data list to JSON for the Alpine component #}
+            {% set selected_values = field.data|tojson if field.data else '[]' %}
+            {{ multi_select_dropdown(
+                name='meddpicc_roles',
+                choices=meddpicc_choices,
+                value=selected_values,
+                label=field.label.text if show_label else '',
+                required=field.flags.required,
+                placeholder='Select MEDDPICC roles...'
+            ) }}
+            {% if show_errors and field.errors %}
+                {% for error in field.errors %}
+                    <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+    {# Special handling for relationship owners with multiple entity search #}
+    {% elif field.name == 'relationship_owners' %}
+        <div class="form-field-group">
+            {% if show_label %}
+                <label for="{{ field.name }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
+                    {{ field.label.text }}
+                </label>
+            {% endif %}
+            <input type="text"
+                   id="{{ field.name }}_search"
+                   class="form-input"
+                   placeholder="Search team members..."
+                   autocomplete="off"
+                   hx-get="/search/htmx"
+                   hx-trigger="input changed delay:300ms, focus"
+                   hx-target="#{{ field.name }}_results"
+                   hx-swap="innerHTML"
+                   hx-vals='{"mode": "select", "type": "user", "field_name": "{{ field.name }}", "multiple": "true"}'>
+            <input type="hidden" id="{{ field.name }}-data" name="{{ field.name }}" value="{{ field.data or '[]' }}">
+            <div id="{{ field.name }}_results"
+                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                 hidden></div>
+            <div id="{{ field.name }}-badges" class="mt-2 flex flex-wrap gap-1"></div>
+        </div>
         {% if show_errors and field.errors %}
             {% for error in field.errors %}
                 <p class="form-error">{{ error }}</p>
@@ -69,19 +131,21 @@
         {% endif %}
     {# Special handling for MEDDPIC roles with multiple choice search #}
     {% elif field.name == 'meddpicc_roles' and field.type == 'HiddenField' %}
-        {{ multiple_choice_search_dropdown(
-            name=field.name,
-            choices={},
-            value=field.data or '[]',
-            label='MEDDPIC Roles' if show_label else '',
-            required=field.flags.required,
-            placeholder='Search MEDDPIC roles...'
-        ) }}
-        {% if show_errors and field.errors %}
-            {% for error in field.errors %}
-                <p class="form-error">{{ error }}</p>
-            {% endfor %}
-        {% endif %}
+        <div class="form-field-group">
+            {{ multiple_choice_search_dropdown(
+                name=field.name,
+                choices={},
+                value=field.data or '[]',
+                label='MEDDPIC Roles' if show_label else '',
+                required=field.flags.required,
+                placeholder='Search MEDDPIC roles...'
+            ) }}
+            {% if show_errors and field.errors %}
+                {% for error in field.errors %}
+                    <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
     {% else %}
         <div class="form-field-group">
             {% if show_label and field.label.text %}
@@ -147,6 +211,16 @@
 {% endmacro %}
 
 {# ============================================
+   TWO-COLUMN INLINE FIELDS
+   ============================================ #}
+{% macro render_inline_fields_2col(field1, field2) %}
+    <div class="grid grid-cols-2 gap-4">
+        {{ render_field(field1) }}
+        {{ render_field(field2) }}
+    </div>
+{% endmacro %}
+
+{# ============================================
    FIELD FILTERING FOR MODALS
    ============================================ #}
 {% macro render_filtered_fields(form, mode='form', allowed_fields=None) %}
@@ -161,6 +235,12 @@
     {# Special handling for Task forms #}
     {% if hasattr(form, 'task_type') and hasattr(form, 'due_date') and mode == 'form' %}
         {{ render_task_form_fields(form, allowed_fields) }}
+    {# Special handling for Company forms #}
+    {% elif form.__class__.__name__ == 'CompanyForm' and mode == 'form' %}
+        {{ render_company_form_fields(form, allowed_fields) }}
+    {# Special handling for Stakeholder forms #}
+    {% elif form.__class__.__name__ == 'StakeholderForm' and mode == 'form' %}
+        {{ render_stakeholder_form_fields(form, allowed_fields) }}
     {% else %}
         {% for field_name in allowed_fields %}
             {% set field = form[field_name] %}
@@ -181,19 +261,21 @@
 {% macro render_field_with_class(field, additional_classes='', show_label=true, show_errors=true) %}
     {# Special handling for company fields #}
     {% if field.name == 'company' and field.type == 'StringField' %}
-        {{ entity_search_dropdown(
-            name=field.name,
-            entity_type='company',
-            value=field.data or '',
-            label=field.label.text if show_label else '',
-            required=field.flags.required,
-            placeholder='Search companies...'
-        ) }}
-        {% if show_errors and field.errors %}
-            {% for error in field.errors %}
-                <p class="form-error">{{ error }}</p>
-            {% endfor %}
-        {% endif %}
+        <div class="form-field-group">
+            {{ entity_search_dropdown(
+                name=field.name,
+                entity_type='company',
+                value=field.data or '',
+                label=field.label.text if show_label else '',
+                required=field.flags.required,
+                placeholder='Search companies...'
+            ) }}
+            {% if show_errors and field.errors %}
+                {% for error in field.errors %}
+                    <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
     {% else %}
         <div class="form-field-group {{ additional_classes }}">
             {% if show_label and field.label.text %}
@@ -302,8 +384,8 @@
         {% if field_name == 'company_id' %}
             <div x-show="taskCategory === 'opportunity'" class="conditional-field">
                 <div class="grid grid-cols-2 gap-4">
-                    {{ render_dynamic_search_field(field, 'col-span-1') }}
-                    {{ render_dynamic_search_field(form.opportunity_id, 'col-span-1') }}
+                    {{ render_dynamic_search_field(field) }}
+                    {{ render_dynamic_search_field(form.opportunity_id) }}
                 </div>
             </div>
         {% elif field_name == 'opportunity_id' %}
@@ -333,6 +415,63 @@
             {{ render_dynamic_search_field(field) }}
         {% else %}
             {{ render_field(field) }}
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{# ============================================
+   STAKEHOLDER FORM SPECIAL RENDERING
+   ============================================ #}
+{% macro render_stakeholder_form_fields(form, allowed_fields) %}
+    {# First row: Company and Job Title side by side #}
+    {% if 'company' in allowed_fields and 'job_title' in allowed_fields %}
+        {{ render_inline_fields_2col(form.company, form.job_title) }}
+    {% elif 'company' in allowed_fields %}
+        {{ render_field(form.company) }}
+    {% elif 'job_title' in allowed_fields %}
+        {{ render_field(form.job_title) }}
+    {% endif %}
+
+    {# Render remaining fields in order #}
+    {% for field_name in allowed_fields %}
+        {% if field_name not in ['company', 'job_title'] %}
+            {% set field = form[field_name] %}
+            {% if field %}
+                {{ render_field(field) }}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{# ============================================
+   COMPANY FORM SPECIAL RENDERING
+   ============================================ #}
+{% macro render_company_form_fields(form, allowed_fields) %}
+    {# First row: Company Name and Industry side by side #}
+    {% if 'name' in allowed_fields and 'industry' in allowed_fields %}
+        {{ render_inline_fields_2col(form.name, form.industry) }}
+    {% elif 'name' in allowed_fields %}
+        {{ render_field(form.name) }}
+    {% elif 'industry' in allowed_fields %}
+        {{ render_field(form.industry) }}
+    {% endif %}
+
+    {# Second row: Core Rep and Core SC side by side #}
+    {% if 'core_rep' in allowed_fields and 'core_sc' in allowed_fields %}
+        {{ render_inline_fields_2col(form.core_rep, form.core_sc) }}
+    {% elif 'core_rep' in allowed_fields %}
+        {{ render_field(form.core_rep) }}
+    {% elif 'core_sc' in allowed_fields %}
+        {{ render_field(form.core_sc) }}
+    {% endif %}
+
+    {# Render remaining fields #}
+    {% for field_name in allowed_fields %}
+        {% if field_name not in ['name', 'industry', 'core_rep', 'core_sc'] %}
+            {% set field = form[field_name] %}
+            {% if field %}
+                {{ render_field(field) }}
+            {% endif %}
         {% endif %}
     {% endfor %}
 {% endmacro %}
@@ -373,7 +512,48 @@
     <div class="form-field-group">
         <label class="form-label">{{ field.label.text }}</label>
         <div class="form-field-view">
-            {% if field.type == 'SelectField' %}
+            {# Special handling for company field #}
+            {% if field.name == 'company' %}
+                {% if field.data %}
+                    {% if field.data is string %}
+                        {{ field.data }}
+                    {% else %}
+                        {{ field.data.name if field.data.name else field.data }}
+                    {% endif %}
+                {% else %}
+                    <span class="form-field-view-empty">Not set</span>
+                {% endif %}
+            {# Special handling for relationship owners field #}
+            {% elif field.name == 'relationship_owners' %}
+                {% if field.data %}
+                    {% if field.data is iterable and field.data is not string %}
+                        <div class="flex flex-wrap gap-1">
+                            {% for owner in field.data %}
+                                <span class="badge badge-info badge-sm">
+                                    {{ owner.name if owner.name else owner }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="form-field-view-empty">None assigned</span>
+                    {% endif %}
+                {% else %}
+                    <span class="form-field-view-empty">None assigned</span>
+                {% endif %}
+            {# Special handling for MEDDPICC roles #}
+            {% elif field.name == 'meddpicc_roles_select' %}
+                {% if field.data %}
+                    <div class="flex flex-wrap gap-1">
+                        {% for role in field.data %}
+                            <span class="badge badge-primary badge-sm">
+                                {{ role.replace('_', ' ').title() if role is string else role }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <span class="form-field-view-empty">No roles assigned</span>
+                {% endif %}
+            {% elif field.type == 'SelectField' %}
                 {# DRY badge rendering based on field name patterns #}
                 {% set field_lower = field.name.lower() %}
                 {% if field.data %}

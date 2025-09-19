@@ -136,30 +136,27 @@
    ENTITY SEARCH DROPDOWN - For form fields
    ============================================ #}
 {% macro entity_search_dropdown(name, entity_type, value='', label='', required=false, placeholder='Search...') %}
-    <div class="form-group">
-        {% if label %}
-            <label for="{{ name }}" class="form-label">
-                {{ label }}
-                {% if required %}<span class="text-danger">*</span>{% endif %}
-            </label>
-        {% endif %}
-        <div class="relative">
-            <input type="text"
-                   id="{{ name }}_search"
-                   name="q"
-                   class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   placeholder="{{ placeholder }}"
-                   autocomplete="off"
-                   hx-get="{{ url_for('search.htmx_search') }}"
-                   hx-trigger="focus, input changed delay:300ms"
-                   hx-target="#{{ name }}_results"
-                   hx-swap="innerHTML"
-                   hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}"}'>
-            <input type="hidden" name="{{ name }}" id="{{ name }}" value="{{ value }}"{% if required %} required{% endif %}>
-            <div id="{{ name }}_results"
-                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
-                 hidden></div>
-        </div>
+    {% if label %}
+        <label for="{{ name }}" class="form-label{% if required %} form-label-required{% endif %}">
+            {{ label }}
+        </label>
+    {% endif %}
+    <div class="relative">
+        <input type="text"
+               id="{{ name }}_search"
+               name="q"
+               class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               placeholder="{{ placeholder }}"
+               autocomplete="off"
+               hx-get="{{ url_for('search.htmx_search') }}"
+               hx-trigger="focus, input changed delay:300ms"
+               hx-target="#{{ name }}_results"
+               hx-swap="innerHTML"
+               hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}"}'>
+        <input type="hidden" name="{{ name }}" id="{{ name }}" value="{{ value }}"{% if required %} required{% endif %}>
+        <div id="{{ name }}_results"
+             class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
+             hidden></div>
     </div>
 {% endmacro %}
 
@@ -174,34 +171,90 @@
    MULTIPLE CHOICE SEARCH DROPDOWN - For multiple searchable choice fields
    ============================================ #}
 {% macro multiple_choice_search_dropdown(name, choices, value='[]', label='', required=false, placeholder='Search...') %}
-    <div class="form-group">
-        {% if label %}
-            <label for="{{ name }}" class="form-label">
-                {{ label }}
-                {% if required %}<span class="text-danger">*</span>{% endif %}
-            </label>
-        {% endif %}
-        <div class="search-container" data-field-id="{{ name }}">
-            <input type="text"
-                   id="{{ name }}_search"
-                   name="q"
-                   class="form-input search-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   placeholder="{{ placeholder }}"
-                   autocomplete="off"
-                   hx-get="{{ url_for('search.htmx_search') }}"
-                   hx-trigger="focus, input changed delay:300ms"
-                   hx-target="#{{ name }}_results"
-                   hx-swap="innerHTML"
-                   hx-vals='{"mode": "select", "type": "choice:{{ name }}", "field_name": "{{ name }}"}'
-                   hx-include="#{{ name }}-selected">
-            <input type="hidden" name="selected" id="{{ name }}-selected" value="">
-            <input type="hidden" name="{{ name }}" id="{{ name }}-data" value="{{ value }}"{% if required %} required{% endif %}>
-            <div id="{{ name }}_results"
-                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto search-results"
-                 hidden></div>
-            <div id="{{ name }}-badges" class="mt-2 flex flex-wrap gap-1"></div>
-        </div>
+    {% if label %}
+        <label for="{{ name }}" class="form-label{% if required %} form-label-required{% endif %}">
+            {{ label }}
+        </label>
+    {% endif %}
+    <div class="search-container" data-field-id="{{ name }}">
+        <input type="text"
+               id="{{ name }}_search"
+               name="q"
+               class="form-input search-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               placeholder="{{ placeholder }}"
+               autocomplete="off"
+               hx-get="{{ url_for('search.htmx_search') }}"
+               hx-trigger="focus, input changed delay:300ms"
+               hx-target="#{{ name }}_results"
+               hx-swap="innerHTML"
+               hx-vals='{"mode": "select", "type": "choice:{{ name }}", "field_name": "{{ name }}"}'
+               hx-include="#{{ name }}-selected">
+        <input type="hidden" name="selected" id="{{ name }}-selected" value="">
+        <input type="hidden" name="{{ name }}" id="{{ name }}-data" value="{{ value }}"{% if required %} required{% endif %}>
+        <div id="{{ name }}_results"
+             class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto search-results"
+             hidden></div>
+        <div id="{{ name }}-badges" class="mt-2 flex flex-wrap gap-1"></div>
     </div>
+{% endmacro %}
+
+{# ============================================
+   MULTI-SELECT FORM DROPDOWN - Reusable multi-select with checkboxes
+   ============================================ #}
+{% macro multi_select_dropdown(name, choices, value='', label='', required=false, placeholder='Select...') %}
+    {% if label %}
+        <label for="{{ name }}" class="form-label{% if required %} form-label-required{% endif %}">
+            {{ label }}
+        </label>
+    {% endif %}
+
+    <div class="relative" x-data="multiSelectDropdown{{ name|replace('_', '') }}()">
+        <button type="button"
+                @click="open = !open"
+                class="form-input w-full text-left flex items-center justify-between">
+            <span x-show="selected.length === 0">{{ placeholder }}</span>
+            <span x-show="selected.length > 0" x-text="selectedLabels.join(', ')"></span>
+            <span class="ml-2 pointer-events-none">
+                {{ icon('chevron-down') }}
+            </span>
+        </button>
+
+        <div x-show="open"
+             @click.outside="open = false"
+             @click.stop
+             class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+             style="display: none;">
+            {% for choice_key, choice_data in choices.items() %}
+                <label class="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer">
+                    <input type="checkbox"
+                           value="{{ choice_key }}"
+                           x-model="selected"
+                           class="mr-2">
+                    <span>{{ choice_data.label }}</span>
+                </label>
+            {% endfor %}
+        </div>
+
+        <input type="hidden"
+               id="{{ name }}"
+               name="{{ name }}"
+               :value="JSON.stringify(selected.map(val => ({id: val, name: val.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()), type: 'choice'})))">
+    </div>
+
+    <script>
+    function multiSelectDropdown{{ name|replace('_', '') }}() {
+        return {
+            open: false,
+            selected: {{ (value|default('[]', true) if value else '[]')|safe }},
+            get selectedLabels() {
+                const choices = {{ choices|tojson|safe }};
+                return this.selected.map(val => {
+                    return choices[val] ? choices[val].label : val;
+                });
+            }
+        }
+    }
+    </script>
 {% endmacro %}
 
 {# ============================================

@@ -69,8 +69,12 @@ class CompanyForm(BaseForm):
 
     address = TextAreaField("Address", validators=[Optional()], render_kw={"rows": 2})
 
+    core_rep = StringField("Core Rep", validators=[Optional(), Length(max=255)])
+
+    core_sc = StringField("Core SC", validators=[Optional(), Length(max=255)])
+
     comments = TextAreaField("Comments", validators=[Optional()], render_kw={"rows": 3})
 
     def get_display_fields(self):
         """Return field names to display in modal, in this exact order"""
-        return ["name", "industry", "comments"]
+        return ["name", "industry", "core_rep", "core_sc", "comments"]
