@@ -4,7 +4,7 @@
 #}
 
 {% from 'macros/ui.html' import icon, priority_badge, status_badge %}
-{% from 'macros/components.html' import entity_search_dropdown, choice_search_dropdown, multiple_choice_search_dropdown %}
+{% from 'macros/components.html' import entity_search_dropdown, choice_search_dropdown, multiple_choice_search_dropdown, multi_select_dropdown %}
 
 {# ============================================
    WTFORMS FIELD RENDERING
@@ -61,6 +61,45 @@
             label=field.label.text if show_label else '',
             required=field.flags.required,
             placeholder='Search pipeline stages...'
+        ) }}
+        {% if show_errors and field.errors %}
+            {% for error in field.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+    {# Special handling for MEDDPICC roles with multi-select dropdown #}
+    {% elif field.name == 'meddpicc_roles_select' %}
+        {% set meddpicc_choices = {
+            'economic_buyer': {'label': 'Economic Buyer', 'description': 'Person who controls the budget'},
+            'decision_maker': {'label': 'Decision Maker', 'description': 'Person who makes the final decision'},
+            'influencer': {'label': 'Influencer', 'description': 'Person who influences the decision'},
+            'champion': {'label': 'Champion', 'description': 'Internal advocate for the solution'},
+            'user': {'label': 'User', 'description': 'End user of the solution'},
+            'other': {'label': 'Other', 'description': 'Other role type'}
+        } %}
+        {{ multi_select_dropdown(
+            name='meddpicc_roles',
+            choices=meddpicc_choices,
+            value=field.data or '[]',
+            label=field.label.text if show_label else '',
+            required=field.flags.required,
+            placeholder='Select MEDDPICC roles...'
+        ) }}
+        {% if show_errors and field.errors %}
+            {% for error in field.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+    {# Special handling for relationship owners with entity search #}
+    {% elif field.name == 'relationship_owners' %}
+        {{ entity_search_dropdown(
+            name=field.name,
+            entity_type='user',
+            value=field.data or '',
+            label=field.label.text if show_label else '',
+            required=field.flags.required,
+            placeholder='Search team members...',
+            multiple=true
         ) }}
         {% if show_errors and field.errors %}
             {% for error in field.errors %}
@@ -178,6 +217,9 @@
     {# Special handling for Company forms #}
     {% elif form.__class__.__name__ == 'CompanyForm' and mode == 'form' %}
         {{ render_company_form_fields(form, allowed_fields) }}
+    {# Special handling for Stakeholder forms #}
+    {% elif form.__class__.__name__ == 'StakeholderForm' and mode == 'form' %}
+        {{ render_stakeholder_form_fields(form, allowed_fields) }}
     {% else %}
         {% for field_name in allowed_fields %}
             {% set field = form[field_name] %}
@@ -350,6 +392,30 @@
             {{ render_dynamic_search_field(field) }}
         {% else %}
             {{ render_field(field) }}
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{# ============================================
+   STAKEHOLDER FORM SPECIAL RENDERING
+   ============================================ #}
+{% macro render_stakeholder_form_fields(form, allowed_fields) %}
+    {# First row: Company and Job Title side by side #}
+    {% if 'company' in allowed_fields and 'job_title' in allowed_fields %}
+        {{ render_inline_fields_2col(form.company, form.job_title) }}
+    {% elif 'company' in allowed_fields %}
+        {{ render_field(form.company) }}
+    {% elif 'job_title' in allowed_fields %}
+        {{ render_field(form.job_title) }}
+    {% endif %}
+
+    {# Render remaining fields in order #}
+    {% for field_name in allowed_fields %}
+        {% if field_name not in ['company', 'job_title'] %}
+            {% set field = form[field_name] %}
+            {% if field %}
+                {{ render_field(field) }}
+            {% endif %}
         {% endif %}
     {% endfor %}
 {% endmacro %}

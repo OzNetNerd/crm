@@ -45,6 +45,8 @@ class StakeholderForm(BaseForm):
         render_kw={"class": "form-select", "size": "8"}
     )
 
+    relationship_owners = HiddenField("Relationship Owners")
+
     comments = TextAreaField(
         "Comments",
         validators=[Optional()],
@@ -56,4 +58,4 @@ class StakeholderForm(BaseForm):
 
     def get_display_fields(self):
         """Return field names to display in modal, in this exact order"""
-        return ["name", "job_title", "company", "meddpicc_roles_select", "comments"]
+        return ["name", "company", "job_title", "meddpicc_roles_select", "relationship_owners", "comments"]
