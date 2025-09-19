@@ -55,7 +55,7 @@
    METADATA ICON WITH TOOLTIP
    ============================================ #}
 {% macro meta_icon(icon_name, tooltip_text, value='', class='') %}
-    <span class="entity-meta-icon {{ class }}" title="{{ tooltip_text }}{% if value %}: {{ value }}{% endif %}">
+    <span class="entity-meta-icon {{ class }}" title="{{ tooltip_text }}">
         {{ icon(icon_name, size='4', class='inline text-gray-500 hover:text-gray-700') }}
         {% if value %}<span class="ml-1 text-xs text-gray-600">{{ value }}</span>{% endif %}
     </span>
