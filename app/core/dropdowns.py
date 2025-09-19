@@ -184,6 +184,8 @@ class DropdownBuilder:
     ) -> Dict[str, Dict[str, Any]]:
         """Build all dropdown configurations for entity UI.
 
+        Ensures Group By, Sort By, and Order appear first in the UI.
+
         Args:
             model: SQLAlchemy model class.
             request_args: Request arguments dictionary.
@@ -192,23 +194,28 @@ class DropdownBuilder:
             Dictionary of all dropdown configurations.
         """
         from app.services import MetadataService
+        from collections import OrderedDict
 
         metadata = MetadataService.get_field_metadata(model)
-        dropdowns = {}
+        dropdowns = OrderedDict()
 
-        # Add filter dropdowns
-        dropdowns.update(cls.build_filter_dropdowns(metadata, request_args))
+        # PRIORITY ORDER: Group By, Sort By, Order (Direction) come first
 
-        # Add group dropdown if applicable
+        # 1. Add group dropdown if applicable
         if group_dropdown := cls.build_group_dropdown(metadata, request_args):
             dropdowns["group_by"] = group_dropdown
 
-        # Add sort dropdowns
+        # 2. Add sort dropdown
         default_sort = MetadataService.get_default_sort_field(model)
         dropdowns["sort_by"] = cls.build_sort_dropdown(
             metadata, request_args, default_sort
         )
+
+        # 3. Add sort direction (Order)
         dropdowns["sort_direction"] = cls.build_direction_dropdown(request_args)
+
+        # 4. Finally, add all filter dropdowns
+        dropdowns.update(cls.build_filter_dropdowns(metadata, request_args))
 
         return dropdowns
 
