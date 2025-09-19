@@ -1,0 +1,49 @@
+{# Company About Tab Content #}
+{% from 'macros/ui.html' import icon %}
+
+<div class="modal-tab-panel" id="company-about-tab">
+    <div class="space-y-4">
+        {# Company Details #}
+        <div>
+            <h4 class="text-sm font-semibold text-gray-900 mb-3">Company Details</h4>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Company Name</label>
+                    <div class="form-field-view">{{ entity.name }}</div>
+                </div>
+                <div>
+                    <label class="form-label">Industry</label>
+                    <div class="form-field-view">
+                        {% if entity.industry %}
+                            {{ entity.industry|replace('_', ' ')|title }}
+                        {% else %}
+                            <span class="form-field-view-empty">Not specified</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Size</label>
+                    <div class="form-field-view">
+                        {% if entity.size %}
+                            {{ entity.size|replace('_', ' ')|title }}
+                        {% else %}
+                            <span class="form-field-view-empty">Not specified</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Website</label>
+                    <div class="form-field-view">
+                        {% if entity.website %}
+                            <a href="{{ entity.website }}" target="_blank" class="text-blue-600 hover:text-blue-800">
+                                {{ entity.website }}
+                            </a>
+                        {% else %}
+                            <span class="form-field-view-empty">Not specified</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

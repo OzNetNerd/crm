@@ -1,0 +1,33 @@
+{# Company Account Team Tab Content #}
+{% from 'macros/ui.html' import icon %}
+
+<div class="modal-tab-panel" id="company-team-tab">
+    <div class="space-y-4">
+        {# Account Team #}
+        <div>
+            <h4 class="text-sm font-semibold text-gray-900 mb-3">Account Team</h4>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Core Rep</label>
+                    <div class="form-field-view">
+                        {% if entity.core_rep %}
+                            {{ entity.core_rep }}
+                        {% else %}
+                            <span class="form-field-view-empty">Not assigned</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Core SC</label>
+                    <div class="form-field-view">
+                        {% if entity.core_sc %}
+                            {{ entity.core_sc }}
+                        {% else %}
+                            <span class="form-field-view-empty">Not assigned</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -124,10 +124,69 @@ if (typeof selectEntity === 'undefined') {
         <!-- Body -->
         <div class="modal-body">
             {% if mode == 'view' %}
-                <!-- View Mode - Using unified layout renderer -->
-                <div class="form-fields">
-                    {{ render_form_with_layout(form, mode='view') }}
-                </div>
+                {% if model_name.lower() == 'company' %}
+                    <!-- Company View with Tabs -->
+                    <div x-data="{ activeTab: 'about' }">
+                        <!-- Tab Navigation -->
+                        <div class="modal-nav">
+                            <button class="modal-nav-item"
+                                    :class="activeTab === 'about' ? 'modal-nav-item-active' : ''"
+                                    @click="activeTab = 'about'"
+                                    hx-get="/modals/{{ model_name }}/{{ entity_id }}/tab/about"
+                                    hx-target="#modal-tab-content"
+                                    hx-swap="innerHTML"
+                                    hx-trigger="click once">
+                                About
+                            </button>
+                            <button class="modal-nav-item"
+                                    :class="activeTab === 'team' ? 'modal-nav-item-active' : ''"
+                                    @click="activeTab = 'team'"
+                                    hx-get="/modals/{{ model_name }}/{{ entity_id }}/tab/team"
+                                    hx-target="#modal-tab-content"
+                                    hx-swap="innerHTML"
+                                    hx-trigger="click once">
+                                Account Team
+                            </button>
+                            <button class="modal-nav-item"
+                                    :class="activeTab === 'opportunities' ? 'modal-nav-item-active' : ''"
+                                    @click="activeTab = 'opportunities'"
+                                    hx-get="/modals/{{ model_name }}/{{ entity_id }}/tab/opportunities"
+                                    hx-target="#modal-tab-content"
+                                    hx-swap="innerHTML"
+                                    hx-trigger="click once">
+                                Opportunities
+                            </button>
+                            <button class="modal-nav-item"
+                                    :class="activeTab === 'stakeholders' ? 'modal-nav-item-active' : ''"
+                                    @click="activeTab = 'stakeholders'"
+                                    hx-get="/modals/{{ model_name }}/{{ entity_id }}/tab/stakeholders"
+                                    hx-target="#modal-tab-content"
+                                    hx-swap="innerHTML"
+                                    hx-trigger="click once">
+                                Stakeholders
+                            </button>
+                        </div>
+
+                        <!-- Tab Content Container -->
+                        <div class="modal-tab-content" id="modal-tab-content">
+                            <!-- Initial content loaded via HTMX on first tab click -->
+                            <div class="modal-tab-loading">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trigger initial tab load -->
+                    <script>
+                        // Load the About tab immediately when modal opens
+                        htmx.ajax('GET', '/modals/{{ model_name }}/{{ entity_id }}/tab/about', '#modal-tab-content');
+                    </script>
+                {% else %}
+                    <!-- Standard View Mode - Using unified layout renderer -->
+                    <div class="form-fields">
+                        {{ render_form_with_layout(form, mode='view') }}
+                    </div>
+                {% endif %}
             {% else %}
                 <!-- Form Mode - Using unified layout renderer -->
                 <form id="{{ model_name }}-form"

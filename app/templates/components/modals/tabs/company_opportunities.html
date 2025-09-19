@@ -1,0 +1,109 @@
+{# Company Opportunities Tab Content with Pagination #}
+{% from 'macros/ui.html' import icon %}
+
+<div class="modal-tab-panel" id="company-opportunities-tab">
+    {% if opportunities.items %}
+        {# Opportunities List #}
+        <div class="space-y-3" id="opportunities-list">
+            {% for opportunity in opportunities.items %}
+                <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h5 class="font-medium text-gray-900">{{ opportunity.name }}</h5>
+                            <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                                <span class="flex items-center gap-1">
+                                    {{ icon('currency-dollar', size='4', class='text-gray-400') }}
+                                    <span class="font-medium">
+                                        {% if opportunity.value >= 1000000 %}
+                                            ${{ (opportunity.value / 1000000)|round(1) }}M
+                                        {% elif opportunity.value >= 1000 %}
+                                            ${{ (opportunity.value / 1000)|round(0)|int }}K
+                                        {% else %}
+                                            ${{ opportunity.value }}
+                                        {% endif %}
+                                    </span>
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    {{ icon('chart-bar', size='4', class='text-gray-400') }}
+                                    <span>{{ opportunity.stage|replace('_', ' ')|title }}</span>
+                                </span>
+                                {% if opportunity.probability %}
+                                <span class="flex items-center gap-1">
+                                    {{ icon('percent-badge', size='4', class='text-gray-400') }}
+                                    <span>{{ opportunity.probability }}%</span>
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button class="text-gray-400 hover:text-gray-600"
+                                hx-get="/modals/opportunity/{{ opportunity.id }}/view"
+                                hx-target="#{{ model_name }}-modal"
+                                hx-swap="outerHTML">
+                            {{ icon('arrow-top-right-on-square', size='5') }}
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# Pagination Controls #}
+        {% if opportunities.pages > 1 %}
+            <div class="modal-pagination">
+                <div class="modal-pagination-info">
+                    Showing {{ opportunities.per_page * (opportunities.page - 1) + 1 }} -
+                    {{ min(opportunities.per_page * opportunities.page, opportunities.total) }} of {{ opportunities.total }}
+                </div>
+                <div class="modal-pagination-controls">
+                    {# Previous button #}
+                    <button class="modal-pagination-btn"
+                            {% if not opportunities.has_prev %}disabled{% endif %}
+                            hx-get="/modals/company/{{ entity.id }}/tab/opportunities?page={{ opportunities.prev_num }}"
+                            hx-target="#company-opportunities-tab"
+                            hx-swap="outerHTML">
+                        {{ icon('chevron-left', size='4') }}
+                    </button>
+
+                    {# Page numbers #}
+                    {% for page_num in opportunities.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+                        {% if page_num %}
+                            <button class="modal-pagination-btn {% if page_num == opportunities.page %}modal-pagination-btn-active{% endif %}"
+                                    {% if page_num == opportunities.page %}disabled{% endif %}
+                                    hx-get="/modals/company/{{ entity.id }}/tab/opportunities?page={{ page_num }}"
+                                    hx-target="#company-opportunities-tab"
+                                    hx-swap="outerHTML">
+                                {{ page_num }}
+                            </button>
+                        {% else %}
+                            <span class="px-2 text-gray-400">...</span>
+                        {% endif %}
+                    {% endfor %}
+
+                    {# Next button #}
+                    <button class="modal-pagination-btn"
+                            {% if not opportunities.has_next %}disabled{% endif %}
+                            hx-get="/modals/company/{{ entity.id }}/tab/opportunities?page={{ opportunities.next_num }}"
+                            hx-target="#company-opportunities-tab"
+                            hx-swap="outerHTML">
+                        {{ icon('chevron-right', size='4') }}
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        {# Empty state #}
+        <div class="text-center py-12">
+            <div class="mx-auto w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                {{ icon('briefcase', size='6', class='text-gray-400') }}
+            </div>
+            <h3 class="text-sm font-medium text-gray-900 mb-1">No opportunities yet</h3>
+            <p class="text-sm text-gray-500">Create your first opportunity for {{ entity.name }}</p>
+            <button class="btn btn-primary mt-4"
+                    hx-get="/modals/opportunity/create"
+                    hx-target="#{{ model_name }}-modal"
+                    hx-swap="outerHTML">
+                {{ icon('plus', size='4', class='inline-block mr-1') }}
+                New Opportunity
+            </button>
+        </div>
+    {% endif %}
+</div>
