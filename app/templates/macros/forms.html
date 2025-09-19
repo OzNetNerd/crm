@@ -147,6 +147,20 @@
 {% endmacro %}
 
 {# ============================================
+   TWO-COLUMN INLINE FIELDS
+   ============================================ #}
+{% macro render_inline_fields_2col(field1, field2) %}
+    <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-1">
+            {{ render_field(field1) }}
+        </div>
+        <div class="col-span-1">
+            {{ render_field(field2) }}
+        </div>
+    </div>
+{% endmacro %}
+
+{# ============================================
    FIELD FILTERING FOR MODALS
    ============================================ #}
 {% macro render_filtered_fields(form, mode='form', allowed_fields=None) %}
@@ -161,6 +175,9 @@
     {# Special handling for Task forms #}
     {% if hasattr(form, 'task_type') and hasattr(form, 'due_date') and mode == 'form' %}
         {{ render_task_form_fields(form, allowed_fields) }}
+    {# Special handling for Company forms #}
+    {% elif form.__class__.__name__ == 'CompanyForm' and mode == 'form' %}
+        {{ render_company_form_fields(form, allowed_fields) }}
     {% else %}
         {% for field_name in allowed_fields %}
             {% set field = form[field_name] %}
@@ -333,6 +350,39 @@
             {{ render_dynamic_search_field(field) }}
         {% else %}
             {{ render_field(field) }}
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{# ============================================
+   COMPANY FORM SPECIAL RENDERING
+   ============================================ #}
+{% macro render_company_form_fields(form, allowed_fields) %}
+    {# First row: Company Name and Industry side by side #}
+    {% if 'name' in allowed_fields and 'industry' in allowed_fields %}
+        {{ render_inline_fields_2col(form.name, form.industry) }}
+    {% elif 'name' in allowed_fields %}
+        {{ render_field(form.name) }}
+    {% elif 'industry' in allowed_fields %}
+        {{ render_field(form.industry) }}
+    {% endif %}
+
+    {# Second row: Core Rep and Core SC side by side #}
+    {% if 'core_rep' in allowed_fields and 'core_sc' in allowed_fields %}
+        {{ render_inline_fields_2col(form.core_rep, form.core_sc) }}
+    {% elif 'core_rep' in allowed_fields %}
+        {{ render_field(form.core_rep) }}
+    {% elif 'core_sc' in allowed_fields %}
+        {{ render_field(form.core_sc) }}
+    {% endif %}
+
+    {# Render remaining fields #}
+    {% for field_name in allowed_fields %}
+        {% if field_name not in ['name', 'industry', 'core_rep', 'core_sc'] %}
+            {% set field = form[field_name] %}
+            {% if field %}
+                {{ render_field(field) }}
+            {% endif %}
         {% endif %}
     {% endfor %}
 {% endmacro %}
