@@ -142,32 +142,47 @@ def process_form_submission(model_name, model, form, entity=None):
         entity = model()
         db.session.add(entity)
 
-    # Special handling for stakeholder and opportunity company field
-    if model_name.lower() in ["stakeholder", "opportunity"] and hasattr(
-        form, "company"
-    ):
-        # Store company value before populate_obj
-        company_value = form.company.data
-        # Remove company from form to avoid populate_obj error
-        delattr(form, "company")
-        form.populate_obj(entity)
-        # Handle company relationship
-        if company_value:
-            try:
-                # Extract company ID from the string (format: "TechCorp Solutions" or ID)
-                from app.models import Company
+    # Handle all entity search fields (company, core_rep, core_sc, etc.) in a DRY way
+    entity_search_fields = {}
 
-                if company_value.isdigit():
-                    entity.company_id = int(company_value)
-                else:
-                    # Try to find company by name
-                    company = Company.query.filter_by(name=company_value).first()
-                    if company:
-                        entity.company_id = company.id
-            except (ValueError, AttributeError):
-                pass
-    else:
-        form.populate_obj(entity)
+    # Identify and store entity search field values before populate_obj
+    for field_name in ["company", "core_rep", "core_sc"]:
+        if hasattr(form, field_name):
+            entity_search_fields[field_name] = getattr(form, field_name).data
+            delattr(form, field_name)
+
+    # Populate the entity with regular form fields
+    form.populate_obj(entity)
+
+    # Now handle the entity search fields properly
+    for field_name, field_value in entity_search_fields.items():
+        if not field_value:
+            continue
+
+        # Handle foreign key relationships (company field on stakeholder/opportunity)
+        if field_name == "company" and model_name.lower() in ["stakeholder", "opportunity"]:
+            if str(field_value).isdigit():
+                entity.company_id = int(field_value)
+            else:
+                from app.models import Company
+                company = Company.query.filter_by(name=field_value).first()
+                if company:
+                    entity.company_id = company.id
+
+        # Handle user reference fields (core_rep, core_sc on company)
+        elif field_name in ["core_rep", "core_sc"] and model_name.lower() == "company":
+            if str(field_value).isdigit():
+                from app.models import User
+                user = User.query.get(int(field_value))
+                if user:
+                    setattr(entity, field_name, user.name)
+            else:
+                # Use the value as-is (it's already a name)
+                setattr(entity, field_name, field_value)
+
+        # Default: just set the value directly
+        else:
+            setattr(entity, field_name, field_value)
 
     # Special handling for stakeholder MEDDPIC roles
     if model_name.lower() == "stakeholder" and hasattr(form, "meddpicc_roles"):
@@ -239,6 +254,60 @@ def populate_task_form_data(entity, form, mode):
         form.entity.data = ", ".join(entity_names)
 
 
+def populate_entity_search_fields(entity, form, mode):
+    """Universal function to populate all entity search fields for edit mode."""
+    if mode != "edit":
+        return  # Only handle edit mode, view mode works fine with form_class(obj=entity)
+
+    # Handle user reference fields (core_rep, core_sc)
+    user_fields = ['core_rep', 'core_sc']
+    for field_name in user_fields:
+        if hasattr(form, field_name) and hasattr(entity, field_name):
+            field_value = getattr(entity, field_name)
+            if field_value:
+                from app.models import User
+                user = User.query.filter_by(name=field_value).first()
+                if user:
+                    getattr(form, field_name).data = str(user.id)
+                    # Set search display value for template
+                    getattr(form, field_name).search_display_value = field_value
+
+    # Handle choice fields (industry, stage, etc.)
+    choice_fields = ['industry', 'stage']
+    for field_name in choice_fields:
+        if hasattr(form, field_name) and hasattr(entity, field_name):
+            field_value = getattr(entity, field_name)
+            if field_value:
+                # For choice fields, set search display value to the human-readable label
+                field_obj = getattr(form, field_name)
+                if hasattr(field_obj, 'choices'):
+                    # Find the label for this choice value
+                    choice_label = None
+                    for choice_value, choice_text in field_obj.choices:
+                        if choice_value == field_value:
+                            choice_label = choice_text
+                            break
+                    if choice_label:
+                        field_obj.search_display_value = choice_label
+                else:
+                    # Fallback: use the value as display
+                    field_obj.search_display_value = field_value
+
+    # Handle entity reference fields (company)
+    entity_fields = ['company']
+    for field_name in entity_fields:
+        if hasattr(form, field_name) and hasattr(entity, f"{field_name}_id"):
+            entity_id = getattr(entity, f"{field_name}_id")
+            if entity_id:
+                # Look up the entity name by ID
+                if field_name == 'company':
+                    from app.models import Company
+                    ref_entity = Company.query.get(entity_id)
+                    if ref_entity:
+                        getattr(form, field_name).data = str(entity_id)
+                        getattr(form, field_name).search_display_value = ref_entity.name
+
+
 # ============= ROUTE HANDLERS - DRY CONSOLIDATED =============
 
 
@@ -278,6 +347,9 @@ def entity_modal(model_name, entity_id, mode):
     # Handle stakeholder MEDDPIC roles
     if model_name.lower() == "stakeholder":
         populate_stakeholder_meddpic_roles(entity, form, mode)
+
+    # Handle entity search fields for all models (universal DRY approach)
+    populate_entity_search_fields(entity, form, mode)
 
     return render_modal(model_name, form, mode, entity)
 

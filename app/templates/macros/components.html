@@ -135,7 +135,7 @@
 {# ============================================
    ENTITY SEARCH DROPDOWN - For form fields
    ============================================ #}
-{% macro entity_search_dropdown(name, entity_type, value='', label='', required=false, placeholder='Search...') %}
+{% macro entity_search_dropdown(name, entity_type, value='', search_value='', label='', required=false, placeholder='Search...') %}
     {% if label %}
         <label for="{{ name }}" class="form-label{% if required %} form-label-required{% endif %}">
             {{ label }}
@@ -147,6 +147,7 @@
                name="q"
                class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                placeholder="{{ placeholder }}"
+               value="{{ search_value }}"
                autocomplete="off"
                hx-get="{{ url_for('search.htmx_search') }}"
                hx-trigger="focus, input changed delay:300ms"
@@ -163,8 +164,8 @@
 {# ============================================
    CHOICE SEARCH DROPDOWN - For searchable choice fields
    ============================================ #}
-{% macro choice_search_dropdown(name, choices, value='', label='', required=false, placeholder='Search...') %}
-    {{ entity_search_dropdown(name, 'choice:' + name, value, label, required, placeholder) }}
+{% macro choice_search_dropdown(name, choices, value='', search_value='', label='', required=false, placeholder='Search...') %}
+    {{ entity_search_dropdown(name, 'choice:' + name, value, search_value, label, required, placeholder) }}
 {% endmacro %}
 
 {# ============================================
