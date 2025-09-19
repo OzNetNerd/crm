@@ -108,17 +108,17 @@
         {% set meta = entity.get_meta_data() %}
         {% if meta %}
             <div class="entity-card-meta flex items-center space-x-3 mt-3 pt-3 border-t border-gray-100">
-                {# Primary metadata - icons only with actual dates in tooltips #}
+                {# Primary metadata - icons with relative time and actual dates in tooltips #}
                 {% if meta.created_date %}
-                    {{ meta_icon('calendar', 'Created: ' + meta.created_date) }}
+                    {{ meta_icon('calendar', 'Created: ' + meta.created_date, meta.created) }}
                 {% endif %}
                 {% if meta.updated_date %}
-                    {{ meta_icon('clock', 'Last Updated: ' + meta.updated_date) }}
+                    {{ meta_icon('clock', 'Last Updated: ' + meta.updated_date, meta.last_update) }}
                 {% endif %}
 
                 {# Entity-specific metadata #}
                 {% if meta.last_contacted_date %}
-                    {{ meta_icon('chat-bubble-left-right', 'Last Contacted: ' + meta.last_contacted_date) }}
+                    {{ meta_icon('chat-bubble-left-right', 'Last Contacted: ' + meta.last_contacted_date, meta.last_contacted) }}
                 {% endif %}
 
                 {% if meta.pipeline_value %}
@@ -143,9 +143,9 @@
 
                 {% if meta.close_date %}
                     {% if meta.days_to_close %}
-                        {{ meta_icon('clock', 'Expected Close: ' + meta.close_date) }}
+                        {{ meta_icon('clock', 'Expected Close: ' + meta.close_date, meta.days_to_close) }}
                     {% elif meta.days_overdue %}
-                        {{ meta_icon('exclamation-circle', 'Expected Close: ' + meta.close_date, class='text-red-600') }}
+                        {{ meta_icon('exclamation-circle', 'Expected Close: ' + meta.close_date, meta.days_overdue, class='text-red-600') }}
                     {% endif %}
                 {% endif %}
 
@@ -158,7 +158,7 @@
                     {{ meta_icon(meta.next_step.icon, 'Next Step: ' + meta.next_step.type_display) }}
                 {% endif %}
                 {% if meta.due_date %}
-                    {{ meta_icon('calendar', 'Due Date: ' + meta.due_date) }}
+                    {{ meta_icon('calendar', 'Due Date: ' + meta.due_date, meta.due) }}
                 {% endif %}
             </div>
         {% endif %}
