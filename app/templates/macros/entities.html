@@ -108,17 +108,17 @@
         {% set meta = entity.get_meta_data() %}
         {% if meta %}
             <div class="entity-card-meta flex items-center space-x-3 mt-3 pt-3 border-t border-gray-100">
-                {# Primary metadata #}
-                {% if meta.created %}
-                    {{ meta_icon('calendar', 'Created', meta.created) }}
+                {# Primary metadata - icons only with actual dates in tooltips #}
+                {% if meta.created_date %}
+                    {{ meta_icon('calendar', 'Created: ' + meta.created_date) }}
                 {% endif %}
-                {% if meta.last_update %}
-                    {{ meta_icon('clock', 'Last Updated', meta.last_update) }}
+                {% if meta.updated_date %}
+                    {{ meta_icon('clock', 'Last Updated: ' + meta.updated_date) }}
                 {% endif %}
 
                 {# Entity-specific metadata #}
-                {% if meta.last_contacted %}
-                    {{ meta_icon('chat-bubble-left-right', 'Last Contacted', meta.last_contacted) }}
+                {% if meta.last_contacted_date %}
+                    {{ meta_icon('chat-bubble-left-right', 'Last Contacted: ' + meta.last_contacted_date) }}
                 {% endif %}
 
                 {% if meta.pipeline_value %}
@@ -141,24 +141,24 @@
                     {{ meta_icon('arrows-right-left', 'Stage', meta.stage) }}
                 {% endif %}
 
-                {% if meta.days_to_close %}
-                    {{ meta_icon('clock', 'Days to Close', meta.days_to_close) }}
-                {% endif %}
-
-                {% if meta.days_overdue %}
-                    {{ meta_icon('exclamation-circle', 'Days Overdue', meta.days_overdue, class='text-red-600') }}
+                {% if meta.close_date %}
+                    {% if meta.days_to_close %}
+                        {{ meta_icon('clock', 'Expected Close: ' + meta.close_date) }}
+                    {% elif meta.days_overdue %}
+                        {{ meta_icon('exclamation-circle', 'Expected Close: ' + meta.close_date, class='text-red-600') }}
+                    {% endif %}
                 {% endif %}
 
                 {% if meta.meddpicc_roles %}
-                    {{ meta_icon('star', 'MEDDPICC Roles', meta.meddpicc_roles.replace('MEDDPICC: ', '')) }}
+                    {{ meta_icon('star', meta.meddpicc_roles) }}
                 {% endif %}
 
                 {# Task-specific metadata #}
                 {% if meta.next_step %}
-                    {{ meta_icon(meta.next_step.icon, 'Next Step', meta.next_step.date) }}
+                    {{ meta_icon(meta.next_step.icon, 'Next Step: ' + meta.next_step.type_display) }}
                 {% endif %}
-                {% if meta.due %}
-                    {{ meta_icon('calendar', 'Due Date', meta.due) }}
+                {% if meta.due_date %}
+                    {{ meta_icon('calendar', 'Due Date: ' + meta.due_date) }}
                 {% endif %}
             </div>
         {% endif %}

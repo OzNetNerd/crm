@@ -35,23 +35,25 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
     meta = {}
     entity_type = model_instance.__class__.__name__.lower()
 
-    # Universal fields
-    # Created date with relative time
+    # Universal fields - return both actual date and relative for display flexibility
+    # Created date
     if hasattr(model_instance, "created_at") and model_instance.created_at:
         created_date = (
             model_instance.created_at.date()
             if isinstance(model_instance.created_at, datetime)
             else model_instance.created_at
         )
+        meta["created_date"] = created_date.strftime("%B %d, %Y")
         meta["created"] = format_date_with_relative(created_date)
 
-    # Last updated with relative time
+    # Last updated
     if hasattr(model_instance, "updated_at") and model_instance.updated_at:
         updated_date = (
             model_instance.updated_at.date()
             if isinstance(model_instance.updated_at, datetime)
             else model_instance.updated_at
         )
+        meta["updated_date"] = updated_date.strftime("%B %d, %Y")
         meta["last_update"] = format_date_with_relative(updated_date)
 
     # Entity-specific metadata
@@ -77,6 +79,7 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
                 if isinstance(model_instance.last_contacted, datetime)
                 else model_instance.last_contacted
             )
+            meta["last_contacted_date"] = last_contacted_date.strftime("%B %d, %Y")
             meta["last_contacted"] = format_date_with_relative(last_contacted_date)
 
         # Active opportunities count
@@ -110,6 +113,7 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
                 close_date = model_instance.expected_close_date
 
             days_to_close = (close_date - date.today()).days
+            meta["close_date"] = close_date.strftime("%B %d, %Y")
             if days_to_close >= 0:
                 meta["days_to_close"] = f"{days_to_close} days to close"
             else:
@@ -117,7 +121,13 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
 
     # Due date with relative time (for tasks, etc.)
     if hasattr(model_instance, "due_date") and model_instance.due_date:
-        meta["due"] = format_date_with_relative(model_instance.due_date)
+        due_date = (
+            model_instance.due_date.date()
+            if isinstance(model_instance.due_date, datetime)
+            else model_instance.due_date
+        )
+        meta["due_date"] = due_date.strftime("%B %d, %Y")
+        meta["due"] = format_date_with_relative(due_date)
 
     # Next step for tasks
     if (
