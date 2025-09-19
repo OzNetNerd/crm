@@ -83,7 +83,11 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
             active_opps = [opp for opp in model_instance.opportunities if opp.stage not in ["closed-won", "closed-lost"]]
             pipeline_value = sum(opp.value or 0 for opp in active_opps)
             if pipeline_value > 0:
-                meta["pipeline_value"] = f"${pipeline_value:,}"
+                if pipeline_value >= 1000:
+                    pipeline_display = f"${pipeline_value // 1000}K"
+                else:
+                    pipeline_display = f"${pipeline_value}"
+                meta["pipeline_value"] = pipeline_display
 
         # Team size - number of stakeholders
         if hasattr(model_instance, "stakeholders"):
@@ -119,7 +123,11 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
     elif entity_type == "opportunity":
         # Deal size and stage
         if hasattr(model_instance, "value") and model_instance.value:
-            meta["deal_size"] = f"${model_instance.value:,}"
+            if model_instance.value >= 1000:
+                deal_value = f"${model_instance.value // 1000}K"
+            else:
+                deal_value = f"${model_instance.value}"
+            meta["deal_size"] = deal_value
 
         if hasattr(model_instance, "stage") and model_instance.stage:
             stage_display = model_instance.stage.replace("-", " ").replace("_", " ").title()
@@ -135,7 +143,7 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
             days_to_close = (close_date - date.today()).days
             meta["close_date"] = close_date.strftime("%B %d, %Y")
             if days_to_close >= 0:
-                meta["days_to_close"] = f"{days_to_close} days to close"
+                meta["days_to_close"] = f"in {days_to_close} days"
             else:
                 meta["days_overdue"] = f"{abs(days_to_close)} days overdue"
 
