@@ -128,6 +128,65 @@
 {% endmacro %}
 
 {# ============================================
+   MULTI-SELECT DROPDOWNS - Using Alpine.js for consistent behavior
+   ============================================ #}
+{% macro multi_select_dropdown(name, choices, value='[]', label='', required=false, placeholder='Select options...') %}
+    <div class="form-field-group">
+        {% if label %}
+            <label for="{{ name }}" class="form-label{% if required %} form-label-required{% endif %}">
+                {{ label }}
+            </label>
+        {% endif %}
+
+        <select multiple
+                name="{{ name }}"
+                id="{{ name }}"
+                class="form-select-multiple"
+                {% if required %}required{% endif %}>
+            {% for choice_key, choice_data in choices.items() %}
+                {% set selected_values = value|from_json if value != '[]' else [] %}
+                <option value="{{ choice_key }}"
+                        {% if choice_key in selected_values %}selected{% endif %}>
+                    {{ choice_data.label }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+{% endmacro %}
+
+{% macro multi_entity_search_dropdown(name, entity_type, value='[]', label='', required=false, placeholder='Search entities...') %}
+    {% if label %}
+        <label for="{{ name }}_search" class="form-label{% if required %} form-label-required{% endif %}">
+            {{ label }}
+        </label>
+    {% endif %}
+    <div class="search-container" data-field-id="{{ name }}">
+        <div class="relative">
+            <input type="text"
+                   id="{{ name }}_search"
+                   name="q"
+                   class="search-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="{{ placeholder }}"
+                   autocomplete="off"
+                   hx-get="{{ url_for('search.htmx_search') }}"
+                   hx-trigger="focus, input changed delay:300ms"
+                   hx-target="#{{ name }}_search-results"
+                   hx-swap="innerHTML"
+                   hx-include="this"
+                   hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}"}'>
+            <div id="{{ name }}_search-results" class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto hidden z-50"></div>
+        </div>
+        <div id="{{ name }}-badges" class="mt-2 flex flex-wrap gap-2"></div>
+        <input type="hidden" name="{{ name }}-data" id="{{ name }}-data" value="{{ value }}"{% if required %} required{% endif %}>
+        <input type="hidden" name="{{ name }}-selected" id="{{ name }}-selected" value="">
+    </div>
+{% endmacro %}
+
+{% macro multiple_choice_search_dropdown(name, choices, value='[]', label='', required=false, placeholder='Search choices...') %}
+    {{ multi_entity_search_dropdown(name, 'choice:' + name, value, label, required, placeholder) }}
+{% endmacro %}
+
+{# ============================================
    ENTITY DROPDOWN CONTROLS - Placeholder for missing macro
    ============================================ #}
 {% macro entity_dropdown_controls(dropdowns=[], entity_type='') %}

@@ -11,6 +11,7 @@ from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
 from app.utils.template_utils import badge_class, get_dashboard_action_buttons
 from app.utils.formatters import format_number, format_currency, format_currency_short, format_percentage
+from app.utils.logging_config import setup_crm_logging, request_logging_middleware, get_crm_logger
 from app import config
 
 
@@ -26,6 +27,15 @@ def create_app():
             "SQLALCHEMY_TRACK_MODIFICATIONS": config.SQLALCHEMY_TRACK_MODIFICATIONS,
         }
     )
+
+    # Setup structured logging (ADR-012)
+    debug_mode = app.config.get('DEBUG', False)
+    setup_crm_logging(service_name="crm-service", debug=debug_mode)
+
+    # Setup request logging middleware
+    before_request_func, after_request_func = request_logging_middleware()
+    app.before_request(before_request_func)
+    app.after_request(after_request_func)
 
     # Global configuration
     app.url_map.strict_slashes = False
@@ -54,9 +64,19 @@ def create_app():
     app.jinja_env.filters["format_currency_short"] = format_currency_short
     app.jinja_env.filters["format_percentage"] = format_percentage
 
-    # Basic logging
+    # Application startup logging
+    logger = get_crm_logger(__name__)
     if os.environ.get("WERKZEUG_RUN_MAIN"):
-        app.logger.info("CRM Application startup")
+        logger.info(
+            "CRM Application startup",
+            extra={
+                "custom_fields": {
+                    "debug_mode": debug_mode,
+                    "database_uri": config.SQLALCHEMY_DATABASE_URI.split("://")[0] + "://[REDACTED]",
+                    "flask_env": os.environ.get("FLASK_ENV", "production")
+                }
+            }
+        )
 
     # Initialize database
     db.init_app(app)
