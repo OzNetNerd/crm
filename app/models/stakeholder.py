@@ -155,6 +155,8 @@ class Stakeholder(BaseModel):
         info={"display_label": "Phone Number", "contact_field": True, "icon": "phone", "sortable": False},
     )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_contacted = db.Column(db.DateTime, info={"display_label": "Last Contacted", "sortable": True})
 
     # Foreign key to company
     company_id = db.Column(
