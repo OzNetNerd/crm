@@ -36,3 +36,16 @@ class UserModalForm(FlaskForm):
         validators=[Optional(), Length(max=100)],
         render_kw={"placeholder": "Enter job title..."},
     )
+
+    def get_display_fields(self):
+        """Return field names to display in modal"""
+        return ["name", "job_title"]
+
+    def get_field_layout(self):
+        """
+        Define field layout for consistent rendering in view and edit modes.
+        Name and Job Title side by side for compact user creation.
+        """
+        return [
+            {'type': 'inline-2col', 'fields': ['name', 'job_title']}
+        ]

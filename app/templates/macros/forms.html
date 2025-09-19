@@ -217,6 +217,71 @@
 {% endmacro %}
 
 {# ============================================
+   UNIVERSAL FORM LAYOUT RENDERER - DRY
+   ============================================ #}
+{% macro render_form_with_layout(form, mode='form') %}
+    {# Get layout configuration from form #}
+    {% set layout = form.get_field_layout() if hasattr(form, 'get_field_layout') else [] %}
+
+    {# If no layout defined, fall back to filtered fields #}
+    {% if not layout %}
+        {{ render_filtered_fields(form, mode) }}
+    {% else %}
+        {# Render fields according to layout configuration #}
+        {% for row in layout %}
+            {% if row.type == 'single' %}
+                {# Single field on its own row #}
+                {% set field = form[row.field] %}
+                {% if field %}
+                    {% if mode == 'view' %}
+                        {{ render_field_view(field) }}
+                    {% else %}
+                        {{ render_field(field) }}
+                    {% endif %}
+                {% endif %}
+            {% elif row.type == 'inline-2col' %}
+                {# Two fields side by side #}
+                {% if row.fields|length == 2 %}
+                    {% set field1 = form[row.fields[0]] %}
+                    {% set field2 = form[row.fields[1]] %}
+                    {% if field1 and field2 %}
+                        <div class="grid grid-cols-2 gap-4">
+                            {% if mode == 'view' %}
+                                {{ render_field_view(field1) }}
+                                {{ render_field_view(field2) }}
+                            {% else %}
+                                {{ render_field(field1) }}
+                                {{ render_field(field2) }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% elif row.type == 'inline-3col' %}
+                {# Three fields side by side #}
+                {% if row.fields|length == 3 %}
+                    {% set field1 = form[row.fields[0]] %}
+                    {% set field2 = form[row.fields[1]] %}
+                    {% set field3 = form[row.fields[2]] %}
+                    {% if field1 and field2 and field3 %}
+                        <div class="grid grid-cols-3 gap-4">
+                            {% if mode == 'view' %}
+                                {{ render_field_view(field1) }}
+                                {{ render_field_view(field2) }}
+                                {{ render_field_view(field3) }}
+                            {% else %}
+                                {{ render_field(field1) }}
+                                {{ render_field(field2) }}
+                                {{ render_field(field3) }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+
+{# ============================================
    TWO-COLUMN INLINE FIELDS
    ============================================ #}
 {% macro render_inline_fields_2col(field1, field2) %}

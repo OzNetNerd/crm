@@ -78,3 +78,14 @@ class CompanyForm(BaseForm):
     def get_display_fields(self):
         """Return field names to display in modal, in this exact order"""
         return ["name", "industry", "core_rep", "core_sc", "comments"]
+
+    def get_field_layout(self):
+        """
+        Define field layout for consistent rendering in view and edit modes.
+        Two-column layout for better space utilization and visual consistency.
+        """
+        return [
+            {'type': 'inline-2col', 'fields': ['name', 'industry']},
+            {'type': 'inline-2col', 'fields': ['core_rep', 'core_sc']},
+            {'type': 'single', 'field': 'comments'}
+        ]
