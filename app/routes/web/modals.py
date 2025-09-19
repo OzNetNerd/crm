@@ -254,6 +254,32 @@ def populate_task_form_data(entity, form, mode):
         form.entity.data = ", ".join(entity_names)
 
 
+def populate_company_user_fields(entity, form, mode):
+    """Populate company form with Core Rep and Core SC user data."""
+    if mode != "edit":
+        return  # Only handle edit mode, view mode works fine with form_class(obj=entity)
+
+    from app.models import User
+
+    # Handle Core Rep field
+    if hasattr(form, "core_rep") and entity.core_rep:
+        # Find user by name and set the form field to the user ID
+        user = User.query.filter_by(name=entity.core_rep).first()
+        if user:
+            form.core_rep.data = str(user.id)
+            # Set search display value for template to populate search input
+            form.core_rep.search_display_value = entity.core_rep
+
+    # Handle Core SC field
+    if hasattr(form, "core_sc") and entity.core_sc:
+        # Find user by name and set the form field to the user ID
+        user = User.query.filter_by(name=entity.core_sc).first()
+        if user:
+            form.core_sc.data = str(user.id)
+            # Set search display value for template to populate search input
+            form.core_sc.search_display_value = entity.core_sc
+
+
 # ============= ROUTE HANDLERS - DRY CONSOLIDATED =============
 
 
@@ -293,6 +319,10 @@ def entity_modal(model_name, entity_id, mode):
     # Handle stakeholder MEDDPIC roles
     if model_name.lower() == "stakeholder":
         populate_stakeholder_meddpic_roles(entity, form, mode)
+
+    # Handle company Core Rep and Core SC fields
+    if model_name.lower() == "company":
+        populate_company_user_fields(entity, form, mode)
 
     return render_modal(model_name, form, mode, entity)
 
