@@ -1,0 +1,107 @@
+{# Company Stakeholders Tab Content with Pagination #}
+{% from 'macros/ui.html' import icon %}
+
+<div class="modal-tab-panel" id="company-stakeholders-tab">
+    {% if stakeholders.items %}
+        {# Stakeholders List #}
+        <div class="space-y-3" id="stakeholders-list">
+            {% for stakeholder in stakeholders.items %}
+                <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h5 class="font-medium text-gray-900">{{ stakeholder.name }}</h5>
+                            <div class="flex flex-col gap-1 mt-2 text-sm text-gray-600">
+                                {% if stakeholder.job_title %}
+                                    <span class="flex items-center gap-1">
+                                        {{ icon('briefcase', size='4', class='text-gray-400') }}
+                                        {{ stakeholder.job_title }}
+                                    </span>
+                                {% endif %}
+                                {% if stakeholder.email %}
+                                    <span class="flex items-center gap-1">
+                                        {{ icon('envelope', size='4', class='text-gray-400') }}
+                                        <a href="mailto:{{ stakeholder.email }}" class="text-blue-600 hover:text-blue-800">
+                                            {{ stakeholder.email }}
+                                        </a>
+                                    </span>
+                                {% endif %}
+                                {% if stakeholder.phone %}
+                                    <span class="flex items-center gap-1">
+                                        {{ icon('phone', size='4', class='text-gray-400') }}
+                                        {{ stakeholder.phone }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button class="text-gray-400 hover:text-gray-600"
+                                hx-get="/modals/stakeholder/{{ stakeholder.id }}/view"
+                                hx-target="#{{ model_name }}-modal"
+                                hx-swap="outerHTML">
+                            {{ icon('arrow-top-right-on-square', size='5') }}
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# Pagination Controls #}
+        {% if stakeholders.pages > 1 %}
+            <div class="modal-pagination">
+                <div class="modal-pagination-info">
+                    Showing {{ stakeholders.per_page * (stakeholders.page - 1) + 1 }} -
+                    {{ min(stakeholders.per_page * stakeholders.page, stakeholders.total) }} of {{ stakeholders.total }}
+                </div>
+                <div class="modal-pagination-controls">
+                    {# Previous button #}
+                    <button class="modal-pagination-btn"
+                            {% if not stakeholders.has_prev %}disabled{% endif %}
+                            hx-get="/modals/company/{{ entity.id }}/tab/stakeholders?page={{ stakeholders.prev_num }}"
+                            hx-target="#company-stakeholders-tab"
+                            hx-swap="outerHTML">
+                        {{ icon('chevron-left', size='4') }}
+                    </button>
+
+                    {# Page numbers #}
+                    {% for page_num in stakeholders.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+                        {% if page_num %}
+                            <button class="modal-pagination-btn {% if page_num == stakeholders.page %}modal-pagination-btn-active{% endif %}"
+                                    {% if page_num == stakeholders.page %}disabled{% endif %}
+                                    hx-get="/modals/company/{{ entity.id }}/tab/stakeholders?page={{ page_num }}"
+                                    hx-target="#company-stakeholders-tab"
+                                    hx-swap="outerHTML">
+                                {{ page_num }}
+                            </button>
+                        {% else %}
+                            <span class="px-2 text-gray-400">...</span>
+                        {% endif %}
+                    {% endfor %}
+
+                    {# Next button #}
+                    <button class="modal-pagination-btn"
+                            {% if not stakeholders.has_next %}disabled{% endif %}
+                            hx-get="/modals/company/{{ entity.id }}/tab/stakeholders?page={{ stakeholders.next_num }}"
+                            hx-target="#company-stakeholders-tab"
+                            hx-swap="outerHTML">
+                        {{ icon('chevron-right', size='4') }}
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        {# Empty state #}
+        <div class="text-center py-12">
+            <div class="mx-auto w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                {{ icon('users', size='6', class='text-gray-400') }}
+            </div>
+            <h3 class="text-sm font-medium text-gray-900 mb-1">No stakeholders yet</h3>
+            <p class="text-sm text-gray-500">Add your first contact at {{ entity.name }}</p>
+            <button class="btn btn-primary mt-4"
+                    hx-get="/modals/stakeholder/create"
+                    hx-target="#{{ model_name }}-modal"
+                    hx-swap="outerHTML">
+                {{ icon('plus', size='4', class='inline-block mr-1') }}
+                New Stakeholder
+            </button>
+        </div>
+    {% endif %}
+</div>

@@ -5,7 +5,7 @@ Follows Python best practices: DRY, KISS, YAGNI, single responsibility.
 """
 
 from functools import wraps
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 from app.models import db, MODEL_REGISTRY
 import json
 
@@ -415,3 +415,70 @@ def delete_entity(model_name, entity_id):
 def close_modal():
     """Close modal response."""
     return render_template("components/modals/modal_close.html")
+
+
+@modals_bp.route("/<model_name>/<int:entity_id>/tab/<tab_name>")
+@handle_errors
+def entity_tab_content(model_name, entity_id, tab_name):
+    """Load tab content for entity modals - supports paginated data."""
+    model, _ = get_model_and_form(model_name)
+    entity = model.query.get_or_404(entity_id)
+
+    # Handle different tabs based on model type
+    if model_name.lower() == "company":
+        if tab_name == "about":
+            # Return the about tab content with company details
+            return render_template(
+                "components/modals/tabs/company_about.html",
+                entity=entity,
+                model_name=model_name
+            )
+        elif tab_name == "team":
+            # Return the account team tab content
+            return render_template(
+                "components/modals/tabs/company_team.html",
+                entity=entity,
+                model_name=model_name
+            )
+        elif tab_name == "opportunities":
+            # Get paginated opportunities for this company
+            from app.models import Opportunity
+            page = request.args.get("page", 1, type=int)
+            per_page = request.args.get("per_page", 10, type=int)
+
+            opportunities = Opportunity.query.filter_by(company_id=entity.id).paginate(
+                page=page,
+                per_page=per_page,
+                error_out=False
+            )
+
+            return render_template(
+                "components/modals/tabs/company_opportunities.html",
+                entity=entity,
+                opportunities=opportunities,
+                model_name=model_name
+            )
+        elif tab_name == "stakeholders":
+            # Get paginated stakeholders for this company
+            from app.models import Stakeholder
+            page = request.args.get("page", 1, type=int)
+            per_page = request.args.get("per_page", 10, type=int)
+
+            stakeholders = Stakeholder.query.filter_by(company_id=entity.id).paginate(
+                page=page,
+                per_page=per_page,
+                error_out=False
+            )
+
+            return render_template(
+                "components/modals/tabs/company_stakeholders.html",
+                entity=entity,
+                stakeholders=stakeholders,
+                model_name=model_name
+            )
+
+    # Default: return empty content for unsupported tabs
+    return render_template(
+        "components/modals/tabs/empty_tab.html",
+        message=f"Tab '{tab_name}' is not available for {model_name}"
+    )
