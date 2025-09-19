@@ -467,9 +467,9 @@
         {# Handle inline group: task_type, priority, status with proper structure #}
         {% elif field_name == 'task_type' %}
             <div class="form-fields-inline-container">
-                {{ render_dynamic_search_field(form.task_type, 'form-field-inline-item') }}
-                {{ render_dynamic_search_field(form.priority, 'form-field-inline-item') }}
-                {{ render_dynamic_search_field(form.status, 'form-field-inline-item') }}
+                {{ render_field(form.task_type) }}
+                {{ render_field(form.priority) }}
+                {{ render_field(form.status) }}
             </div>
         {% elif field_name == 'priority' or field_name == 'status' %}
             {# Skip - already rendered in inline group #}
