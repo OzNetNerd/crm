@@ -93,7 +93,7 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
         if hasattr(model_instance, "stakeholders"):
             team_size = len(model_instance.stakeholders)
             if team_size > 0:
-                meta["team_size"] = f"{team_size} stakeholder{'s' if team_size != 1 else ''}"
+                meta["team_size"] = f"{team_size}"
 
     elif entity_type == "stakeholder":
         # Last contacted
@@ -119,6 +119,7 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
                 # Format roles nicely - capitalize and join with commas
                 formatted_roles = [role.replace("_", " ").title() for role in roles]
                 meta["meddpicc_roles"] = f"MEDDPICC: {', '.join(formatted_roles)}"
+                meta["meddpicc_count"] = f"{len(roles)}"
 
     elif entity_type == "opportunity":
         # Deal size and stage
