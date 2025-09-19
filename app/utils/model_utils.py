@@ -89,11 +89,21 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
                     pipeline_display = f"${pipeline_value}"
                 meta["pipeline_value"] = pipeline_display
 
-        # Team size - number of stakeholders
+            # Active opportunities count
+            if active_opps:
+                meta["active_opportunities"] = f"{len(active_opps)}"
+
+        # Stakeholders count (previously team_size)
         if hasattr(model_instance, "stakeholders"):
-            team_size = len(model_instance.stakeholders)
-            if team_size > 0:
-                meta["team_size"] = f"{team_size}"
+            stakeholder_count = len(model_instance.stakeholders)
+            if stakeholder_count > 0:
+                meta["stakeholders"] = f"{stakeholder_count}"
+
+        # Account team size
+        if hasattr(model_instance, "account_team_assignments"):
+            account_team_size = len(model_instance.account_team_assignments)
+            if account_team_size > 0:
+                meta["account_team"] = f"{account_team_size}"
 
     elif entity_type == "stakeholder":
         # Last contacted
@@ -147,6 +157,58 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
                 meta["days_to_close"] = f"in {days_to_close} days"
             else:
                 meta["days_overdue"] = f"{abs(days_to_close)} days overdue"
+
+    elif entity_type == "user":
+        # Company assignments count
+        if hasattr(model_instance, "company_assignments"):
+            company_count = len(model_instance.company_assignments)
+            if company_count > 0:
+                meta["assigned_companies"] = f"{company_count}"
+
+        # Opportunity assignments count
+        if hasattr(model_instance, "opportunity_assignments"):
+            opportunity_count = len(model_instance.opportunity_assignments)
+            if opportunity_count > 0:
+                meta["assigned_opportunities"] = f"{opportunity_count}"
+
+        # Total pipeline value for assigned opportunities
+        if hasattr(model_instance, "opportunity_assignments"):
+            total_pipeline = 0
+            for assignment in model_instance.opportunity_assignments:
+                opp = assignment.opportunity
+                # Only count active opportunities (not closed)
+                if opp and opp.stage not in ["closed-won", "closed-lost"] and opp.value:
+                    total_pipeline += opp.value
+
+            if total_pipeline > 0:
+                if total_pipeline >= 1000000:
+                    pipeline_display = f"${total_pipeline // 1000000}M"
+                elif total_pipeline >= 1000:
+                    pipeline_display = f"${total_pipeline // 1000}K"
+                else:
+                    pipeline_display = f"${total_pipeline}"
+                meta["total_pipeline"] = pipeline_display
+
+        # Total stakeholder relationships (through opportunities or direct)
+        # Count unique stakeholders user is working with
+        stakeholder_ids = set()
+
+        # Through opportunity assignments
+        if hasattr(model_instance, "opportunity_assignments"):
+            for assignment in model_instance.opportunity_assignments:
+                if assignment.opportunity and hasattr(assignment.opportunity, "stakeholder_id"):
+                    if assignment.opportunity.stakeholder_id:
+                        stakeholder_ids.add(assignment.opportunity.stakeholder_id)
+
+        # Through company assignments
+        if hasattr(model_instance, "company_assignments"):
+            for assignment in model_instance.company_assignments:
+                if assignment.company and hasattr(assignment.company, "stakeholders"):
+                    for stakeholder in assignment.company.stakeholders:
+                        stakeholder_ids.add(stakeholder.id)
+
+        if stakeholder_ids:
+            meta["stakeholder_relationships"] = f"{len(stakeholder_ids)}"
 
     elif entity_type == "task":
         # Task type and progress indicators
