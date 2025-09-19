@@ -4,7 +4,7 @@
 #}
 
 {% from 'macros/ui.html' import icon, priority_badge, status_badge %}
-{% from 'macros/components.html' import entity_search_dropdown, choice_search_dropdown, multi_checkbox_dropdown %}
+{% from 'macros/components.html' import entity_search_dropdown, choice_search_dropdown %}
 
 {# ============================================
    WTFORMS FIELD RENDERING
@@ -105,18 +105,37 @@
                 'user': {'label': 'User', 'description': 'End user of the solution'},
                 'other': {'label': 'Other', 'description': 'Other role type'}
             } %}
-            {# Convert choices to options format for multi_checkbox_dropdown #}
-            {% set options = [] %}
-            {% for key, choice in meddpicc_choices.items() %}
-                {% set _ = options.append({'value': key, 'label': choice.label}) %}
-            {% endfor %}
-            {{ multi_checkbox_dropdown(
-                name='meddpicc_roles',
-                options=options,
-                selected_values=field.data or [],
-                label=field.label.text if show_label else 'MEDDPIC Roles',
-                placeholder='Select MEDDPIC roles...'
-            ) }}
+            {# Beautiful Alpine.js multi-select dropdown for MEDDPICC roles #}
+            {% if show_label %}
+                <label for="{{ field.id }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
+                    {{ field.label.text }}
+                </label>
+            {% endif %}
+            <div class="relative" x-data="{ open: false, selected: {{ (field.data or [])|tojson }} }">
+                <button type="button"
+                        @click="open = !open"
+                        class="dropdown-select block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-left flex items-center justify-between">
+                    <span x-show="selected.length === 0">Select MEDDPIC roles...</span>
+                    <span x-show="selected.length > 0" x-text="selected.length + ' roles selected'"></span>
+                    <span class="ml-2 pointer-events-none">
+                        {{ icon('chevron-down') }}
+                    </span>
+                </button>
+                <div x-show="open"
+                     @click.away="open = false"
+                     class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {% for key, choice in meddpicc_choices.items() %}
+                    <label class="flex items-center px-3 py-2 hover:bg-gray-100">
+                        <input type="checkbox"
+                               value="{{ key }}"
+                               x-model="selected"
+                               class="mr-2">
+                        <span>{{ choice.label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="meddpicc_roles" :value="JSON.stringify(selected)">
+            </div>
             {% if show_errors and field.errors %}
                 {% for error in field.errors %}
                     <p class="form-error">{{ error }}</p>
