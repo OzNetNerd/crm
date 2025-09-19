@@ -10,6 +10,7 @@ from app.models import db
 from app.routes.api import register_api_blueprints
 from app.routes.web import register_web_blueprints
 from app.utils.template_utils import badge_class, get_dashboard_action_buttons
+from app.utils.formatters import format_number, format_currency, format_currency_short, format_percentage
 from app import config
 
 
@@ -48,6 +49,10 @@ def create_app():
         }
     )
     app.jinja_env.filters["badge_class"] = badge_class
+    app.jinja_env.filters["format_number"] = format_number
+    app.jinja_env.filters["format_currency"] = format_currency
+    app.jinja_env.filters["format_currency_short"] = format_currency_short
+    app.jinja_env.filters["format_percentage"] = format_percentage
 
     # Basic logging
     if os.environ.get("WERKZEUG_RUN_MAIN"):

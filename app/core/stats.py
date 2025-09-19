@@ -5,6 +5,7 @@ from typing import List, Dict, Any, Optional, Callable
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from app.models import db
+from app.utils.formatters import format_currency_short, format_percentage
 
 
 @dataclass
@@ -30,34 +31,6 @@ class Stat:
         if self.formatter:
             return self.formatter(self.value)
         return str(self.value)
-
-
-def format_currency(value: float) -> str:
-    """Format currency values with appropriate units.
-
-    Args:
-        value: The numeric value to format.
-
-    Returns:
-        Formatted currency string (e.g., "$1.5M", "$250K", "$100").
-    """
-    if value > 1000000:
-        return f"${value/1000000:.1f}M"
-    elif value > 1000:
-        return f"${value/1000:.0f}K"
-    return f"${value:.0f}"
-
-
-def format_percentage(value: float) -> str:
-    """Format percentage values.
-
-    Args:
-        value: The numeric value to format as percentage.
-
-    Returns:
-        Formatted percentage string (e.g., "75%").
-    """
-    return f"{int(value)}%"
 
 
 class StatsGenerator:
@@ -98,7 +71,7 @@ class StatsGenerator:
         if generator := generators.get(self.table_name):
             stats.extend(generator())
 
-        return [{"value": stat.format(), "label": stat.label} for stat in stats]
+        return stats
 
     def _total_stat(self) -> Stat:
         """Generate total count stat.
@@ -195,18 +168,18 @@ class StatsGenerator:
         # Pipeline value
         total_value = db.session.query(func.sum(self.model.value)).scalar() or 0
         stats.append(
-            Stat(label="Pipeline Value", value=total_value, formatter=format_currency)
+            Stat(label="Pipeline Value", value=total_value, formatter=format_currency_short)
         )
 
         # Average deal size
         avg_value = db.session.query(func.avg(self.model.value)).scalar() or 0
         stats.append(
-            Stat(label="Avg Deal Size", value=avg_value, formatter=format_currency)
+            Stat(label="Avg Deal Size", value=avg_value, formatter=format_currency_short)
         )
 
         # Win rate
-        closed_won = self.model.query.filter_by(stage="closed_won").count()
-        closed_lost = self.model.query.filter_by(stage="closed_lost").count()
+        closed_won = self.model.query.filter_by(stage="closed-won").count()
+        closed_lost = self.model.query.filter_by(stage="closed-lost").count()
         total_closed = closed_won + closed_lost
 
         if total_closed > 0:

@@ -176,22 +176,24 @@
             {{ label }}
         </label>
     {% endif %}
-    <input type="text"
-           id="{{ name }}_search"
-           class="form-input"
-           placeholder="{{ placeholder }}"
-           autocomplete="off"
-           hx-get="{{ url_for('search.htmx_search') }}"
-           hx-trigger="input changed delay:300ms, focus"
-           hx-target="#{{ name }}_results"
-           hx-swap="innerHTML"
-           hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}", "multiple": "true"{% if company_id %}, "company_id": "{{ company_id }}"{% endif %}}'
-           data-entity-search-initialized="true">
-    <input type="hidden" id="{{ name }}-data" name="{{ name }}" value="{{ value }}">
-    <div id="{{ name }}_results"
-         class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto hidden"
-         hidden
-         style="display: none;"></div>
+    <div class="relative">
+        <input type="text"
+               id="{{ name }}_search"
+               class="form-input"
+               placeholder="{{ placeholder }}"
+               autocomplete="off"
+               hx-get="{{ url_for('search.htmx_search') }}"
+               hx-trigger="input changed delay:300ms, focus"
+               hx-target="#{{ name }}_results"
+               hx-swap="innerHTML"
+               hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}", "multiple": "true"{% if company_id %}, "company_id": "{{ company_id }}"{% endif %}}'
+               data-entity-search-initialized="true">
+        <input type="hidden" id="{{ name }}-data" name="{{ name }}" value="{{ value }}">
+        <div id="{{ name }}_results"
+             class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto hidden"
+             hidden
+             style="display: none;"></div>
+    </div>
     <div id="{{ name }}-badges" class="mt-2 flex flex-wrap gap-1"></div>
 {% endmacro %}
 

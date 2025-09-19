@@ -188,7 +188,7 @@ def seed_opportunities(companies):
             "name": "Solar Panel Installation",
             "value": 75000,
             "probability": 90,
-            "stage": "closed_won",
+            "stage": "closed-won",
             "priority": "medium",
         },
         {
