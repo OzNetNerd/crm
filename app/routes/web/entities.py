@@ -142,7 +142,7 @@ def entity_content(model: type, table_name: str) -> str:
 
         # Convert to list format expected by template
         grouped_list = [
-            {"key": key, "label": key, "entities": entities}
+            {"key": key, "label": key, "entities": entities, "count": len(entities)}
             for key, entities in grouped_entities.items()
         ]
 
@@ -166,6 +166,7 @@ def entity_content(model: type, table_name: str) -> str:
             "key": "all",
             "label": f"All {get_plural_name(model.__name__)}",
             "entities": entities,
+            "count": len(entities),
         }
     ]
 
