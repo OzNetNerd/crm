@@ -3,7 +3,7 @@
 
 def badge_class(value):
     """Convert value to badge-compatible CSS class."""
-    return str(value).lower().replace("_", " ").replace("-", " ") if value else ""
+    return str(value).lower().replace("_", "-").replace(" ", "-") if value else ""
 
 
 def get_dashboard_action_buttons():
