@@ -55,8 +55,8 @@ class MetadataService:
         for column in model_class.__table__.columns:
             name = column.name
 
-            # Skip ID fields
-            if name.endswith("_id") or name == "id":
+            # Skip ID fields except for foreign keys we want to filter on
+            if (name.endswith("_id") or name == "id") and name != "company_id":
                 continue
 
             column_info = column.info
@@ -65,7 +65,7 @@ class MetadataService:
                 "label": column_info.get(
                     "display_label", name.replace("_", " ").title()
                 ),
-                "filterable": bool(column_info.get("choices")),
+                "filterable": column_info.get("filterable", bool(column_info.get("choices"))),
                 "sortable": column_info.get(
                     "sortable", True
                 ),  # Make all fields sortable by default
@@ -73,9 +73,26 @@ class MetadataService:
                     "groupable", bool(column_info.get("choices"))
                 ),  # Groupable if has choices
                 "choices": column_info.get("choices"),
+                "choices_source": column_info.get("choices_source"),
                 "required": column_info.get("required", False),
                 "contact_field": column_info.get("contact_field", False),
                 "icon": column_info.get("icon"),
+            }
+
+        # Add virtual fields for special models
+        if model_class.__name__ == "Stakeholder":
+            # Add virtual relationship owner filter field
+            metadata["relationship_owner_id"] = {
+                "type": "Integer",
+                "label": "Relationship Owner",
+                "filterable": True,
+                "sortable": False,
+                "groupable": False,
+                "choices_source": "users",
+                "virtual": True,
+                "required": False,
+                "contact_field": False,
+                "icon": None,
             }
 
         return metadata
