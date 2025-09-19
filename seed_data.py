@@ -28,6 +28,8 @@ def seed_companies():
             "size": "medium",
             "phone": "+1-555-0101",
             "address": "123 Tech Street, San Francisco, CA 94105",
+            "core_rep": "Alice Anderson",
+            "core_sc": "Bob Brown",
             "comments": "Leading software development company",
         },
         {
@@ -37,6 +39,8 @@ def seed_companies():
             "size": "large",
             "phone": "+1-555-0102",
             "address": "456 Medical Ave, Boston, MA 02101",
+            "core_rep": "Charlie Chen",
+            "core_sc": "Diana Davis",
             "comments": "Premier healthcare provider",
         },
         {
@@ -46,6 +50,8 @@ def seed_companies():
             "size": "startup",
             "phone": "+1-555-0103",
             "address": "789 Solar Rd, Austin, TX 78701",
+            "core_rep": "Eve Evans",
+            "core_sc": "Frank Foster",
             "comments": "Renewable energy solutions",
         },
         {
@@ -55,6 +61,8 @@ def seed_companies():
             "size": "enterprise",
             "phone": "+1-555-0104",
             "address": "321 Commerce Blvd, Chicago, IL 60601",
+            "core_rep": "Grace Green",
+            "core_sc": "Henry Harris",
             "comments": "National retail chain",
         },
         {
@@ -64,6 +72,8 @@ def seed_companies():
             "size": "small",
             "phone": "+1-555-0105",
             "address": "654 Learning Lane, Seattle, WA 98101",
+            "core_rep": "Ivy Ingram",
+            "core_sc": "Jack Jackson",
             "comments": "Online education platform",
         },
     ]
@@ -84,8 +94,8 @@ def seed_companies():
     return companies
 
 
-def seed_stakeholders(companies):
-    """Create sample stakeholders linked to companies."""
+def seed_stakeholders(companies, users):
+    """Create sample stakeholders linked to companies with relationship owners."""
     stakeholders_data = [
         {
             "name": "John Smith",
@@ -122,6 +132,14 @@ def seed_stakeholders(companies):
     stakeholders = []
     base_time = datetime.now() - timedelta(days=300)
 
+    meddpicc_roles = [
+        ['economic_buyer', 'decision_maker'],
+        ['champion', 'influencer'],
+        ['user'],
+        ['decision_maker', 'influencer'],
+        ['champion', 'user']
+    ]
+
     for i, stakeholder_data in enumerate(stakeholders_data):
         created_at = base_time + timedelta(days=random.randint(0, 300))
 
@@ -132,9 +150,20 @@ def seed_stakeholders(companies):
         )
         stakeholders.append(stakeholder)
         db.session.add(stakeholder)
+        db.session.flush()  # Get ID for relationships
+
+        # Assign MEDDPICC roles
+        for role in meddpicc_roles[i]:
+            stakeholder.add_meddpicc_role(role)
+
+        # Assign relationship owners (random selection of users)
+        num_owners = random.randint(1, min(2, len(users)))
+        selected_users = random.sample(users, num_owners)
+        for user in selected_users:
+            stakeholder.assign_relationship_owner(user.id)
 
     db.session.commit()
-    print(f"✓ Created {len(stakeholders)} stakeholders")
+    print(f"✓ Created {len(stakeholders)} stakeholders with roles and owners")
     return stakeholders
 
 
@@ -292,7 +321,7 @@ def main():
         # Seed new data with created_at fields
         users = seed_users()
         companies = seed_companies()
-        stakeholders = seed_stakeholders(companies)
+        stakeholders = seed_stakeholders(companies, users)
         opportunities = seed_opportunities(companies)
         tasks = seed_tasks()
 
