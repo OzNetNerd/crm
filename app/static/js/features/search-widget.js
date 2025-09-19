@@ -48,23 +48,25 @@ function initializeAllSearchInputs() {
         // Mark as initialized
         input.dataset.searchInitialized = 'true';
 
-        // Set up the same pattern as global search: simple event listener
-        // Show results when HTMX content loads - this is the key that works!
-        document.addEventListener('htmx:afterSwap', function(event) {
-            if (event.target === resultsDiv) {
-                // Always show results after swap if there's content (global search pattern)
-                if (resultsDiv.children.length > 0) {
-                    resultsDiv.classList.remove('hidden');
-                }
-            }
-        });
-
         // Hide results when input is cleared (from global search)
         input.addEventListener('input', function() {
             if (!this.value.trim()) {
                 resultsDiv.classList.add('hidden');
             }
         });
+    });
+
+    // Add HTMX listener ONCE at document level, not per input
+    // This handles ALL search results containers
+    document.addEventListener('htmx:afterSwap', function(event) {
+        // Check if the swapped element is a search results container
+        if (event.target.id && event.target.id.endsWith('-results')) {
+            if (event.target.children.length > 0) {
+                event.target.classList.remove('hidden');
+            } else {
+                event.target.classList.add('hidden');
+            }
+        }
     });
 
     // Handle clicks outside to close all dropdowns

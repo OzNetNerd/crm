@@ -5,6 +5,18 @@ WTForms Modal Template - Clean DRY Version
 Direct modal rendering without wrapper nonsense
 #}
 
+{# Include HTMX and required JS if not already loaded (for standalone modal testing) #}
+<script>
+if (typeof htmx === 'undefined') {
+    document.write('<script src="https://unpkg.com/htmx.org@2.0.3/dist/htmx.min.js"><\/script>');
+}
+</script>
+<script>
+if (typeof selectEntity === 'undefined') {
+    document.write('<script src="{{ url_for('static', filename='js/features/search-widget.js') }}"><\/script>');
+}
+</script>
+
 <div class="modal"
      x-data="{
          open: true,
