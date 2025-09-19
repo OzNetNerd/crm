@@ -253,23 +253,20 @@ class StatsGenerator:
         Returns:
             List of user statistics.
         """
-        from app.models import Task, Opportunity
+        from app.models import Task, Opportunity, User
 
         stats = []
 
-        # Active users
-        active = (
-            db.session.query(func.count(func.distinct(Task.assigned_to_id))).scalar()
-            or 0
-        )
-        stats.append(Stat(label="Active Members", value=active))
+        # Total team members
+        team_members = User.query.count()
+        stats.append(Stat(label="Team Members", value=team_members))
 
-        # Opportunities owned
-        opps_owned = Opportunity.query.filter(Opportunity.owner_id.isnot(None)).count()
-        stats.append(Stat(label="Opportunities Owned", value=opps_owned))
+        # Total opportunities
+        total_opps = Opportunity.query.count()
+        stats.append(Stat(label="Total Opportunities", value=total_opps))
 
         # Open tasks
-        open_tasks = Task.query.filter(Task.status != "completed").count()
+        open_tasks = Task.query.filter(Task.status != "complete").count()
         stats.append(Stat(label="Open Tasks", value=open_tasks))
 
         return stats
