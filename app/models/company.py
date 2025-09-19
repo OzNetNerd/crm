@@ -111,7 +111,7 @@ class Company(BaseModel):
         },
     )
     website = db.Column(
-        db.String(255), info={"display_label": "Website", "url_field": True}
+        db.String(255), info={"display_label": "Website", "url_field": True, "sortable": False}
     )
 
     size = db.Column(
@@ -130,11 +130,11 @@ class Company(BaseModel):
                     "description": "Medium-sized company",
                 },
                 "large": {
-                    "label": "Large (201-1000)",
+                    "label": "Large (201-1,000)",
                     "description": "Large corporation",
                 },
                 "enterprise": {
-                    "label": "Enterprise (1000+)",
+                    "label": "Enterprise (1,000+)",
                     "description": "Enterprise-level organization",
                 },
             },
@@ -142,10 +142,10 @@ class Company(BaseModel):
     )
 
     phone = db.Column(
-        db.String(50), info={"display_label": "Phone", "contact_field": True}
+        db.String(50), info={"display_label": "Phone", "contact_field": True, "sortable": False}
     )
 
-    address = db.Column(db.Text, info={"display_label": "Address", "rows": 2})
+    address = db.Column(db.Text, info={"display_label": "Address", "rows": 2, "sortable": False})
 
     core_rep = db.Column(
         db.String(255),
@@ -154,6 +154,7 @@ class Company(BaseModel):
             "display_label": "Core Rep",
             "form_include": True,
             "searchable": True,
+            "groupable": True,
         },
     )
 
@@ -164,11 +165,12 @@ class Company(BaseModel):
             "display_label": "Core SC",
             "form_include": True,
             "searchable": True,
+            "groupable": True,
         },
     )
 
     comments = db.Column(
-        db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3}
+        db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3, "sortable": False}
     )
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

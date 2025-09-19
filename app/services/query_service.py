@@ -22,9 +22,57 @@ class QueryService:
         query = model.query
 
         for field, value in filters.items():
-            if value and hasattr(model, field):
-                # Handle multi-select: convert comma-separated string to list
-                if isinstance(value, str) and "," in value:
+            if not value:
+                continue
+
+            # Special handling for relationship_owners filter in Stakeholder
+            if field == "relationship_owners" and model.__name__ == "Stakeholder":
+                # Parse user IDs
+                if isinstance(value, str):
+                    user_ids = [int(v.strip()) for v in value.split(",") if v.strip()]
+                elif isinstance(value, list):
+                    user_ids = [int(v) for v in value]
+                else:
+                    user_ids = [int(value)]
+
+                # Filter stakeholders by relationship owners
+                from app.models.stakeholder import stakeholder_relationship_owners
+                query = query.join(stakeholder_relationship_owners).filter(
+                    stakeholder_relationship_owners.c.user_id.in_(user_ids)
+                )
+                continue
+
+            if hasattr(model, field):
+                # Special handling for probability field with ranges
+                if field == "probability" and model.__name__ == "Opportunity":
+                    # Parse probability ranges and build filter
+                    if isinstance(value, str):
+                        values = [v.strip() for v in value.split(",") if v.strip()]
+                    elif isinstance(value, list):
+                        values = value
+                    else:
+                        values = [value]
+
+                    # Build OR conditions for each range
+                    from sqlalchemy import or_
+                    conditions = []
+                    for range_val in values:
+                        if range_val == "0-20":
+                            conditions.append(model.probability <= 20)
+                        elif range_val == "21-40":
+                            conditions.append((model.probability > 20) & (model.probability <= 40))
+                        elif range_val == "41-60":
+                            conditions.append((model.probability > 40) & (model.probability <= 60))
+                        elif range_val == "61-80":
+                            conditions.append((model.probability > 60) & (model.probability <= 80))
+                        elif range_val == "81-100":
+                            conditions.append(model.probability > 80)
+
+                    if conditions:
+                        query = query.filter(or_(*conditions))
+
+                # Handle regular fields
+                elif isinstance(value, str) and "," in value:
                     values = [v.strip() for v in value.split(",") if v.strip()]
                     if values:
                         query = query.filter(getattr(model, field).in_(values))

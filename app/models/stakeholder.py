@@ -152,7 +152,7 @@ class Stakeholder(BaseModel):
     )
     phone = db.Column(
         db.String(50),
-        info={"display_label": "Phone Number", "contact_field": True, "icon": "phone"},
+        info={"display_label": "Phone Number", "contact_field": True, "icon": "phone", "sortable": False},
     )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -164,15 +164,17 @@ class Stakeholder(BaseModel):
         info={
             "display_label": "Company",
             "groupable": True,
+            "filterable": True,
             "relationship_field": "company",
             "relationship_display_field": "name",
             "form_include": True,
             "required": True,
+            "choices_source": "companies",  # Dynamically load companies
         },
     )
 
     comments = db.Column(
-        db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3}
+        db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3, "sortable": False}
     )
 
     # Relationships (use back_populates to avoid conflicts)

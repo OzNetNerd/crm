@@ -130,18 +130,35 @@ def entity_content(model: type, table_name: str) -> str:
     query = QueryService.build_filtered_query(model, filters)
     query = QueryService.apply_sorting(query, model, sort_by, sort_direction)
 
-    if group_by and hasattr(model, group_by):
+    if group_by and (hasattr(model, group_by) or group_by == "relationship_owners"):
         # Group entities
         grouped_entities = defaultdict(list)
         entities_list = query.all()
         for entity in entities_list:
-            group_key = getattr(entity, group_by) or "No Group"
-            if hasattr(group_key, "label"):
-                group_key = group_key.label
-            # Format value fields with currency
-            elif group_by == "value" and isinstance(group_key, (int, float)):
-                from app.utils.formatters import format_currency
-                group_key = format_currency(group_key)
+            # Special handling for probability field - use ranges
+            if group_by == "probability" and hasattr(entity, "get_probability_range"):
+                group_key = entity.get_probability_range()
+            # Special handling for company_id - show company name
+            elif group_by == "company_id" and hasattr(entity, "company"):
+                group_key = entity.company.name if entity.company else "No Company"
+            # Special handling for relationship_owners - group by each owner
+            elif group_by == "relationship_owners" and hasattr(entity, "relationship_owners"):
+                # A stakeholder can have multiple owners, so add to multiple groups
+                if entity.relationship_owners:
+                    for owner in entity.relationship_owners:
+                        owner_name = owner.name if owner else "No Owner"
+                        grouped_entities[str(owner_name)].append(entity)
+                    continue  # Skip the default append at the end
+                else:
+                    group_key = "No Owner"
+            else:
+                group_key = getattr(entity, group_by) or "No Group"
+                if hasattr(group_key, "label"):
+                    group_key = group_key.label
+                # Format value fields with currency
+                elif group_by == "value" and isinstance(group_key, (int, float)):
+                    from app.utils.formatters import format_currency
+                    group_key = format_currency(group_key)
             grouped_entities[str(group_key)].append(entity)
 
         # Convert to list format expected by template

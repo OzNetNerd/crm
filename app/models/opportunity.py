@@ -65,6 +65,13 @@ class Opportunity(BaseModel):
             "unit": "%",
             "min_value": 0,
             "max_value": 100,
+            "choices": {
+                "0-20": {"label": "0-20%", "description": "Very low probability"},
+                "21-40": {"label": "21-40%", "description": "Low probability"},
+                "41-60": {"label": "41-60%", "description": "Medium probability"},
+                "61-80": {"label": "61-80%", "description": "High probability"},
+                "81-100": {"label": "81-100%", "description": "Very high probability"},
+            },
         },
     )
     priority = db.Column(
@@ -113,7 +120,7 @@ class Opportunity(BaseModel):
     company = db.relationship("Company", back_populates="opportunities")
 
     comments = db.Column(
-        db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3}
+        db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3, "sortable": False}
     )
 
     # Properties using utility functions
@@ -148,6 +155,21 @@ class Opportunity(BaseModel):
     def get_full_account_team(self):
         """Get full account team for this opportunity."""
         return get_full_account_team(self.id)
+
+    def get_probability_range(self):
+        """Get the probability range for grouping and filtering."""
+        if self.probability is None:
+            return "0-20%"
+        elif self.probability <= 20:
+            return "0-20%"
+        elif self.probability <= 40:
+            return "21-40%"
+        elif self.probability <= 60:
+            return "41-60%"
+        elif self.probability <= 80:
+            return "61-80%"
+        else:
+            return "81-100%"
 
     def to_display_dict(self) -> Dict[str, Any]:
         """Convert opportunity to dictionary with display fields."""
