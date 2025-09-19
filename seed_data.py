@@ -268,9 +268,10 @@ def seed_tasks():
 
     for i, task_data in enumerate(tasks_data):
         created_at = base_time + timedelta(days=random.randint(0, 60))
+        updated_at = created_at + timedelta(days=random.randint(0, 15))  # Updated within 15 days of creation
         due_date = created_at + timedelta(days=random.randint(1, 30))
 
-        task = Task(created_at=created_at, due_date=due_date.date(), **task_data)
+        task = Task(created_at=created_at, updated_at=updated_at, due_date=due_date.date(), **task_data)
         tasks.append(task)
         db.session.add(task)
 

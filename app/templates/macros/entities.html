@@ -154,6 +154,16 @@
                 {% endif %}
 
                 {# Task-specific metadata #}
+                {% if meta.task_type_display %}
+                    {% if meta.task_type_display == "single" %}
+                        {{ meta_icon('minus', 'Single Task') }}
+                    {% elif meta.task_type_display == "multi" %}
+                        {{ meta_icon('list-bullet', 'Multi-Task', meta.task_progress) }}
+                    {% elif meta.task_type_display == "subtask" %}
+                        {{ meta_icon('bars-3', 'Subtask') }}
+                    {% endif %}
+                {% endif %}
+
                 {% if meta.next_step %}
                     {{ meta_icon(meta.next_step.icon, 'Next Step: ' + meta.next_step.type_display) }}
                 {% endif %}

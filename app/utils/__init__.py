@@ -43,6 +43,7 @@ def get_next_step_icon(next_step_type: Optional[str]) -> str:
         "call": "phone",
         "email": "envelope",
         "meeting": "calendar",
+        "demo": "eye",  # Using eye icon for demo/presentation
         "follow_up": "chevron-right",
     }
     return icons.get(next_step_type, "chevron-right")

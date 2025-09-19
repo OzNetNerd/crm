@@ -148,6 +148,24 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
             else:
                 meta["days_overdue"] = f"{abs(days_to_close)} days overdue"
 
+    elif entity_type == "task":
+        # Task type and progress indicators
+        if hasattr(model_instance, "task_type") and model_instance.task_type:
+            if model_instance.task_type == "parent":
+                # Multi-task with progress
+                if hasattr(model_instance, "child_tasks"):
+                    total_children = len(model_instance.child_tasks)
+                    completed_children = sum(1 for child in model_instance.child_tasks if child.status == "complete")
+                    meta["task_progress"] = f"{completed_children}/{total_children}"
+                    meta["task_type_display"] = "multi"
+                else:
+                    meta["task_type_display"] = "multi"
+                    meta["task_progress"] = "0/0"
+            elif model_instance.task_type == "child":
+                meta["task_type_display"] = "subtask"
+            else:
+                meta["task_type_display"] = "single"
+
     # Due date with relative time (for tasks, etc.)
     if hasattr(model_instance, "due_date") and model_instance.due_date:
         due_date = (

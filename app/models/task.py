@@ -129,6 +129,7 @@ class Task(BaseModel):
         },
     )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     completed_at = db.Column(db.DateTime)
 
     # Multi Task support
