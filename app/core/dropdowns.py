@@ -79,9 +79,8 @@ class DropdownBuilder:
                 current_value=request_args.get(field_name, ""),
                 placeholder=f'All {field_info["label"]}',
                 label=field_info["label"],
-                searchable=(
-                    field_name == "industry" or len(options) > 8
-                ),  # Make Industry and large lists searchable
+                searchable=False,  # Use standard dropdowns
+                multiple=True,  # Enable multi-select for filter dropdowns
             )
 
             dropdowns[f"filter_{field_name}"] = config.to_dict()
@@ -115,7 +114,7 @@ class DropdownBuilder:
             options=options,
             current_value=request_args.get("group_by", ""),
             placeholder="Group by...",
-            searchable=True,
+            searchable=False,
             label="Group By",
         )
 
@@ -150,7 +149,7 @@ class DropdownBuilder:
             options=options,
             current_value=request_args.get("sort_by", default_sort),
             placeholder="Sort by...",
-            searchable=True,
+            searchable=False,
             label="Sort By",
         )
 

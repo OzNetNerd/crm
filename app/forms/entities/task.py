@@ -9,6 +9,7 @@ from wtforms import (
     DateField,
     HiddenField,
     RadioField,
+    SelectField,
     ValidationError,
 )
 from wtforms.validators import DataRequired, Optional, Length
@@ -37,36 +38,27 @@ class TaskForm(FlaskForm):
         render_kw={"placeholder": "Task description", "rows": 4},
     )
 
-    task_type = StringField(
+    task_type = SelectField(
         "Task Type",
         validators=[DataRequired()],
-        render_kw={
-            "data-search-type": "task_type",
-            "placeholder": "Search task types...",
-            "autocomplete": "off",
-        },
+        choices=[],  # Will be populated in __init__
+        render_kw={"class": "form-select"},
     )
 
-    status = StringField(
+    status = SelectField(
         "Status",
         validators=[DataRequired()],
-        render_kw={
-            "data-search-type": "task_status",
-            "placeholder": "Search status...",
-            "autocomplete": "off",
-            "data-default": "pending",
-        },
+        choices=[],  # Will be populated in __init__
+        default="todo",
+        render_kw={"class": "form-select"},
     )
 
-    priority = StringField(
+    priority = SelectField(
         "Priority",
         validators=[DataRequired()],
-        render_kw={
-            "data-search-type": "task_priority",
-            "placeholder": "Search priority...",
-            "autocomplete": "off",
-            "data-default": "medium",
-        },
+        choices=[],  # Will be populated in __init__
+        default="medium",
+        render_kw={"class": "form-select"},
     )
 
     due_date = DateField("Due Date", validators=[Optional()], format="%Y-%m-%d")
@@ -103,6 +95,36 @@ class TaskForm(FlaskForm):
     )
 
     parent_task_id = HiddenField("Parent Task ID")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Populate choices from model
+        from app.models.task import Task
+        from app.services import MetadataService
+
+        # Get Task field metadata for choices
+        metadata = MetadataService.get_field_metadata(Task)
+
+        # Populate task_type choices
+        if "task_type" in metadata and metadata["task_type"].get("choices"):
+            self.task_type.choices = [
+                (key, data["label"])
+                for key, data in metadata["task_type"]["choices"].items()
+            ]
+
+        # Populate status choices
+        if "status" in metadata and metadata["status"].get("choices"):
+            self.status.choices = [
+                (key, data["label"])
+                for key, data in metadata["status"]["choices"].items()
+            ]
+
+        # Populate priority choices
+        if "priority" in metadata and metadata["priority"].get("choices"):
+            self.priority.choices = [
+                (key, data["label"])
+                for key, data in metadata["priority"]["choices"].items()
+            ]
 
     def validate_company_id(self, field):
         """Validate that Company is required for Opportunity tasks."""
