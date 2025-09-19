@@ -109,15 +109,15 @@
         {% if meta %}
             <div class="entity-card-meta flex items-center space-x-3 mt-3 pt-3 border-t border-gray-100">
                 {# Primary metadata - icons with relative time and actual dates in tooltips #}
-                {% if meta.created_date %}
+                {% if meta.created %}
                     {{ meta_icon('calendar', 'Created: ' + meta.created_date, meta.created) }}
                 {% endif %}
-                {% if meta.updated_date %}
+                {% if meta.last_update %}
                     {{ meta_icon('clock', 'Last Updated: ' + meta.updated_date, meta.last_update) }}
                 {% endif %}
 
                 {# Entity-specific metadata #}
-                {% if meta.last_contacted_date %}
+                {% if meta.last_contacted %}
                     {{ meta_icon('chat-bubble-left-right', 'Last Contacted: ' + meta.last_contacted_date, meta.last_contacted) }}
                 {% endif %}
 
@@ -157,7 +157,7 @@
                 {% if meta.next_step %}
                     {{ meta_icon(meta.next_step.icon, 'Next Step: ' + meta.next_step.type_display) }}
                 {% endif %}
-                {% if meta.due_date %}
+                {% if meta.due %}
                     {{ meta_icon('calendar', 'Due Date: ' + meta.due_date, meta.due) }}
                 {% endif %}
             </div>
