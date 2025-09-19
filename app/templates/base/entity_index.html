@@ -34,7 +34,7 @@
     <div class="stats-grid">
         {% for stat in entity_stats %}
         <div class="stat-card">
-            <div class="stat-value">{{ stat.value }}</div>
+            <div class="stat-value">{{ stat.format() }}</div>
             <div class="stat-label">{{ stat.label }}</div>
         </div>
         {% endfor %}

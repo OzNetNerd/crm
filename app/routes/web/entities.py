@@ -138,6 +138,10 @@ def entity_content(model: type, table_name: str) -> str:
             group_key = getattr(entity, group_by) or "No Group"
             if hasattr(group_key, "label"):
                 group_key = group_key.label
+            # Format value fields with currency
+            elif group_by == "value" and isinstance(group_key, (int, float)):
+                from app.utils.formatters import format_currency
+                group_key = format_currency(group_key)
             grouped_entities[str(group_key)].append(entity)
 
         # Convert to list format expected by template

@@ -4,7 +4,7 @@
 #}
 
 {% from 'macros/ui.html' import icon, priority_badge, status_badge %}
-{% from 'macros/components.html' import entity_search_dropdown, choice_search_dropdown, multiple_choice_search_dropdown, multi_select_dropdown %}
+{% from 'macros/components.html' import entity_search_dropdown, choice_search_dropdown, multiple_choice_search_dropdown, multi_select_dropdown, multi_entity_search_dropdown %}
 
 {# ============================================
    WTFORMS FIELD RENDERING
@@ -20,6 +20,23 @@
                 label=field.label.text if show_label else '',
                 required=field.flags.required,
                 placeholder='Search companies...'
+            ) }}
+            {% if show_errors and field.errors %}
+                {% for error in field.errors %}
+                    <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+    {# Special handling for Core Rep and Core SC fields as entity search #}
+    {% elif field.name in ['core_rep', 'core_sc'] %}
+        <div class="form-field-group">
+            {{ entity_search_dropdown(
+                name=field.name,
+                entity_type='user',
+                value=field.data or '',
+                label=field.label.text if show_label else '',
+                required=field.flags.required,
+                placeholder='Search team members...'
             ) }}
             {% if show_errors and field.errors %}
                 {% for error in field.errors %}
@@ -103,32 +120,21 @@
     {# Special handling for relationship owners with multiple entity search #}
     {% elif field.name == 'relationship_owners' %}
         <div class="form-field-group">
-            {% if show_label %}
-                <label for="{{ field.name }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
-                    {{ field.label.text }}
-                </label>
+            {{ multi_entity_search_dropdown(
+                name=field.name,
+                entity_type='user',
+                value=field.data or '[]',
+                label=field.label.text if show_label else '',
+                required=field.flags.required,
+                placeholder='Search team members...',
+                company_id=request.args.get('company_id', '')
+            ) }}
+            {% if show_errors and field.errors %}
+                {% for error in field.errors %}
+                    <p class="form-error">{{ error }}</p>
+                {% endfor %}
             {% endif %}
-            <input type="text"
-                   id="{{ field.name }}_search"
-                   class="form-input"
-                   placeholder="Search team members..."
-                   autocomplete="off"
-                   hx-get="/search/htmx"
-                   hx-trigger="input changed delay:300ms, focus"
-                   hx-target="#{{ field.name }}_results"
-                   hx-swap="innerHTML"
-                   hx-vals='{"mode": "select", "type": "user", "field_name": "{{ field.name }}", "multiple": "true"}'>
-            <input type="hidden" id="{{ field.name }}-data" name="{{ field.name }}" value="{{ field.data or '[]' }}">
-            <div id="{{ field.name }}_results"
-                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
-                 hidden></div>
-            <div id="{{ field.name }}-badges" class="mt-2 flex flex-wrap gap-1"></div>
         </div>
-        {% if show_errors and field.errors %}
-            {% for error in field.errors %}
-                <p class="form-error">{{ error }}</p>
-            {% endfor %}
-        {% endif %}
     {# Special handling for MEDDPIC roles with multiple choice search #}
     {% elif field.name == 'meddpicc_roles' and field.type == 'HiddenField' %}
         <div class="form-field-group">
