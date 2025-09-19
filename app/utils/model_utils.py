@@ -32,6 +32,26 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
     from app.utils import format_date_with_relative, get_next_step_icon
     from datetime import datetime, date
 
+    def get_relative_time_only(target_date: date, from_date: date = None) -> str:
+        """Get only the relative time part (e.g., '5 days ago', '10 days to go')"""
+        if not target_date:
+            return ""
+
+        if from_date is None:
+            from_date = date.today()
+        days_diff = (target_date - from_date).days
+
+        if days_diff == 0:
+            return "today"
+        elif days_diff == 1:
+            return "tomorrow"
+        elif days_diff == -1:
+            return "yesterday"
+        elif days_diff > 1:
+            return f"{days_diff} days to go"
+        else:
+            return f"{abs(days_diff)} days ago"
+
     meta = {}
     entity_type = model_instance.__class__.__name__.lower()
 
@@ -44,7 +64,7 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
             else model_instance.created_at
         )
         meta["created_date"] = created_date.strftime("%B %d, %Y")
-        meta["created"] = format_date_with_relative(created_date)
+        meta["created"] = get_relative_time_only(created_date)
 
     # Last updated
     if hasattr(model_instance, "updated_at") and model_instance.updated_at:
@@ -54,7 +74,7 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
             else model_instance.updated_at
         )
         meta["updated_date"] = updated_date.strftime("%B %d, %Y")
-        meta["last_update"] = format_date_with_relative(updated_date)
+        meta["last_update"] = get_relative_time_only(updated_date)
 
     # Entity-specific metadata
     if entity_type == "company":
@@ -80,7 +100,7 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
                 else model_instance.last_contacted
             )
             meta["last_contacted_date"] = last_contacted_date.strftime("%B %d, %Y")
-            meta["last_contacted"] = format_date_with_relative(last_contacted_date)
+            meta["last_contacted"] = get_relative_time_only(last_contacted_date)
 
         # Active opportunities count
         if hasattr(model_instance, "opportunities"):
@@ -127,7 +147,7 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
             else model_instance.due_date
         )
         meta["due_date"] = due_date.strftime("%B %d, %Y")
-        meta["due"] = format_date_with_relative(due_date)
+        meta["due"] = get_relative_time_only(due_date)
 
     # Next step for tasks
     if (
