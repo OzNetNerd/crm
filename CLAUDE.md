@@ -100,3 +100,102 @@ Each worktree can run simultaneously:
 ```bash
 python3 main.py --port 8080  # Force specific port
 ```
+
+## 🔍 VERIFICATION-FIRST DEVELOPMENT
+
+**NEVER ASSUME - ALWAYS VERIFY**
+
+### Before ANY Implementation:
+
+1. **Verify Database Relationships:**
+   ```bash
+   # Check if a relationship exists BEFORE using it
+   grep -r "relationship(" app/models/company.py
+   grep -r "account_team" app/models/
+
+   # Verify actual model attributes
+   python -c "from app.models import Company; print(dir(Company))"
+   ```
+
+2. **Verify File Locations:**
+   ```bash
+   # NEVER assume file paths - always find them
+   find . -name "*.db" -type f
+   find . -name "seed*.py"
+   ls -la instance/  # Check what actually exists
+   ```
+
+3. **Verify Code Patterns:**
+   ```bash
+   # Check if similar functions exist before creating new ones
+   grep -r "def search" --include="*.py"
+   grep -r "selectEntity" --include="*.js"
+   ```
+
+4. **Verify Configuration:**
+   ```bash
+   # Check actual configuration values
+   grep -r "DATABASE" --include="*.py"
+   cat .env 2>/dev/null || echo "No .env file"
+   ```
+
+### ❌ NEVER:
+- Assume a relationship exists - CHECK FIRST
+- Guess file locations - FIND THEM
+- Create new patterns without checking for existing ones
+- Make database assumptions - QUERY IT
+
+### ✅ ALWAYS:
+- Run verification commands BEFORE coding
+- Show the user what you're checking
+- Admit when something doesn't exist
+- Ask for clarification instead of assuming
+
+**ENFORCEMENT**: Code based on assumptions will fail. Verify first!
+
+## 💾 DATABASE CHANGE WORKFLOW
+
+**ALWAYS ASK THE USER BEFORE DATABASE CHANGES**
+
+### Standard Database Change Process:
+
+1. **ASK FIRST:**
+   ```
+   "I need to make database changes for [specific reason].
+   Should I rebuild the database with updated seed data?"
+   ```
+
+2. **If Approved, Use Rebuild Approach:**
+   ```bash
+   # 1. Verify locations
+   ls -la instance/crm.db
+   ls -la seed_data.py
+
+   # 2. Update seed_data.py with changes
+
+   # 3. Rebuild database
+   rm instance/crm.db
+   python seed_data.py
+
+   # 4. Verify success
+   ls -la instance/crm.db
+   ```
+
+### Database Facts:
+- **Location**: `instance/crm.db`
+- **Seed File**: `seed_data.py`
+- **Approach**: REBUILD, don't migrate (during development)
+
+### ❌ NEVER:
+- Use migrations without explicit permission
+- Create virtual tables or views
+- Modify database without asking
+- Assume database structure
+
+### ✅ ALWAYS:
+- Ask user before ANY database changes
+- Prefer rebuilding over migrating
+- Update seed file for all changes
+- Verify database works after rebuild
+
+**BLOCKING: Unauthorized database changes will be rejected**

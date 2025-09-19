@@ -121,6 +121,30 @@ body.modal-open {
     display: none !important;
 }
 
+/* Entity group chevron rotation for details/summary */
+details[data-group] summary::-webkit-details-marker {
+    display: none;
+}
+
+details[data-group][open] .entity-group-chevron {
+    transform: rotate(90deg);
+    transition: transform 0.2s ease;
+}
+
+/* Sharp text rendering */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 0.875rem;
+}
+
+/* Entity-specific border colors using CSS variables */
+[data-entity="task"] { border-left: 4px solid var(--color-task); }
+[data-entity="company"] { border-left: 4px solid var(--color-company); }
+[data-entity="opportunity"] { border-left: 4px solid var(--color-opportunity); }
+[data-entity="stakeholder"] { border-left: 4px solid var(--color-stakeholder); }
+[data-entity="note"] { border-left: 4px solid var(--color-note); }
+
 /* ========================================
  * ADR-011 COMPLIANCE VERIFICATION
  * This file structure implements:

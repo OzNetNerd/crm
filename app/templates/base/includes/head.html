@@ -40,21 +40,6 @@
 </script>
 
 {# Minimal custom CSS - DRY approach #}
-<style>
-  /* Sharp text rendering */
-  body {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    font-size: 0.875rem;
-  }
-
-  /* DRY entity card styling with data attributes */
-  [data-entity="task"] { border-left: 4px solid #ea580c; }
-  [data-entity="company"] { border-left: 4px solid #2563eb; }
-  [data-entity="opportunity"] { border-left: 4px solid #059669; }
-  [data-entity="stakeholder"] { border-left: 4px solid #7c3aed; }
-  [data-entity="note"] { border-left: 4px solid #6b7280; }
-</style>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
