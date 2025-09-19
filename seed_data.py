@@ -85,7 +85,8 @@ def seed_companies():
         # Spread creation times over the past year
         created_at = base_time + timedelta(days=random.randint(0, 365))
 
-        company = Company(created_at=created_at, **company_data)
+        updated_at = created_at + timedelta(days=random.randint(0, 30))  # Updates within 30 days of creation
+        company = Company(created_at=created_at, updated_at=updated_at, **company_data)
         companies.append(company)
         db.session.add(company)
 
@@ -143,9 +144,14 @@ def seed_stakeholders(companies, users):
     for i, stakeholder_data in enumerate(stakeholders_data):
         created_at = base_time + timedelta(days=random.randint(0, 300))
 
+        updated_at = created_at + timedelta(days=random.randint(0, 60))  # Updates within 60 days
+        last_contacted = created_at + timedelta(days=random.randint(1, 120))  # Contacted within 120 days
+
         stakeholder = Stakeholder(
-            company=companies[i % len(companies)],
+            company_id=companies[i % len(companies)].id,
             created_at=created_at,
+            updated_at=updated_at,
+            last_contacted=last_contacted,
             **stakeholder_data,
         )
         stakeholders.append(stakeholder)
@@ -214,9 +220,12 @@ def seed_opportunities(companies):
         created_at = base_time + timedelta(days=random.randint(0, 180))
         expected_close_date = created_at + timedelta(days=random.randint(30, 120))
 
+        updated_at = created_at + timedelta(days=random.randint(0, 30))  # Updates within 30 days
+
         opportunity = Opportunity(
-            company=companies[i % len(companies)],
+            company_id=companies[i % len(companies)].id,
             created_at=created_at,
+            updated_at=updated_at,
             expected_close_date=expected_close_date.date(),
             **opp_data,
         )

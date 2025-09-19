@@ -108,18 +108,71 @@
         {% set meta = entity.get_meta_data() %}
         {% if meta %}
             <div class="entity-card-meta">
+                {# Primary metadata - created and last update #}
                 {% if meta.created %}
                     <span class="entity-card-meta-created">Created: {{ meta.created }}</span>
                 {% endif %}
-                {% if meta.next_step %}
+                {% if meta.last_update %}
                     {% if meta.created %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    <span class="entity-card-meta-updated">Updated: {{ meta.last_update }}</span>
+                {% endif %}
+
+                {# Entity-specific metadata #}
+                {% if meta.last_contacted %}
+                    {% if meta.created or meta.last_update %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    <span class="entity-card-meta-contacted">Last Contacted: {{ meta.last_contacted }}</span>
+                {% endif %}
+
+                {% if meta.pipeline_value %}
+                    {% if meta.created or meta.last_update or meta.last_contacted %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    <span class="entity-card-meta-pipeline">Pipeline: {{ meta.pipeline_value }}</span>
+                {% endif %}
+
+                {% if meta.team_size %}
+                    {% if meta.created or meta.last_update or meta.last_contacted or meta.pipeline_value %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    <span class="entity-card-meta-team">{{ meta.team_size }}</span>
+                {% endif %}
+
+                {% if meta.active_opportunities %}
+                    {% if meta.created or meta.last_update or meta.last_contacted %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    <span class="entity-card-meta-opportunities">{{ meta.active_opportunities }}</span>
+                {% endif %}
+
+                {% if meta.deal_size %}
+                    {% if meta.created or meta.last_update %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    <span class="entity-card-meta-deal-size">Deal: {{ meta.deal_size }}</span>
+                {% endif %}
+
+                {% if meta.stage %}
+                    {% if meta.created or meta.last_update or meta.deal_size %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    <span class="entity-card-meta-stage">Stage: {{ meta.stage }}</span>
+                {% endif %}
+
+                {% if meta.days_to_close %}
+                    {% if meta.created or meta.last_update or meta.deal_size or meta.stage %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    <span class="entity-card-meta-close">{{ meta.days_to_close }}</span>
+                {% endif %}
+
+                {% if meta.days_overdue %}
+                    {% if meta.created or meta.last_update or meta.deal_size or meta.stage %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    <span class="entity-card-meta-overdue text-red-600">{{ meta.days_overdue }}</span>
+                {% endif %}
+
+                {% if meta.meddpicc_roles %}
+                    {% if meta.created or meta.last_update or meta.last_contacted or meta.active_opportunities %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    <span class="entity-card-meta-meddpicc">{{ meta.meddpicc_roles }}</span>
+                {% endif %}
+
+                {# Task-specific metadata #}
+                {% if meta.next_step %}
+                    {% if meta.created or meta.last_update %}<span class="entity-card-meta-separator">|</span>{% endif %}
                     <span class="entity-card-meta-next-step">
                         {{ icon(meta.next_step.icon, size='4', class='inline') }}
                         Next Step: {{ meta.next_step.date }}
                     </span>
                 {% endif %}
                 {% if meta.due %}
-                    {% if meta.created or meta.next_step %}<span class="entity-card-meta-separator">|</span>{% endif %}
+                    {% if meta.created or meta.last_update or meta.next_step %}<span class="entity-card-meta-separator">|</span>{% endif %}
                     <span class="entity-card-meta-due">Due: {{ meta.due }}</span>
                 {% endif %}
             </div>
