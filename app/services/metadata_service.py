@@ -81,13 +81,13 @@ class MetadataService:
 
         # Add filterable relationships for specific models
         if model_class.__name__ == "Stakeholder":
-            # Add relationship_owners as a filterable relationship field
+            # Add relationship_owners as a filterable and groupable relationship field
             metadata["relationship_owners"] = {
                 "type": "relationship",
                 "label": "Relationship Owner",
                 "filterable": True,
                 "sortable": False,
-                "groupable": False,
+                "groupable": True,  # Allow grouping by relationship owners
                 "choices_source": "users",
                 "relationship_field": True,  # Mark as relationship, not a column
                 "required": False,
