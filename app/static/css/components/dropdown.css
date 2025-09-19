@@ -224,6 +224,19 @@
 }
 
 /* ========================================
+ * DROPDOWN RESULT SIZING VARIANTS
+ * ======================================== */
+
+.dropdown-results-standard {
+    width: 100%;
+}
+
+.dropdown-results-wide {
+    width: 32rem;
+    max-width: 42rem;
+}
+
+/* ========================================
  * DROPDOWN UTILITIES
  * ======================================== */
 

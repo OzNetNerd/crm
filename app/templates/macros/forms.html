@@ -130,8 +130,7 @@
                 value=field.data or '[]',
                 label=field.label.text if show_label else '',
                 required=field.flags.required,
-                placeholder='Search team members...',
-                company_id=request.args.get('company_id', '')
+                placeholder='Search team members...'
             ) }}
             {% if show_errors and field.errors %}
                 {% for error in field.errors %}
