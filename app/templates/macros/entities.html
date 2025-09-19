@@ -2,7 +2,7 @@
     Entity Macros - Entity cards, lists, and displays
 #}
 
-{% from 'macros/ui.html' import icon, badge, priority_badge, status_badge, format_date %}
+{% from 'macros/ui.html' import icon, badge, priority_badge, status_badge, format_date, meta_icon %}
 
 {# ============================================
    ENTITY CARD - DRY implementation with inline Tailwind
@@ -104,76 +104,61 @@
             {% endif %}
         </div>
 
-        {# Meta data - always use entity's get_meta_data() method #}
+        {# Meta data - compact icons with hover tooltips #}
         {% set meta = entity.get_meta_data() %}
         {% if meta %}
-            <div class="entity-card-meta">
-                {# Primary metadata - created and last update #}
+            <div class="entity-card-meta flex items-center space-x-3 mt-3 pt-3 border-t border-gray-100">
+                {# Primary metadata #}
                 {% if meta.created %}
-                    <span class="entity-card-meta-created">Created: {{ meta.created }}</span>
+                    {{ meta_icon('calendar', 'Created', meta.created) }}
                 {% endif %}
                 {% if meta.last_update %}
-                    {% if meta.created %}<span class="entity-card-meta-separator">|</span>{% endif %}
-                    <span class="entity-card-meta-updated">Updated: {{ meta.last_update }}</span>
+                    {{ meta_icon('clock', 'Last Updated', meta.last_update) }}
                 {% endif %}
 
                 {# Entity-specific metadata #}
                 {% if meta.last_contacted %}
-                    {% if meta.created or meta.last_update %}<span class="entity-card-meta-separator">|</span>{% endif %}
-                    <span class="entity-card-meta-contacted">Last Contacted: {{ meta.last_contacted }}</span>
+                    {{ meta_icon('chat-bubble-left-right', 'Last Contacted', meta.last_contacted) }}
                 {% endif %}
 
                 {% if meta.pipeline_value %}
-                    {% if meta.created or meta.last_update or meta.last_contacted %}<span class="entity-card-meta-separator">|</span>{% endif %}
-                    <span class="entity-card-meta-pipeline">Pipeline: {{ meta.pipeline_value }}</span>
+                    {{ meta_icon('trending-up', 'Pipeline Value', meta.pipeline_value) }}
                 {% endif %}
 
                 {% if meta.team_size %}
-                    {% if meta.created or meta.last_update or meta.last_contacted or meta.pipeline_value %}<span class="entity-card-meta-separator">|</span>{% endif %}
-                    <span class="entity-card-meta-team">{{ meta.team_size }}</span>
+                    {{ meta_icon('users', 'Team Size', meta.team_size) }}
                 {% endif %}
 
                 {% if meta.active_opportunities %}
-                    {% if meta.created or meta.last_update or meta.last_contacted %}<span class="entity-card-meta-separator">|</span>{% endif %}
-                    <span class="entity-card-meta-opportunities">{{ meta.active_opportunities }}</span>
+                    {{ meta_icon('chart-bar', 'Active Opportunities', meta.active_opportunities) }}
                 {% endif %}
 
                 {% if meta.deal_size %}
-                    {% if meta.created or meta.last_update %}<span class="entity-card-meta-separator">|</span>{% endif %}
-                    <span class="entity-card-meta-deal-size">Deal: {{ meta.deal_size }}</span>
+                    {{ meta_icon('currency-dollar', 'Deal Size', meta.deal_size) }}
                 {% endif %}
 
                 {% if meta.stage %}
-                    {% if meta.created or meta.last_update or meta.deal_size %}<span class="entity-card-meta-separator">|</span>{% endif %}
-                    <span class="entity-card-meta-stage">Stage: {{ meta.stage }}</span>
+                    {{ meta_icon('arrows-right-left', 'Stage', meta.stage) }}
                 {% endif %}
 
                 {% if meta.days_to_close %}
-                    {% if meta.created or meta.last_update or meta.deal_size or meta.stage %}<span class="entity-card-meta-separator">|</span>{% endif %}
-                    <span class="entity-card-meta-close">{{ meta.days_to_close }}</span>
+                    {{ meta_icon('clock', 'Days to Close', meta.days_to_close) }}
                 {% endif %}
 
                 {% if meta.days_overdue %}
-                    {% if meta.created or meta.last_update or meta.deal_size or meta.stage %}<span class="entity-card-meta-separator">|</span>{% endif %}
-                    <span class="entity-card-meta-overdue text-red-600">{{ meta.days_overdue }}</span>
+                    {{ meta_icon('exclamation-circle', 'Days Overdue', meta.days_overdue, class='text-red-600') }}
                 {% endif %}
 
                 {% if meta.meddpicc_roles %}
-                    {% if meta.created or meta.last_update or meta.last_contacted or meta.active_opportunities %}<span class="entity-card-meta-separator">|</span>{% endif %}
-                    <span class="entity-card-meta-meddpicc">{{ meta.meddpicc_roles }}</span>
+                    {{ meta_icon('star', 'MEDDPICC Roles', meta.meddpicc_roles.replace('MEDDPICC: ', '')) }}
                 {% endif %}
 
                 {# Task-specific metadata #}
                 {% if meta.next_step %}
-                    {% if meta.created or meta.last_update %}<span class="entity-card-meta-separator">|</span>{% endif %}
-                    <span class="entity-card-meta-next-step">
-                        {{ icon(meta.next_step.icon, size='4', class='inline') }}
-                        Next Step: {{ meta.next_step.date }}
-                    </span>
+                    {{ meta_icon(meta.next_step.icon, 'Next Step', meta.next_step.date) }}
                 {% endif %}
                 {% if meta.due %}
-                    {% if meta.created or meta.last_update or meta.next_step %}<span class="entity-card-meta-separator">|</span>{% endif %}
-                    <span class="entity-card-meta-due">Due: {{ meta.due }}</span>
+                    {{ meta_icon('calendar', 'Due Date', meta.due) }}
                 {% endif %}
             </div>
         {% endif %}
