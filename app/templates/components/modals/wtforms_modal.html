@@ -1,4 +1,4 @@
-{% from 'macros/forms.html' import render_filtered_fields %}
+{% from 'macros/forms.html' import render_filtered_fields, render_form_with_layout %}
 {% from 'macros/ui.html' import icon %}
 {#
 WTForms Modal Template - Clean DRY Version
@@ -112,12 +112,12 @@ Direct modal rendering without wrapper nonsense
         <!-- Body -->
         <div class="modal-body">
             {% if mode == 'view' %}
-                <!-- View Mode -->
+                <!-- View Mode - Using unified layout renderer -->
                 <div class="form-fields">
-                    {{ render_filtered_fields(form, mode='view') }}
+                    {{ render_form_with_layout(form, mode='view') }}
                 </div>
             {% else %}
-                <!-- Form Mode -->
+                <!-- Form Mode - Using unified layout renderer -->
                 <form id="{{ model_name }}-form"
                       @input="changed = true;
                               // Trigger validation for name field on company forms
@@ -133,7 +133,7 @@ Direct modal rendering without wrapper nonsense
 
                     {{ form.csrf_token }}
 
-                    {{ render_filtered_fields(form, mode='form') }}
+                    {{ render_form_with_layout(form, mode='form') }}
                 </form>
             {% endif %}
         </div>

@@ -59,3 +59,16 @@ class StakeholderForm(BaseForm):
     def get_display_fields(self):
         """Return field names to display in modal, in this exact order"""
         return ["name", "company", "job_title", "meddpicc_roles_select", "relationship_owners", "comments"]
+
+    def get_field_layout(self):
+        """
+        Define field layout for consistent rendering in view and edit modes.
+        Company and Job Title side by side for better space utilization.
+        """
+        return [
+            {'type': 'single', 'field': 'name'},
+            {'type': 'inline-2col', 'fields': ['company', 'job_title']},
+            {'type': 'single', 'field': 'meddpicc_roles_select'},
+            {'type': 'single', 'field': 'relationship_owners'},
+            {'type': 'single', 'field': 'comments'}
+        ]

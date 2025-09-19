@@ -54,3 +54,32 @@ class BaseForm(FlaskForm):
             )
             return False
         return True
+
+    def get_field_layout(self):
+        """
+        Return field layout configuration for consistent rendering across view and edit modes.
+
+        Layout types supported:
+        - single: Single field on its own row
+        - inline-2col: Two fields side by side
+        - inline-3col: Three fields side by side
+
+        Returns a list of layout dictionaries, e.g.:
+        [
+            {'type': 'inline-2col', 'fields': ['name', 'industry']},
+            {'type': 'single', 'field': 'comments'}
+        ]
+
+        Default implementation returns all fields as single rows.
+        """
+        if hasattr(self, 'get_display_fields'):
+            # Use existing display fields if defined
+            fields = self.get_display_fields()
+            return [{'type': 'single', 'field': field} for field in fields]
+        else:
+            # Return all non-hidden fields as single rows
+            fields = []
+            for field in self:
+                if field.name not in ['csrf_token', 'submit'] and field.type != 'HiddenField':
+                    fields.append({'type': 'single', 'field': field.name})
+            return fields
