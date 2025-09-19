@@ -3,7 +3,7 @@
     Handles WTForms rendering, field filters, validation
 #}
 
-{% from 'macros/ui.html' import icon %}
+{% from 'macros/ui.html' import icon, priority_badge, status_badge %}
 {% from 'macros/components.html' import entity_search_dropdown, choice_search_dropdown, multiple_choice_search_dropdown %}
 
 {# ============================================
@@ -374,10 +374,25 @@
         <label class="form-label">{{ field.label.text }}</label>
         <div class="form-field-view">
             {% if field.type == 'SelectField' %}
-                {% for value, label in field.choices %}
-                    {% if value == field.data %}{{ label }}{% endif %}
-                {% endfor %}
-                {% if not field.data %}
+                {# DRY badge rendering based on field name patterns #}
+                {% set field_lower = field.name.lower() %}
+                {% if field.data %}
+                    {% if 'priority' in field_lower %}
+                        {{ priority_badge(field.data) }}
+                    {% elif 'status' in field_lower %}
+                        {{ status_badge(field.data) }}
+                    {% elif 'stage' in field_lower %}
+                        {# Opportunity stages get badges too #}
+                        <span class="badge badge-{{ field.data|badge_class }}">
+                            {{ field.data }}
+                        </span>
+                    {% else %}
+                        {# Default select field display #}
+                        {% for value, label in field.choices %}
+                            {% if value == field.data %}{{ label }}{% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% else %}
                     <span class="form-field-view-empty">Not set</span>
                 {% endif %}
             {% elif field.type == 'TextAreaField' %}
