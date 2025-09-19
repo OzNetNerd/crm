@@ -115,7 +115,7 @@ class DropdownBuilder:
             options=options,
             current_value=request_args.get("group_by", ""),
             placeholder="Group by...",
-            searchable=True,
+            searchable=False,
             label="Group By",
         )
 
@@ -150,7 +150,7 @@ class DropdownBuilder:
             options=options,
             current_value=request_args.get("sort_by", default_sort),
             placeholder="Sort by...",
-            searchable=True,
+            searchable=False,
             label="Sort By",
         )
 
