@@ -128,8 +128,61 @@
 {% endmacro %}
 
 {# ============================================
-   ENTITY DROPDOWN CONTROLS - Placeholder for missing macro
+   MULTI-SELECT CHECKBOX DROPDOWN - DRY component for filters and forms
+   ============================================ #}
+{% macro multi_checkbox_dropdown(name, options, selected_values=[], label='', placeholder='Select options...') %}
+    <div class="form-field-group">
+        {% if label %}
+            <label class="form-label">{{ label }}</label>
+        {% endif %}
+        <div class="multi-select-dropdown" data-name="{{ name }}">
+            <button type="button" class="form-select multi-select-trigger">
+                <span class="selected-text" data-placeholder="{{ placeholder }}">{{ placeholder }}</span>
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <div class="multi-select-options hidden">
+                {% for option in options %}
+                    <label class="form-checkbox multi-select-option">
+                        <input type="checkbox"
+                               name="{{ name }}"
+                               value="{{ option.value }}"
+                               {% if option.value in selected_values %}checked{% endif %}>
+                        <span>{{ option.label }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{# ============================================
+   ENTITY DROPDOWN CONTROLS - Universal filter dropdowns for all entities
    ============================================ #}
 {% macro entity_dropdown_controls(dropdowns=[], entity_type='') %}
-    {# Placeholder for entity dropdown controls - implement as needed #}
+    {% for dropdown_name, config in dropdowns.items() %}
+        {% if config.multiple and dropdown_name not in ['group_by', 'sort_by', 'sort_direction'] %}
+            {# Multi-select checkbox dropdown for filters #}
+            {% set selected_list = config.current_value.split(',') if config.current_value else [] %}
+            {{ multi_checkbox_dropdown(
+                name=config.name,
+                options=config.options,
+                selected_values=selected_list,
+                label=config.label,
+                placeholder=config.placeholder or 'Select options...'
+            ) }}
+        {% else %}
+            {# Single-select dropdown for Group By, Sort By, Order #}
+            <div class="form-field-group">
+                <label class="form-label">{{ config.label }}</label>
+                <select name="{{ config.name }}" class="form-select">
+                    {% for option in config.options %}
+                        <option value="{{ option.value }}"
+                                {% if option.value == config.current_value %}selected{% endif %}>
+                            {{ option.label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+    {% endfor %}
 {% endmacro %}

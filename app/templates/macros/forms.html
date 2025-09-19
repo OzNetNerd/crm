@@ -4,7 +4,7 @@
 #}
 
 {% from 'macros/ui.html' import icon, priority_badge, status_badge %}
-{% from 'macros/components.html' import entity_search_dropdown, choice_search_dropdown, multiple_choice_search_dropdown, multi_select_dropdown, multi_entity_search_dropdown %}
+{% from 'macros/components.html' import entity_search_dropdown, choice_search_dropdown, multi_checkbox_dropdown %}
 
 {# ============================================
    WTFORMS FIELD RENDERING
@@ -105,15 +105,17 @@
                 'user': {'label': 'User', 'description': 'End user of the solution'},
                 'other': {'label': 'Other', 'description': 'Other role type'}
             } %}
-            {# Convert the field data list to JSON for the Alpine component #}
-            {% set selected_values = field.data|tojson if field.data else '[]' %}
-            {{ multi_select_dropdown(
+            {# Convert choices to options format for multi_checkbox_dropdown #}
+            {% set options = [] %}
+            {% for key, choice in meddpicc_choices.items() %}
+                {% set _ = options.append({'value': key, 'label': choice.label}) %}
+            {% endfor %}
+            {{ multi_checkbox_dropdown(
                 name='meddpicc_roles',
-                choices=meddpicc_choices,
-                value=selected_values,
-                label=field.label.text if show_label else '',
-                required=field.flags.required,
-                placeholder='Select MEDDPICC roles...'
+                options=options,
+                selected_values=field.data or [],
+                label=field.label.text if show_label else 'MEDDPIC Roles',
+                placeholder='Select MEDDPIC roles...'
             ) }}
             {% if show_errors and field.errors %}
                 {% for error in field.errors %}
@@ -124,11 +126,15 @@
     {# Special handling for relationship owners with multiple entity search #}
     {% elif field.name == 'relationship_owners' %}
         <div class="form-field-group">
-            {{ multi_entity_search_dropdown(
+            <label for="{{ field.id }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
+                {{ field.label.text if show_label else 'Relationship Owners' }}
+            </label>
+            {{ entity_search_dropdown(
                 name=field.name,
                 entity_type='user',
-                value=field.data or '[]',
-                label=field.label.text if show_label else '',
+                value=field.data or '',
+                search_value='',
+                label='',
                 required=field.flags.required,
                 placeholder='Search team members...'
             ) }}
@@ -141,14 +147,10 @@
     {# Special handling for MEDDPIC roles with multiple choice search #}
     {% elif field.name == 'meddpicc_roles' and field.type == 'HiddenField' %}
         <div class="form-field-group">
-            {{ multiple_choice_search_dropdown(
-                name=field.name,
-                choices={},
-                value=field.data or '[]',
-                label='MEDDPIC Roles' if show_label else '',
-                required=field.flags.required,
-                placeholder='Search MEDDPIC roles...'
-            ) }}
+            <label for="{{ field.id }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
+                MEDDPIC Roles
+            </label>
+            {{ field(class="form-input") }}
             {% if show_errors and field.errors %}
                 {% for error in field.errors %}
                     <p class="form-error">{{ error }}</p>
