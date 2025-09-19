@@ -230,6 +230,9 @@ def htmx_search():
     field_id = request.args.get("field_id", "")
     field_name = request.args.get("field_name", "")
 
+    # Get context for filtering (e.g., company_id for relationship owners)
+    company_id = request.args.get("company_id", "")
+
     # Get selected items to filter out (for multi-select)
     selected_ids = request.args.get("selected", "").split(",")
     selected_ids = [sid.strip() for sid in selected_ids if sid.strip()]
@@ -249,6 +252,9 @@ def htmx_search():
         results = get_task_field_options(entity_type, query)
     elif entity_type == "assignment":
         results = get_assignment_options(query)
+    # Special handling for users when searching for relationship owners
+    elif entity_type == "user" and field_name == "relationship_owners" and company_id:
+        results = _get_account_team_members(query, company_id, limit)
     else:
         # Reuse the main search logic for entity searches
         if entity_type == "all":
@@ -294,6 +300,70 @@ def htmx_search():
         field_id=field_id,
         field_name=field_name,
     )
+
+
+def _get_account_team_members(query, company_id, limit=10):
+    """Get account team members for a specific company, filtered by search query."""
+    from app.models import Company, User
+    from flask import current_user
+
+    results = []
+
+    try:
+        company = Company.query.get(int(company_id))
+        if not company:
+            # If no company specified, just return current user
+            if current_user and current_user.is_authenticated:
+                results.append({
+                    "id": current_user.id,
+                    "title": current_user.name,
+                    "subtitle": "Current User",
+                    "type": "user",
+                    "icon": "👤",
+                    "model_type": "user",
+                })
+            return results
+
+        # Get account team members for this company
+        account_team = company.get_account_team()
+
+        # Always include current user if authenticated
+        if current_user and current_user.is_authenticated:
+            results.append({
+                "id": current_user.id,
+                "title": f"{current_user.name} (Me)",
+                "subtitle": current_user.job_title or "Current User",
+                "type": "user",
+                "icon": "👤",
+                "model_type": "user",
+            })
+
+        # Add account team members, filtered by query
+        for member in account_team:
+            # Skip if it's the current user (already added)
+            if current_user and current_user.is_authenticated and member["id"] == current_user.id:
+                continue
+
+            # Filter by query
+            if query and query.lower() not in member["name"].lower():
+                continue
+
+            results.append({
+                "id": member["id"],
+                "title": member["name"],
+                "subtitle": member["job_title"] or "Account Team",
+                "type": "user",
+                "icon": "👥",
+                "model_type": "user",
+            })
+
+    except Exception as e:
+        # Fall back to regular user search if anything goes wrong
+        from app.models import User
+        users = User.search(query, limit)
+        results = [u.to_search_result() for u in users]
+
+    return results[:limit]
 
 
 def _handle_dropdown_search(query, dropdown_type, mode, field_name, request):

@@ -90,17 +90,30 @@
                 <p class="form-error">{{ error }}</p>
             {% endfor %}
         {% endif %}
-    {# Special handling for relationship owners with entity search #}
+    {# Special handling for relationship owners with multiple entity search #}
     {% elif field.name == 'relationship_owners' %}
-        {{ entity_search_dropdown(
-            name=field.name,
-            entity_type='user',
-            value=field.data or '',
-            label=field.label.text if show_label else '',
-            required=field.flags.required,
-            placeholder='Search team members...',
-            multiple=true
-        ) }}
+        <div class="form-field-group">
+            {% if show_label %}
+                <label for="{{ field.name }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
+                    {{ field.label.text }}
+                </label>
+            {% endif %}
+            <input type="text"
+                   id="{{ field.name }}_search"
+                   class="form-input"
+                   placeholder="Search team members..."
+                   autocomplete="off"
+                   hx-get="/search/htmx"
+                   hx-trigger="input changed delay:300ms, focus"
+                   hx-target="#{{ field.name }}_results"
+                   hx-swap="innerHTML"
+                   hx-vals='{"mode": "select", "type": "user", "field_name": "{{ field.name }}", "multiple": "true"}'>
+            <input type="hidden" id="{{ field.name }}-data" name="{{ field.name }}" value="{{ field.data or '[]' }}">
+            <div id="{{ field.name }}_results"
+                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                 hidden></div>
+            <div id="{{ field.name }}-badges" class="mt-2 flex flex-wrap gap-1"></div>
+        </div>
         {% if show_errors and field.errors %}
             {% for error in field.errors %}
                 <p class="form-error">{{ error }}</p>
@@ -489,7 +502,48 @@
     <div class="form-field-group">
         <label class="form-label">{{ field.label.text }}</label>
         <div class="form-field-view">
-            {% if field.type == 'SelectField' %}
+            {# Special handling for company field #}
+            {% if field.name == 'company' %}
+                {% if field.data %}
+                    {% if field.data is string %}
+                        {{ field.data }}
+                    {% else %}
+                        {{ field.data.name if field.data.name else field.data }}
+                    {% endif %}
+                {% else %}
+                    <span class="form-field-view-empty">Not set</span>
+                {% endif %}
+            {# Special handling for relationship owners field #}
+            {% elif field.name == 'relationship_owners' %}
+                {% if field.data %}
+                    {% if field.data is iterable and field.data is not string %}
+                        <div class="flex flex-wrap gap-1">
+                            {% for owner in field.data %}
+                                <span class="badge badge-info badge-sm">
+                                    {{ owner.name if owner.name else owner }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="form-field-view-empty">None assigned</span>
+                    {% endif %}
+                {% else %}
+                    <span class="form-field-view-empty">None assigned</span>
+                {% endif %}
+            {# Special handling for MEDDPICC roles #}
+            {% elif field.name == 'meddpicc_roles_select' %}
+                {% if field.data %}
+                    <div class="flex flex-wrap gap-1">
+                        {% for role in field.data %}
+                            <span class="badge badge-primary badge-sm">
+                                {{ role.replace('_', ' ').title() if role is string else role }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <span class="form-field-view-empty">No roles assigned</span>
+                {% endif %}
+            {% elif field.type == 'SelectField' %}
                 {# DRY badge rendering based on field name patterns #}
                 {% set field_lower = field.name.lower() %}
                 {% if field.data %}
