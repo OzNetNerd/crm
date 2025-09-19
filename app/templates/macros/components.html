@@ -263,10 +263,17 @@
                     {% else %}
                         {# Use regular select for non-searchable #}
                         <select name="{{ config.name or dropdown_key }}"
-                                class="dropdown-select block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                class="dropdown-select block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                {% if config.multiple %}multiple size="4"{% endif %}>
                             {% for option in config.options %}
                                 <option value="{{ option.value }}"
-                                        {% if option.value == config.current_value %}selected{% endif %}>
+                                        {% if config.multiple %}
+                                            {# For multi-select, check if value is in current values #}
+                                            {% if config.current_value and option.value in config.current_value.split(',') %}selected{% endif %}
+                                        {% else %}
+                                            {# Single select #}
+                                            {% if option.value == config.current_value %}selected{% endif %}
+                                        {% endif %}>
                                     {{ option.label }}
                                 </option>
                             {% endfor %}
