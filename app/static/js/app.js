@@ -151,72 +151,11 @@ function confirmAction(modalId) {
     }
 }
 
-// Entity selection function
-function selectEntity(fieldName, entityId, entityName, entityType) {
-    // Get the hidden field that stores the actual value
-    const field = document.getElementById(fieldName);
-    // Get the search/display field
-    const searchField = document.getElementById(fieldName + '_search');
-
-    if (field) {
-        // Update hidden field with entity ID
-        field.value = entityId || '';
-        field.dataset.entityId = entityId || '';
-        field.dataset.entityType = entityType || '';
-
-        // Trigger change and input events to update Alpine.js state
-        field.dispatchEvent(new Event('change', { bubbles: true }));
-        field.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-
-    if (searchField) {
-        // Update display field with entity name
-        searchField.value = entityName || '';
-    }
-
-    // Close the search results dropdown
-    const resultsContainer = document.getElementById(fieldName + '_results');
-    if (resultsContainer) {
-        resultsContainer.innerHTML = '';
-        resultsContainer.classList.add('hidden');
-        resultsContainer.style.display = 'none';
-    }
-}
-
-// Choice selection function (for dropdowns with string values)
-function selectChoice(fieldName, choiceId, choiceTitle) {
-    // Get the hidden field and search field
-    const field = document.getElementById(fieldName);
-    const searchField = document.getElementById(fieldName + '_search');
-
-    if (field) {
-        // For choices, store the ID as the value (not the title)
-        field.value = choiceId || '';
-        field.dataset.choiceId = choiceId || '';
-
-        // Trigger change and input events to update Alpine.js state
-        field.dispatchEvent(new Event('change', { bubbles: true }));
-        field.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-
-    if (searchField) {
-        searchField.value = choiceTitle || '';
-    }
-
-    // Close the search results dropdown
-    const resultsContainer = document.getElementById(fieldName + '_results');
-    if (resultsContainer) {
-        resultsContainer.innerHTML = '';
-        resultsContainer.classList.add('hidden');
-        resultsContainer.style.display = 'none';
-    }
-}
+// Note: selectEntity and selectChoice functions are now handled by search-widget.js
 
 // Export functions for global use
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.toggleDropdown = toggleDropdown;
-window.selectEntity = selectEntity;
-window.selectChoice = selectChoice;
 window.closeAdvancedSearchModal = closeAdvancedSearchModal;
 window.confirmAction = confirmAction;
