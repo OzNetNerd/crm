@@ -241,6 +241,9 @@
     {# Special handling for Stakeholder forms #}
     {% elif form.__class__.__name__ == 'StakeholderForm' and mode == 'form' %}
         {{ render_stakeholder_form_fields(form, allowed_fields) }}
+    {# Special handling for User forms #}
+    {% elif form.__class__.__name__ in ['UserForm', 'UserModalForm'] and mode == 'form' %}
+        {{ render_user_form_fields(form, allowed_fields) }}
     {% else %}
         {% for field_name in allowed_fields %}
             {% set field = form[field_name] %}
@@ -435,6 +438,34 @@
     {# Render remaining fields in order #}
     {% for field_name in allowed_fields %}
         {% if field_name not in ['company', 'job_title'] %}
+            {% set field = form[field_name] %}
+            {% if field %}
+                {{ render_field(field) }}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{# ============================================
+   USER FORM SPECIAL RENDERING
+   ============================================ #}
+{% macro render_user_form_fields(form, allowed_fields) %}
+    {# Special rendering for User forms in modals.
+       Displays Full Name and Job Title side by side for a streamlined user creation experience.
+       This layout provides a clean, efficient interface for adding team members. #}
+
+    {# Display Name and Job Title side by side at 50/50 width #}
+    {% if 'name' in allowed_fields and 'job_title' in allowed_fields %}
+        {{ render_inline_fields_2col(form.name, form.job_title) }}
+    {% elif 'name' in allowed_fields %}
+        {{ render_field(form.name) }}
+    {% elif 'job_title' in allowed_fields %}
+        {{ render_field(form.job_title) }}
+    {% endif %}
+
+    {# Render any remaining fields that might be added in the future #}
+    {% for field_name in allowed_fields %}
+        {% if field_name not in ['name', 'job_title'] %}
             {% set field = form[field_name] %}
             {% if field %}
                 {{ render_field(field) }}
