@@ -25,8 +25,8 @@ class QueryService:
             if not value:
                 continue
 
-            # Special handling for relationship_owner_id filter in Stakeholder
-            if field == "relationship_owner_id" and model.__name__ == "Stakeholder":
+            # Special handling for relationship_owners filter in Stakeholder
+            if field == "relationship_owners" and model.__name__ == "Stakeholder":
                 # Parse user IDs
                 if isinstance(value, str):
                     user_ids = [int(v.strip()) for v in value.split(",") if v.strip()]

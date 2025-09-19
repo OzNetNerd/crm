@@ -79,17 +79,17 @@ class MetadataService:
                 "icon": column_info.get("icon"),
             }
 
-        # Add virtual fields for special models
+        # Add filterable relationships for specific models
         if model_class.__name__ == "Stakeholder":
-            # Add virtual relationship owner filter field
-            metadata["relationship_owner_id"] = {
-                "type": "Integer",
+            # Add relationship_owners as a filterable relationship field
+            metadata["relationship_owners"] = {
+                "type": "relationship",
                 "label": "Relationship Owner",
                 "filterable": True,
                 "sortable": False,
                 "groupable": False,
                 "choices_source": "users",
-                "virtual": True,
+                "relationship_field": True,  # Mark as relationship, not a column
                 "required": False,
                 "contact_field": False,
                 "icon": None,
