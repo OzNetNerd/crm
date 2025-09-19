@@ -32,6 +32,16 @@ def get_model_and_form(model_name):
     if not model:
         raise ValueError(f"Unknown model: {model_name}")
 
+    # Special handling for User modal - use simplified modal form
+    # This provides a streamlined user creation experience with only essential fields
+    # (Full Name and Job Title) displayed side-by-side in the modal
+    if model_name.lower() == "user":
+        try:
+            from app.forms.modals.user import UserModalForm
+            return model, UserModalForm
+        except ImportError:
+            pass  # Fall back to regular form lookup if modal form not available
+
     # Dynamic form import
     form_name = f"{model_name.title()}Form"
     for module in [model_name, f"{model_name}s"]:

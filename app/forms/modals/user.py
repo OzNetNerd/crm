@@ -6,51 +6,33 @@ Focuses on essential fields for quick team member creation.
 """
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField
-from wtforms.validators import DataRequired, Length, Optional, Email
-from app.models.user import User
+from wtforms import StringField
+from wtforms.validators import DataRequired, Length, Optional
 
 
 class UserModalForm(FlaskForm):
     """
-    User/Team Member modal form with explicit field ordering:
+    User/Team Member modal form with simplified fields:
     1. Name (required)
-    2. Email (required)
-    3. Job Title (optional)
-    4. Department (optional dropdown)
+    2. Job Title (optional)
+
+    These fields are displayed side-by-side in the modal.
+
+    Note: This simplified form is used specifically for modals to provide
+    a streamlined user creation experience. Email and Department fields
+    have been removed to focus on essential information only.
     """
 
-    # Field 1: Name (required, at top)
+    # Field 1: Name (required) - Essential identification
     name = StringField(
         "Full Name",
         validators=[DataRequired(), Length(max=255)],
         render_kw={"placeholder": "Enter team member name..."},
     )
 
-    # Field 2: Email (required)
-    email = StringField(
-        "Email Address",
-        validators=[DataRequired(), Email(), Length(max=255)],
-        render_kw={"placeholder": "Enter email address..."},
-    )
-
-    # Field 3: Job Title (optional)
+    # Field 2: Job Title (optional) - Role identification
     job_title = StringField(
         "Job Title",
         validators=[Optional(), Length(max=100)],
         render_kw={"placeholder": "Enter job title..."},
     )
-
-    # Field 4: Department (optional dropdown)
-    department = SelectField(
-        "Department",
-        validators=[Optional()],
-        choices=[],  # Will be populated in __init__
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Set department choices from model metadata
-        department_choices = User.get_field_choices("department")
-        self.department.choices = [("", "Select department")] + department_choices
