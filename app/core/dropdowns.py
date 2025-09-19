@@ -100,15 +100,14 @@ class DropdownBuilder:
         Returns:
             Dropdown configuration or None if no groupable fields.
         """
-        options = [
+        options = [{"value": "", "label": "None"}]  # Add "None" option first
+        options.extend([
             {"value": name, "label": info["label"]}
             for name, info in metadata.items()
             if info.get("groupable")
-        ]
+        ])
 
-        if not options:
-            return None
-
+        # Always return the dropdown even if only has "None" option
         config = DropdownConfig(
             name="group_by",
             options=options,
@@ -139,10 +138,6 @@ class DropdownBuilder:
             for name, info in metadata.items()
             if info.get("sortable")
         ]
-
-        # Ensure ID is always sortable
-        if not any(opt["value"] == "id" for opt in options):
-            options.append({"value": "id", "label": "ID"})
 
         config = DropdownConfig(
             name="sort_by",
@@ -245,9 +240,6 @@ class DropdownBuilder:
                     for name, info in metadata.items()
                     if info.get("sortable")
                 ]
-                # Ensure ID is always sortable
-                if not any(opt["value"] == "id" for opt in options):
-                    options.append({"value": "id", "label": "ID"})
                 return options
 
         elif dropdown_type == "group_by" and entity_type:

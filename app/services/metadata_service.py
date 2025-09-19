@@ -170,11 +170,6 @@ class MetadataService:
             if field_info.get("sortable")
         ]
 
-        # Ensure ID is always sortable
-        has_id = any(field["value"] == "id" for field in sortable_fields)
-        if not has_id:
-            sortable_fields.append({"value": "id", "label": "ID"})
-
         return sortable_fields
 
     @classmethod

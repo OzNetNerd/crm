@@ -23,8 +23,36 @@ class QueryService:
 
         for field, value in filters.items():
             if value and hasattr(model, field):
-                # Handle multi-select: convert comma-separated string to list
-                if isinstance(value, str) and "," in value:
+                # Special handling for probability field with ranges
+                if field == "probability" and model.__name__ == "Opportunity":
+                    # Parse probability ranges and build filter
+                    if isinstance(value, str):
+                        values = [v.strip() for v in value.split(",") if v.strip()]
+                    elif isinstance(value, list):
+                        values = value
+                    else:
+                        values = [value]
+
+                    # Build OR conditions for each range
+                    from sqlalchemy import or_
+                    conditions = []
+                    for range_val in values:
+                        if range_val == "0-20":
+                            conditions.append(model.probability <= 20)
+                        elif range_val == "21-40":
+                            conditions.append((model.probability > 20) & (model.probability <= 40))
+                        elif range_val == "41-60":
+                            conditions.append((model.probability > 40) & (model.probability <= 60))
+                        elif range_val == "61-80":
+                            conditions.append((model.probability > 60) & (model.probability <= 80))
+                        elif range_val == "81-100":
+                            conditions.append(model.probability > 80)
+
+                    if conditions:
+                        query = query.filter(or_(*conditions))
+
+                # Handle regular fields
+                elif isinstance(value, str) and "," in value:
                     values = [v.strip() for v in value.split(",") if v.strip()]
                     if values:
                         query = query.filter(getattr(model, field).in_(values))

@@ -164,7 +164,7 @@ class Task(BaseModel):
     )
 
     comments = db.Column(
-        db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3}
+        db.Text, info={"display_label": "Comments", "form_include": True, "rows": 3, "sortable": False}
     )
 
     # Parent-child task relationships

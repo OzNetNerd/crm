@@ -135,13 +135,17 @@ def entity_content(model: type, table_name: str) -> str:
         grouped_entities = defaultdict(list)
         entities_list = query.all()
         for entity in entities_list:
-            group_key = getattr(entity, group_by) or "No Group"
-            if hasattr(group_key, "label"):
-                group_key = group_key.label
-            # Format value fields with currency
-            elif group_by == "value" and isinstance(group_key, (int, float)):
-                from app.utils.formatters import format_currency
-                group_key = format_currency(group_key)
+            # Special handling for probability field - use ranges
+            if group_by == "probability" and hasattr(entity, "get_probability_range"):
+                group_key = entity.get_probability_range()
+            else:
+                group_key = getattr(entity, group_by) or "No Group"
+                if hasattr(group_key, "label"):
+                    group_key = group_key.label
+                # Format value fields with currency
+                elif group_by == "value" and isinstance(group_key, (int, float)):
+                    from app.utils.formatters import format_currency
+                    group_key = format_currency(group_key)
             grouped_entities[str(group_key)].append(entity)
 
         # Convert to list format expected by template
