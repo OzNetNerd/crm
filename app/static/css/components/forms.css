@@ -178,9 +178,16 @@
    ============================================ */
 
 .search-dropdown-results {
-    width: fit-content;
+    width: 26rem; /* 416px - wide enough for metadata but not excessive */
     min-width: 20rem; /* 320px */
-    max-width: 24rem; /* 384px */
+    max-width: 28rem; /* 448px */
+}
+
+/* Clean metadata wrapping at bullet separators */
+.search-dropdown-results .text-xs {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    line-height: 1.4;
 }
 
 /* ============================================
