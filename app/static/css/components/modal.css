@@ -13,9 +13,10 @@
     inset: 0;
     z-index: 50;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     padding: 1rem;
+    padding-top: 5vh;
     /* Prevent modal from jumping when content updates */
     overflow: auto;
 }
