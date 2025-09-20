@@ -66,6 +66,14 @@ def get_model_and_form(model_name):
         except ImportError:
             pass  # Fall back to regular form lookup if modal form not available
 
+    # Special handling for Task forms - they live in tasks module, not entities
+    if model_name.lower() == "task":
+        try:
+            from app.forms.tasks.task_forms import TaskForm
+            return model, TaskForm
+        except ImportError:
+            pass  # Fall back to regular form lookup if tasks form not available
+
     # Dynamic form import
     form_name = f"{model_name.title()}Form"
     for module in [model_name, f"{model_name}s"]:
@@ -277,8 +285,8 @@ def handle_stakeholder_meddpic_roles(entity, form, is_new):
         )
 
 
-def handle_task_relationships(entity, form, action):
-    """Handle special Task entity relationships."""
+def handle_entity_relationships(entity, form, action):
+    """Handle entity relationships for any entity that supports linked entities."""
     if not (hasattr(entity, "set_linked_entities") and hasattr(form, "entity")):
         return
 
@@ -289,7 +297,7 @@ def handle_task_relationships(entity, form, action):
 
         entities = json.loads(entity_data)
         if action == "created":
-            db.session.flush()  # Get ID for new tasks
+            db.session.flush()  # Get ID for new entities
         entity.set_linked_entities(entities)
     except (json.JSONDecodeError, TypeError):
         pass  # Ignore invalid JSON
@@ -411,9 +419,8 @@ def process_form_submission(model_name, model, form, entity=None):
         )
         handle_stakeholder_meddpic_roles(entity, form, is_new)
 
-    # Special handling for tasks
-    if model_name.lower() == "task":
-        handle_task_relationships(entity, form, "created" if is_new else "updated")
+    # Handle entity relationships for any entity that supports linked entities
+    handle_entity_relationships(entity, form, "created" if is_new else "updated")
 
     # Commit transaction with logging
     try:
@@ -507,9 +514,9 @@ def populate_stakeholder_meddpic_roles(entity, form, mode):
             form.meddpicc_roles_select.data = current_roles
 
 
-def populate_task_form_data(entity, form, mode):
-    """Populate task form with linked entities data."""
-    if not hasattr(entity, "linked_entities"):
+def populate_entity_form_linked_data(entity, form, mode):
+    """Populate form with linked entities data for any entity that supports linked entities."""
+    if not (hasattr(entity, "linked_entities") and hasattr(form, "entity")):
         return
 
     linked = entity.linked_entities
@@ -621,9 +628,8 @@ def entity_modal(model_name, entity_id, mode):
 
     form = form_class(obj=entity)
 
-    # Handle task relationships
-    if model_name.lower() == "task":
-        populate_task_form_data(entity, form, mode)
+    # Handle linked entities data for any entity that supports it (universal DRY approach)
+    populate_entity_form_linked_data(entity, form, mode)
 
     # Handle stakeholder MEDDPIC roles
     if model_name.lower() == "stakeholder":
