@@ -91,7 +91,7 @@
         <button class="absolute right-2 top-2 text-gray-400 hover:text-gray-600">
             {{ icon('magnifying-glass') }}
         </button>
-        <div id="{{ id }}-results" class="absolute top-full mt-1 w-[32rem] max-w-2xl bg-white border border-gray-200 rounded-md shadow-lg hidden z-50"></div>
+        <div id="{{ id }}-results" class="search-dropdown-results absolute top-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg hidden z-50"></div>
     </div>
 {% endmacro %}
 
@@ -127,6 +127,74 @@
     {{ entity_search_dropdown(name, 'choice:' + name, value, search_value, label, required, placeholder) }}
 {% endmacro %}
 
+
+{# ============================================
+   MULTI-SELECT DROPDOWNS - Using Alpine.js for consistent behavior
+   ============================================ #}
+{% macro multi_select_dropdown(name, choices, value='[]', label='', required=false, placeholder='Select options...') %}
+    <div class="form-field-group">
+        {% if label %}
+            <label for="{{ name }}" class="form-label{% if required %} form-label-required{% endif %}">
+                {{ label }}
+            </label>
+        {% endif %}
+
+        <select multiple
+                name="{{ name }}"
+                id="{{ name }}"
+                class="form-select-multiple"
+                {% if required %}required{% endif %}>
+            {% for choice_key, choice_data in choices.items() %}
+                {% set selected_values = value|from_json if value != '[]' else [] %}
+                <option value="{{ choice_key }}"
+                        {% if choice_key in selected_values %}selected{% endif %}>
+                    {{ choice_data.label }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+{% endmacro %}
+
+{% macro multi_entity_search_dropdown(name, entity_type, value='[]', label='', required=false, placeholder='Search entities...') %}
+    {% if label %}
+        <label for="{{ name }}_search" class="form-label{% if required %} form-label-required{% endif %}">
+            {{ label }}
+        </label>
+    {% endif %}
+    <div class="search-container" data-field-id="{{ name }}">
+        <div class="relative">
+            <input type="text"
+                   id="{{ name }}_search"
+                   name="q"
+                   class="search-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="{{ placeholder }}"
+                   autocomplete="off"
+                   hx-get="{{ url_for('search.htmx_search') }}"
+                   hx-trigger="focus, input changed delay:300ms"
+                   hx-target="#{{ name }}_search-results"
+                   hx-swap="innerHTML"
+                   hx-include="this"
+                   hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}"}'>
+            <div id="{{ name }}_search-results" class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto hidden z-50"></div>
+        </div>
+        <input type="hidden" name="{{ name }}" id="{{ name }}" value="{{ value }}">
+        <div id="{{ name }}_selected" class="mt-2">
+            <div class="flex flex-wrap gap-2">
+                {% set entities = value|from_json if value != '[]' else [] %}
+                {% for entity in entities %}
+                <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-sm">
+                    {{ entity.name }}
+                    <button type="button" onclick="removeEntity('{{ name }}', {{ entity.id }})" class="ml-1 text-blue-500 hover:text-blue-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
 
 {# ============================================
    ENTITY DROPDOWN CONTROLS - Universal filter dropdowns for all entities

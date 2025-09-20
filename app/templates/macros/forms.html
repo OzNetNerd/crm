@@ -202,6 +202,12 @@
                 {% else %}
                     {{ field(class="form-select" + (" error" if field.errors else "")) }}
                 {% endif %}
+            {% elif field.type == 'SelectMultipleField' %}
+                {% if field.flags.required %}
+                    {{ field(class="form-select" + (" error" if field.errors else ""), required=true) }}
+                {% else %}
+                    {{ field(class="form-select" + (" error" if field.errors else "")) }}
+                {% endif %}
             {% elif field.type == 'BooleanField' %}
                 <label class="form-checkbox">
                     {{ field }}
