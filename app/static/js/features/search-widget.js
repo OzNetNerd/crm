@@ -88,6 +88,16 @@ function initializeAllSearchInputs() {
             });
         }
     });
+
+    // Close search dropdowns when modals are opened
+    document.addEventListener('htmx:afterSwap', function(event) {
+        // If content was swapped into modal-container, close all search dropdowns
+        if (event.target.id === 'modal-container') {
+            document.querySelectorAll('[id$="-results"]:not(.hidden)').forEach(resultsDiv => {
+                resultsDiv.classList.add('hidden');
+            });
+        }
+    });
 }
 
 // Make selectEntity globally available for search results to call

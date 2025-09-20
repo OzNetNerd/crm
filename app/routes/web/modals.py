@@ -7,13 +7,19 @@ Follows Python best practices: DRY, KISS, YAGNI, single responsibility.
 from functools import wraps
 from flask import Blueprint, render_template, request
 from app.models import db, MODEL_REGISTRY
+from app.utils.logging_config import get_crm_logger, log_form_operation, log_database_operation
+from app.utils.form_logger import form_logger, meddpicc_logger, template_logger
 import json
+import time
 
 modals_bp = Blueprint("modals", __name__, url_prefix="/modals")
 
+# Initialize logger for this module
+logger = get_crm_logger(__name__)
+
 
 def handle_errors(f):
-    """Decorator for consistent error handling."""
+    """Decorator for consistent error handling with logging."""
 
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -21,6 +27,18 @@ def handle_errors(f):
             return f(*args, **kwargs)
         except Exception as e:
             db.session.rollback()
+            logger.error(
+                f"Modal operation failed: {f.__name__}",
+                extra={
+                    "custom_fields": {
+                        "function": f.__name__,
+                        "error": str(e),
+                        "args": str(args),
+                        "kwargs": str(kwargs)
+                    }
+                },
+                exc_info=True
+            )
             return render_template("components/modals/form_error.html", error=str(e))
 
     return wrapper
@@ -55,7 +73,29 @@ def get_model_and_form(model_name):
 
 
 def render_modal(model_name, form, mode="create", entity=None):
-    """Render modal with unified parameters."""
+    """Render modal with unified parameters and logging."""
+    # Log modal rendering
+    form_fields = list(form._fields.keys()) if hasattr(form, '_fields') else []
+    template_logger.log_form_render(
+        template_name="wtforms_modal.html",
+        entity_type=model_name,
+        entity_id=entity.id if entity else None,
+        mode=mode,
+        form_fields=form_fields
+    )
+
+    # Log SelectMultipleField rendering if present
+    if hasattr(form, 'meddpicc_roles_select'):
+        field = form.meddpicc_roles_select
+        choices = getattr(field, 'choices', [])
+        selected_values = field.data if field.data else []
+        template_logger.log_select_multiple_render(
+            field_name='meddpicc_roles_select',
+            choices=choices,
+            selected_values=selected_values,
+            entity_type=model_name
+        )
+
     params = {
         "model_name": model_name,
         "model_class": MODEL_REGISTRY.get(model_name.lower()),
@@ -80,22 +120,74 @@ def render_modal(model_name, form, mode="create", entity=None):
 
 
 def handle_stakeholder_meddpic_roles(entity, form, is_new):
-    """Handle stakeholder MEDDPIC roles assignment."""
+    """Handle stakeholder MEDDPIC roles assignment with comprehensive logging."""
+    operation_start = time.time()
+
+    # Log start of MEDDPICC processing
+    meddpicc_logger.log_role_processing_start(
+        stakeholder_id=entity.id if not is_new else None,
+        form_data=form.meddpicc_roles.data
+    )
+
     try:
         roles_data = form.meddpicc_roles.data
         if not roles_data:
+            logger.info(
+                "No MEDDPICC roles data provided",
+                extra={
+                    "custom_fields": {
+                        "stakeholder_id": entity.id if not is_new else None,
+                        "is_new_entity": is_new
+                    },
+                    "entity_type": "stakeholder",
+                    "form_operation": "meddpicc_roles_empty"
+                }
+            )
             return
 
-        # Parse the roles data
+        # Log role data parsing
+        original_roles_data = roles_data
         roles = json.loads(roles_data) if isinstance(roles_data, str) else roles_data
+
+        meddpicc_logger.log_role_data_parsing(
+            stakeholder_id=entity.id if not is_new else None,
+            raw_data=str(original_roles_data),
+            parsed_data=roles if isinstance(roles, list) else [],
+            success=isinstance(roles, list)
+        )
+
         if not isinstance(roles, list):
+            logger.warning(
+                "Invalid MEDDPICC roles data format",
+                extra={
+                    "custom_fields": {
+                        "stakeholder_id": entity.id if not is_new else None,
+                        "roles_data": str(roles_data),
+                        "parsed_type": type(roles).__name__
+                    },
+                    "entity_type": "stakeholder",
+                    "form_operation": "meddpicc_roles_invalid_format"
+                }
+            )
             return
+
+        # Get previous roles for logging
+        previous_roles = []
+        if not is_new:
+            previous_roles = entity.get_meddpicc_role_names()
 
         # For existing entities, clear current roles first
         if not is_new:
             db.session.flush()  # Ensure entity has ID
             # Remove all existing roles
             from app.models.stakeholder import stakeholder_meddpicc_roles
+
+            meddpicc_logger.log_role_database_operation(
+                stakeholder_id=entity.id,
+                operation="delete_existing",
+                roles=previous_roles,
+                success=True
+            )
 
             delete_stmt = stakeholder_meddpicc_roles.delete().where(
                 stakeholder_meddpicc_roles.c.stakeholder_id == entity.id
@@ -104,14 +196,75 @@ def handle_stakeholder_meddpic_roles(entity, form, is_new):
 
         # Add new roles
         db.session.flush()  # Ensure entity has ID for new entities
+        added_roles = []
         for role in roles:
+            role_id = None
             if isinstance(role, dict) and "id" in role:
-                entity.add_meddpicc_role(role["id"])
+                role_id = role["id"]
+                entity.add_meddpicc_role(role_id)
             elif isinstance(role, str):
+                role_id = role
                 entity.add_meddpicc_role(role)
 
-    except (json.JSONDecodeError, TypeError, AttributeError):
-        pass  # Ignore invalid data
+            if role_id:
+                added_roles.append(role_id)
+
+        # Log role assignment completion
+        meddpicc_logger.log_role_assignment(
+            stakeholder_id=entity.id,
+            previous_roles=previous_roles,
+            new_roles=added_roles,
+            success=True
+        )
+
+        meddpicc_logger.log_role_database_operation(
+            stakeholder_id=entity.id,
+            operation="insert_new",
+            roles=added_roles,
+            success=True
+        )
+
+        operation_time = (time.time() - operation_start) * 1000
+        logger.info(
+            f"MEDDPICC roles processing completed for stakeholder {entity.id}",
+            extra={
+                "custom_fields": {
+                    "stakeholder_id": entity.id,
+                    "previous_roles": previous_roles,
+                    "new_roles": added_roles,
+                    "processing_time_ms": operation_time,
+                    "is_new_entity": is_new
+                },
+                "entity_type": "stakeholder",
+                "entity_id": entity.id,
+                "form_operation": "meddpicc_roles_completed",
+                "response_time_ms": operation_time
+            }
+        )
+
+    except (json.JSONDecodeError, TypeError, AttributeError) as e:
+        error_msg = str(e)
+        logger.error(
+            f"MEDDPICC roles processing failed for stakeholder",
+            extra={
+                "custom_fields": {
+                    "stakeholder_id": entity.id if not is_new else None,
+                    "error": error_msg,
+                    "roles_data": str(form.meddpicc_roles.data),
+                    "is_new_entity": is_new
+                },
+                "entity_type": "stakeholder",
+                "form_operation": "meddpicc_roles_error"
+            },
+            exc_info=True
+        )
+
+        meddpicc_logger.log_role_assignment(
+            stakeholder_id=entity.id if not is_new else 0,
+            previous_roles=previous_roles if 'previous_roles' in locals() else [],
+            new_roles=[],
+            success=False
+        )
 
 
 def handle_task_relationships(entity, form, action):
@@ -133,14 +286,62 @@ def handle_task_relationships(entity, form, action):
 
 
 def process_form_submission(model_name, model, form, entity=None):
-    """Process form submission with zero duplication."""
-    if not form.validate_on_submit():
+    """Process form submission with zero duplication and comprehensive logging."""
+    operation_start = time.time()
+    is_new = entity is None
+    entity_id = entity.id if entity else None
+
+    # Log form submission
+    form_logger.log_form_submission(form, model_name, entity_id)
+
+    # Validate form with logging
+    if not form_logger.log_form_validation(form, model_name):
+        logger.warning(
+            f"Form validation failed for {model_name}",
+            extra={
+                "custom_fields": {
+                    "model_name": model_name,
+                    "entity_id": entity_id,
+                    "is_new": is_new,
+                    "validation_errors": {field.name: field.errors for field in form if field.errors}
+                },
+                "entity_type": model_name,
+                "entity_id": entity_id,
+                "form_operation": "validation_failed"
+            }
+        )
         return render_modal(model_name, form, "edit" if entity else "create", entity)
 
-    is_new = entity is None
+    # Log successful validation
+    logger.info(
+        f"Form validation successful for {model_name}",
+        extra={
+            "custom_fields": {
+                "model_name": model_name,
+                "entity_id": entity_id,
+                "is_new": is_new,
+                "form_fields": list(form._fields.keys())
+            },
+            "entity_type": model_name,
+            "entity_id": entity_id,
+            "form_operation": "validation_passed"
+        }
+    )
+
     if is_new:
         entity = model()
         db.session.add(entity)
+        logger.info(
+            f"Created new {model_name} entity",
+            extra={
+                "custom_fields": {
+                    "model_name": model_name,
+                    "operation": "entity_creation"
+                },
+                "entity_type": model_name,
+                "database_operation": "create"
+            }
+        )
 
     # Handle all entity search fields (company, core_rep, core_sc, etc.) in a DRY way
     entity_search_fields = {}
@@ -186,13 +387,74 @@ def process_form_submission(model_name, model, form, entity=None):
 
     # Special handling for stakeholder MEDDPIC roles
     if model_name.lower() == "stakeholder" and hasattr(form, "meddpicc_roles"):
+        logger.info(
+            "Starting MEDDPICC roles processing",
+            extra={
+                "custom_fields": {
+                    "stakeholder_id": entity.id,
+                    "has_meddpicc_data": bool(form.meddpicc_roles.data)
+                },
+                "entity_type": "stakeholder",
+                "entity_id": entity.id,
+                "form_operation": "meddpicc_start"
+            }
+        )
         handle_stakeholder_meddpic_roles(entity, form, is_new)
 
     # Special handling for tasks
     if model_name.lower() == "task":
         handle_task_relationships(entity, form, "created" if is_new else "updated")
 
-    db.session.commit()
+    # Commit transaction with logging
+    try:
+        commit_start = time.time()
+        db.session.commit()
+        commit_time = (time.time() - commit_start) * 1000
+
+        log_database_operation(
+            logger,
+            operation="commit",
+            entity_type=model_name,
+            entity_id=entity.id,
+            success=True,
+            execution_time_ms=commit_time
+        )
+
+        operation_time = (time.time() - operation_start) * 1000
+        logger.info(
+            f"Form submission completed successfully for {model_name}",
+            extra={
+                "custom_fields": {
+                    "model_name": model_name,
+                    "entity_id": entity.id,
+                    "is_new": is_new,
+                    "total_processing_time_ms": operation_time,
+                    "commit_time_ms": commit_time
+                },
+                "entity_type": model_name,
+                "entity_id": entity.id,
+                "form_operation": "submission_completed",
+                "response_time_ms": operation_time
+            }
+        )
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(
+            f"Database commit failed for {model_name}",
+            extra={
+                "custom_fields": {
+                    "model_name": model_name,
+                    "entity_id": entity.id if entity else None,
+                    "is_new": is_new,
+                    "error": str(e)
+                },
+                "entity_type": model_name,
+                "database_operation": "commit_failed"
+            },
+            exc_info=True
+        )
+        raise
 
     return render_template(
         "components/modals/form_success.html",

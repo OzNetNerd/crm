@@ -2,6 +2,9 @@
 
 from . import db
 from typing import Dict, Any, List, Callable
+from sqlalchemy import event
+from app.utils.logging_config import get_crm_logger, log_database_operation
+import time
 
 
 class BaseModel(db.Model):
@@ -173,3 +176,111 @@ class BaseModel(db.Model):
         from ..utils.model_utils import get_model_meta_data
 
         return get_model_meta_data(self)
+
+
+# Database operation logging setup
+logger = get_crm_logger(__name__)
+
+@event.listens_for(BaseModel, 'before_insert', propagate=True)
+def log_before_insert(mapper, connection, target):
+    """Log entity creation attempts."""
+    entity_type = target.__class__.__name__.lower()
+    logger.info(
+        f"Creating new {entity_type}",
+        extra={
+            "custom_fields": {
+                "operation": "create",
+                "entity_type": entity_type,
+                "table_name": target.__tablename__
+            },
+            "entity_type": entity_type,
+            "database_operation": "insert"
+        }
+    )
+
+@event.listens_for(BaseModel, 'after_insert', propagate=True)
+def log_after_insert(mapper, connection, target):
+    """Log successful entity creation."""
+    entity_type = target.__class__.__name__.lower()
+    log_database_operation(
+        logger,
+        operation="create",
+        entity_type=entity_type,
+        entity_id=target.id if hasattr(target, 'id') else None,
+        success=True
+    )
+
+@event.listens_for(BaseModel, 'before_update', propagate=True)
+def log_before_update(mapper, connection, target):
+    """Log entity update attempts."""
+    entity_type = target.__class__.__name__.lower()
+
+    # Get changed fields
+    changed_fields = {}
+    for attr in mapper.attrs:
+        if hasattr(attr, 'history'):
+            history = attr.load_history()
+            if history.has_changes():
+                field_name = attr.key
+                changed_fields[field_name] = {
+                    'old_value': history.deleted[0] if history.deleted else None,
+                    'new_value': history.added[0] if history.added else None
+                }
+
+    logger.info(
+        f"Updating {entity_type}",
+        extra={
+            "custom_fields": {
+                "operation": "update",
+                "entity_type": entity_type,
+                "entity_id": target.id if hasattr(target, 'id') else None,
+                "changed_fields": list(changed_fields.keys()),
+                "change_count": len(changed_fields)
+            },
+            "entity_type": entity_type,
+            "entity_id": target.id if hasattr(target, 'id') else None,
+            "database_operation": "update"
+        }
+    )
+
+@event.listens_for(BaseModel, 'after_update', propagate=True)
+def log_after_update(mapper, connection, target):
+    """Log successful entity updates."""
+    entity_type = target.__class__.__name__.lower()
+    log_database_operation(
+        logger,
+        operation="update",
+        entity_type=entity_type,
+        entity_id=target.id if hasattr(target, 'id') else None,
+        success=True
+    )
+
+@event.listens_for(BaseModel, 'before_delete', propagate=True)
+def log_before_delete(mapper, connection, target):
+    """Log entity deletion attempts."""
+    entity_type = target.__class__.__name__.lower()
+    logger.info(
+        f"Deleting {entity_type}",
+        extra={
+            "custom_fields": {
+                "operation": "delete",
+                "entity_type": entity_type,
+                "entity_id": target.id if hasattr(target, 'id') else None
+            },
+            "entity_type": entity_type,
+            "entity_id": target.id if hasattr(target, 'id') else None,
+            "database_operation": "delete"
+        }
+    )
+
+@event.listens_for(BaseModel, 'after_delete', propagate=True)
+def log_after_delete(mapper, connection, target):
+    """Log successful entity deletions."""
+    entity_type = target.__class__.__name__.lower()
+    log_database_operation(
+        logger,
+        operation="delete",
+        entity_type=entity_type,
+        entity_id=target.id if hasattr(target, 'id') else None,
+        success=True
+    )
