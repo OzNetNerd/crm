@@ -75,7 +75,7 @@ class LoggingMiddleware:
                         'request_id': getattr(g, 'request_id', 'unknown'),
                         'status_code': response.status_code,
                         'duration_ms': round(duration_ms, 2),
-                        'response_size': len(response.get_data()) if response.get_data() else 0,
+                        'response_size': self._get_safe_response_size(response),
                         'is_htmx': bool(request.headers.get('HX-Request'))
                     }
                 }
@@ -95,6 +95,20 @@ class LoggingMiddleware:
                 )
 
         return response
+
+    def _get_safe_response_size(self, response):
+        """Safely get response size without breaking static file serving."""
+        try:
+            # For static files and other responses that can't use get_data()
+            if hasattr(response, 'content_length') and response.content_length:
+                return response.content_length
+
+            # For dynamic content, try to get actual data length
+            data = response.get_data()
+            return len(data) if data else 0
+        except RuntimeError:
+            # Static files in passthrough mode - use content-length header or 0
+            return response.content_length or 0
 
     def teardown_request(self, exception=None):
         """Clean up request context and log any exceptions."""
