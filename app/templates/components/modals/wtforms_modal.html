@@ -152,7 +152,7 @@ if (typeof selectEntity === 'undefined') {
                             </button>
                             <button class="modal-nav-item"
                                     :class="activeTab === 'opportunities' ? 'modal-nav-item-active' : ''"
-                                    @click="activeTab = 'opportunities'"
+                                    @click="activeTab = 'opportunities'; console.log('🔍 Modal Tab Debug: Clicked Opportunities tab for entity {{ entity_id }}, URL: /modals/{{ model_name }}/{{ entity_id }}/tab/opportunities')"
                                     hx-get="/modals/{{ model_name }}/{{ entity_id }}/tab/opportunities"
                                     hx-target="#modal-tab-content"
                                     hx-swap="innerHTML">
@@ -177,9 +177,63 @@ if (typeof selectEntity === 'undefined') {
                         </div>
                     </div>
 
-                    <!-- Trigger initial tab load -->
+                    <!-- Debug logging and trigger initial tab load -->
                     <script>
+                        console.group('🔍 Modal Debug: {{ model_name }} Modal for Entity {{ entity_id }}');
+                        console.log('Modal opened for:', {
+                            model_name: '{{ model_name }}',
+                            entity_id: {{ entity_id if entity_id else 'null' }},
+                            entity_name: {{ entity.name|tojson if entity and entity.name else '"N/A"' }},
+                            mode: '{{ mode }}',
+                            is_view: {{ is_view|lower if is_view is defined else 'false' }}
+                        });
+
+                        // Add HTMX event listeners for debugging
+                        document.addEventListener('htmx:beforeRequest', function(event) {
+                            if (event.target.closest('#{{ model_name }}-modal')) {
+                                console.log('🔍 HTMX Before Request:', {
+                                    url: event.detail.requestConfig.path,
+                                    method: event.detail.requestConfig.verb,
+                                    target: event.detail.target.id,
+                                    trigger: event.detail.triggeringEvent?.type
+                                });
+                            }
+                        });
+
+                        document.addEventListener('htmx:afterRequest', function(event) {
+                            if (event.target.closest('#{{ model_name }}-modal')) {
+                                console.log('🔍 HTMX After Request:', {
+                                    url: event.detail.requestConfig.path,
+                                    status: event.detail.xhr.status,
+                                    success: event.detail.successful,
+                                    target: event.detail.target.id,
+                                    response_size: event.detail.xhr.responseText?.length || 0
+                                });
+
+                                if (!event.detail.successful) {
+                                    console.error('🚨 HTMX Request Failed:', {
+                                        status: event.detail.xhr.status,
+                                        statusText: event.detail.xhr.statusText,
+                                        response: event.detail.xhr.responseText?.substring(0, 500)
+                                    });
+                                }
+                            }
+                        });
+
+                        document.addEventListener('htmx:responseError', function(event) {
+                            if (event.target.closest('#{{ model_name }}-modal')) {
+                                console.error('🚨 HTMX Response Error:', {
+                                    url: event.detail.requestConfig.path,
+                                    status: event.detail.xhr.status,
+                                    error: event.detail.xhr.responseText
+                                });
+                            }
+                        });
+
+                        console.groupEnd();
+
                         // Load the About tab immediately when modal opens
+                        console.log('🔍 Loading initial About tab for entity {{ entity_id }}');
                         htmx.ajax('GET', '/modals/{{ model_name }}/{{ entity_id }}/tab/about', '#modal-tab-content');
                     </script>
                 {% else %}

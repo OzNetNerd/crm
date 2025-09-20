@@ -698,8 +698,65 @@ def close_modal():
 @handle_errors
 def entity_tab_content(model_name, entity_id, tab_name):
     """Load tab content for entity modals - supports paginated data."""
-    model, _ = get_model_and_form(model_name)
-    entity = model.query.get_or_404(entity_id)
+    logger.info(
+        f"Loading tab content: {model_name}/{entity_id}/{tab_name}",
+        extra={
+            "custom_fields": {
+                "model_name": model_name,
+                "entity_id": entity_id,
+                "tab_name": tab_name,
+                "request_args": dict(request.args),
+                "request_path": request.path
+            },
+            "entity_type": model_name,
+            "entity_id": entity_id,
+            "tab_operation": "load_start"
+        }
+    )
+
+    try:
+        model, _ = get_model_and_form(model_name)
+        logger.debug(
+            f"Model lookup successful for {model_name}",
+            extra={
+                "custom_fields": {
+                    "model_class": model.__name__ if model else None,
+                    "model_tablename": model.__tablename__ if model else None
+                },
+                "entity_type": model_name,
+                "tab_operation": "model_lookup_success"
+            }
+        )
+
+        entity = model.query.get_or_404(entity_id)
+        logger.info(
+            f"Entity lookup successful: {model_name} ID {entity_id}",
+            extra={
+                "custom_fields": {
+                    "entity_name": getattr(entity, 'name', 'N/A'),
+                    "entity_attrs": {k: str(v)[:100] if v else None for k, v in entity.__dict__.items() if not k.startswith('_')},
+                    "entity_repr": str(entity)
+                },
+                "entity_type": model_name,
+                "entity_id": entity_id,
+                "tab_operation": "entity_lookup_success"
+            }
+        )
+    except Exception as e:
+        logger.error(
+            f"Failed to lookup entity {model_name} ID {entity_id}",
+            extra={
+                "custom_fields": {
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                "entity_type": model_name,
+                "entity_id": entity_id,
+                "tab_operation": "entity_lookup_failed"
+            },
+            exc_info=True
+        )
+        raise
 
     # Handle different tabs based on model type
     if model_name.lower() == "company":
@@ -719,22 +776,147 @@ def entity_tab_content(model_name, entity_id, tab_name):
             )
         elif tab_name == "opportunities":
             # Get paginated opportunities for this company
-            from app.models import Opportunity
-            page = request.args.get("page", 1, type=int)
-            per_page = request.args.get("per_page", 10, type=int)
-
-            opportunities = Opportunity.query.filter_by(company_id=entity.id).paginate(
-                page=page,
-                per_page=per_page,
-                error_out=False
+            logger.info(
+                f"Loading opportunities tab for company {entity_id}",
+                extra={
+                    "custom_fields": {
+                        "company_name": getattr(entity, 'name', 'N/A'),
+                        "company_id": entity.id,
+                        "request_page": request.args.get("page", 1),
+                        "request_per_page": request.args.get("per_page", 10)
+                    },
+                    "entity_type": "company",
+                    "entity_id": entity_id,
+                    "tab_operation": "opportunities_tab_start"
+                }
             )
 
-            return render_template(
-                "components/modals/tabs/company_opportunities.html",
-                entity=entity,
-                opportunities=opportunities,
-                model_name=model_name
-            )
+            try:
+                from app.models import Opportunity
+                page = request.args.get("page", 1, type=int)
+                per_page = request.args.get("per_page", 10, type=int)
+
+                logger.debug(
+                    f"Executing opportunities query for company {entity_id}",
+                    extra={
+                        "custom_fields": {
+                            "query_company_id": entity.id,
+                            "query_page": page,
+                            "query_per_page": per_page,
+                            "opportunity_model": str(Opportunity)
+                        },
+                        "entity_type": "company",
+                        "entity_id": entity_id,
+                        "tab_operation": "opportunities_query_start"
+                    }
+                )
+
+                # Execute the query with detailed logging
+                opportunities_query = Opportunity.query.filter_by(company_id=entity.id)
+                logger.debug(
+                    f"Built opportunities query: {opportunities_query}",
+                    extra={
+                        "custom_fields": {
+                            "sql_query": str(opportunities_query),
+                            "filter_company_id": entity.id
+                        },
+                        "entity_type": "company",
+                        "entity_id": entity_id,
+                        "tab_operation": "opportunities_query_built"
+                    }
+                )
+
+                opportunities = opportunities_query.paginate(
+                    page=page,
+                    per_page=per_page,
+                    error_out=False
+                )
+
+                logger.info(
+                    f"Opportunities query executed successfully for company {entity_id}",
+                    extra={
+                        "custom_fields": {
+                            "total_opportunities": opportunities.total,
+                            "current_page": opportunities.page,
+                            "total_pages": opportunities.pages,
+                            "items_on_page": len(opportunities.items),
+                            "has_prev": opportunities.has_prev,
+                            "has_next": opportunities.has_next,
+                            "opportunity_ids": [opp.id for opp in opportunities.items] if opportunities.items else []
+                        },
+                        "entity_type": "company",
+                        "entity_id": entity_id,
+                        "tab_operation": "opportunities_query_success"
+                    }
+                )
+
+                # Log individual opportunity details for debugging
+                if opportunities.items:
+                    for i, opp in enumerate(opportunities.items):
+                        logger.debug(
+                            f"Opportunity {i+1}: {opp.name}",
+                            extra={
+                                "custom_fields": {
+                                    "opp_id": opp.id,
+                                    "opp_name": opp.name,
+                                    "opp_value": opp.value,
+                                    "opp_stage": opp.stage,
+                                    "opp_probability": opp.probability,
+                                    "opp_company_id": opp.company_id,
+                                    "opp_repr": str(opp)
+                                },
+                                "entity_type": "opportunity",
+                                "entity_id": opp.id,
+                                "tab_operation": "opportunity_detail"
+                            }
+                        )
+
+                # Log template context variables
+                template_context = {
+                    "entity": entity,
+                    "opportunities": opportunities,
+                    "model_name": model_name
+                }
+
+                logger.info(
+                    f"Rendering opportunities template for company {entity_id}",
+                    extra={
+                        "custom_fields": {
+                            "template_name": "components/modals/tabs/company_opportunities.html",
+                            "entity_id": entity.id,
+                            "entity_name": getattr(entity, 'name', 'N/A'),
+                            "model_name": model_name,
+                            "context_keys": list(template_context.keys()),
+                            "opportunities_object_type": type(opportunities).__name__
+                        },
+                        "entity_type": "company",
+                        "entity_id": entity_id,
+                        "tab_operation": "template_render_start"
+                    }
+                )
+
+                return render_template(
+                    "components/modals/tabs/company_opportunities.html",
+                    **template_context
+                )
+
+            except Exception as e:
+                logger.error(
+                    f"Failed to load opportunities for company {entity_id}",
+                    extra={
+                        "custom_fields": {
+                            "error": str(e),
+                            "error_type": type(e).__name__,
+                            "company_name": getattr(entity, 'name', 'N/A'),
+                            "company_id": entity.id
+                        },
+                        "entity_type": "company",
+                        "entity_id": entity_id,
+                        "tab_operation": "opportunities_tab_failed"
+                    },
+                    exc_info=True
+                )
+                raise
         elif tab_name == "stakeholders":
             # Get paginated stakeholders for this company
             from app.models import Stakeholder
