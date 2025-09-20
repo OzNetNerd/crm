@@ -82,10 +82,12 @@ class CompanyForm(BaseForm):
     def get_field_layout(self):
         """
         Define field layout for consistent rendering in view and edit modes.
-        Two-column layout for better space utilization and visual consistency.
+        Includes section headings for better organization and visual hierarchy.
         """
         return [
+            {'type': 'heading', 'text': 'Company Details'},
             {'type': 'inline-2col', 'fields': ['name', 'industry']},
+            {'type': 'heading', 'text': 'Account Team'},
             {'type': 'inline-2col', 'fields': ['core_rep', 'core_sc']},
             {'type': 'single', 'field': 'comments'}
         ]

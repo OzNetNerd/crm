@@ -306,6 +306,9 @@
                         </div>
                     {% endif %}
                 {% endif %}
+            {% elif row.type == 'heading' %}
+                {# Section heading #}
+                <h4 class="text-sm font-semibold text-gray-900 mb-3">{{ row.text }}</h4>
             {% endif %}
         {% endfor %}
     {% endif %}

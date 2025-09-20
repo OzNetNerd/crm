@@ -3,10 +3,7 @@
 
 <div class="modal-tab-panel" id="company-about-tab">
     <div class="space-y-4">
-        {# Company Details - Using unified layout renderer for consistency with edit mode #}
-        <div>
-            <h4 class="text-sm font-semibold text-gray-900 mb-3">Company Details</h4>
-            {{ render_form_with_layout(form, mode='view') }}
-        </div>
+        {# Using unified layout renderer with headings for consistency with edit mode #}
+        {{ render_form_with_layout(form, mode='view') }}
     </div>
 </div>
