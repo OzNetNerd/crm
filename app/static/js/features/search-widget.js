@@ -6,54 +6,79 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded - initializing search widgets');
     // Initialize ALL search inputs using unified approach
     initializeAllSearchInputs();
 
     // Re-initialize when new content is loaded via HTMX
     document.addEventListener('htmx:afterSwap', function(event) {
+        console.log('htmx:afterSwap event on:', event.target.id || event.target.className);
         // If a modal was loaded, initialize any search widgets in it
         if (event.target.classList.contains('modal-overlay')) {
+            console.log('Modal loaded, re-initializing search inputs');
             initializeAllSearchInputs();
+        }
+    });
+
+    // Add input event listener to all search inputs to log when user types
+    document.addEventListener('input', function(event) {
+        if (event.target.classList.contains('search-input')) {
+            console.log('User typed in search input:', event.target.id, 'Value:', event.target.value, 'Length:', event.target.value.length);
+        }
+    });
+
+    // Log when HTMX makes a request
+    document.addEventListener('htmx:beforeRequest', function(event) {
+        if (event.target.classList.contains('search-input')) {
+            console.log('HTMX request triggered from:', event.target.id, 'Value:', event.target.value);
         }
     });
 });
 
 // Helper functions for robust visibility control
 function showElement(element) {
+    console.log('showElement called for:', element.id);
     element.classList.remove('hidden');
     element.removeAttribute('hidden');  // Remove HTML hidden attribute
     element.style.display = '';
+    element.style.visibility = 'visible';
+    element.style.opacity = '1';
+    console.log('After showElement - classList:', element.classList.toString(), 'display:', element.style.display, 'visibility:', element.style.visibility);
 }
 
 function hideElement(element) {
+    console.log('hideElement called for:', element.id);
     element.classList.add('hidden');
     element.setAttribute('hidden', '');  // Add HTML hidden attribute
     element.style.display = 'none';
+    console.log('After hideElement - classList:', element.classList.toString(), 'display:', element.style.display);
 }
 
 // Unified function that handles ALL search inputs using global search's working pattern
 function initializeAllSearchInputs() {
+    console.log('initializeAllSearchInputs called');
+
     // Find all search inputs with the .search-input class
     const searchInputs = document.querySelectorAll('.search-input');
+    console.log('Found search inputs:', searchInputs.length);
 
     searchInputs.forEach(input => {
+        console.log('Processing input:', input.id, 'Already initialized?', input.dataset.searchInitialized);
+
         // Skip if already initialized
         if (input.dataset.searchInitialized) return;
 
         const resultsId = input.getAttribute('hx-target');
         const resultsDiv = document.querySelector(resultsId);
 
-        if (!resultsDiv) return;
+        if (!resultsDiv) {
+            console.log('No results div found for:', input.id);
+            return;
+        }
 
         // Mark as initialized
         input.dataset.searchInitialized = 'true';
-
-        // Hide results when input is cleared (from global search)
-        input.addEventListener('input', function() {
-            if (!this.value.trim()) {
-                resultsDiv.classList.add('hidden');
-            }
-        });
+        console.log('Initialized input:', input.id);
     });
 
     // Add HTMX listener ONCE at document level, not per input
@@ -61,11 +86,35 @@ function initializeAllSearchInputs() {
     document.addEventListener('htmx:afterSwap', function(event) {
         // Check if the swapped element is a search results container
         if (event.target.id && event.target.id.endsWith('-results')) {
+            console.log('HTMX afterSwap for results container:', event.target.id);
+            console.log('Results container children count:', event.target.children.length);
+            console.log('Results container innerHTML length:', event.target.innerHTML.length);
+            console.log('Results container classList BEFORE:', event.target.classList.toString());
+            console.log('Results container hidden BEFORE?', event.target.classList.contains('hidden'));
+            console.log('Results container style.display BEFORE:', event.target.style.display);
+
             if (event.target.children.length > 0) {
+                console.log('Removing hidden class from results');
                 event.target.classList.remove('hidden');
+                event.target.removeAttribute('hidden');
+                event.target.style.display = '';
+                event.target.style.visibility = 'visible';
+                event.target.style.opacity = '1';
             } else {
+                console.log('Adding hidden class to results (no children)');
                 event.target.classList.add('hidden');
             }
+
+            console.log('Results container classList AFTER:', event.target.classList.toString());
+            console.log('Results container hidden AFTER?', event.target.classList.contains('hidden'));
+            console.log('Results container style.display AFTER:', event.target.style.display);
+
+            // Force check after a short delay to see if something else is hiding it
+            setTimeout(() => {
+                console.log('DELAYED CHECK (100ms) - hidden?', event.target.classList.contains('hidden'));
+                console.log('DELAYED CHECK (100ms) - display:', event.target.style.display);
+                console.log('DELAYED CHECK (100ms) - classList:', event.target.classList.toString());
+            }, 100);
         }
     });
 
@@ -161,6 +210,8 @@ window.selectEntity = function(fieldId, entityId, entityName, entityType) {
         // Show the entity title in the search field
         if (searchField) {
             searchField.value = entityName;
+            // Manually trigger HTMX to recognize the change
+            htmx.trigger(searchField, 'input');
         }
 
         // Hide the results dropdown for single select
@@ -172,11 +223,21 @@ window.selectEntity = function(fieldId, entityId, entityName, entityType) {
 
 // Make selectChoice globally available for choice search results
 window.selectChoice = function(fieldName, choiceKey, choiceLabel) {
+    console.log('selectChoice called with:', { fieldName, choiceKey, choiceLabel });
+
     const searchField = document.getElementById(fieldName + '_search');
     const multipleDataField = document.getElementById(fieldName + '-data');  // Multi-select choice field
     const singleHiddenField = document.getElementById(fieldName);  // Single-select choice field
     const badgesDiv = document.getElementById(fieldName + '-badges');
     const resultsDiv = document.getElementById(fieldName + '_search-results');
+
+    console.log('Elements found:', {
+        searchField: searchField ? 'YES' : 'NO',
+        multipleDataField: multipleDataField ? 'YES' : 'NO',
+        singleHiddenField: singleHiddenField ? 'YES' : 'NO',
+        badgesDiv: badgesDiv ? 'YES' : 'NO',
+        resultsDiv: resultsDiv ? 'YES' : 'NO'
+    });
 
     // Determine if this is multiple or single selection mode
     const isMultipleSelection = multipleDataField !== null && badgesDiv !== null;
@@ -224,20 +285,42 @@ window.selectChoice = function(fieldName, choiceKey, choiceLabel) {
         // Note: Don't hide results for multi-select - user might want to select more
 
     } else if (singleHiddenField) {
+        console.log('Single selection mode');
         // Single selection mode
         // Set the hidden field value
         singleHiddenField.value = choiceKey;
+        console.log('Set hidden field value to:', choiceKey);
 
         // Show the choice label in the search field
         if (searchField) {
+            console.log('Setting search field value to:', choiceLabel);
             searchField.value = choiceLabel;
+            console.log('Search field value is now:', searchField.value);
+
+            // Manually trigger HTMX to recognize the change
+            console.log('About to trigger HTMX input event');
+            htmx.trigger(searchField, 'input');
+            console.log('HTMX input event triggered');
+
+            // Log HTMX attributes on the search field
+            console.log('Search field HTMX attributes:', {
+                'hx-get': searchField.getAttribute('hx-get'),
+                'hx-trigger': searchField.getAttribute('hx-trigger'),
+                'hx-target': searchField.getAttribute('hx-target'),
+                'data-search-initialized': searchField.getAttribute('data-search-initialized')
+            });
         }
 
         // Hide results for single select
         if (resultsDiv) {
+            console.log('Hiding results div:', resultsDiv.id);
+            console.log('Results div classList before hide:', resultsDiv.classList.toString());
             hideElement(resultsDiv);
+            console.log('Results div classList after hide:', resultsDiv.classList.toString());
+            console.log('Results div style.display:', resultsDiv.style.display);
         }
     }
+    console.log('selectChoice completed');
 };
 
 window.createEntityBadge = function(fieldId, entityId, entityName, entityType) {
