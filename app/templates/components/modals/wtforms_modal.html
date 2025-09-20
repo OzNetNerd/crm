@@ -139,8 +139,7 @@ if (typeof selectEntity === 'undefined') {
                                     @click="activeTab = 'about'"
                                     hx-get="/modals/{{ model_name }}/{{ entity_id }}/tab/about"
                                     hx-target="#modal-tab-content"
-                                    hx-swap="innerHTML"
-                                    hx-trigger="click once">
+                                    hx-swap="innerHTML">
                                 About
                             </button>
                             <button class="modal-nav-item"
@@ -148,8 +147,7 @@ if (typeof selectEntity === 'undefined') {
                                     @click="activeTab = 'team'"
                                     hx-get="/modals/{{ model_name }}/{{ entity_id }}/tab/team"
                                     hx-target="#modal-tab-content"
-                                    hx-swap="innerHTML"
-                                    hx-trigger="click once">
+                                    hx-swap="innerHTML">
                                 Account Team
                             </button>
                             <button class="modal-nav-item"
@@ -157,8 +155,7 @@ if (typeof selectEntity === 'undefined') {
                                     @click="activeTab = 'opportunities'"
                                     hx-get="/modals/{{ model_name }}/{{ entity_id }}/tab/opportunities"
                                     hx-target="#modal-tab-content"
-                                    hx-swap="innerHTML"
-                                    hx-trigger="click once">
+                                    hx-swap="innerHTML">
                                 Opportunities
                             </button>
                             <button class="modal-nav-item"
@@ -166,8 +163,7 @@ if (typeof selectEntity === 'undefined') {
                                     @click="activeTab = 'stakeholders'"
                                     hx-get="/modals/{{ model_name }}/{{ entity_id }}/tab/stakeholders"
                                     hx-target="#modal-tab-content"
-                                    hx-swap="innerHTML"
-                                    hx-trigger="click once">
+                                    hx-swap="innerHTML">
                                 Stakeholders
                             </button>
                         </div>
