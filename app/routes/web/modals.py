@@ -106,7 +106,11 @@ def render_modal(model_name, form, mode="create", entity=None):
         "model_name": model_name,
         "model_class": MODEL_REGISTRY.get(model_name.lower()),
         "form": form,
-        "modal_title": f"{mode.title()} {model_name.title()}",
+        "modal_title": (
+            f"{'Viewing' if mode == 'view' else 'Editing'}: {entity.name}"
+            if entity and hasattr(entity, 'name') and entity.name and mode in ['view', 'edit']
+            else f"{mode.title()} {model_name.title()}"
+        ),
         "mode": mode,
         "is_view": mode == "view",
         "is_edit": mode == "edit",
