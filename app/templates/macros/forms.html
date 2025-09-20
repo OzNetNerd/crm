@@ -97,6 +97,8 @@
                     {{ 'Yes' if field.data else 'No' }}
                 {% elif field.type == 'DateField' %}
                     {{ field.data.strftime('%Y-%m-%d') if field.data else '-' }}
+                {% elif field.name == 'value' and field.data is number %}
+                    {{ field.data|format_currency }}
                 {% else %}
                     {{ field.data if field.data else '-' }}
                 {% endif %}

@@ -29,7 +29,7 @@ console.log('Opportunity details:', [
     {
         id: {{ opportunity.id }},
         name: {{ opportunity.name|tojson }},
-        value: {{ opportunity.value if opportunity.value else 'null' }},
+        value: {{ opportunity.value|format_currency if opportunity.value else 'null' }},
         stage: {{ opportunity.stage|tojson if opportunity.stage else '"N/A"' }},
         probability: {{ opportunity.probability if opportunity.probability else 'null' }},
         company_id: {{ opportunity.company_id if opportunity.company_id else 'null' }}
