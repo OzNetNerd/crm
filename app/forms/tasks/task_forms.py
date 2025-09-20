@@ -78,16 +78,27 @@ class TaskForm(BaseForm):
         "Assigned To",
         validators=[OptionalValidator()],
         render_kw={
-            "data-search-type": "assignment",
-            "placeholder": "Search assignees...",
+            "placeholder": "Search team members...",
             "autocomplete": "off",
         },
     )
 
-    company_id = SelectField("Company", coerce=int, validators=[OptionalValidator()])
+    company_id = StringField(
+        "Company",
+        validators=[OptionalValidator()],
+        render_kw={
+            "placeholder": "Search companies...",
+            "autocomplete": "off",
+        },
+    )
 
-    opportunity_id = SelectField(
-        "Opportunity", coerce=int, validators=[OptionalValidator()]
+    opportunity_id = StringField(
+        "Opportunity",
+        validators=[OptionalValidator()],
+        render_kw={
+            "placeholder": "Search opportunities...",
+            "autocomplete": "off",
+        },
     )
 
     next_step_type = SelectField(
@@ -117,8 +128,6 @@ class TaskForm(BaseForm):
         super().__init__(*args, **kwargs)
         # Populate choices from model
         from app.models.task import Task
-        from app.models.company import Company
-        from app.models.opportunity import Opportunity
         from app.services import MetadataService
 
         # Get Task field metadata for choices
@@ -145,18 +154,6 @@ class TaskForm(BaseForm):
                 for key, data in metadata["priority"]["choices"].items()
             ]
 
-        # Populate company choices
-        companies = Company.query.order_by(Company.name).all()
-        self.company_id.choices = [(0, "No Company")] + [
-            (c.id, c.name) for c in companies
-        ]
-
-        # Populate opportunity choices
-        opportunities = Opportunity.query.order_by(Opportunity.name).all()
-        self.opportunity_id.choices = [(0, "No Opportunity")] + [
-            (o.id, o.name) for o in opportunities
-        ]
-
         # Populate remaining SelectField choices
         self.next_step_type.choices = [
             ("", "Select next step type")
@@ -167,9 +164,7 @@ class TaskForm(BaseForm):
 
     def validate_company_id(self, field):
         """Validate that Company is required for Opportunity tasks."""
-        if self.task_category.data == "opportunity" and (
-            not field.data or field.data == 0
-        ):
+        if self.task_category.data == "opportunity" and not field.data:
             raise ValidationError("Company is required for Opportunity tasks.")
 
     def get_display_fields(self):

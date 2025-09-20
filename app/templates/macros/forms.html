@@ -448,7 +448,7 @@
 {# ============================================
    DYNAMIC SEARCH FIELD RENDERING
    ============================================ #}
-{% macro render_dynamic_search_field(field, additional_classes='') %}
+{% macro render_dynamic_search_field(field, additional_classes='', entity_type='') %}
     <div class="form-field-group {{ additional_classes }}">
         <label for="{{ field.id }}" class="form-label{% if field.flags.required %} form-label-required{% endif %}">
             {{ field.label.text }}
@@ -457,18 +457,18 @@
             <input type="text"
                    id="{{ field.id }}_search"
                    name="q"
-                   class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   class="search-input form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                    placeholder="{{ field.render_kw.placeholder if field.render_kw and field.render_kw.placeholder else 'Search...' }}"
                    autocomplete="off"
                    hx-get="{{ url_for('search.htmx_search') }}"
                    hx-trigger="input changed delay:300ms, focus"
-                   hx-target="#{{ field.id }}_results"
+                   hx-target="#{{ field.id }}_search-results"
                    hx-swap="innerHTML"
-                   hx-vals='{"mode": "select", "type": "{{ field.render_kw.get('data-search-type', 'task_field') if field.render_kw else 'task_field' }}", "field_name": "{{ field.name }}"}'>
+                   hx-vals='{"mode": "select", "type": "{{ entity_type or field.render_kw.get('data-search-type', 'task_field') if field.render_kw else 'task_field' }}", "field_name": "{{ field.name }}"}'>
             <input type="hidden" name="{{ field.name }}" id="{{ field.id }}" value="{{ field.data or '' }}">
-            <div id="{{ field.id }}_results"
-                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
-                 hidden></div>
+            <div id="{{ field.id }}_search-results"
+                 class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto hidden"
+                 ></div>
         </div>
         {% if field.errors %}
             {% for error in field.errors %}
@@ -489,8 +489,8 @@
         {% if field_name == 'company_id' %}
             <div x-show="taskCategory === 'opportunity'" class="conditional-field">
                 <div class="grid grid-cols-2 gap-4">
-                    {{ render_dynamic_search_field(field) }}
-                    {{ render_dynamic_search_field(form.opportunity_id) }}
+                    {{ render_dynamic_search_field(field, entity_type='company') }}
+                    {{ render_dynamic_search_field(form.opportunity_id, entity_type='opportunity') }}
                 </div>
             </div>
         {% elif field_name == 'opportunity_id' %}
@@ -517,7 +517,7 @@
         {% elif field_name == 'due_date' %}
             {# Skip - already rendered with name #}
         {% elif field_name == 'assigned_to_id' %}
-            {{ render_dynamic_search_field(field) }}
+            {{ render_dynamic_search_field(field, entity_type='user') }}
         {% else %}
             {{ render_field(field) }}
         {% endif %}
