@@ -48,8 +48,8 @@
         {% if stakeholders.pages > 1 %}
             <div class="modal-pagination">
                 <div class="modal-pagination-info">
-                    Showing {{ stakeholders.per_page * (stakeholders.page - 1) + 1 }} -
-                    {{ min(stakeholders.per_page * stakeholders.page, stakeholders.total) }} of {{ stakeholders.total }}
+                    Showing {{ (stakeholders.per_page * (stakeholders.page - 1) + 1)|format_number }} -
+                    {{ min(stakeholders.per_page * stakeholders.page, stakeholders.total)|format_number }} of {{ stakeholders.total|format_number }}
                 </div>
                 <div class="modal-pagination-controls">
                     {# Previous button #}

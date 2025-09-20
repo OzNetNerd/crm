@@ -10,12 +10,15 @@ def format_number(value):
     Returns:
         Formatted string with commas (e.g., 75000 → 75,000)
     """
-    if value is None:
+    if value is None or value == "":
         return "0"
     try:
+        # Handle string inputs that might be numeric
+        if isinstance(value, str):
+            value = float(value) if '.' in value else int(value)
         return f"{int(value):,}"
     except (ValueError, TypeError):
-        return str(value)
+        return "0"
 
 
 def format_currency(value):
@@ -27,12 +30,15 @@ def format_currency(value):
     Returns:
         Formatted currency string (e.g., 75000 → $75,000)
     """
-    if value is None:
+    if value is None or value == "" or value == 0:
         return "$0"
     try:
+        # Handle string inputs that might be numeric
+        if isinstance(value, str):
+            value = float(value) if '.' in value else int(value)
         return f"${int(value):,}"
     except (ValueError, TypeError):
-        return f"${value}"
+        return "$0"
 
 
 def format_currency_short(value):
@@ -44,18 +50,26 @@ def format_currency_short(value):
     Returns:
         Formatted currency string (e.g., "$1.5M", "$250K", "$100")
     """
-    if value is None:
+    if value is None or value == "" or value == 0:
         return "$0"
 
     try:
+        # Handle string inputs that might be numeric
+        if isinstance(value, str):
+            value = float(value) if '.' in value else int(value)
+
         value = float(value)
         if value >= 1000000:
-            return f"${value/1000000:.1f}M"
+            # Format millions with 1 decimal if needed, but remove .0
+            formatted = f"{value/1000000:.1f}M"
+            if formatted.endswith('.0M'):
+                formatted = formatted[:-3] + 'M'
+            return f"${formatted}"
         elif value >= 1000:
             return f"${value/1000:.0f}K"
         return f"${int(value):,}"
     except (ValueError, TypeError):
-        return f"${value}"
+        return "$0"
 
 
 def format_percentage(value):
