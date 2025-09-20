@@ -1,5 +1,28 @@
 # CRM Application - Claude Code Instructions
 
+## 🚨 CRITICAL: FILE LOCATION VERIFICATION
+
+**ALWAYS VERIFY FILE PATHS BEFORE CREATING FILES**
+
+### Static File Location Rules:
+1. **JavaScript files:** `/app/static/js/` NOT `/static/js/`
+2. **CSS files:** `/app/static/css/` NOT `/static/css/`
+3. **Always check existing patterns:** `ls -la app/static/`
+4. **Test in browser:** Open developer console to verify files load without 404 errors
+
+### Before Creating ANY Static File:
+```bash
+# MANDATORY: Check the correct path structure
+ls -la app/static/
+ls -la app/static/js/
+ls -la app/static/css/
+
+# Find similar files to understand the pattern
+find . -name "*.js" -path "*/static/*" | head -5
+```
+
+**BLOCKING: Files in wrong locations will cause 404 errors**
+
 ## 🚨 CRITICAL: MANDATORY DUPLICATE DETECTION BEFORE ANY IMPLEMENTATION
 
 **YOU MUST CHECK FOR DUPLICATES BEFORE WRITING ANY CODE**

@@ -7,7 +7,12 @@ Simple confirmation dialog following existing modal patterns
 <div class="modal"
      x-data="{
          open: true,
+         dragPosition: { x: 0, y: 0 },
          close() {
+             if (window.ModalDraggable) {
+                 const modalContent = document.querySelector('#{{ model_name }}-delete-modal .modal-content');
+                 if (modalContent) window.ModalDraggable.resetModalPosition(modalContent);
+             }
              htmx.ajax('GET', '/modals/close', {target: '#modal-container', swap: 'innerHTML'});
          }
      }"

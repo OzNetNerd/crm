@@ -11,6 +11,7 @@ function modal(config = {}) {
         type: config.type || 'info',
         autoShow: config.autoShow !== false,
         open: false,
+        dragPosition: { x: 0, y: 0 },
 
         init() {
             // Auto-show modal on initialization if configured
@@ -27,6 +28,12 @@ function modal(config = {}) {
         },
 
         hide() {
+            // Reset position if modal was dragged
+            if (window.ModalDraggable) {
+                const modalContent = document.querySelector(`#${this.id} .modal-content`);
+                if (modalContent) window.ModalDraggable.resetModalPosition(modalContent);
+            }
+
             this.open = false;
             document.body.style.overflow = '';
 

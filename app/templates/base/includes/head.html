@@ -49,6 +49,9 @@
 {# Core JavaScript Libraries #}
 <script src="https://unpkg.com/htmx.org@2.0.3/dist/htmx.min.js"></script>
 
+{# Interact.js for draggable modals #}
+<script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+
 {# Alpine.js - Load first #}
 <script defer src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js"></script>
 
@@ -202,3 +205,4 @@ window.dropdown = function(config = {}) {
 <script src="{{ url_for('static', filename='js/features/search-widget.js') }}"></script>
 <script src="{{ url_for('static', filename='js/features/form-enhancements.js') }}"></script>
 <script src="{{ url_for('static', filename='js/core/modal-handlers.js') }}"></script>
+<script src="{{ url_for('static', filename='js/features/modal-draggable.js') }}"></script>
