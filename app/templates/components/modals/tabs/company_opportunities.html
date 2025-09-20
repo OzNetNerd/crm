@@ -53,11 +53,11 @@ console.groupEnd();
                                 <span class="flex items-center gap-1">
                                     {{ icon('currency-dollar', size='4', class='text-gray-400') }}
                                     <span class="font-medium">
-                                        {% if opportunity.value is none %}
+                                        {% if opportunity.value is none or opportunity.value == 0 %}
                                             $0
-                                        {% elif opportunity.value >= 1000000 %}
+                                        {% elif opportunity.value and opportunity.value >= 1000000 %}
                                             ${{ (opportunity.value / 1000000)|round(1) }}M
-                                        {% elif opportunity.value >= 1000 %}
+                                        {% elif opportunity.value and opportunity.value >= 1000 %}
                                             ${{ (opportunity.value / 1000)|round(0)|int }}K
                                         {% else %}
                                             ${{ opportunity.value }}
