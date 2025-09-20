@@ -104,6 +104,14 @@ class TaskForm(BaseForm):
     next_step_type = SelectField(
         "Next Step Type", validators=[OptionalValidator()], choices=[]
     )
+
+    # Entity field (for related companies/stakeholders/opportunities) - standardized with other forms
+    entity = StringField(
+        "Related To",
+        validators=[OptionalValidator()],
+        render_kw={"placeholder": "Search companies, contacts, opportunities..."},
+    )
+
     linked_entities = StringField(
         "Linked Entities",
         validators=[OptionalValidator()],
