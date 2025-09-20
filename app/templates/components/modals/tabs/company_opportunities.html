@@ -1,6 +1,45 @@
 {# Company Opportunities Tab Content with Pagination #}
 {% from 'macros/ui.html' import icon %}
 
+{# Debug logging for template variables #}
+<script>
+console.group('🔍 Company Opportunities Tab Debug');
+console.log('Entity:', {
+    id: {{ entity.id if entity else 'null' }},
+    name: {{ entity.name|tojson if entity and entity.name else '"N/A"' }},
+    type: '{{ entity.__class__.__name__ if entity else "None" }}'
+});
+console.log('Opportunities:', {
+    total: {{ opportunities.total if opportunities else 'null' }},
+    page: {{ opportunities.page if opportunities else 'null' }},
+    pages: {{ opportunities.pages if opportunities else 'null' }},
+    per_page: {{ opportunities.per_page if opportunities else 'null' }},
+    items_count: {{ opportunities.items|length if opportunities and opportunities.items else 0 }},
+    has_items: {{ (opportunities.items|length > 0)|lower if opportunities and opportunities.items else 'false' }}
+});
+console.log('Model name:', {{ model_name|tojson if model_name else '"N/A"' }});
+console.log('Template variables available:', {
+    entity_available: {{ (entity is defined and entity is not none)|lower }},
+    opportunities_available: {{ (opportunities is defined and opportunities is not none)|lower }},
+    model_name_available: {{ (model_name is defined and model_name is not none)|lower }}
+});
+{% if opportunities and opportunities.items %}
+console.log('Opportunity details:', [
+    {% for opportunity in opportunities.items %}
+    {
+        id: {{ opportunity.id }},
+        name: {{ opportunity.name|tojson }},
+        value: {{ opportunity.value if opportunity.value else 'null' }},
+        stage: {{ opportunity.stage|tojson if opportunity.stage else '"N/A"' }},
+        probability: {{ opportunity.probability if opportunity.probability else 'null' }},
+        company_id: {{ opportunity.company_id if opportunity.company_id else 'null' }}
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+]);
+{% endif %}
+console.groupEnd();
+</script>
+
 <div class="modal-tab-panel" id="company-opportunities-tab">
     {% if opportunities.items %}
         {# Opportunities List #}
@@ -14,7 +53,9 @@
                                 <span class="flex items-center gap-1">
                                     {{ icon('currency-dollar', size='4', class='text-gray-400') }}
                                     <span class="font-medium">
-                                        {% if opportunity.value >= 1000000 %}
+                                        {% if opportunity.value is none %}
+                                            $0
+                                        {% elif opportunity.value >= 1000000 %}
                                             ${{ (opportunity.value / 1000000)|round(1) }}M
                                         {% elif opportunity.value >= 1000 %}
                                             ${{ (opportunity.value / 1000)|round(0)|int }}K
