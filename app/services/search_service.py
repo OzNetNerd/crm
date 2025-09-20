@@ -134,8 +134,19 @@ class SearchService:
         if isinstance(value, (date, datetime)):
             return value.strftime("%d/%m/%y")
 
+        # Handle currency fields (any field containing 'value', 'price', 'cost', 'amount')
+        if (isinstance(value, (int, float)) and
+            any(currency_term in field_name.lower() for currency_term in ['value', 'price', 'cost', 'amount', 'pipeline'])):
+            from app.utils.formatters import format_currency_short
+            return format_currency_short(value)
+
+        # Handle large numbers that might need comma formatting
+        elif isinstance(value, (int, float)) and value >= 1000:
+            from app.utils.formatters import format_number
+            return format_number(value)
+
         # Handle status/stage/priority fields
-        if field_name in {"status", "stage", "priority"}:
+        elif field_name in {"status", "stage", "priority"}:
             return str(value).replace("_", " ").title()
 
         # Default string conversion

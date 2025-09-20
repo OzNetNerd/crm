@@ -8,7 +8,7 @@
     {# Show total count #}
     {% if total_count > 0 and grouped_entities|length > 0 %}
         <div class="text-sm text-gray-600 mb-4">
-            Showing {{ total_count }} {{ entity_name_singular if total_count == 1 else entity_name }}
+            Showing {{ total_count|format_number }} {{ entity_name_singular if total_count == 1 else entity_name }}
         </div>
     {% endif %}
 

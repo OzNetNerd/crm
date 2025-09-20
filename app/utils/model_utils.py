@@ -2,6 +2,7 @@
 
 from typing import List, Dict, Any
 from datetime import date
+from app.utils.formatters import format_currency_short
 
 
 def get_recent_items(model_class, limit: int = 5) -> List:
@@ -83,11 +84,7 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
             active_opps = [opp for opp in model_instance.opportunities if opp.stage not in ["closed-won", "closed-lost"]]
             pipeline_value = sum(opp.value or 0 for opp in active_opps)
             if pipeline_value > 0:
-                if pipeline_value >= 1000:
-                    pipeline_display = f"${pipeline_value // 1000}K"
-                else:
-                    pipeline_display = f"${pipeline_value}"
-                meta["pipeline_value"] = pipeline_display
+                meta["pipeline_value"] = format_currency_short(pipeline_value)
 
             # Active opportunities count
             if active_opps:
@@ -134,11 +131,7 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
     elif entity_type == "opportunity":
         # Deal size and stage
         if hasattr(model_instance, "value") and model_instance.value:
-            if model_instance.value >= 1000:
-                deal_value = f"${model_instance.value // 1000}K"
-            else:
-                deal_value = f"${model_instance.value}"
-            meta["deal_size"] = deal_value
+            meta["deal_size"] = format_currency_short(model_instance.value)
 
         if hasattr(model_instance, "stage") and model_instance.stage:
             stage_display = model_instance.stage.replace("-", " ").replace("_", " ").title()
@@ -181,13 +174,7 @@ def get_model_meta_data(model_instance) -> Dict[str, Any]:
                     total_pipeline += opp.value
 
             if total_pipeline > 0:
-                if total_pipeline >= 1000000:
-                    pipeline_display = f"${total_pipeline // 1000000}M"
-                elif total_pipeline >= 1000:
-                    pipeline_display = f"${total_pipeline // 1000}K"
-                else:
-                    pipeline_display = f"${total_pipeline}"
-                meta["total_pipeline"] = pipeline_display
+                meta["total_pipeline"] = format_currency_short(total_pipeline)
 
         # Total stakeholder relationships (through opportunities or direct)
         # Count unique stakeholders user is working with

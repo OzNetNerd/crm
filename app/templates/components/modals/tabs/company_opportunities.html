@@ -53,15 +53,7 @@ console.groupEnd();
                                 <span class="flex items-center gap-1">
                                     {{ icon('currency-dollar', size='4', class='text-gray-400') }}
                                     <span class="font-medium">
-                                        {% if opportunity.value is none or opportunity.value == 0 %}
-                                            $0
-                                        {% elif opportunity.value and opportunity.value >= 1000000 %}
-                                            ${{ (opportunity.value / 1000000)|round(1) }}M
-                                        {% elif opportunity.value and opportunity.value >= 1000 %}
-                                            ${{ (opportunity.value / 1000)|round(0)|int }}K
-                                        {% else %}
-                                            ${{ opportunity.value }}
-                                        {% endif %}
+                                        {{ opportunity.value|format_currency_short }}
                                     </span>
                                 </span>
                                 <span class="flex items-center gap-1">
@@ -91,8 +83,8 @@ console.groupEnd();
         {% if opportunities.pages > 1 %}
             <div class="modal-pagination">
                 <div class="modal-pagination-info">
-                    Showing {{ opportunities.per_page * (opportunities.page - 1) + 1 }} -
-                    {{ min(opportunities.per_page * opportunities.page, opportunities.total) }} of {{ opportunities.total }}
+                    Showing {{ (opportunities.per_page * (opportunities.page - 1) + 1)|format_number }} -
+                    {{ min(opportunities.per_page * opportunities.page, opportunities.total)|format_number }} of {{ opportunities.total|format_number }}
                 </div>
                 <div class="modal-pagination-controls">
                     {# Previous button #}
