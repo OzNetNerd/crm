@@ -7,7 +7,12 @@ Shows success and auto-closes or allows manual close
 <div class="modal"
      x-data="{
          open: true,
+         dragPosition: { x: 0, y: 0 },
          close() {
+             if (window.ModalDraggable) {
+                 const modalContent = document.querySelector('#success-modal .modal-content');
+                 if (modalContent) window.ModalDraggable.resetModalPosition(modalContent);
+             }
              this.open = false;
              // Close the modal
              htmx.ajax('GET', '/modals/close', {target: '#modal-container', swap: 'innerHTML'});

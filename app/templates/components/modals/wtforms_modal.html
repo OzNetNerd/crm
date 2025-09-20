@@ -26,6 +26,7 @@ if (typeof selectEntity === 'undefined') {
          validationTimer: null,
          isValidating: false,
          taskCategory: 'opportunity',
+         dragPosition: { x: 0, y: 0 },
          updateTaskFields(category) {
              this.taskCategory = category;
          },
@@ -96,6 +97,10 @@ if (typeof selectEntity === 'undefined') {
              return true;
          },
          close() {
+             if (window.ModalDraggable) {
+                 const modalContent = document.querySelector('#{{ model_name }}-modal .modal-content');
+                 if (modalContent) window.ModalDraggable.resetModalPosition(modalContent);
+             }
              htmx.ajax('GET', '/modals/close', {target: '#{{ model_name }}-modal', swap: 'outerHTML'});
          }
      }"
