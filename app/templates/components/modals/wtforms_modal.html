@@ -231,7 +231,7 @@ if (typeof selectEntity === 'undefined') {
                 {% else %}
                     <!-- Standard View Mode - Using unified layout renderer -->
                     <div class="form-fields">
-                        {{ render_form_with_layout(form, mode='view') }}
+                        {{ render_filtered_fields(form, mode='view') }}
                     </div>
                 {% endif %}
             {% else %}
@@ -251,7 +251,7 @@ if (typeof selectEntity === 'undefined') {
 
                     {{ form.csrf_token }}
 
-                    {{ render_form_with_layout(form, mode='form') }}
+                    {{ render_filtered_fields(form, mode='form') }}
                 </form>
             {% endif %}
         </div>
