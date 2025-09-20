@@ -761,17 +761,14 @@ def entity_tab_content(model_name, entity_id, tab_name):
     # Handle different tabs based on model type
     if model_name.lower() == "company":
         if tab_name == "about":
-            # Return the about tab content with company details
+            # Return the about tab content with company details and form for DRY rendering
+            _, form_class = get_model_and_form(model_name)
+            form = form_class(obj=entity)
+            populate_entity_search_fields(entity, form, 'view')
             return render_template(
                 "components/modals/tabs/company_about.html",
                 entity=entity,
-                model_name=model_name
-            )
-        elif tab_name == "team":
-            # Return the account team tab content
-            return render_template(
-                "components/modals/tabs/company_team.html",
-                entity=entity,
+                form=form,
                 model_name=model_name
             )
         elif tab_name == "opportunities":

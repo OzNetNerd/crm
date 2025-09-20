@@ -143,14 +143,6 @@ if (typeof selectEntity === 'undefined') {
                                 About
                             </button>
                             <button class="modal-nav-item"
-                                    :class="activeTab === 'team' ? 'modal-nav-item-active' : ''"
-                                    @click="activeTab = 'team'"
-                                    hx-get="/modals/{{ model_name }}/{{ entity_id }}/tab/team"
-                                    hx-target="#modal-tab-content"
-                                    hx-swap="innerHTML">
-                                Account Team
-                            </button>
-                            <button class="modal-nav-item"
                                     :class="activeTab === 'opportunities' ? 'modal-nav-item-active' : ''"
                                     @click="activeTab = 'opportunities'; console.log('🔍 Modal Tab Debug: Clicked Opportunities tab for entity {{ entity_id }}, URL: /modals/{{ model_name }}/{{ entity_id }}/tab/opportunities')"
                                     hx-get="/modals/{{ model_name }}/{{ entity_id }}/tab/opportunities"
