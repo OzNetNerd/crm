@@ -19,12 +19,17 @@ def create_app():
     """Create and configure Flask application."""
     app = Flask(__name__, template_folder="templates", static_folder="static")
 
+    # Initialize logging system first
+    from app.logging_config import setup_logging
+    setup_logging(log_level=config.LOG_LEVEL, log_file=config.LOG_FILE)
+
     # Apply configuration
     app.config.update(
         {
             "SECRET_KEY": config.SECRET_KEY,
             "SQLALCHEMY_DATABASE_URI": config.SQLALCHEMY_DATABASE_URI,
             "SQLALCHEMY_TRACK_MODIFICATIONS": config.SQLALCHEMY_TRACK_MODIFICATIONS,
+            "DEBUG": config.DEBUG,
         }
     )
 
@@ -64,13 +69,18 @@ def create_app():
     app.jinja_env.filters["format_currency_short"] = format_currency_short
     app.jinja_env.filters["format_percentage"] = format_percentage
 
+    # Initialize logging middleware for request correlation
+    from app.middleware.logging_middleware import LoggingMiddleware
+    LoggingMiddleware(app)
+
     # Application startup logging
     logger = get_crm_logger(__name__)
     if os.environ.get("WERKZEUG_RUN_MAIN"):
         logger.info(
-            "CRM Application startup",
+            "CRM Application startup complete",
             extra={
                 "custom_fields": {
+                    "startup": True,
                     "debug_mode": debug_mode,
                     "database_uri": config.SQLALCHEMY_DATABASE_URI.split("://")[0] + "://[REDACTED]",
                     "flask_env": os.environ.get("FLASK_ENV", "production")

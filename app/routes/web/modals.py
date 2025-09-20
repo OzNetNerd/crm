@@ -7,8 +7,10 @@ Follows Python best practices: DRY, KISS, YAGNI, single responsibility.
 from functools import wraps
 from flask import Blueprint, render_template, request
 from app.models import db, MODEL_REGISTRY
+from app.utils.logging_decorators import log_route, log_form_processing, log_template_render
 from app.utils.logging_config import get_crm_logger, log_form_operation, log_database_operation
 from app.utils.form_logger import form_logger, meddpicc_logger, template_logger
+from app.logging_config import routes_logger, forms_logger, templates_logger
 import json
 import time
 
@@ -27,12 +29,15 @@ def handle_errors(f):
             return f(*args, **kwargs)
         except Exception as e:
             db.session.rollback()
+            # Use both logging systems for comprehensive coverage
             logger.error(
                 f"Modal operation failed: {f.__name__}",
                 extra={
                     "custom_fields": {
                         "function": f.__name__,
                         "error": str(e),
+                        "request_path": request.path,
+                        "request_method": request.method,
                         "args": str(args),
                         "kwargs": str(kwargs)
                     }
@@ -41,6 +46,7 @@ def handle_errors(f):
             )
             return render_template("components/modals/form_error.html", error=str(e))
 
+    return wrapper
     return wrapper
 
 
@@ -575,18 +581,27 @@ def populate_entity_search_fields(entity, form, mode):
 
 @modals_bp.route("/<model_name>/create")
 @handle_errors
+@log_route(logger=routes_logger)
+@log_template_render()
 def create_modal(model_name):
     """Create modal for any model."""
+    templates_logger.info(f"Rendering create modal for {model_name}",
+                         extra={'extra_fields': {'model_name': model_name, 'mode': 'create'}})
     model, form_class = get_model_and_form(model_name)
     return render_modal(model_name, form_class(), "create")
 
 
 @modals_bp.route("/<model_name>/<int:entity_id>/<mode>")
 @handle_errors
+@log_route(logger=routes_logger)
+@log_template_render()
 def entity_modal(model_name, entity_id, mode):
     """View/Edit/Delete modal for any entity - single handler."""
     if mode not in ["view", "edit", "delete"]:
         raise ValueError(f"Invalid mode: {mode}")
+
+    templates_logger.info(f"Rendering {mode} modal for {model_name} ID {entity_id}",
+                         extra={'extra_fields': {'model_name': model_name, 'entity_id': entity_id, 'mode': mode}})
 
     model, form_class = get_model_and_form(model_name)
     entity = model.query.get_or_404(entity_id)

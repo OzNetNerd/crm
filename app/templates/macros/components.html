@@ -127,6 +127,7 @@
     {{ entity_search_dropdown(name, 'choice:' + name, value, search_value, label, required, placeholder) }}
 {% endmacro %}
 
+
 {# ============================================
    MULTI-SELECT DROPDOWNS - Using Alpine.js for consistent behavior
    ============================================ #}
@@ -176,19 +177,83 @@
                    hx-vals='{"mode": "select", "type": "{{ entity_type }}", "field_name": "{{ name }}"}'>
             <div id="{{ name }}_search-results" class="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto hidden z-50"></div>
         </div>
-        <div id="{{ name }}-badges" class="mt-2 flex flex-wrap gap-2"></div>
-        <input type="hidden" name="{{ name }}-data" id="{{ name }}-data" value="{{ value }}"{% if required %} required{% endif %}>
-        <input type="hidden" name="{{ name }}-selected" id="{{ name }}-selected" value="">
+        <input type="hidden" name="{{ name }}" id="{{ name }}" value="{{ value }}">
+        <div id="{{ name }}_selected" class="mt-2">
+            <div class="flex flex-wrap gap-2">
+                {% set entities = value|from_json if value != '[]' else [] %}
+                {% for entity in entities %}
+                <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-sm">
+                    {{ entity.name }}
+                    <button type="button" onclick="removeEntity('{{ name }}', {{ entity.id }})" class="ml-1 text-blue-500 hover:text-blue-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </span>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 {% endmacro %}
 
-{% macro multiple_choice_search_dropdown(name, choices, value='[]', label='', required=false, placeholder='Search choices...') %}
-    {{ multi_entity_search_dropdown(name, 'choice:' + name, value, label, required, placeholder) }}
-{% endmacro %}
-
 {# ============================================
-   ENTITY DROPDOWN CONTROLS - Placeholder for missing macro
+   ENTITY DROPDOWN CONTROLS - Universal filter dropdowns for all entities
    ============================================ #}
 {% macro entity_dropdown_controls(dropdowns=[], entity_type='') %}
-    {# Placeholder for entity dropdown controls - implement as needed #}
+    <div class="flex flex-wrap gap-3 items-center">
+        {% for dropdown_key, config in dropdowns.items() %}
+            {% if config.options %}
+                <div class="min-w-48">
+                    {% if config.label %}
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ config.label }}
+                        </label>
+                    {% endif %}
+
+                    {% if config.multiple and dropdown_key not in ['group_by', 'sort_by', 'sort_direction'] %}
+                        {# Multi-select checkbox dropdown with beautiful Alpine.js styling #}
+                        <div class="relative" x-data="{ open: false, selected: {{ (config.current_value.split(',') if config.current_value else [])|tojson }} }">
+                            <button type="button"
+                                    @click="open = !open"
+                                    class="dropdown-select block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-left flex items-center justify-between">
+                                <span x-show="selected.length === 0">{{ config.placeholder or 'Select...' }}</span>
+                                <span x-show="selected.length > 0" x-text="selected.length + ' selected'"></span>
+                                <span class="ml-2 pointer-events-none">
+                                    {{ icon('chevron-down') }}
+                                </span>
+                            </button>
+                            <div x-show="open"
+                                 @click.away="open = false"
+                                 class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                {% for option in config.options %}
+                                    {% if option.value %}
+                                    <label class="flex items-center px-3 py-2 hover:bg-gray-100">
+                                        <input type="checkbox"
+                                               value="{{ option.value }}"
+                                               x-model="selected"
+                                               class="mr-2">
+                                        <span>{{ option.label }}</span>
+                                    </label>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <input type="hidden" name="{{ config.name or dropdown_key }}" :value="selected.join(',')">
+                        </div>
+                    {% else %}
+                        {# Regular single-select dropdown with beautiful styling #}
+                        <select name="{{ config.name or dropdown_key }}"
+                                class="dropdown-select block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                autocomplete="off">
+                            {% for option in config.options %}
+                                <option value="{{ option.value }}"
+                                        {% if option.value == config.current_value %}selected{% endif %}>
+                                    {{ option.label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
 {% endmacro %}

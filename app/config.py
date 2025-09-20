@@ -30,7 +30,28 @@ def get_database_url():
     return f"sqlite:///{Path.cwd()}/instance/crm.db"
 
 
+def get_log_level():
+    """Get logging level from environment with sensible default."""
+    return os.environ.get("LOG_LEVEL", "INFO").upper()
+
+
+def get_log_file():
+    """Get log file path from environment, None for stdout."""
+    log_file = os.environ.get("LOG_FILE")
+    if log_file:
+        return Path(log_file)
+    return None
+
+
 # Simple configuration - just what we need
 SECRET_KEY = os.environ.get("SECRET_KEY", os.urandom(32).hex())
 SQLALCHEMY_DATABASE_URI = get_database_url()
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+# Logging configuration
+LOG_LEVEL = get_log_level()
+LOG_FILE = get_log_file()
+
+# Development vs Production settings
+DEBUG = os.environ.get("FLASK_ENV") == "development"
+TESTING = os.environ.get("TESTING", "false").lower() == "true"
